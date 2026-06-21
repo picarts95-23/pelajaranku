@@ -113,11 +113,17 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const [lang, setLang] = useState<Lang>("id");
+  const t = useMemo(() => (k: Key) => translations[k][lang], [lang]);
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <LangContext.Provider value={{ lang, setLang, t }}>
+        <AuthProvider>
+          <Outlet />
+          <Toaster richColors position="top-center" />
+        </AuthProvider>
+      </LangContext.Provider>
     </QueryClientProvider>
   );
 }
