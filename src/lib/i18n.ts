@@ -73,6 +73,7 @@ export const translations = {
   navMyQuests: { id: "Quest Saya", en: "My Quests" },
   navGrades: { id: "Nilai Saya", en: "My Grades" },
   navBadges: { id: "Badge", en: "Badges" },
+  navProfile: { id: "Profil", en: "Profile" },
 
   // CRUD/forms
   create: { id: "Buat", en: "Create" },

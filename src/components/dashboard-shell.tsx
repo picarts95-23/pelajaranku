@@ -1,7 +1,7 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   LogOut, Wand2, LayoutDashboard, BookOpen, Users, ScrollText, CalendarCheck,
-  NotebookPen, CalendarDays, Database, Trophy, Sword, GraduationCap, Award, Menu, X,
+  NotebookPen, CalendarDays, Database, Trophy, Sword, GraduationCap, Award, Menu, X, UserCircle2,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
@@ -32,6 +32,7 @@ const SISWA_NAV: NavItem[] = [
   { to: "/siswa/nilai", key: "navGrades", icon: GraduationCap },
   { to: "/siswa/badge", key: "navBadges", icon: Award },
   { to: "/siswa/leaderboard", key: "leaderboard", icon: Trophy },
+  { to: "/siswa/profil", key: "navProfile", icon: UserCircle2 },
 ];
 
 export function DashboardShell({
