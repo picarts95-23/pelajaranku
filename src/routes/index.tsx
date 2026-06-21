@@ -174,7 +174,7 @@ function Landing() {
         <div className="mb-12 text-center">
           <span className="font-display text-sm font-semibold uppercase tracking-[0.2em] text-accent">{t("features")}</span>
           <h2 className="mt-3 font-display text-4xl font-bold md:text-5xl">
-            <span className="text-gradient-magic">Sihir</span> di Tiap Pelajaran
+            <span className="text-gradient-magic">Hikmah</span> di Tiap Pelajaran
           </h2>
         </div>
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
