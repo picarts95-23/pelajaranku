@@ -1,19 +1,27 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Compass } from "lucide-react";
-import { useAuth } from "@/lib/auth-context";
+import { z } from "zod";
+import { useAuth, type AppRole } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 
+const searchSchema = z.object({
+  role: z.enum(["guru", "siswa"]).optional(),
+});
+
 export const Route = createFileRoute("/loading")({
+  validateSearch: searchSchema,
   head: () => ({ meta: [{ title: "Loading… · EduQuest Academy" }] }),
   component: LoadingPortal,
 });
 
 function LoadingPortal() {
-  const { role, loading, session } = useAuth();
+  const { role, loading, session, user } = useAuth();
+  const { role: preferredRole } = Route.useSearch();
   const navigate = useNavigate();
-  const { t } = useLang();
+  const { t, lang } = useLang();
+  const [waitedTooLong, setWaitedTooLong] = useState(false);
 
   useEffect(() => {
     if (loading) return;
@@ -21,13 +29,20 @@ function LoadingPortal() {
       navigate({ to: "/auth" });
       return;
     }
-    if (role) {
+    // Prefer role from user_roles table; fall back to chosen role at login,
+    // then to user metadata (signup payload).
+    const metaRole = (user?.user_metadata?.role as AppRole | undefined) ?? null;
+    const resolved: AppRole | null = role ?? preferredRole ?? metaRole;
+    if (resolved) {
       const timer = setTimeout(() => {
-        navigate({ to: role === "guru" ? "/dashboard/guru" : "/dashboard/siswa" });
-      }, 1400);
+        navigate({ to: resolved === "guru" ? "/dashboard/guru" : "/dashboard/siswa" });
+      }, 1200);
       return () => clearTimeout(timer);
     }
-  }, [role, loading, session, navigate]);
+    // Still waiting for role — show a hint after a while.
+    const hint = setTimeout(() => setWaitedTooLong(true), 4000);
+    return () => clearTimeout(hint);
+  }, [role, loading, session, user, preferredRole, navigate]);
 
   return (
     <div className="grid min-h-screen place-items-center bg-gradient-sunset px-6">
@@ -45,6 +60,15 @@ function LoadingPortal() {
         >
           {t("loadingPortal")}
         </motion.h2>
+        {preferredRole && (
+          <p className="mt-2 text-sm text-muted-foreground">
+            {lang === "id" ? "Membuka gerbang " : "Opening the "}
+            <span className="font-semibold text-foreground">
+              {preferredRole === "guru" ? (lang === "id" ? "Guru" : "Teacher") : (lang === "id" ? "Siswi" : "Student")}
+            </span>
+            {lang === "id" ? "…" : " gate…"}
+          </p>
+        )}
         <div className="mt-6 flex items-center justify-center gap-1.5">
           {[0, 1, 2].map((i) => (
             <motion.span
@@ -55,6 +79,13 @@ function LoadingPortal() {
             />
           ))}
         </div>
+        {waitedTooLong && (
+          <p className="mt-6 max-w-sm text-xs text-muted-foreground">
+            {lang === "id"
+              ? "Memuat lebih lama dari biasanya. Pastikan akunmu sudah memiliki peran."
+              : "Taking longer than usual. Make sure your account has a role assigned."}
+          </p>
+        )}
       </div>
     </div>
   );
