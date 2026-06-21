@@ -3,9 +3,9 @@ import { createContext, useContext } from "react";
 export type Lang = "id" | "en";
 
 export const translations = {
-  appName: { id: "EduQuest Madrasah", en: "EduQuest Madrasah" },
+  appName: { id: "EduQuest Academy", en: "EduQuest Academy" },
   tagline: {
-    id: "Petualangan menuntut ilmu untuk ustadz/ah & siswi",
+    id: "Petualangan menuntut ilmu untuk guru & siswi",
     en: "A learning quest for teachers & students",
   },
   heroTitle: {
@@ -17,10 +17,10 @@ export const translations = {
     en: "Complete daily learning quests, level up, collect reward coins, and conquer every subject with your halaqah.",
   },
   startQuest: { id: "Mulai Quest", en: "Start the Quest" },
-  enterGuild: { id: "Masuk Gerbang Madrasah", en: "Enter the Madrasah Gate" },
-  loginGuru: { id: "Masuk sebagai Ustadz/ah", en: "Sign in as Teacher" },
+  enterGuild: { id: "Masuk Gerbang Akademi", en: "Enter the Academy Gate" },
+  loginGuru: { id: "Masuk sebagai Guru", en: "Sign in as Teacher" },
   loginSiswa: { id: "Masuk sebagai Siswi", en: "Sign in as Student" },
-  signupGuru: { id: "Daftar sebagai Ustadz/ah", en: "Sign up as Teacher" },
+  signupGuru: { id: "Daftar sebagai Guru", en: "Sign up as Teacher" },
   signupSiswa: { id: "Daftar sebagai Siswi", en: "Sign up as Student" },
   features: { id: "Fitur Unggulan", en: "Featured Tools" },
   feat1Title: { id: "Misi Harian", en: "Daily Quests" },
@@ -28,7 +28,7 @@ export const translations = {
   feat2Title: { id: "Tantangan Kuis", en: "Quiz Challenges" },
   feat2Desc: { id: "Adu cepat & cermat bersama teman halaqah dalam kuis interaktif.", en: "Race friends in interactive quiz challenges." },
   feat3Title: { id: "Halaqah Kelas", en: "Class Halaqah" },
-  feat3Desc: { id: "Ustadz/ah memantau progres, mengelola misi, dan administrasi kelas.", en: "Teachers track progress, manage quests, and class admin." },
+  feat3Desc: { id: "Guru memantau progres, mengelola misi, dan administrasi kelas.", en: "Teachers track progress, manage quests, and class admin." },
   feat4Title: { id: "Level & Badge Ilmu", en: "Level & Knowledge Badges" },
   feat4Desc: { id: "Naik level, raih badge, koleksi avatar muslimah pilihan.", en: "Level up, earn badges, collect curated muslimah avatars." },
   login: { id: "Masuk", en: "Sign in" },
@@ -51,7 +51,7 @@ export const translations = {
   seedDemo: { id: "Buat 2 akun demo (guru & siswi)", en: "Create 2 demo accounts (teacher & student)" },
   seedDone: { id: "Akun demo siap! Gunakan kredensial di bawah.", en: "Demo accounts ready! Use the credentials below." },
   demoCreds: { id: "Akun Demo", en: "Demo Accounts" },
-  loadingPortal: { id: "Membuka Gerbang Madrasah EduQuest…", en: "Opening the EduQuest Madrasah Gate…" },
+  loadingPortal: { id: "Membuka Gerbang Akademi EduQuest…", en: "Opening the EduQuest Academy Gate…" },
   myQuests: { id: "Misi Saya", en: "My Quests" },
   classRoster: { id: "Daftar Siswi", en: "Class Roster" },
   assignments: { id: "Tugas", en: "Assignments" },

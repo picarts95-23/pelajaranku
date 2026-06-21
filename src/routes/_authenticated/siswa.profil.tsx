@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getIslamicAvatar } from "@/lib/islamic-avatar";
 
 export const Route = createFileRoute("/_authenticated/siswa/profil")({
-  head: () => ({ meta: [{ title: "Profil Santriwati · EduQuest Madrasah" }] }),
+  head: () => ({ meta: [{ title: "Profil Siswi · EduQuest Academy" }] }),
   component: SiswaProfil,
 });
 
@@ -62,7 +62,7 @@ function SiswaProfil() {
             <div className="absolute inset-0 -z-10 rounded-full bg-white/30 blur-2xl" />
             <img
               src={avatar}
-              alt={lang === "id" ? "Avatar santriwati faceless berjilbab panjang" : "Faceless muslimah student avatar with long hijab"}
+              alt={lang === "id" ? "Avatar siswi faceless berjilbab panjang" : "Faceless muslimah student avatar with long hijab"}
               width={208}
               height={208}
               className="size-44 sm:size-52 rounded-3xl object-contain bg-white/20 ring-4 ring-white/40 drop-shadow-[0_8px_24px_rgba(0,0,0,0.25)]"
@@ -70,9 +70,9 @@ function SiswaProfil() {
           </motion.div>
           <div>
             <div className="text-sm font-display font-semibold uppercase tracking-wider opacity-80">
-              {lang === "id" ? "Profil Santriwati" : "Student Profile"}
+              {lang === "id" ? "Profil Siswi" : "Student Profile"}
             </div>
-            <h1 className="mt-1 font-display text-3xl font-bold sm:text-4xl">{profile?.full_name ?? "Santriwati"} ✨</h1>
+            <h1 className="mt-1 font-display text-3xl font-bold sm:text-4xl">{profile?.full_name ?? "Siswi"} ✨</h1>
             <div className="mt-3 flex flex-wrap gap-2 text-sm">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 backdrop-blur">
                 <GraduationCap className="size-4" /> {lang === "id" ? "Kelas" : "Class"} {profile?.class_name ?? "—"}

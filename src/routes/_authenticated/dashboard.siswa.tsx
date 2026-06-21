@@ -65,7 +65,7 @@ function SiswaDashboard() {
         <div className="relative grid gap-6 sm:grid-cols-[1fr_auto] sm:items-center">
           <div>
             <div className="text-sm font-display font-semibold uppercase tracking-wider opacity-80">{t("welcome")}</div>
-            <h1 className="mt-1 font-display text-3xl font-bold sm:text-4xl">{profile?.full_name ?? "Santriwati"} ✨</h1>
+            <h1 className="mt-1 font-display text-3xl font-bold sm:text-4xl">{profile?.full_name ?? "Siswi"} ✨</h1>
             <p className="mt-2 max-w-xl opacity-90">
               {lang === "id"
                 ? `Kelas ${profile?.class_name ?? "—"} · Lanjutkan perjalanan belajarmu hari ini!`
@@ -95,7 +95,7 @@ function SiswaDashboard() {
               <div className="absolute inset-0 -z-10 rounded-full bg-white/30 blur-2xl" />
               <img
                 src={getIslamicAvatar(user?.id ?? profile?.full_name, "siswa")}
-                alt={lang === "id" ? "Karakter santriwati faceless berjilbab panjang" : "Faceless muslim girl student character with long hijab"}
+                alt={lang === "id" ? "Karakter siswi faceless berjilbab panjang" : "Faceless muslim girl student character with long hijab"}
                 width={192}
                 height={192}
                 className="size-40 lg:size-48 object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.25)]"

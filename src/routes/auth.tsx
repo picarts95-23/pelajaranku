@@ -23,8 +23,8 @@ export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Masuk · EduQuest Madrasah" },
-      { name: "description", content: "Masuk atau daftar sebagai ustadz/ah atau santriwati untuk memulai perjalanan menuntut ilmu." },
+      { title: "Masuk · EduQuest Academy" },
+      { name: "description", content: "Masuk atau daftar sebagai guru atau siswi untuk memulai perjalanan menuntut ilmu." },
     ],
   }),
   component: AuthPage,
@@ -74,7 +74,7 @@ function AuthPage() {
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        toast.success(lang === "id" ? "Selamat datang kembali, santriwati!" : "Welcome back!");
+        toast.success(lang === "id" ? "Selamat datang kembali, siswi!" : "Welcome back!");
       }
     } catch (err) {
       toast.error((err as Error).message);
@@ -142,8 +142,8 @@ function AuthPage() {
           </h1>
           <p className="mt-4 max-w-md text-muted-foreground">
             {lang === "id"
-              ? "Pilih peranmu, masuk ke Gerbang Madrasah, dan mulai babak baru petualangan menuntut ilmumu."
-              : "Choose your role, step through the Madrasah Gate, and start a new chapter of your learning quest."}
+              ? "Pilih peranmu, masuk ke Gerbang Akademi, dan mulai babak baru petualangan menuntut ilmumu."
+              : "Choose your role, step through the Academy Gate, and start a new chapter of your learning quest."}
           </p>
 
           <div className="mt-8 rounded-2xl border-2 border-dashed border-accent/40 bg-card p-5 shadow-card-rpg">
@@ -211,7 +211,7 @@ function AuthPage() {
                       : "border-border bg-card hover:border-foreground/30"
                   }`}
                 >
-                  <div className="text-xs uppercase tracking-wider text-muted-foreground">{r === "guru" ? "☪︎ Ustadz/ah" : "✦ Santri"}</div>
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground">{r === "guru" ? "☪︎ Guru" : "✦ Siswi"}</div>
                   <div className="text-base font-bold">{r === "guru" ? t("guru") : t("siswa")}</div>
                 </button>
               ))}

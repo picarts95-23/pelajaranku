@@ -8,7 +8,7 @@ import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/siswa/leaderboard")({
-  head: () => ({ meta: [{ title: "Papan Peringkat · EduQuest Madrasah" }] }),
+  head: () => ({ meta: [{ title: "Papan Peringkat · EduQuest Academy" }] }),
   component: SiswaLeaderboardPage,
 });
 
@@ -35,7 +35,7 @@ function SiswaLeaderboardPage() {
 
   return (
     <DashboardShell accent="siswa">
-      <PageHeader title={t("leaderboard")} subtitle={lang === "id" ? "Para santriwati dengan XP tertinggi" : "The highest-XP students"} />
+      <PageHeader title={t("leaderboard")} subtitle={lang === "id" ? "Para siswi dengan XP tertinggi" : "The highest-XP students"} />
       {top.length === 0 ? <EmptyState message={lang === "id" ? "Bergabunglah ke kelas untuk melihat peringkat." : "Join a class to see the leaderboard."} /> : (
         <div className="overflow-hidden rounded-2xl border-2 border-border bg-card shadow-card-rpg">
           <table className="w-full text-sm">
