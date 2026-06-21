@@ -40,6 +40,7 @@ function GuruKelasPage() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ name: "", subject: "", academic_year: "", description: "" });
   const [manageClass, setManageClass] = useState<ClassRow | null>(null);
+  const [historyClass, setHistoryClass] = useState<ClassRow | null>(null);
 
   useEffect(() => {
     if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" });
