@@ -77,8 +77,8 @@ export function DashboardShell({
           <div className="flex items-center gap-2 sm:gap-3">
             <LangToggle />
             <div className="hidden items-center gap-3 rounded-2xl border-2 border-border bg-card px-3 py-1.5 shadow-soft md:flex">
-              <div className={cn("grid size-9 place-items-center rounded-xl font-display text-sm font-bold text-white", accent === "guru" ? "bg-guru" : "bg-siswa")}>
-                {initials}
+              <div className={cn("grid size-10 place-items-center overflow-hidden rounded-xl ring-2", accent === "guru" ? "ring-guru bg-guru/10" : "ring-siswa bg-siswa/10")}>
+                <img src={avatarSrc} alt={profile?.full_name ?? "Avatar"} width={40} height={40} className="size-full object-cover" loading="lazy" />
               </div>
               <div className="leading-tight">
                 <div className="text-xs text-muted-foreground">{role === "guru" ? t("guru") : t("siswa")}</div>
