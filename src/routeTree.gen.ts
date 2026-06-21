@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VerifyRoleRouteImport } from './routes/verify-role'
 import { Route as LoadingRouteImport } from './routes/loading'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
@@ -30,6 +31,11 @@ import { Route as AuthenticatedGuruBankSoalRouteImport } from './routes/_authent
 import { Route as AuthenticatedDashboardSiswaRouteImport } from './routes/_authenticated/dashboard.siswa'
 import { Route as AuthenticatedDashboardGuruRouteImport } from './routes/_authenticated/dashboard.guru'
 
+const VerifyRoleRoute = VerifyRoleRouteImport.update({
+  id: '/verify-role',
+  path: '/verify-role',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoadingRoute = LoadingRouteImport.update({
   id: '/loading',
   path: '/loading',
@@ -141,6 +147,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/loading': typeof LoadingRoute
+  '/verify-role': typeof VerifyRoleRoute
   '/dashboard/guru': typeof AuthenticatedDashboardGuruRoute
   '/dashboard/siswa': typeof AuthenticatedDashboardSiswaRoute
   '/guru/bank-soal': typeof AuthenticatedGuruBankSoalRoute
@@ -162,6 +169,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/loading': typeof LoadingRoute
+  '/verify-role': typeof VerifyRoleRoute
   '/dashboard/guru': typeof AuthenticatedDashboardGuruRoute
   '/dashboard/siswa': typeof AuthenticatedDashboardSiswaRoute
   '/guru/bank-soal': typeof AuthenticatedGuruBankSoalRoute
@@ -185,6 +193,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/loading': typeof LoadingRoute
+  '/verify-role': typeof VerifyRoleRoute
   '/_authenticated/dashboard/guru': typeof AuthenticatedDashboardGuruRoute
   '/_authenticated/dashboard/siswa': typeof AuthenticatedDashboardSiswaRoute
   '/_authenticated/guru/bank-soal': typeof AuthenticatedGuruBankSoalRoute
@@ -208,6 +217,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/loading'
+    | '/verify-role'
     | '/dashboard/guru'
     | '/dashboard/siswa'
     | '/guru/bank-soal'
@@ -229,6 +239,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/loading'
+    | '/verify-role'
     | '/dashboard/guru'
     | '/dashboard/siswa'
     | '/guru/bank-soal'
@@ -251,6 +262,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/loading'
+    | '/verify-role'
     | '/_authenticated/dashboard/guru'
     | '/_authenticated/dashboard/siswa'
     | '/_authenticated/guru/bank-soal'
@@ -274,10 +286,18 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   LoadingRoute: typeof LoadingRoute
+  VerifyRoleRoute: typeof VerifyRoleRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/verify-role': {
+      id: '/verify-role'
+      path: '/verify-role'
+      fullPath: '/verify-role'
+      preLoaderRoute: typeof VerifyRoleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/loading': {
       id: '/loading'
       path: '/loading'
@@ -467,6 +487,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   LoadingRoute: LoadingRoute,
+  VerifyRoleRoute: VerifyRoleRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
