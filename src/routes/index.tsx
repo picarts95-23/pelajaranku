@@ -97,7 +97,7 @@ function Landing() {
           <div className="overflow-hidden rounded-[2rem] border-4 border-white shadow-magic ring-4 ring-accent/30">
             <img
               src={heroImg}
-              alt="Ustadz dan ustadzah bersama murid-murid Muslim faceless di akademi sihir bernuansa Islami"
+              alt="Santriwati Muslimah faceless di taman bunga islami yang indah"
               width={1536}
               height={1024}
               className="block w-full"
