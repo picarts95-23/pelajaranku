@@ -81,9 +81,9 @@ function Landing() {
           </div>
 
           <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2"><span className="size-2 rounded-full bg-xp animate-sparkle" /> Sistem XP & Level</div>
-            <div className="flex items-center gap-2"><span className="size-2 rounded-full bg-coin animate-sparkle" /> Koin & Reward</div>
-            <div className="flex items-center gap-2"><span className="size-2 rounded-full bg-accent animate-sparkle" /> Quest Harian</div>
+            <div className="flex items-center gap-2"><span className="size-2 rounded-full bg-xp animate-sparkle" /> Sistem XP & Tingkat Ilmu</div>
+            <div className="flex items-center gap-2"><span className="size-2 rounded-full bg-coin animate-sparkle" /> Koin & Hadiah</div>
+            <div className="flex items-center gap-2"><span className="size-2 rounded-full bg-accent animate-sparkle" /> Misi Harian</div>
           </div>
         </motion.div>
 
