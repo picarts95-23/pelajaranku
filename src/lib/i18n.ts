@@ -161,7 +161,7 @@ export const translations = {
   progress: { id: "Progres", en: "Progress" },
 
   // Student-facing labels
-  questAvailable: { id: "Quest tersedia", en: "Available quests" },
+  questAvailable: { id: "Misi tersedia", en: "Available missions" },
   rewardSummary: { id: "Hadiah", en: "Reward" },
   due: { id: "Tenggat", en: "Due" },
   myClasses: { id: "Kelas Saya", en: "My Classes" },
