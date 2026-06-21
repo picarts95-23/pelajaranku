@@ -152,8 +152,8 @@ function Landing() {
             roleColor="bg-siswa"
             title={t("siswa")}
             desc={
-              { id: "Tuntaskan quest, naik level, kumpulkan koin, dan jadi murid terkuat di kelasmu.",
-                en: "Complete quests, level up, earn coins, and become the strongest student in class." }
+              { id: "Tunaikan misi belajar, naik tingkat ilmu, kumpulkan kebaikan, dan jadi teladan di kelasmu.",
+                en: "Complete learning missions, level up knowledge, gather rewards, and become a role model in class." }
             }
             cta={t("loginSiswa")}
             to="/auth"
