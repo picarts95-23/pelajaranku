@@ -195,6 +195,7 @@ function Landing() {
             </motion.div>
           ))}
         </div>
+        </div>
       </section>
 
       <footer className="border-t-2 border-border bg-card/50 py-8">
