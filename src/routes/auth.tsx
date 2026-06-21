@@ -211,7 +211,7 @@ function AuthPage() {
                       : "border-border bg-card hover:border-foreground/30"
                   }`}
                 >
-                  <div className="text-xs uppercase tracking-wider text-muted-foreground">{r === "guru" ? "🧙‍♂️" : "🧝"} </div>
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground">{r === "guru" ? "☪︎ Ustadz/ah" : "✦ Santri"}</div>
                   <div className="text-base font-bold">{r === "guru" ? t("guru") : t("siswa")}</div>
                 </button>
               ))}
