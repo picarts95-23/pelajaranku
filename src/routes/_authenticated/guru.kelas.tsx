@@ -145,6 +145,9 @@ function GuruKelasPage() {
                   <Button size="sm" variant="outline" onClick={() => setManageClass(c)}>
                     <Users className="size-4" /> {lang === "id" ? "Anggota" : "Members"}
                   </Button>
+                  <Button size="sm" variant="ghost" title={lang === "id" ? "Riwayat" : "History"} onClick={() => setHistoryClass(c)}>
+                    <History className="size-4" />
+                  </Button>
                   <Button size="sm" variant="ghost" onClick={() => { if (confirm(`${t("delete")}?`)) deleteMut.mutate(c.id); }}>
                     <Trash2 className="size-4 text-destructive" />
                   </Button>
@@ -158,6 +161,10 @@ function GuruKelasPage() {
       <ManageMembersDialog
         klass={manageClass}
         onClose={() => setManageClass(null)}
+      />
+      <ActivityHistoryDialog
+        klass={historyClass}
+        onClose={() => setHistoryClass(null)}
       />
     </DashboardShell>
   );
