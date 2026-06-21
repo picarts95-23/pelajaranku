@@ -202,10 +202,10 @@ function Landing() {
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 text-sm text-muted-foreground sm:flex-row">
           <div className="flex items-center gap-2">
             <Wand2 className="size-4 text-primary" />
-            <span className="font-display font-semibold">EduQuest RPG</span>
+            <span className="font-display font-semibold">EduQuest Madrasah</span>
             <span>© {new Date().getFullYear()}</span>
           </div>
-          <div>Made with ✨ for learners & teachers</div>
+          <div>Dibuat dengan ✨ untuk para penuntut ilmu & pengajar</div>
         </div>
       </footer>
     </div>
