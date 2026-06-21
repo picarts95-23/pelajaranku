@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BookOpen, Copy, Plus, Trash2, Users, Search, UserPlus, X, Loader2 } from "lucide-react";
+import { BookOpen, Copy, Plus, Trash2, Users, Search, UserPlus, X, Loader2, History, Sparkles, UserMinus, LogIn, Send } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
