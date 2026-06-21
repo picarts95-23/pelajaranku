@@ -269,13 +269,23 @@ function ManageMembersDialog({ klass, onClose }: { klass: ClassRow | null; onClo
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const copyJoinInfo = () => {
+  const { user } = useAuth();
+  const copyJoinInfo = async () => {
     if (!klass) return;
     const text = lang === "id"
       ? `Gabung kelas "${klass.name}" di EduQuest Academy dengan kode: ${klass.code}`
       : `Join class "${klass.name}" on EduQuest Academy with code: ${klass.code}`;
     navigator.clipboard.writeText(text);
     toast.success(lang === "id" ? "Undangan disalin" : "Invite copied");
+    if (user) {
+      await supabase.from("class_activities").insert({
+        class_id: klass.id,
+        actor_id: user.id,
+        action: "invite_sent",
+        metadata: { channel: "clipboard" },
+      });
+      qc.invalidateQueries({ queryKey: ["class-activities", klass.id] });
+    }
   };
 
   return (
