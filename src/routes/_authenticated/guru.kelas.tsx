@@ -178,12 +178,28 @@ function ManageMembersDialog({ klass, onClose }: { klass: ClassRow | null; onClo
     queryKey: ["enrollments", klass?.id],
     enabled: !!klass,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: rows, error } = await supabase
         .from("class_enrollments")
-        .select("id, student_id, joined_at, profiles:profiles!class_enrollments_student_id_fkey(id, full_name, class_name, school_id_number)")
+        .select("id, student_id, joined_at")
         .eq("class_id", klass!.id);
       if (error) throw error;
-      return (data ?? []) as Array<{ id: string; student_id: string; profiles: StudentProfile | null }>;
+      const enrollments = rows ?? [];
+      const ids = enrollments.map((r) => r.student_id);
+      let profiles: StudentProfile[] = [];
+      if (ids.length > 0) {
+        const { data: profs, error: pErr } = await supabase
+          .from("profiles")
+          .select("id, full_name, class_name, school_id_number")
+          .in("id", ids);
+        if (pErr) throw pErr;
+        profiles = (profs ?? []) as StudentProfile[];
+      }
+      const map = new Map(profiles.map((p) => [p.id, p]));
+      return enrollments.map((e) => ({
+        id: e.id,
+        student_id: e.student_id,
+        profiles: map.get(e.student_id) ?? null,
+      }));
     },
   });
 
