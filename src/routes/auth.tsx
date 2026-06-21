@@ -75,6 +75,7 @@ function AuthPage() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success(lang === "id" ? "Selamat datang kembali, siswi!" : "Welcome back!");
+        navigate({ to: "/loading", search: { role } });
       }
     } catch (err) {
       toast.error((err as Error).message);
