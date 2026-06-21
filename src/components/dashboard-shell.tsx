@@ -1,7 +1,7 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   LogOut, Wand2, LayoutDashboard, BookOpen, Users, ScrollText, CalendarCheck,
-  NotebookPen, CalendarDays, Database, Trophy, Sword, GraduationCap, Award, Menu, X,
+  NotebookPen, CalendarDays, Database, Trophy, Sword, GraduationCap, Award, Menu, X, UserCircle2,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
