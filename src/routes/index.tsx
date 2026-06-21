@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { Sparkles, Swords, Trophy, BookOpen, ScrollText, Wand2 } from "lucide-react";
+import { Sparkles, Swords, Trophy, BookOpen, ScrollText, Compass } from "lucide-react";
 import heroImg from "@/assets/hero-santriwati-garden.jpg";
 import bgCourtyard from "@/assets/bg-islamic-courtyard.jpg";
 import bgMeadow from "@/assets/bg-meadow-santriwati.jpg";
@@ -36,7 +36,7 @@ function Landing() {
       <header className="relative z-20 mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
         <Link to="/" className="flex items-center gap-2">
           <div className="grid size-10 place-items-center rounded-2xl bg-gradient-magic shadow-magic">
-            <Wand2 className="size-5 text-primary-foreground" />
+            <Compass className="size-5 text-primary-foreground" />
           </div>
           <span className="font-display text-xl font-bold tracking-tight">EduQuest <span className="text-gradient-magic">Madrasah</span></span>
         </Link>
@@ -80,8 +80,8 @@ function Landing() {
             </Link>
           </div>
 
-          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2"><span className="size-2 rounded-full bg-xp animate-sparkle" /> Sistem XP & Tingkat Ilmu</div>
+            <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2"><span className="size-2 rounded-full bg-xp animate-sparkle" /> Sistem XP & Level</div>
             <div className="flex items-center gap-2"><span className="size-2 rounded-full bg-coin animate-sparkle" /> Koin & Hadiah</div>
             <div className="flex items-center gap-2"><span className="size-2 rounded-full bg-accent animate-sparkle" /> Misi Harian</div>
           </div>
@@ -174,7 +174,7 @@ function Landing() {
         <div className="mb-12 text-center">
           <span className="font-display text-sm font-semibold uppercase tracking-[0.2em] text-accent">{t("features")}</span>
           <h2 className="mt-3 font-display text-4xl font-bold md:text-5xl">
-            <span className="text-gradient-magic">Hikmah</span> di Tiap Pelajaran
+            <span className="text-gradient-magic">Petualangan Ilmu</span> di Tiap Fitur
           </h2>
         </div>
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
@@ -201,7 +201,7 @@ function Landing() {
       <footer className="border-t-2 border-border bg-card/50 py-8">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 text-sm text-muted-foreground sm:flex-row">
           <div className="flex items-center gap-2">
-            <Wand2 className="size-4 text-primary" />
+            <Compass className="size-4 text-primary" />
             <span className="font-display font-semibold">EduQuest Madrasah</span>
             <span>© {new Date().getFullYear()}</span>
           </div>

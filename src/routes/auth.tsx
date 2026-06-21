@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import { motion } from "framer-motion";
-import { ArrowLeft, Loader2, Sparkles, Wand2 } from "lucide-react";
+import { ArrowLeft, Loader2, Sparkles, Compass } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -133,7 +133,7 @@ function AuthPage() {
         >
           <div className="flex items-center gap-3">
             <div className="grid size-12 place-items-center rounded-2xl bg-gradient-magic shadow-magic">
-              <Wand2 className="size-6 text-primary-foreground" />
+              <Compass className="size-6 text-primary-foreground" />
             </div>
             <span className="font-display text-2xl font-bold">EduQuest <span className="text-gradient-magic">Madrasah</span></span>
           </div>
@@ -142,8 +142,8 @@ function AuthPage() {
           </h1>
           <p className="mt-4 max-w-md text-muted-foreground">
             {lang === "id"
-              ? "Pilih peranmu, masuk ke gerbang madrasah digital, dan mulai babak baru perjalanan menuntut ilmumu."
-              : "Choose your role, step through the madrasah gate, and start a new chapter of your learning journey."}
+              ? "Pilih peranmu, masuk ke Gerbang Madrasah, dan mulai babak baru petualangan menuntut ilmumu."
+              : "Choose your role, step through the Madrasah Gate, and start a new chapter of your learning quest."}
           </p>
 
           <div className="mt-8 rounded-2xl border-2 border-dashed border-accent/40 bg-card p-5 shadow-card-rpg">

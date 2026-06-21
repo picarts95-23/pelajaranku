@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { Wand2 } from "lucide-react";
+import { Compass } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 
@@ -37,7 +37,7 @@ function LoadingPortal() {
           transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }}
           className="mx-auto grid size-24 place-items-center rounded-full border-4 border-white/40 bg-gradient-magic shadow-glow"
         >
-          <Wand2 className="size-10 text-primary-foreground" />
+          <Compass className="size-10 text-primary-foreground" />
         </motion.div>
         <motion.h2
           initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
