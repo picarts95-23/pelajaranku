@@ -53,8 +53,7 @@ export function DashboardShell({
     navigate({ to: "/" });
   };
 
-  const initials = (profile?.full_name ?? "?")
-    .split(" ").map((s) => s[0]).slice(0, 2).join("").toUpperCase();
+  const avatarSrc = getIslamicAvatar(profile?.id ?? profile?.full_name ?? "anon", role as "guru" | "siswa" | null);
 
   return (
     <div className="min-h-screen">
