@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { Sparkles, Swords, Trophy, BookOpen, ScrollText, Wand2 } from "lucide-react";
-import heroImg from "@/assets/hero-rpg.jpg";
+import heroImg from "@/assets/hero-islamic.jpg";
 import { Button } from "@/components/ui/button";
 import { LangToggle } from "@/components/lang-toggle";
 import { useLang } from "@/lib/i18n";
