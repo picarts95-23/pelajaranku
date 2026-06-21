@@ -70,7 +70,7 @@ export const translations = {
   navEvents: { id: "Kegiatan", en: "Events" },
   navQuestionBank: { id: "Bank Soal", en: "Question Bank" },
   navGamification: { id: "Gamifikasi", en: "Gamification" },
-  navMyQuests: { id: "Quest Saya", en: "My Quests" },
+  navMyQuests: { id: "Misi Saya", en: "My Missions" },
   navGrades: { id: "Nilai Saya", en: "My Grades" },
   navBadges: { id: "Badge", en: "Badges" },
   navProfile: { id: "Profil", en: "Profile" },
