@@ -35,7 +35,7 @@ function LoadingPortal() {
     const resolved: AppRole | null = role ?? preferredRole ?? metaRole;
     if (resolved) {
       const timer = setTimeout(() => {
-        navigate({ to: resolved === "guru" ? "/dashboard/guru" : "/dashboard/siswa" });
+        navigate({ to: "/verify-role", search: { role: preferredRole, auto: true } });
       }, 1200);
       return () => clearTimeout(timer);
     }
