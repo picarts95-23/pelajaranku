@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import { LangToggle } from "@/components/lang-toggle";
 import { useLang } from "@/lib/i18n";
 
-const heroImg = new URL("../assets/hero-siswi-garden.jpg", import.meta.url).href;
-const bgCourtyard = new URL("../assets/bg-islamic-courtyard.jpg", import.meta.url).href;
-const bgMeadow = new URL("../assets/bg-meadow-siswi.jpg", import.meta.url).href;
+const heroImg = "/assets/hero-siswi-garden.jpg";
+const bgCourtyard = "/assets/bg-islamic-courtyard.jpg";
+const bgMeadow = "/assets/bg-meadow-siswi.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
