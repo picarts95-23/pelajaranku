@@ -11,7 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoadingRouteImport } from './routes/loading'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedDashboardSiswaRouteImport } from './routes/_authenticated/dashboard.siswa'
+import { Route as AuthenticatedDashboardGuruRouteImport } from './routes/_authenticated/dashboard.guru'
 
 const LoadingRoute = LoadingRouteImport.update({
   id: '/loading',
@@ -23,38 +26,69 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedDashboardSiswaRoute =
+  AuthenticatedDashboardSiswaRouteImport.update({
+    id: '/dashboard/siswa',
+    path: '/dashboard/siswa',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardGuruRoute =
+  AuthenticatedDashboardGuruRouteImport.update({
+    id: '/dashboard/guru',
+    path: '/dashboard/guru',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/loading': typeof LoadingRoute
+  '/dashboard/guru': typeof AuthenticatedDashboardGuruRoute
+  '/dashboard/siswa': typeof AuthenticatedDashboardSiswaRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/loading': typeof LoadingRoute
+  '/dashboard/guru': typeof AuthenticatedDashboardGuruRoute
+  '/dashboard/siswa': typeof AuthenticatedDashboardSiswaRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/loading': typeof LoadingRoute
+  '/_authenticated/dashboard/guru': typeof AuthenticatedDashboardGuruRoute
+  '/_authenticated/dashboard/siswa': typeof AuthenticatedDashboardSiswaRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/loading'
+  fullPaths: '/' | '/auth' | '/loading' | '/dashboard/guru' | '/dashboard/siswa'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/loading'
-  id: '__root__' | '/' | '/auth' | '/loading'
+  to: '/' | '/auth' | '/loading' | '/dashboard/guru' | '/dashboard/siswa'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/loading'
+    | '/_authenticated/dashboard/guru'
+    | '/_authenticated/dashboard/siswa'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   LoadingRoute: typeof LoadingRoute
 }
@@ -75,6 +109,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -82,11 +123,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/dashboard/siswa': {
+      id: '/_authenticated/dashboard/siswa'
+      path: '/dashboard/siswa'
+      fullPath: '/dashboard/siswa'
+      preLoaderRoute: typeof AuthenticatedDashboardSiswaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/guru': {
+      id: '/_authenticated/dashboard/guru'
+      path: '/dashboard/guru'
+      fullPath: '/dashboard/guru'
+      preLoaderRoute: typeof AuthenticatedDashboardGuruRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedDashboardGuruRoute: typeof AuthenticatedDashboardGuruRoute
+  AuthenticatedDashboardSiswaRoute: typeof AuthenticatedDashboardSiswaRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedDashboardGuruRoute: AuthenticatedDashboardGuruRoute,
+  AuthenticatedDashboardSiswaRoute: AuthenticatedDashboardSiswaRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   LoadingRoute: LoadingRoute,
 }
