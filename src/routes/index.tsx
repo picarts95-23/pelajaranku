@@ -165,7 +165,12 @@ function Landing() {
       </section>
 
       {/* Features */}
-      <section className="mx-auto max-w-7xl px-6 py-16 md:py-24">
+      <section className="relative overflow-hidden py-16 md:py-24">
+        <div className="absolute inset-0 -z-10">
+          <img src={bgMeadow} alt="" className="h-full w-full object-cover opacity-15" loading="lazy" />
+          <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/50 to-background/80" />
+        </div>
+        <div className="mx-auto max-w-7xl px-6">
         <div className="mb-12 text-center">
           <span className="font-display text-sm font-semibold uppercase tracking-[0.2em] text-accent">{t("features")}</span>
           <h2 className="mt-3 font-display text-4xl font-bold md:text-5xl">
