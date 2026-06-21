@@ -118,7 +118,7 @@ function SiswaDashboard() {
             <h2 className="font-display text-xl font-bold flex items-center gap-2"><ScrollText className="size-5 text-accent" /> {t("myQuests")}</h2>
             <Link to="/siswa/tugas"><Button size="sm" variant="ghost">{lang === "id" ? "Lihat semua" : "View all"} →</Button></Link>
           </div>
-          {activeQuests.length === 0 ? <div className="text-center py-8 text-sm text-muted-foreground">{lang === "id" ? "Tidak ada quest aktif" : "No active quests"}</div> : (
+          {activeQuests.length === 0 ? <div className="text-center py-8 text-sm text-muted-foreground">{lang === "id" ? "Tidak ada misi aktif" : "No active missions"}</div> : (
             <ul className="space-y-3">
               {activeQuests.slice(0, 5).map((q: any, i: number) => (
                 <motion.li key={q.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.08 }}
