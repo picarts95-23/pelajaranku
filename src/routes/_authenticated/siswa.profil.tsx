@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getIslamicAvatar } from "@/lib/islamic-avatar";
 
 export const Route = createFileRoute("/_authenticated/siswa/profil")({
-  head: () => ({ meta: [{ title: "Profil Santriwati · EduQuest RPG" }] }),
+  head: () => ({ meta: [{ title: "Profil Santriwati · EduQuest Madrasah" }] }),
   component: SiswaProfil,
 });
 
@@ -141,7 +141,7 @@ function SiswaProfil() {
           </h2>
           {(stats?.badges ?? []).length === 0 ? (
             <div className="text-center py-8 text-sm text-muted-foreground">
-              {lang === "id" ? "Belum ada badge. Selesaikan quest untuk meraihnya!" : "No badges yet. Complete quests to earn them!"}
+              {lang === "id" ? "Belum ada badge. Tunaikan misi untuk meraihnya!" : "No badges yet. Complete missions to earn them!"}
             </div>
           ) : (
             <ul className="space-y-2">

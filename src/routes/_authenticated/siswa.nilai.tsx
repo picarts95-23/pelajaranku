@@ -10,7 +10,7 @@ import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/siswa/nilai")({
-  head: () => ({ meta: [{ title: "Nilai Saya · EduQuest" }] }),
+  head: () => ({ meta: [{ title: "Nilai Saya · EduQuest Madrasah" }] }),
   component: SiswaNilaiPage,
 });
 
@@ -59,7 +59,7 @@ function SiswaNilaiPage() {
         </div>
       )}
 
-      {graded.length === 0 ? <EmptyState message={lang === "id" ? "Belum ada nilai. Kerjakan quest dulu!" : "No grades yet. Complete quests first!"} /> : (
+      {graded.length === 0 ? <EmptyState message={lang === "id" ? "Belum ada nilai. Tunaikan misi dulu!" : "No grades yet. Complete missions first!"} /> : (
         <div className="space-y-3">
           {graded.map((s: any) => {
             const pct = Math.round((s.score / s.assignments.max_score) * 100);

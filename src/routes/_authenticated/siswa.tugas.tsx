@@ -15,7 +15,7 @@ import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/siswa/tugas")({
-  head: () => ({ meta: [{ title: "Quest Saya · EduQuest" }] }),
+  head: () => ({ meta: [{ title: "Misi Saya · EduQuest Madrasah" }] }),
   component: SiswaTugasPage,
 });
 
@@ -36,8 +36,8 @@ function SiswaTugasPage() {
 
   return (
     <DashboardShell accent="siswa">
-      <PageHeader title={t("navMyQuests")} subtitle={lang === "id" ? "Selesaikan quest untuk dapat XP & koin!" : "Complete quests to earn XP & coins!"} />
-      {assignments.length === 0 ? <EmptyState message={lang === "id" ? "Belum ada quest. Gabung ke kelas dulu!" : "No quests yet. Join a class first!"} /> : (
+      <PageHeader title={t("navMyQuests")} subtitle={lang === "id" ? "Tunaikan misi untuk meraih XP & koin!" : "Complete missions to earn XP & coins!"} />
+      {assignments.length === 0 ? <EmptyState message={lang === "id" ? "Belum ada misi. Gabung ke kelas dulu!" : "No missions yet. Join a class first!"} /> : (
         <div className="grid gap-4 lg:grid-cols-2">
           {assignments.map((a: any) => <QuestCard key={a.id} a={a} />)}
         </div>
@@ -62,7 +62,7 @@ function QuestCard({ a }: { a: any }) {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success(lang === "id" ? "Quest terkirim! 🗡️" : "Quest submitted! 🗡️");
+      toast.success(lang === "id" ? "Misi terkirim! ✨" : "Mission submitted! ✨");
       setOpen(false);
       qc.invalidateQueries({ queryKey: ["siswa-quests"] });
     },

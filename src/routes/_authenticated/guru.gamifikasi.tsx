@@ -8,7 +8,7 @@ import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/guru/gamifikasi")({
-  head: () => ({ meta: [{ title: "Gamifikasi · EduQuest" }] }),
+  head: () => ({ meta: [{ title: "Gamifikasi · EduQuest Madrasah" }] }),
   component: GuruGamifikasiPage,
 });
 

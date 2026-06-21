@@ -12,7 +12,7 @@ import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/siswa/kelas")({
-  head: () => ({ meta: [{ title: "Kelas Saya · EduQuest" }] }),
+  head: () => ({ meta: [{ title: "Kelas Saya · EduQuest Madrasah" }] }),
   component: SiswaKelasPage,
 });
 
@@ -60,7 +60,7 @@ function SiswaKelasPage() {
 
   return (
     <DashboardShell accent="siswa">
-      <PageHeader title={t("myClasses")} subtitle={lang === "id" ? "Kelas tempat kamu menjadi petualang" : "Classes where you adventure"}
+      <PageHeader title={t("myClasses")} subtitle={lang === "id" ? "Kelas tempat kamu menuntut ilmu" : "Classes where you study"}
         actions={
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild><Button variant="quest"><Plus className="size-4" /> {t("joinClass")}</Button></DialogTrigger>
