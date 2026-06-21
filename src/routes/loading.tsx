@@ -6,7 +6,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/loading")({
-  head: () => ({ meta: [{ title: "Loading… · EduQuest RPG" }] }),
+  head: () => ({ meta: [{ title: "Loading… · EduQuest Madrasah" }] }),
   component: LoadingPortal,
 });
 
