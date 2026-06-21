@@ -9,6 +9,7 @@ import { LangToggle } from "@/components/lang-toggle";
 import { useAuth } from "@/lib/auth-context";
 import { useLang, type Key } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import { getIslamicAvatar } from "@/lib/islamic-avatar";
 
 type NavItem = { to: string; key: Key; icon: React.ComponentType<{ className?: string }> };
 
