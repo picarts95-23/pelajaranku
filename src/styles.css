@@ -54,87 +54,87 @@
 }
 
 :root {
-  --radius: 1rem;
+  --radius: 1.1rem;
 
-  /* Anime Islamic palette — emerald, gold, cream, teal */
-  --background: oklch(0.985 0.018 95);         /* warm cream */
-  --foreground: oklch(0.24 0.05 165);          /* deep forest ink */
+  /* Feminine Islamic palette — blush, lavender, mint, cream, gold */
+  --background: oklch(0.985 0.012 25);          /* warm blush cream */
+  --foreground: oklch(0.28 0.06 320);           /* deep plum ink */
 
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.24 0.05 165);
+  --card-foreground: oklch(0.28 0.06 320);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.24 0.05 165);
+  --popover-foreground: oklch(0.28 0.06 320);
 
-  /* Primary = emerald (Islamic green) */
-  --primary: oklch(0.5 0.13 160);
-  --primary-foreground: oklch(0.985 0.018 95);
+  /* Primary = muslimah rose-plum */
+  --primary: oklch(0.55 0.16 350);
+  --primary-foreground: oklch(0.99 0.005 25);
 
-  /* Secondary = warm gold */
-  --secondary: oklch(0.82 0.14 85);
-  --secondary-foreground: oklch(0.22 0.05 165);
+  /* Secondary = soft lavender */
+  --secondary: oklch(0.82 0.08 305);
+  --secondary-foreground: oklch(0.25 0.06 320);
 
-  --muted: oklch(0.95 0.02 100);
-  --muted-foreground: oklch(0.48 0.05 165);
+  --muted: oklch(0.96 0.018 350);
+  --muted-foreground: oklch(0.5 0.06 320);
 
-  --accent: oklch(0.74 0.15 85);                /* soft gold accent */
-  --accent-foreground: oklch(0.22 0.05 165);
+  --accent: oklch(0.8 0.13 85);                 /* warm gold accent */
+  --accent-foreground: oklch(0.22 0.05 80);
 
-  --destructive: oklch(0.58 0.22 25);
+  --destructive: oklch(0.6 0.22 25);
   --destructive-foreground: oklch(0.99 0 0);
 
-  --border: oklch(0.88 0.035 150);
-  --input: oklch(0.93 0.025 95);
-  --ring: oklch(0.5 0.13 160);
+  --border: oklch(0.9 0.025 340);
+  --input: oklch(0.94 0.02 350);
+  --ring: oklch(0.55 0.16 350);
 
-  /* RPG flavored tokens — re-skinned Islamic */
-  --magic: oklch(0.55 0.13 195);                /* mystical teal */
+  /* RPG flavored tokens — muslimah skin */
+  --magic: oklch(0.62 0.15 320);                /* mystical lilac */
   --magic-foreground: oklch(0.99 0 0);
-  --quest: oklch(0.78 0.16 80);                 /* lantern gold */
+  --quest: oklch(0.78 0.15 80);                 /* lantern gold */
   --quest-foreground: oklch(0.2 0.05 80);
-  --xp: oklch(0.65 0.16 150);                   /* emerald level-up */
-  --coin: oklch(0.8 0.17 85);                   /* gold coin */
-  --guru: oklch(0.45 0.1 175);                  /* deep teal ustadz */
-  --siswa: oklch(0.6 0.14 155);                 /* fresh emerald siswa */
+  --xp: oklch(0.72 0.13 165);                   /* sage mint level-up */
+  --coin: oklch(0.82 0.16 85);                  /* gold coin */
+  --guru: oklch(0.5 0.13 320);                  /* deep plum ustadzah */
+  --siswa: oklch(0.72 0.12 350);                /* blush pink santriwati */
 
   /* Gradients & shadows */
-  --gradient-hero: linear-gradient(135deg, oklch(0.55 0.13 195) 0%, oklch(0.5 0.13 160) 50%, oklch(0.4 0.1 175) 100%);
-  --gradient-magic: linear-gradient(135deg, oklch(0.5 0.13 160), oklch(0.55 0.13 195));
-  --gradient-sunset: linear-gradient(180deg, oklch(0.96 0.04 95) 0%, oklch(0.85 0.13 75) 60%, oklch(0.55 0.13 195) 100%);
-  --gradient-quest: linear-gradient(135deg, oklch(0.86 0.13 85), oklch(0.74 0.17 75));
+  --gradient-hero: linear-gradient(135deg, oklch(0.82 0.13 25) 0%, oklch(0.72 0.14 350) 45%, oklch(0.55 0.16 320) 100%);
+  --gradient-magic: linear-gradient(135deg, oklch(0.55 0.16 350), oklch(0.62 0.15 320));
+  --gradient-sunset: linear-gradient(180deg, oklch(0.97 0.025 60) 0%, oklch(0.85 0.13 30) 55%, oklch(0.6 0.16 330) 100%);
+  --gradient-quest: linear-gradient(135deg, oklch(0.88 0.12 85), oklch(0.78 0.15 75));
 
-  --shadow-soft: 0 4px 16px -2px oklch(0.5 0.13 160 / 0.18);
-  --shadow-magic: 0 12px 40px -8px oklch(0.5 0.13 160 / 0.35);
-  --shadow-glow: 0 0 32px oklch(0.78 0.16 80 / 0.5);
-  --shadow-card: 0 2px 0 0 oklch(0.88 0.04 150), 0 8px 24px -8px oklch(0.5 0.13 160 / 0.2);
+  --shadow-soft: 0 4px 16px -2px oklch(0.55 0.16 350 / 0.18);
+  --shadow-magic: 0 12px 40px -8px oklch(0.55 0.16 350 / 0.35);
+  --shadow-glow: 0 0 32px oklch(0.78 0.15 80 / 0.5);
+  --shadow-card: 0 2px 0 0 oklch(0.9 0.03 340), 0 8px 24px -8px oklch(0.55 0.16 350 / 0.2);
 
-  --sidebar: oklch(0.985 0.018 95);
-  --sidebar-foreground: oklch(0.24 0.05 165);
-  --sidebar-primary: oklch(0.5 0.13 160);
-  --sidebar-primary-foreground: oklch(0.985 0.018 95);
-  --sidebar-accent: oklch(0.95 0.02 100);
-  --sidebar-accent-foreground: oklch(0.24 0.05 165);
-  --sidebar-border: oklch(0.88 0.035 150);
-  --sidebar-ring: oklch(0.5 0.13 160);
+  --sidebar: oklch(0.985 0.012 25);
+  --sidebar-foreground: oklch(0.28 0.06 320);
+  --sidebar-primary: oklch(0.55 0.16 350);
+  --sidebar-primary-foreground: oklch(0.99 0.005 25);
+  --sidebar-accent: oklch(0.96 0.018 350);
+  --sidebar-accent-foreground: oklch(0.28 0.06 320);
+  --sidebar-border: oklch(0.9 0.025 340);
+  --sidebar-ring: oklch(0.55 0.16 350);
 }
 
 .dark {
-  --background: oklch(0.2 0.04 175);
-  --foreground: oklch(0.96 0.02 95);
-  --card: oklch(0.25 0.05 175);
-  --card-foreground: oklch(0.96 0.02 95);
-  --popover: oklch(0.25 0.05 175);
-  --popover-foreground: oklch(0.96 0.02 95);
-  --primary: oklch(0.7 0.15 160);
-  --primary-foreground: oklch(0.18 0.04 175);
-  --secondary: oklch(0.78 0.15 85);
-  --secondary-foreground: oklch(0.18 0.04 175);
-  --muted: oklch(0.3 0.04 175);
-  --muted-foreground: oklch(0.78 0.04 95);
-  --accent: oklch(0.78 0.15 85);
-  --accent-foreground: oklch(0.18 0.04 175);
-  --border: oklch(0.35 0.05 175);
-  --input: oklch(0.3 0.04 175);
-  --ring: oklch(0.7 0.15 160);
+  --background: oklch(0.2 0.04 320);
+  --foreground: oklch(0.96 0.015 25);
+  --card: oklch(0.25 0.05 320);
+  --card-foreground: oklch(0.96 0.015 25);
+  --popover: oklch(0.25 0.05 320);
+  --popover-foreground: oklch(0.96 0.015 25);
+  --primary: oklch(0.72 0.15 350);
+  --primary-foreground: oklch(0.18 0.04 320);
+  --secondary: oklch(0.78 0.1 305);
+  --secondary-foreground: oklch(0.18 0.04 320);
+  --muted: oklch(0.3 0.04 320);
+  --muted-foreground: oklch(0.78 0.03 25);
+  --accent: oklch(0.8 0.14 85);
+  --accent-foreground: oklch(0.18 0.04 320);
+  --border: oklch(0.35 0.05 320);
+  --input: oklch(0.3 0.04 320);
+  --ring: oklch(0.72 0.15 350);
 }
 
 @layer base {
@@ -148,8 +148,8 @@
   h1, h2, h3, h4, h5, .font-display { font-family: var(--font-display); letter-spacing: -0.01em; }
   body {
     background-image:
-      radial-gradient(ellipse 80% 50% at 50% -10%, oklch(0.55 0.13 195 / 0.18), transparent 70%),
-      radial-gradient(ellipse 60% 40% at 90% 110%, oklch(0.5 0.13 160 / 0.14), transparent 70%);
+      radial-gradient(ellipse 80% 50% at 50% -10%, oklch(0.72 0.14 350 / 0.18), transparent 70%),
+      radial-gradient(ellipse 60% 40% at 90% 110%, oklch(0.62 0.15 320 / 0.14), transparent 70%);
   }
 }
 
