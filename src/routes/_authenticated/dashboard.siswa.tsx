@@ -95,7 +95,7 @@ function SiswaDashboard() {
               <div className="absolute inset-0 -z-10 rounded-full bg-white/30 blur-2xl" />
               <img
                 src={getIslamicAvatar(user?.id ?? profile?.full_name, "siswa")}
-                alt={lang === "id" ? "Karakter petualang Islami" : "Islamic adventurer character"}
+                alt={lang === "id" ? "Karakter santriwati faceless berjilbab panjang" : "Faceless muslim girl student character with long hijab"}
                 width={192}
                 height={192}
                 className="size-40 lg:size-48 object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.25)]"
