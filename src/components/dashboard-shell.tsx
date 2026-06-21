@@ -32,6 +32,7 @@ const SISWA_NAV: NavItem[] = [
   { to: "/siswa/nilai", key: "navGrades", icon: GraduationCap },
   { to: "/siswa/badge", key: "navBadges", icon: Award },
   { to: "/siswa/leaderboard", key: "leaderboard", icon: Trophy },
+  { to: "/siswa/profil", key: "navProfile", icon: UserCircle2 },
 ];
 
 export function DashboardShell({
