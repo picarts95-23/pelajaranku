@@ -16,7 +16,7 @@ import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/guru/jurnal")({
-  head: () => ({ meta: [{ title: "Jurnal · EduQuest Madrasah" }] }),
+  head: () => ({ meta: [{ title: "Jurnal · EduQuest Academy" }] }),
   component: GuruJurnalPage,
 });
 

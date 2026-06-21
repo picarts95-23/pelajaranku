@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { Sparkles, Swords, Trophy, BookOpen, ScrollText, Compass } from "lucide-react";
-import heroImg from "@/assets/hero-santriwati-garden.jpg";
+import heroImg from "@/assets/hero-siswi-garden.jpg";
 import bgCourtyard from "@/assets/bg-islamic-courtyard.jpg";
-import bgMeadow from "@/assets/bg-meadow-santriwati.jpg";
+import bgMeadow from "@/assets/bg-meadow-siswi.jpg";
 import { Button } from "@/components/ui/button";
 import { LangToggle } from "@/components/lang-toggle";
 import { useLang } from "@/lib/i18n";
@@ -11,9 +11,9 @@ import { useLang } from "@/lib/i18n";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "EduQuest Madrasah — Belajar Jadi Perjalanan Ilmu" },
-      { name: "description", content: "Platform pembelajaran interaktif bernuansa islami untuk santriwati. Misi harian, tantangan kuis, dan dashboard ustadz/ah & santriwati yang menyenangkan." },
-      { property: "og:title", content: "EduQuest Madrasah" },
+      { title: "EduQuest Academy — Belajar Jadi Perjalanan Ilmu" },
+      { name: "description", content: "Platform pembelajaran interaktif bernuansa islami untuk siswi. Misi harian, tantangan kuis, dan dashboard guru & siswi yang menyenangkan." },
+      { property: "og:title", content: "EduQuest Academy" },
       { property: "og:description", content: "Belajar terasa bermakna. Naik tingkat ilmu setiap hari." },
     ],
   }),
@@ -38,7 +38,7 @@ function Landing() {
           <div className="grid size-10 place-items-center rounded-2xl bg-gradient-magic shadow-magic">
             <Compass className="size-5 text-primary-foreground" />
           </div>
-          <span className="font-display text-xl font-bold tracking-tight">EduQuest <span className="text-gradient-magic">Madrasah</span></span>
+          <span className="font-display text-xl font-bold tracking-tight">EduQuest <span className="text-gradient-magic">Academy</span></span>
         </Link>
         <div className="flex items-center gap-3">
           <LangToggle />
@@ -97,7 +97,7 @@ function Landing() {
           <div className="overflow-hidden rounded-[2rem] border-4 border-white shadow-magic ring-4 ring-accent/30">
             <img
               src={heroImg}
-              alt="Santriwati Muslimah faceless di taman bunga islami yang indah"
+              alt="Siswi Muslimah faceless di taman bunga islami yang indah"
               width={1536}
               height={1024}
               className="block w-full"
@@ -202,7 +202,7 @@ function Landing() {
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 text-sm text-muted-foreground sm:flex-row">
           <div className="flex items-center gap-2">
             <Compass className="size-4 text-primary" />
-            <span className="font-display font-semibold">EduQuest Madrasah</span>
+            <span className="font-display font-semibold">EduQuest Academy</span>
             <span>© {new Date().getFullYear()}</span>
           </div>
           <div>Dibuat dengan ✨ untuk para penuntut ilmu & pengajar</div>
