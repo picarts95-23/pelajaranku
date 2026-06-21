@@ -38,7 +38,7 @@ function Landing() {
           <div className="grid size-10 place-items-center rounded-2xl bg-gradient-magic shadow-magic">
             <Compass className="size-5 text-primary-foreground" />
           </div>
-          <span className="font-display text-xl font-bold tracking-tight">EduQuest <span className="text-gradient-magic">Madrasah</span></span>
+          <span className="font-display text-xl font-bold tracking-tight">EduQuest <span className="text-gradient-magic">Academy</span></span>
         </Link>
         <div className="flex items-center gap-3">
           <LangToggle />
