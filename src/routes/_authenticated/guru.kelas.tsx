@@ -14,7 +14,7 @@ import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/guru/kelas")({
-  head: () => ({ meta: [{ title: "Kelas · EduQuest" }] }),
+  head: () => ({ meta: [{ title: "Kelas · EduQuest Madrasah" }] }),
   component: GuruKelasPage,
 });
 

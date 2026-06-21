@@ -130,7 +130,7 @@ export function DashboardShell({
       </div>
 
       <footer className="border-t-2 border-border py-6 text-center text-xs text-muted-foreground">
-        {lang === "id" ? "Tetap semangat, petualang!" : "Stay curious, adventurer!"} ✨
+        {lang === "id" ? "Tetap semangat menuntut ilmu, santriwati!" : "Stay curious, dear student!"} ✨
       </footer>
     </div>
   );

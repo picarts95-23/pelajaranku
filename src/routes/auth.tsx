@@ -23,8 +23,8 @@ export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Masuk · EduQuest RPG" },
-      { name: "description", content: "Masuk atau daftar sebagai guru atau siswa untuk memulai petualangan belajar." },
+      { title: "Masuk · EduQuest Madrasah" },
+      { name: "description", content: "Masuk atau daftar sebagai ustadz/ah atau santriwati untuk memulai perjalanan menuntut ilmu." },
     ],
   }),
   component: AuthPage,
@@ -74,7 +74,7 @@ function AuthPage() {
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        toast.success(lang === "id" ? "Selamat datang, petualang!" : "Welcome back, adventurer!");
+        toast.success(lang === "id" ? "Selamat datang kembali, santriwati!" : "Welcome back!");
       }
     } catch (err) {
       toast.error((err as Error).message);
@@ -135,15 +135,15 @@ function AuthPage() {
             <div className="grid size-12 place-items-center rounded-2xl bg-gradient-magic shadow-magic">
               <Wand2 className="size-6 text-primary-foreground" />
             </div>
-            <span className="font-display text-2xl font-bold">EduQuest <span className="text-gradient-magic">RPG</span></span>
+            <span className="font-display text-2xl font-bold">EduQuest <span className="text-gradient-magic">Madrasah</span></span>
           </div>
           <h1 className="mt-8 font-display text-5xl font-bold leading-tight">
             <span className="text-gradient-hero">{mode === "login" ? t("enterGuild") : t("startQuest")}</span>
           </h1>
           <p className="mt-4 max-w-md text-muted-foreground">
             {lang === "id"
-              ? "Pilih peranmu, masuk ke gerbang akademi sihir, dan mulai babak baru petualangan belajarmu."
-              : "Choose your role, step through the academy gates, and start a new chapter of your learning adventure."}
+              ? "Pilih peranmu, masuk ke gerbang madrasah digital, dan mulai babak baru perjalanan menuntut ilmumu."
+              : "Choose your role, step through the madrasah gate, and start a new chapter of your learning journey."}
           </p>
 
           <div className="mt-8 rounded-2xl border-2 border-dashed border-accent/40 bg-card p-5 shadow-card-rpg">

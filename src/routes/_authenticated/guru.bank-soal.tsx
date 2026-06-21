@@ -15,7 +15,7 @@ import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/guru/bank-soal")({
-  head: () => ({ meta: [{ title: "Bank Soal · EduQuest" }] }),
+  head: () => ({ meta: [{ title: "Bank Soal · EduQuest Madrasah" }] }),
   component: GuruBankSoalPage,
 });
 

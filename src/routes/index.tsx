@@ -11,10 +11,10 @@ import { useLang } from "@/lib/i18n";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "EduQuest RPG — Belajar Jadi Petualangan Epik" },
-      { name: "description", content: "Platform pembelajaran interaktif bertema JRPG anime. Quest harian, battle kuis, dan dashboard guru & siswa yang seru." },
-      { property: "og:title", content: "EduQuest RPG" },
-      { property: "og:description", content: "Belajar berasa main game. Naik level setiap hari." },
+      { title: "EduQuest Madrasah — Belajar Jadi Perjalanan Ilmu" },
+      { name: "description", content: "Platform pembelajaran interaktif bernuansa islami untuk santriwati. Misi harian, tantangan kuis, dan dashboard ustadz/ah & santriwati yang menyenangkan." },
+      { property: "og:title", content: "EduQuest Madrasah" },
+      { property: "og:description", content: "Belajar terasa bermakna. Naik tingkat ilmu setiap hari." },
     ],
   }),
   component: Landing,
@@ -38,7 +38,7 @@ function Landing() {
           <div className="grid size-10 place-items-center rounded-2xl bg-gradient-magic shadow-magic">
             <Wand2 className="size-5 text-primary-foreground" />
           </div>
-          <span className="font-display text-xl font-bold tracking-tight">EduQuest <span className="text-gradient-magic">RPG</span></span>
+          <span className="font-display text-xl font-bold tracking-tight">EduQuest <span className="text-gradient-magic">Madrasah</span></span>
         </Link>
         <div className="flex items-center gap-3">
           <LangToggle />
@@ -81,9 +81,9 @@ function Landing() {
           </div>
 
           <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2"><span className="size-2 rounded-full bg-xp animate-sparkle" /> Sistem XP & Level</div>
-            <div className="flex items-center gap-2"><span className="size-2 rounded-full bg-coin animate-sparkle" /> Koin & Reward</div>
-            <div className="flex items-center gap-2"><span className="size-2 rounded-full bg-accent animate-sparkle" /> Quest Harian</div>
+            <div className="flex items-center gap-2"><span className="size-2 rounded-full bg-xp animate-sparkle" /> Sistem XP & Tingkat Ilmu</div>
+            <div className="flex items-center gap-2"><span className="size-2 rounded-full bg-coin animate-sparkle" /> Koin & Hadiah</div>
+            <div className="flex items-center gap-2"><span className="size-2 rounded-full bg-accent animate-sparkle" /> Misi Harian</div>
           </div>
         </motion.div>
 
@@ -152,8 +152,8 @@ function Landing() {
             roleColor="bg-siswa"
             title={t("siswa")}
             desc={
-              { id: "Tuntaskan quest, naik level, kumpulkan koin, dan jadi murid terkuat di kelasmu.",
-                en: "Complete quests, level up, earn coins, and become the strongest student in class." }
+              { id: "Tunaikan misi belajar, naik tingkat ilmu, kumpulkan kebaikan, dan jadi teladan di kelasmu.",
+                en: "Complete learning missions, level up knowledge, gather rewards, and become a role model in class." }
             }
             cta={t("loginSiswa")}
             to="/auth"
@@ -174,7 +174,7 @@ function Landing() {
         <div className="mb-12 text-center">
           <span className="font-display text-sm font-semibold uppercase tracking-[0.2em] text-accent">{t("features")}</span>
           <h2 className="mt-3 font-display text-4xl font-bold md:text-5xl">
-            <span className="text-gradient-magic">Sihir</span> di Tiap Pelajaran
+            <span className="text-gradient-magic">Hikmah</span> di Tiap Pelajaran
           </h2>
         </div>
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
@@ -202,10 +202,10 @@ function Landing() {
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 text-sm text-muted-foreground sm:flex-row">
           <div className="flex items-center gap-2">
             <Wand2 className="size-4 text-primary" />
-            <span className="font-display font-semibold">EduQuest RPG</span>
+            <span className="font-display font-semibold">EduQuest Madrasah</span>
             <span>© {new Date().getFullYear()}</span>
           </div>
-          <div>Made with ✨ for learners & teachers</div>
+          <div>Dibuat dengan ✨ untuk para penuntut ilmu & pengajar</div>
         </div>
       </footer>
     </div>
