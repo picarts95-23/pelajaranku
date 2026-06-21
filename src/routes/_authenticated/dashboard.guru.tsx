@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { BookOpen, GraduationCap, ScrollText, TrendingUp, Users, ClipboardCheck } from "lucide-react";
+import { BookOpen, GraduationCap, ScrollText, TrendingUp, Users, ClipboardCheck, FileQuestion, CalendarCheck, NotebookPen, Trophy, CalendarDays, ArrowRight } from "lucide-react";
 import { DashboardShell, StatCard } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
@@ -108,6 +108,75 @@ function GuruDashboard() {
         <StatCard icon={<ScrollText className="size-6" />} label={t("assignments")} value={stats?.assignments ?? 0} tint="bg-quest" />
       </section>
 
+      <section className="mt-6">
+        <div className="mb-3 flex items-end justify-between">
+          <h2 className="font-display text-xl font-bold flex items-center gap-2">
+            <ScrollText className="size-5 text-guru" /> {lang === "id" ? "Menu Guru" : "Teacher Menu"}
+          </h2>
+          <span className="text-xs text-muted-foreground">
+            {lang === "id" ? "Akses cepat fitur admin" : "Quick access to admin tools"}
+          </span>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <FeatureCard
+            to="/guru/kelas"
+            icon={<BookOpen className="size-6" />}
+            title={lang === "id" ? "Kelola Kelas" : "Manage Classes"}
+            desc={lang === "id" ? "Buat kelas baru, undang siswi, atur kode kelas." : "Create classes, invite students, manage codes."}
+            tint="bg-guru"
+          />
+          <FeatureCard
+            to="/guru/tugas"
+            icon={<NotebookPen className="size-6" />}
+            title={lang === "id" ? "Buat Tugas & Materi" : "Assignments & Materials"}
+            desc={lang === "id" ? "Susun tugas, materi, dan rubrik penilaian." : "Author assignments and grading rubrics."}
+            tint="bg-quest"
+          />
+          <FeatureCard
+            to="/guru/bank-soal"
+            icon={<FileQuestion className="size-6" />}
+            title={lang === "id" ? "Bank Soal / Kuis" : "Question Bank / Quiz"}
+            desc={lang === "id" ? "Kelola koleksi soal & kuis interaktif." : "Curate questions and interactive quizzes."}
+            tint="bg-accent"
+          />
+          <FeatureCard
+            to="/guru/siswa"
+            icon={<TrendingUp className="size-6" />}
+            title={lang === "id" ? "Progres Siswa" : "Student Progress"}
+            desc={lang === "id" ? "Ringkasan XP, nilai, dan capaian siswi." : "XP, scores, and achievement overview."}
+            tint="bg-siswa"
+          />
+          <FeatureCard
+            to="/guru/presensi"
+            icon={<CalendarCheck className="size-6" />}
+            title={lang === "id" ? "Presensi" : "Attendance"}
+            desc={lang === "id" ? "Catat kehadiran setiap pertemuan." : "Track attendance per session."}
+            tint="bg-xp"
+          />
+          <FeatureCard
+            to="/guru/jurnal"
+            icon={<ScrollText className="size-6" />}
+            title={lang === "id" ? "Jurnal Mengajar" : "Teaching Journal"}
+            desc={lang === "id" ? "Catat aktivitas dan refleksi mengajar." : "Log activities and teaching reflections."}
+            tint="bg-primary"
+          />
+          <FeatureCard
+            to="/guru/gamifikasi"
+            icon={<Trophy className="size-6" />}
+            title={lang === "id" ? "Gamifikasi & Badge" : "Gamification & Badges"}
+            desc={lang === "id" ? "Atur reward XP, koin, dan lencana." : "Set XP rewards, coins, and badges."}
+            tint="bg-quest"
+          />
+          <FeatureCard
+            to="/guru/event"
+            icon={<CalendarDays className="size-6" />}
+            title={lang === "id" ? "Event Kelas" : "Class Events"}
+            desc={lang === "id" ? "Jadwalkan acara, ujian, dan agenda." : "Schedule events, exams, and agendas."}
+            tint="bg-accent"
+          />
+        </div>
+      </section>
+
       <section className="mt-6 grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 rounded-3xl border-2 border-border bg-card p-6 shadow-card-rpg">
           <h2 className="mb-4 font-display text-xl font-bold flex items-center gap-2"><BookOpen className="size-5 text-guru" /> {t("assignments")}</h2>
@@ -153,5 +222,29 @@ function GuruDashboard() {
         </div>
       </section>
     </DashboardShell>
+  );
+}
+
+function FeatureCard({
+  to, icon, title, desc, tint,
+}: {
+  to: string; icon: React.ReactNode; title: string; desc: string; tint: string;
+}) {
+  return (
+    <Link
+      to={to}
+      className="group relative overflow-hidden rounded-2xl border-2 border-border bg-card p-5 shadow-card-rpg transition-all hover:-translate-y-0.5 hover:border-foreground/30 hover:shadow-magic"
+    >
+      <div className="flex items-start gap-3">
+        <div className={`grid size-11 place-items-center rounded-xl text-white shadow-soft ${tint}`}>
+          {icon}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="font-display text-base font-bold">{title}</div>
+          <p className="mt-1 text-xs text-muted-foreground">{desc}</p>
+        </div>
+        <ArrowRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-foreground" />
+      </div>
+    </Link>
   );
 }
