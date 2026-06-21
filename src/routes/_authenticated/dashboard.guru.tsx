@@ -224,3 +224,27 @@ function GuruDashboard() {
     </DashboardShell>
   );
 }
+
+function FeatureCard({
+  to, icon, title, desc, tint,
+}: {
+  to: string; icon: React.ReactNode; title: string; desc: string; tint: string;
+}) {
+  return (
+    <Link
+      to={to}
+      className="group relative overflow-hidden rounded-2xl border-2 border-border bg-card p-5 shadow-card-rpg transition-all hover:-translate-y-0.5 hover:border-foreground/30 hover:shadow-magic"
+    >
+      <div className="flex items-start gap-3">
+        <div className={`grid size-11 place-items-center rounded-xl text-white shadow-soft ${tint}`}>
+          {icon}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="font-display text-base font-bold">{title}</div>
+          <p className="mt-1 text-xs text-muted-foreground">{desc}</p>
+        </div>
+        <ArrowRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-foreground" />
+      </div>
+    </Link>
+  );
+}
