@@ -428,3 +428,125 @@ function ManageMembersDialog({ klass, onClose }: { klass: ClassRow | null; onClo
     </Dialog>
   );
 }
+
+interface ActivityRow {
+  id: string;
+  action: string;
+  actor_id: string | null;
+  target_user_id: string | null;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
+}
+
+function ActivityHistoryDialog({ klass, onClose }: { klass: ClassRow | null; onClose: () => void }) {
+  const { lang } = useLang();
+
+  const { data: activities = [], isLoading } = useQuery({
+    queryKey: ["class-activities", klass?.id],
+    enabled: !!klass,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("class_activities")
+        .select("id, action, actor_id, target_user_id, metadata, created_at")
+        .eq("class_id", klass!.id)
+        .order("created_at", { ascending: false })
+        .limit(200);
+      if (error) throw error;
+      return (data ?? []) as ActivityRow[];
+    },
+  });
+
+  const userIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const a of activities) {
+      if (a.actor_id) ids.add(a.actor_id);
+      if (a.target_user_id) ids.add(a.target_user_id);
+    }
+    return [...ids];
+  }, [activities]);
+
+  const { data: nameMap = {} } = useQuery({
+    queryKey: ["activity-names", klass?.id, userIds.join(",")],
+    enabled: userIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles").select("id, full_name").in("id", userIds);
+      if (error) throw error;
+      const map: Record<string, string> = {};
+      for (const p of data ?? []) map[p.id] = p.full_name;
+      return map;
+    },
+  });
+
+  const labelFor = (action: string) => {
+    const map: Record<string, { id: string; en: string; icon: typeof Sparkles; tint: string }> = {
+      class_created: { id: "Kelas dibuat", en: "Class created", icon: Sparkles, tint: "bg-magic/15 text-magic" },
+      invite_sent: { id: "Undangan dibagikan", en: "Invite shared", icon: Send, tint: "bg-accent/15 text-accent" },
+      student_enrolled: { id: "Siswa didaftarkan", en: "Student enrolled", icon: UserPlus, tint: "bg-guru/15 text-guru" },
+      student_joined: { id: "Siswa bergabung", en: "Student joined", icon: LogIn, tint: "bg-siswa/15 text-siswa" },
+      student_removed: { id: "Siswa dikeluarkan", en: "Student removed", icon: UserMinus, tint: "bg-destructive/15 text-destructive" },
+    };
+    return map[action] ?? { id: action, en: action, icon: History, tint: "bg-muted text-muted-foreground" };
+  };
+
+  const fmt = (iso: string) =>
+    new Date(iso).toLocaleString(lang === "id" ? "id-ID" : "en-US", {
+      dateStyle: "medium", timeStyle: "short",
+    });
+
+  return (
+    <Dialog open={!!klass} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>
+            {lang === "id" ? "Riwayat Aktivitas" : "Activity History"} · {klass?.name}
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="max-h-[60vh] overflow-y-auto rounded-xl border-2 border-border">
+          {isLoading ? (
+            <div className="flex items-center justify-center gap-2 p-8 text-sm text-muted-foreground">
+              <Loader2 className="size-4 animate-spin" /> {lang === "id" ? "Memuat…" : "Loading…"}
+            </div>
+          ) : activities.length === 0 ? (
+            <div className="p-8 text-center text-sm text-muted-foreground">
+              {lang === "id" ? "Belum ada aktivitas." : "No activity yet."}
+            </div>
+          ) : (
+            <ul className="divide-y divide-border">
+              {activities.map((a) => {
+                const meta = labelFor(a.action);
+                const Icon = meta.icon;
+                const actor = a.actor_id ? nameMap[a.actor_id] ?? "—" : "Sistem";
+                const target = a.target_user_id ? nameMap[a.target_user_id] : null;
+                return (
+                  <li key={a.id} className="flex items-start gap-3 p-3">
+                    <div className={`grid size-9 shrink-0 place-items-center rounded-lg ${meta.tint}`}>
+                      <Icon className="size-4" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="font-display text-sm font-semibold">
+                        {lang === "id" ? meta.id : meta.en}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        <span className="font-medium text-foreground/80">{actor}</span>
+                        {target && (
+                          <> {lang === "id" ? "→" : "→"} <span className="font-medium text-foreground/80">{target}</span></>
+                        )}
+                        {" · "}{fmt(a.created_at)}
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>{lang === "id" ? "Tutup" : "Close"}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
