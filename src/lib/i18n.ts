@@ -1,0 +1,81 @@
+import { createContext, useContext } from "react";
+
+export type Lang = "id" | "en";
+
+export const translations = {
+  appName: { id: "EduQuest RPG", en: "EduQuest RPG" },
+  tagline: {
+    id: "Petualangan belajar epik untuk guru & siswa",
+    en: "Epic learning adventures for teachers & students",
+  },
+  heroTitle: {
+    id: "Ubah Kelas Jadi Dunia Petualangan",
+    en: "Turn the Classroom Into an Adventure",
+  },
+  heroSub: {
+    id: "Naik level dengan setiap tugas, kumpulkan koin emas, kuasai mata pelajaran, dan jadi pahlawan di gildamu sendiri.",
+    en: "Level up with every task, collect gold coins, master subjects, and become a hero in your own guild.",
+  },
+  startQuest: { id: "Mulai Petualangan", en: "Start Your Quest" },
+  enterGuild: { id: "Masuk ke Guild", en: "Enter the Guild" },
+  loginGuru: { id: "Masuk sebagai Guru", en: "Sign in as Teacher" },
+  loginSiswa: { id: "Masuk sebagai Siswa", en: "Sign in as Student" },
+  signupGuru: { id: "Daftar sebagai Guru", en: "Sign up as Teacher" },
+  signupSiswa: { id: "Daftar sebagai Siswa", en: "Sign up as Student" },
+  features: { id: "Fitur Sihir", en: "Magic Features" },
+  feat1Title: { id: "Quest Harian", en: "Daily Quests" },
+  feat1Desc: { id: "Tugas dan latihan jadi misi seru bertabur XP & koin.", en: "Tasks and exercises become exciting missions full of XP & coins." },
+  feat2Title: { id: "Battle Kuis", en: "Quiz Battles" },
+  feat2Desc: { id: "Adu cepat & cermat dengan teman dalam arena kuis interaktif.", en: "Duel friends in fast, sharp interactive quiz arenas." },
+  feat3Title: { id: "Guild Kelas", en: "Class Guilds" },
+  feat3Desc: { id: "Guru memantau progres, mengelola tugas, dan administrasi kelas.", en: "Teachers track progress, manage tasks, and class admin." },
+  feat4Title: { id: "Sistem Level RPG", en: "RPG Level System" },
+  feat4Desc: { id: "Naik level, dapat badge, koleksi avatar legendaris.", en: "Level up, earn badges, collect legendary avatars." },
+  login: { id: "Masuk", en: "Sign in" },
+  signup: { id: "Daftar", en: "Sign up" },
+  email: { id: "Email", en: "Email" },
+  password: { id: "Kata Sandi", en: "Password" },
+  fullName: { id: "Nama Lengkap", en: "Full Name" },
+  className: { id: "Kelas", en: "Class" },
+  schoolId: { id: "NIS / NIP", en: "Student/Teacher ID" },
+  subject: { id: "Mata Pelajaran", en: "Subject" },
+  role: { id: "Peran", en: "Role" },
+  guru: { id: "Guru", en: "Teacher" },
+  siswa: { id: "Siswa", en: "Student" },
+  logout: { id: "Keluar", en: "Sign out" },
+  dashboard: { id: "Dashboard", en: "Dashboard" },
+  welcome: { id: "Selamat datang kembali", en: "Welcome back" },
+  level: { id: "Level", en: "Level" },
+  xp: { id: "XP", en: "XP" },
+  coins: { id: "Koin", en: "Coins" },
+  seedDemo: {
+    id: "Buat 2 akun demo (guru & siswa)",
+    en: "Create 2 demo accounts (teacher & student)",
+  },
+  seedDone: {
+    id: "Akun demo siap! Gunakan kredensial di bawah.",
+    en: "Demo accounts ready! Use the credentials below.",
+  },
+  demoCreds: { id: "Akun Demo", en: "Demo Accounts" },
+  loadingPortal: {
+    id: "Membuka portal ke dunia EduQuest…",
+    en: "Opening the portal to EduQuest…",
+  },
+  myQuests: { id: "Quest Saya", en: "My Quests" },
+  classRoster: { id: "Daftar Murid", en: "Class Roster" },
+  assignments: { id: "Tugas", en: "Assignments" },
+  submissions: { id: "Pengumpulan", en: "Submissions" },
+  leaderboard: { id: "Papan Peringkat", en: "Leaderboard" },
+  stats: { id: "Statistik", en: "Stats" },
+  noData: { id: "Belum ada data", en: "No data yet" },
+} as const;
+
+export type Key = keyof typeof translations;
+
+export const LangContext = createContext<{
+  lang: Lang;
+  setLang: (l: Lang) => void;
+  t: (k: Key) => string;
+}>({ lang: "id", setLang: () => {}, t: (k) => translations[k].id });
+
+export const useLang = () => useContext(LangContext);
