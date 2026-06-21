@@ -11,10 +11,10 @@ import { useLang } from "@/lib/i18n";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "EduQuest RPG — Belajar Jadi Petualangan Epik" },
-      { name: "description", content: "Platform pembelajaran interaktif bertema JRPG anime. Quest harian, battle kuis, dan dashboard guru & siswa yang seru." },
-      { property: "og:title", content: "EduQuest RPG" },
-      { property: "og:description", content: "Belajar berasa main game. Naik level setiap hari." },
+      { title: "EduQuest Madrasah — Belajar Jadi Perjalanan Ilmu" },
+      { name: "description", content: "Platform pembelajaran interaktif bernuansa islami untuk santriwati. Misi harian, tantangan kuis, dan dashboard ustadz/ah & santriwati yang menyenangkan." },
+      { property: "og:title", content: "EduQuest Madrasah" },
+      { property: "og:description", content: "Belajar terasa bermakna. Naik tingkat ilmu setiap hari." },
     ],
   }),
   component: Landing,
