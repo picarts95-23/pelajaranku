@@ -14,6 +14,283 @@ export type Database = {
   }
   public: {
     Tables: {
+      assignments: {
+        Row: {
+          class_id: string
+          coin_reward: number
+          created_at: string
+          description: string | null
+          due_at: string | null
+          id: string
+          max_score: number
+          teacher_id: string
+          title: string
+          updated_at: string
+          xp_reward: number
+        }
+        Insert: {
+          class_id: string
+          coin_reward?: number
+          created_at?: string
+          description?: string | null
+          due_at?: string | null
+          id?: string
+          max_score?: number
+          teacher_id: string
+          title: string
+          updated_at?: string
+          xp_reward?: number
+        }
+        Update: {
+          class_id?: string
+          coin_reward?: number
+          created_at?: string
+          description?: string | null
+          due_at?: string | null
+          id?: string
+          max_score?: number
+          teacher_id?: string
+          title?: string
+          updated_at?: string
+          xp_reward?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assignments_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      attendance: {
+        Row: {
+          class_id: string
+          created_at: string
+          date: string
+          id: string
+          note: string | null
+          recorded_by: string | null
+          status: Database["public"]["Enums"]["attendance_status"]
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          date: string
+          id?: string
+          note?: string | null
+          recorded_by?: string | null
+          status?: Database["public"]["Enums"]["attendance_status"]
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          date?: string
+          id?: string
+          note?: string | null
+          recorded_by?: string | null
+          status?: Database["public"]["Enums"]["attendance_status"]
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      badges: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+          xp_requirement: number | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+          xp_requirement?: number | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          xp_requirement?: number | null
+        }
+        Relationships: []
+      }
+      class_enrollments: {
+        Row: {
+          class_id: string
+          id: string
+          joined_at: string
+          student_id: string
+        }
+        Insert: {
+          class_id: string
+          id?: string
+          joined_at?: string
+          student_id: string
+        }
+        Update: {
+          class_id?: string
+          id?: string
+          joined_at?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_enrollments_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      classes: {
+        Row: {
+          academic_year: string | null
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          subject: string | null
+          teacher_id: string
+          updated_at: string
+        }
+        Insert: {
+          academic_year?: string | null
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          subject?: string | null
+          teacher_id: string
+          updated_at?: string
+        }
+        Update: {
+          academic_year?: string | null
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          subject?: string | null
+          teacher_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      events: {
+        Row: {
+          class_id: string
+          created_at: string
+          description: string | null
+          end_at: string | null
+          id: string
+          location: string | null
+          start_at: string
+          teacher_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          description?: string | null
+          end_at?: string | null
+          id?: string
+          location?: string | null
+          start_at: string
+          teacher_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          description?: string | null
+          end_at?: string | null
+          id?: string
+          location?: string | null
+          start_at?: string
+          teacher_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      journals: {
+        Row: {
+          class_id: string
+          created_at: string
+          date: string
+          id: string
+          notes: string | null
+          teacher_id: string
+          topic: string
+          updated_at: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          date?: string
+          id?: string
+          notes?: string | null
+          teacher_id: string
+          topic: string
+          updated_at?: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          date?: string
+          id?: string
+          notes?: string | null
+          teacher_id?: string
+          topic?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "journals_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -56,6 +333,136 @@ export type Database = {
         }
         Relationships: []
       }
+      question_bank: {
+        Row: {
+          answer: string | null
+          created_at: string
+          difficulty: Database["public"]["Enums"]["question_difficulty"]
+          id: string
+          options: Json | null
+          question: string
+          subject: string | null
+          teacher_id: string
+          topic: string | null
+          type: Database["public"]["Enums"]["question_type"]
+          updated_at: string
+        }
+        Insert: {
+          answer?: string | null
+          created_at?: string
+          difficulty?: Database["public"]["Enums"]["question_difficulty"]
+          id?: string
+          options?: Json | null
+          question: string
+          subject?: string | null
+          teacher_id: string
+          topic?: string | null
+          type?: Database["public"]["Enums"]["question_type"]
+          updated_at?: string
+        }
+        Update: {
+          answer?: string | null
+          created_at?: string
+          difficulty?: Database["public"]["Enums"]["question_difficulty"]
+          id?: string
+          options?: Json | null
+          question?: string
+          subject?: string | null
+          teacher_id?: string
+          topic?: string | null
+          type?: Database["public"]["Enums"]["question_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      submissions: {
+        Row: {
+          assignment_id: string
+          content: string | null
+          created_at: string
+          feedback: string | null
+          file_url: string | null
+          graded_at: string | null
+          graded_by: string | null
+          id: string
+          reward_granted: boolean
+          score: number | null
+          status: Database["public"]["Enums"]["submission_status"]
+          student_id: string
+          submitted_at: string
+          updated_at: string
+        }
+        Insert: {
+          assignment_id: string
+          content?: string | null
+          created_at?: string
+          feedback?: string | null
+          file_url?: string | null
+          graded_at?: string | null
+          graded_by?: string | null
+          id?: string
+          reward_granted?: boolean
+          score?: number | null
+          status?: Database["public"]["Enums"]["submission_status"]
+          student_id: string
+          submitted_at?: string
+          updated_at?: string
+        }
+        Update: {
+          assignment_id?: string
+          content?: string | null
+          created_at?: string
+          feedback?: string | null
+          file_url?: string | null
+          graded_at?: string | null
+          graded_by?: string | null
+          id?: string
+          reward_granted?: boolean
+          score?: number | null
+          status?: Database["public"]["Enums"]["submission_status"]
+          student_id?: string
+          submitted_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "submissions_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "assignments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_badges: {
+        Row: {
+          badge_id: string
+          earned_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_id: string
+          earned_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_id?: string
+          earned_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -77,6 +484,39 @@ export type Database = {
         }
         Relationships: []
       }
+      xp_transactions: {
+        Row: {
+          coin_amount: number
+          created_at: string
+          id: string
+          note: string | null
+          source: string
+          source_id: string | null
+          user_id: string
+          xp_amount: number
+        }
+        Insert: {
+          coin_amount?: number
+          created_at?: string
+          id?: string
+          note?: string | null
+          source: string
+          source_id?: string | null
+          user_id: string
+          xp_amount?: number
+        }
+        Update: {
+          coin_amount?: number
+          created_at?: string
+          id?: string
+          note?: string | null
+          source?: string
+          source_id?: string | null
+          user_id?: string
+          xp_amount?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -89,9 +529,21 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_class_member: {
+        Args: { _class_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_class_owner: {
+        Args: { _class_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "guru" | "siswa"
+      attendance_status: "hadir" | "izin" | "sakit" | "alpa"
+      question_difficulty: "easy" | "medium" | "hard"
+      question_type: "multiple_choice" | "essay" | "true_false"
+      submission_status: "draft" | "submitted" | "graded" | "returned"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -220,6 +672,10 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["guru", "siswa"],
+      attendance_status: ["hadir", "izin", "sakit", "alpa"],
+      question_difficulty: ["easy", "medium", "hard"],
+      question_type: ["multiple_choice", "essay", "true_false"],
+      submission_status: ["draft", "submitted", "graded", "returned"],
     },
   },
 } as const
