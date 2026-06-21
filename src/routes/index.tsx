@@ -160,6 +160,7 @@ function Landing() {
             search={{ mode: "login", role: "siswa" }}
             variant="siswa"
           />
+          </div>
         </div>
       </section>
 
