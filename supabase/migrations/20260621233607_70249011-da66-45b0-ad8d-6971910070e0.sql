@@ -1,0 +1,1 @@
+CREATE POLICY "Teacher enrolls students" ON public.class_enrollments FOR INSERT TO authenticated WITH CHECK (public.is_class_owner(class_id, auth.uid()));
