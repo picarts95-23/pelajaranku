@@ -95,7 +95,7 @@ function Landing() {
           <div className="overflow-hidden rounded-[2rem] border-4 border-white shadow-magic ring-4 ring-accent/30">
             <img
               src={heroImg}
-              alt="Karakter siswa anime memegang buku sihir bersama guru penyihir bijak di taman akademi sakura"
+              alt="Ustadz dan ustadzah bersama murid-murid Muslim faceless di akademi sihir bernuansa Islami"
               width={1536}
               height={1024}
               className="block w-full"
