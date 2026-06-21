@@ -23,8 +23,8 @@ export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Masuk · EduQuest RPG" },
-      { name: "description", content: "Masuk atau daftar sebagai guru atau siswa untuk memulai petualangan belajar." },
+      { title: "Masuk · EduQuest Madrasah" },
+      { name: "description", content: "Masuk atau daftar sebagai ustadz/ah atau santriwati untuk memulai perjalanan menuntut ilmu." },
     ],
   }),
   component: AuthPage,
