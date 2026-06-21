@@ -129,8 +129,13 @@ function Landing() {
       </section>
 
       {/* Role choose */}
-      <section className="mx-auto max-w-5xl px-6 py-10">
-        <div className="grid gap-5 sm:grid-cols-2">
+      <section className="relative overflow-hidden py-10">
+        <div className="absolute inset-0 -z-10">
+          <img src={bgCourtyard} alt="" className="h-full w-full object-cover opacity-20" />
+          <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/40 to-background/80" />
+        </div>
+        <div className="mx-auto max-w-5xl px-6">
+          <div className="grid gap-5 sm:grid-cols-2">
           <RoleCard
             roleColor="bg-guru"
             title={t("guru")}
