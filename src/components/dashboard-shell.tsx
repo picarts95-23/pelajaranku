@@ -1,6 +1,6 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
-  LogOut, Wand2, LayoutDashboard, BookOpen, Users, ScrollText, CalendarCheck,
+  LogOut, Compass, LayoutDashboard, BookOpen, Users, ScrollText, CalendarCheck,
   NotebookPen, CalendarDays, Database, Trophy, Sword, GraduationCap, Award, Menu, X, UserCircle2,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
@@ -67,10 +67,10 @@ export function DashboardShell({
             </Button>
             <Link to="/" className="flex items-center gap-2">
               <div className="grid size-9 place-items-center rounded-xl bg-gradient-magic shadow-soft">
-                <Wand2 className="size-4 text-primary-foreground" />
+                <Compass className="size-4 text-primary-foreground" />
               </div>
               <span className="hidden font-display text-lg font-bold sm:inline">
-                EduQuest <span className="text-gradient-magic">RPG</span>
+                EduQuest <span className="text-gradient-magic">Madrasah</span>
               </span>
             </Link>
           </div>
