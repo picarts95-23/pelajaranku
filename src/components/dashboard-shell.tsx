@@ -9,6 +9,7 @@ import { LangToggle } from "@/components/lang-toggle";
 import { useAuth } from "@/lib/auth-context";
 import { useLang, type Key } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import { getIslamicAvatar } from "@/lib/islamic-avatar";
 
 type NavItem = { to: string; key: Key; icon: React.ComponentType<{ className?: string }> };
 
@@ -52,8 +53,7 @@ export function DashboardShell({
     navigate({ to: "/" });
   };
 
-  const initials = (profile?.full_name ?? "?")
-    .split(" ").map((s) => s[0]).slice(0, 2).join("").toUpperCase();
+  const avatarSrc = getIslamicAvatar(profile?.id ?? profile?.full_name ?? "anon", role as "guru" | "siswa" | null);
 
   return (
     <div className="min-h-screen">
@@ -77,8 +77,8 @@ export function DashboardShell({
           <div className="flex items-center gap-2 sm:gap-3">
             <LangToggle />
             <div className="hidden items-center gap-3 rounded-2xl border-2 border-border bg-card px-3 py-1.5 shadow-soft md:flex">
-              <div className={cn("grid size-9 place-items-center rounded-xl font-display text-sm font-bold text-white", accent === "guru" ? "bg-guru" : "bg-siswa")}>
-                {initials}
+              <div className={cn("grid size-10 place-items-center overflow-hidden rounded-xl ring-2", accent === "guru" ? "ring-guru bg-guru/10" : "ring-siswa bg-siswa/10")}>
+                <img src={avatarSrc} alt={profile?.full_name ?? "Avatar"} width={40} height={40} className="size-full object-cover" loading="lazy" />
               </div>
               <div className="leading-tight">
                 <div className="text-xs text-muted-foreground">{role === "guru" ? t("guru") : t("siswa")}</div>

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
+import { getIslamicAvatar } from "@/lib/islamic-avatar";
 import { format } from "date-fns";
 
 export const Route = createFileRoute("/_authenticated/dashboard/siswa")({
@@ -61,27 +62,46 @@ function SiswaDashboard() {
       >
         <div className="absolute -right-10 -top-10 size-48 rounded-full bg-white/20 blur-3xl" />
         <div className="absolute -left-10 -bottom-10 size-56 rounded-full bg-accent/40 blur-3xl" />
-        <div className="relative">
-          <div className="text-sm font-display font-semibold uppercase tracking-wider opacity-80">{t("welcome")}</div>
-          <h1 className="mt-1 font-display text-3xl font-bold sm:text-4xl">{profile?.full_name ?? "Adventurer"} ✨</h1>
-          <p className="mt-2 max-w-xl opacity-90">
-            {lang === "id"
-              ? `Kelas ${profile?.class_name ?? "—"} · Ayo lanjutkan quest belajarmu!`
-              : `Class ${profile?.class_name ?? "—"} · Ready to continue your quest?`}
-          </p>
-          <div className="mt-6 max-w-md">
-            <div className="mb-1.5 flex items-end justify-between text-sm">
-              <span className="font-display font-semibold">{t("level")} {level}</span>
-              <span className="opacity-90">{xp % 100} / 100 XP</span>
+        <div className="relative grid gap-6 sm:grid-cols-[1fr_auto] sm:items-center">
+          <div>
+            <div className="text-sm font-display font-semibold uppercase tracking-wider opacity-80">{t("welcome")}</div>
+            <h1 className="mt-1 font-display text-3xl font-bold sm:text-4xl">{profile?.full_name ?? "Adventurer"} ✨</h1>
+            <p className="mt-2 max-w-xl opacity-90">
+              {lang === "id"
+                ? `Kelas ${profile?.class_name ?? "—"} · Ayo lanjutkan quest belajarmu!`
+                : `Class ${profile?.class_name ?? "—"} · Ready to continue your quest?`}
+            </p>
+            <div className="mt-6 max-w-md">
+              <div className="mb-1.5 flex items-end justify-between text-sm">
+                <span className="font-display font-semibold">{t("level")} {level}</span>
+                <span className="opacity-90">{xp % 100} / 100 XP</span>
+              </div>
+              <div className="h-3 overflow-hidden rounded-full bg-white/25">
+                <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 1.1, ease: "easeOut" }} className="h-full rounded-full bg-xp shadow-glow" />
+              </div>
             </div>
-            <div className="h-3 overflow-hidden rounded-full bg-white/25">
-              <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 1.1, ease: "easeOut" }} className="h-full rounded-full bg-xp shadow-glow" />
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Link to="/siswa/tugas"><Button variant="outline" className="bg-white/10 border-white/30 text-white hover:bg-white/20">{t("navMyQuests")}</Button></Link>
+              <Link to="/siswa/kelas"><Button variant="outline" className="bg-white/10 border-white/30 text-white hover:bg-white/20">{t("myClasses")}</Button></Link>
             </div>
           </div>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Link to="/siswa/tugas"><Button variant="outline" className="bg-white/10 border-white/30 text-white hover:bg-white/20">{t("navMyQuests")}</Button></Link>
-            <Link to="/siswa/kelas"><Button variant="outline" className="bg-white/10 border-white/30 text-white hover:bg-white/20">{t("myClasses")}</Button></Link>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.85, rotate: -4 }}
+            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+            className="hidden sm:flex justify-center"
+          >
+            <div className="relative">
+              <div className="absolute inset-0 -z-10 rounded-full bg-white/30 blur-2xl" />
+              <img
+                src={getIslamicAvatar(user?.id ?? profile?.full_name, "siswa")}
+                alt={lang === "id" ? "Karakter petualang Islami" : "Islamic adventurer character"}
+                width={192}
+                height={192}
+                className="size-40 lg:size-48 object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.25)]"
+              />
+            </div>
+          </motion.div>
         </div>
       </motion.section>
 
