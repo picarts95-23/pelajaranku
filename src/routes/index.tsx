@@ -1,12 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { Sparkles, Swords, Trophy, BookOpen, ScrollText, Compass } from "lucide-react";
-import heroImg from "@/assets/hero-siswi-garden.jpg";
-import bgCourtyard from "@/assets/bg-islamic-courtyard.jpg";
-import bgMeadow from "@/assets/bg-meadow-siswi.jpg";
 import { Button } from "@/components/ui/button";
 import { LangToggle } from "@/components/lang-toggle";
 import { useLang } from "@/lib/i18n";
+
+const heroImg = new URL("../assets/hero-siswi-garden.jpg", import.meta.url).href;
+const bgCourtyard = new URL("../assets/bg-islamic-courtyard.jpg", import.meta.url).href;
+const bgMeadow = new URL("../assets/bg-meadow-siswi.jpg", import.meta.url).href;
 
 export const Route = createFileRoute("/")({
   head: () => ({
