@@ -65,11 +65,11 @@ function SiswaDashboard() {
         <div className="relative grid gap-6 sm:grid-cols-[1fr_auto] sm:items-center">
           <div>
             <div className="text-sm font-display font-semibold uppercase tracking-wider opacity-80">{t("welcome")}</div>
-            <h1 className="mt-1 font-display text-3xl font-bold sm:text-4xl">{profile?.full_name ?? "Adventurer"} ✨</h1>
+            <h1 className="mt-1 font-display text-3xl font-bold sm:text-4xl">{profile?.full_name ?? "Santriwati"} ✨</h1>
             <p className="mt-2 max-w-xl opacity-90">
               {lang === "id"
-                ? `Kelas ${profile?.class_name ?? "—"} · Ayo lanjutkan quest belajarmu!`
-                : `Class ${profile?.class_name ?? "—"} · Ready to continue your quest?`}
+                ? `Kelas ${profile?.class_name ?? "—"} · Lanjutkan perjalanan belajarmu hari ini!`
+                : `Class ${profile?.class_name ?? "—"} · Continue your learning journey today!`}
             </p>
             <div className="mt-6 max-w-md">
               <div className="mb-1.5 flex items-end justify-between text-sm">
