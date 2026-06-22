@@ -157,16 +157,47 @@ function GuruPresensiPage() {
     <DashboardShell accent="guru">
       <PageHeader title={t("navAttendance")} subtitle={lang === "id" ? "Catat kehadiran harian, urut abjad, dengan akumulasi nilai" : "Mark daily attendance (A-Z) with accumulated score"} />
 
-      <div className="mb-4 grid gap-3 sm:grid-cols-[1fr,200px,auto]">
+      <div className="mb-4 grid gap-3 sm:grid-cols-[1fr,200px,auto,auto]">
         <Select value={classId} onValueChange={setClassId}>
           <SelectTrigger><SelectValue placeholder={t("selectClass")} /></SelectTrigger>
           <SelectContent>{classes.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
         </Select>
         <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+        <Button variant="outline" onClick={() => setShowSettings((v) => !v)}>
+          <SlidersHorizontal className="size-4" /> {t("scoreSettings")}
+        </Button>
         <Button variant="guru" disabled={!classId || students.length === 0 || saveMut.isPending} onClick={() => saveMut.mutate()}>
           <Save className="size-4" /> {t("save")}
         </Button>
       </div>
+
+      {showSettings && (
+        <div className="mb-4 rounded-2xl border-2 border-border bg-card p-4 shadow-card-rpg">
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <h3 className="font-display text-sm font-bold">{t("scoreWeights")}</h3>
+            <Button variant="ghost" size="sm" onClick={() => saveWeights({ ...DEFAULT_WEIGHTS })}>
+              <RotateCcw className="size-3.5" /> {t("resetDefault")}
+            </Button>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-4">
+            {STATUSES.map((st) => (
+              <label key={st} className="flex flex-col gap-1">
+                <span className="text-xs font-display font-semibold capitalize text-muted-foreground">{t(st)}</span>
+                <Input
+                  type="number" min={0} max={100} value={weights[st]}
+                  onChange={(e) => saveWeights({ ...weights, [st]: clampWeight(e.target.value, weights[st]) })}
+                />
+              </label>
+            ))}
+          </div>
+          <p className="mt-3 text-[11px] text-muted-foreground">
+            {lang === "id"
+              ? "Bobot adalah nilai 0–100 yang disumbang setiap status per pertemuan. Nilai akhir = rata-rata bobot seluruh pertemuan. Disimpan otomatis di perangkat ini."
+              : "Weights are 0–100 values each status contributes per meeting. Final score = average weight across all meetings. Saved automatically on this device."}
+          </p>
+        </div>
+      )}
+
 
       {!classId ? <EmptyState message={t("selectClass")} /> : students.length === 0 ? <EmptyState message={t("empty")} /> : (
         <>
