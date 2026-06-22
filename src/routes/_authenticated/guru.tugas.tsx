@@ -90,7 +90,8 @@ function GuruTugasPage() {
       if (target === "class" && !form.class_id) throw new Error(t("selectClass"));
       if (target === "student" && !form.assigned_student_id) throw new Error(t("selectStudent"));
       const cleanOptions = form.options.map((o) => o.trim()).filter(Boolean);
-      if (form.answer_format === "multiple_choice" && cleanOptions.length < 2)
+      const isMC = form.answer_format === "multiple_choice" || form.answer_format === "complex_mc";
+      if (isMC && cleanOptions.length < 2)
         throw new Error(lang === "id" ? "Minimal 2 pilihan jawaban" : "At least 2 options");
       if (form.answer_format === "muroja" && !form.muroja_surah)
         throw new Error(lang === "id" ? "Pilih surah untuk muroja'ah" : "Select a surah");
@@ -100,11 +101,12 @@ function GuruTugasPage() {
         class_id: target === "class" ? form.class_id : null,
         assigned_student_id: target === "student" ? form.assigned_student_id : null,
         title: form.title,
+        subject: form.subject || null,
         description: form.description || null, due_at: form.due_at ? new Date(form.due_at).toISOString() : null,
         max_score: form.max_score, xp_reward: form.xp_reward, coin_reward: form.coin_reward,
         quiz_link: form.quiz_link.trim() || null, game_link: form.game_link.trim() || null,
         answer_format: form.answer_format,
-        options: form.answer_format === "multiple_choice" ? cleanOptions : null,
+        options: isMC ? cleanOptions : null,
         muroja_juz: form.answer_format === "muroja" ? form.muroja_juz || null : null,
         muroja_surah: form.answer_format === "muroja" ? form.muroja_surah || null : null,
         muroja_ayat: form.answer_format === "muroja" ? form.muroja_ayat.trim() || null : null,
