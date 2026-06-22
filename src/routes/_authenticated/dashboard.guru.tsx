@@ -69,8 +69,10 @@ function GuruDashboard() {
         <div className="absolute -left-10 -bottom-10 size-56 rounded-full bg-guru/40 blur-3xl" />
         <div className="relative grid gap-6 sm:grid-cols-[1fr_auto] sm:items-center">
           <div>
-            <div className="text-sm font-display font-semibold uppercase tracking-wider opacity-80">{t("welcome")}</div>
-            <h1 className="mt-1 font-display text-3xl font-bold sm:text-4xl">{profile?.full_name ?? "Guru"}</h1>
+            <div className="text-sm font-display font-semibold uppercase tracking-wider opacity-80">{t("dashboard")}</div>
+            <h1 className="mt-1 font-display text-3xl font-bold sm:text-4xl">
+              {t("welcome")}, {profile?.full_name ?? "Guru"}
+            </h1>
             <p className="mt-2 max-w-xl opacity-90">
               {lang === "id"
                 ? `Mata pelajaran: ${profile?.subject ?? "—"} · Kelola guild kelasmu hari ini.`
