@@ -153,6 +153,10 @@ export const translations = {
   sakit: { id: "Sakit", en: "Sick", ar: "مريض" },
   alpa: { id: "Alpa", en: "Absent", ar: "غائب" },
   recordAttendance: { id: "Catat Presensi", en: "Record Attendance", ar: "تسجيل الحضور" },
+  keterangan: { id: "Keterangan", en: "Note", ar: "ملاحظة" },
+  attendanceScore: { id: "Nilai Kehadiran", en: "Attendance Score", ar: "درجة الحضور" },
+  totalMeetings: { id: "Pertemuan", en: "Meetings", ar: "اللقاءات" },
+  recap: { id: "Rekap Nilai Kehadiran", en: "Attendance Score Recap", ar: "ملخص درجات الحضور" },
   selectClass: { id: "Pilih kelas", en: "Select a class", ar: "اختر الفصل" },
 
   // Journal & events
