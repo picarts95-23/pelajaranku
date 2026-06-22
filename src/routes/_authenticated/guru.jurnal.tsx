@@ -47,16 +47,23 @@ function GuruJurnalPage() {
     queryFn: async () => (await supabase.from("classes").select("id, name").order("name")).data ?? [],
   });
 
-  // Students enrolled in the selected class (synced with class data)
+  // Students enrolled in the selected class (synced with class members).
+  // class_enrollments.student_id references auth.users (not profiles), so we
+  // fetch the enrollment ids first and then resolve their profiles separately.
   const { data: classStudents = [] } = useQuery({
     queryKey: ["jurnal-students", form.class_id], enabled: !!form.class_id,
     queryFn: async () => {
-      const { data } = await supabase
+      const { data: enr } = await supabase
         .from("class_enrollments")
-        .select("student_id, profiles(id, full_name)")
+        .select("student_id")
         .eq("class_id", form.class_id);
-      return (data ?? [])
-        .map((e: any) => e.profiles)
+      const ids = (enr ?? []).map((e: any) => e.student_id).filter(Boolean);
+      if (ids.length === 0) return [];
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("id, full_name")
+        .in("id", ids);
+      return (profs ?? [])
         .filter(Boolean)
         .sort((a: any, b: any) => (a.full_name ?? "").localeCompare(b.full_name ?? "", "id", { sensitivity: "base" }));
     },
