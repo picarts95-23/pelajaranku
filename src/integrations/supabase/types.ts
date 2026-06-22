@@ -727,6 +727,26 @@ export type Database = {
         Args: { _class_id: string; _user_id: string }
         Returns: boolean
       }
+      join_class_by_code: {
+        Args: { _code: string }
+        Returns: {
+          academic_year: string | null
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          subject: string | null
+          teacher_id: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "classes"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       list_students: {
         Args: never
         Returns: {
