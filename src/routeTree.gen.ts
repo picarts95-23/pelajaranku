@@ -33,6 +33,7 @@ import { Route as AuthenticatedGuruBankSoalRouteImport } from './routes/_authent
 import { Route as AuthenticatedDashboardSiswaRouteImport } from './routes/_authenticated/dashboard.siswa'
 import { Route as AuthenticatedDashboardGuruRouteImport } from './routes/_authenticated/dashboard.guru'
 import { Route as AuthenticatedSiswaProfilEditRouteImport } from './routes/_authenticated/siswa.profil_.edit'
+import { Route as ApiPublicGoogleCalendarCallbackRouteImport } from './routes/api/public/google.calendar.callback'
 
 const VerifyRoleRoute = VerifyRoleRouteImport.update({
   id: '/verify-role',
@@ -163,6 +164,12 @@ const AuthenticatedSiswaProfilEditRoute =
     path: '/siswa/profil/edit',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicGoogleCalendarCallbackRoute =
+  ApiPublicGoogleCalendarCallbackRouteImport.update({
+    id: '/api/public/google/calendar/callback',
+    path: '/api/public/google/calendar/callback',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -188,6 +195,7 @@ export interface FileRoutesByFullPath {
   '/siswa/status': typeof AuthenticatedSiswaStatusRoute
   '/siswa/tugas': typeof AuthenticatedSiswaTugasRoute
   '/siswa/profil/edit': typeof AuthenticatedSiswaProfilEditRoute
+  '/api/public/google/calendar/callback': typeof ApiPublicGoogleCalendarCallbackRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -213,6 +221,7 @@ export interface FileRoutesByTo {
   '/siswa/status': typeof AuthenticatedSiswaStatusRoute
   '/siswa/tugas': typeof AuthenticatedSiswaTugasRoute
   '/siswa/profil/edit': typeof AuthenticatedSiswaProfilEditRoute
+  '/api/public/google/calendar/callback': typeof ApiPublicGoogleCalendarCallbackRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -240,6 +249,7 @@ export interface FileRoutesById {
   '/_authenticated/siswa/status': typeof AuthenticatedSiswaStatusRoute
   '/_authenticated/siswa/tugas': typeof AuthenticatedSiswaTugasRoute
   '/_authenticated/siswa/profil_/edit': typeof AuthenticatedSiswaProfilEditRoute
+  '/api/public/google/calendar/callback': typeof ApiPublicGoogleCalendarCallbackRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -267,6 +277,7 @@ export interface FileRouteTypes {
     | '/siswa/status'
     | '/siswa/tugas'
     | '/siswa/profil/edit'
+    | '/api/public/google/calendar/callback'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -292,6 +303,7 @@ export interface FileRouteTypes {
     | '/siswa/status'
     | '/siswa/tugas'
     | '/siswa/profil/edit'
+    | '/api/public/google/calendar/callback'
   id:
     | '__root__'
     | '/'
@@ -318,6 +330,7 @@ export interface FileRouteTypes {
     | '/_authenticated/siswa/status'
     | '/_authenticated/siswa/tugas'
     | '/_authenticated/siswa/profil_/edit'
+    | '/api/public/google/calendar/callback'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -326,6 +339,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   LoadingRoute: typeof LoadingRoute
   VerifyRoleRoute: typeof VerifyRoleRoute
+  ApiPublicGoogleCalendarCallbackRoute: typeof ApiPublicGoogleCalendarCallbackRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -498,6 +512,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSiswaProfilEditRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/google/calendar/callback': {
+      id: '/api/public/google/calendar/callback'
+      path: '/api/public/google/calendar/callback'
+      fullPath: '/api/public/google/calendar/callback'
+      preLoaderRoute: typeof ApiPublicGoogleCalendarCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -554,6 +575,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   LoadingRoute: LoadingRoute,
   VerifyRoleRoute: VerifyRoleRoute,
+  ApiPublicGoogleCalendarCallbackRoute: ApiPublicGoogleCalendarCallbackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
