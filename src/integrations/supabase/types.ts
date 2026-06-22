@@ -434,6 +434,97 @@ export type Database = {
         }
         Relationships: []
       }
+      status_comments: {
+        Row: {
+          author_id: string
+          content: string
+          created_at: string
+          id: string
+          status_id: string
+        }
+        Insert: {
+          author_id: string
+          content: string
+          created_at?: string
+          id?: string
+          status_id: string
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          status_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "status_comments_status_id_fkey"
+            columns: ["status_id"]
+            isOneToOne: false
+            referencedRelation: "statuses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      status_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          status_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          status_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          status_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "status_reactions_status_id_fkey"
+            columns: ["status_id"]
+            isOneToOne: false
+            referencedRelation: "statuses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      statuses: {
+        Row: {
+          author_id: string
+          content: string
+          created_at: string
+          id: string
+          mood: string | null
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          content: string
+          created_at?: string
+          id?: string
+          mood?: string | null
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          mood?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       submissions: {
         Row: {
           assignment_id: string
