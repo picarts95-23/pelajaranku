@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
+import { ExportMenu } from "@/components/export-menu";
 
 export const Route = createFileRoute("/_authenticated/guru/jurnal")({
   head: () => ({ meta: [{ title: "Jurnal · EduQuest Academy" }] }),
@@ -47,16 +48,23 @@ function GuruJurnalPage() {
     queryFn: async () => (await supabase.from("classes").select("id, name").order("name")).data ?? [],
   });
 
-  // Students enrolled in the selected class (synced with class data)
+  // Students enrolled in the selected class (synced with class members).
+  // class_enrollments.student_id references auth.users (not profiles), so we
+  // fetch the enrollment ids first and then resolve their profiles separately.
   const { data: classStudents = [] } = useQuery({
     queryKey: ["jurnal-students", form.class_id], enabled: !!form.class_id,
     queryFn: async () => {
-      const { data } = await supabase
+      const { data: enr } = await supabase
         .from("class_enrollments")
-        .select("student_id, profiles(id, full_name)")
+        .select("student_id")
         .eq("class_id", form.class_id);
-      return (data ?? [])
-        .map((e: any) => e.profiles)
+      const ids = (enr ?? []).map((e: any) => e.student_id).filter(Boolean);
+      if (ids.length === 0) return [];
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("id, full_name")
+        .in("id", ids);
+      return (profs ?? [])
         .filter(Boolean)
         .sort((a: any, b: any) => (a.full_name ?? "").localeCompare(b.full_name ?? "", "id", { sensitivity: "base" }));
     },
@@ -94,10 +102,31 @@ function GuruJurnalPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["journals"] }),
   });
 
+  const exportColumns = [
+    { key: "date", header: lang === "id" ? "Tanggal" : "Date" },
+    { key: "class", header: lang === "id" ? "Kelas" : "Class" },
+    { key: "subject", header: lang === "id" ? "Mata Pelajaran" : "Subject" },
+    { key: "student", header: lang === "id" ? "Siswa" : "Student" },
+    { key: "topic", header: lang === "id" ? "Topik" : "Topic" },
+    { key: "notes", header: lang === "id" ? "Catatan" : "Notes" },
+  ];
+  const exportRows = () => journals.map((j: any) => ({
+    date: format(new Date(j.date), "dd MMM yyyy"),
+    class: j.classes?.name ?? "—",
+    subject: j.subject ?? "—",
+    student: j.profiles?.full_name ?? (lang === "id" ? "Semua siswa" : "All students"),
+    topic: j.topic,
+    notes: j.notes ?? "",
+  }));
+
   return (
     <DashboardShell accent="guru">
       <PageHeader title={t("navJournal")} subtitle={lang === "id" ? "Catat materi & refleksi pembelajaran" : "Log lesson topics & reflections"}
         actions={
+          <div className="flex flex-wrap gap-2">
+            {journals.length > 0 && (
+              <ExportMenu filename="jurnal" title={lang === "id" ? "Jurnal Mengajar" : "Teaching Journal"} columns={exportColumns} rows={exportRows} />
+            )}
           <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o) setForm(emptyForm()); }}>
             <DialogTrigger asChild><Button variant="guru"><Plus className="size-4" /> {t("newJournal")}</Button></DialogTrigger>
             <DialogContent>
@@ -137,6 +166,7 @@ function GuruJurnalPage() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          </div>
         } />
       {journals.length === 0 ? <EmptyState message={t("empty")} /> : (
         <div className="space-y-3">

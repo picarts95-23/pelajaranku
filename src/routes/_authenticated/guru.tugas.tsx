@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ScrollText, Plus, Trash2, ChevronRight } from "lucide-react";
+import { ScrollText, Plus, Trash2, ChevronRight, X, Play, KeyRound } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
@@ -15,10 +15,29 @@ import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { LinkFields, LinkBadges } from "@/components/link-fields";
+import { ExportMenu } from "@/components/export-menu";
+import { ANSWER_FORMATS, JUZ_LIST, SURAHS, type AnswerFormat } from "@/lib/quran-data";
 
 export const Route = createFileRoute("/_authenticated/guru/tugas")({
   head: () => ({ meta: [{ title: "Tugas · EduQuest Academy" }] }),
   component: GuruTugasPage,
+});
+
+const FORMAT_EMOJI: Record<string, string> = Object.fromEntries(ANSWER_FORMATS.map((f) => [f.value, f.emoji]));
+
+type TForm = {
+  class_id: string; assigned_student_id: string; title: string; description: string;
+  due_at: string; max_score: number; xp_reward: number; coin_reward: number;
+  quiz_link: string; game_link: string;
+  answer_format: AnswerFormat; options: string[]; answer_key: string;
+  muroja_juz: string; muroja_surah: string; muroja_ayat: string;
+};
+
+const emptyForm = (): TForm => ({
+  class_id: "", assigned_student_id: "", title: "", description: "", due_at: "",
+  max_score: 100, xp_reward: 50, coin_reward: 10, quiz_link: "", game_link: "",
+  answer_format: "descriptive", options: ["", ""], answer_key: "",
+  muroja_juz: "", muroja_surah: "", muroja_ayat: "",
 });
 
 function GuruTugasPage() {
@@ -29,7 +48,7 @@ function GuruTugasPage() {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const [target, setTarget] = useState<"class" | "student">("class");
-  const [form, setForm] = useState({ class_id: "", assigned_student_id: "", title: "", description: "", due_at: "", max_score: 100, xp_reward: 50, coin_reward: 10, quiz_link: "", game_link: "" });
+  const [form, setForm] = useState<TForm>(emptyForm());
 
   useEffect(() => {
     if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" });
@@ -63,13 +82,18 @@ function GuruTugasPage() {
     },
   });
 
-
   const createMut = useMutation({
     mutationFn: async () => {
       if (!user || !form.title) throw new Error(t("required"));
       if (target === "class" && !form.class_id) throw new Error(t("selectClass"));
       if (target === "student" && !form.assigned_student_id) throw new Error(t("selectStudent"));
-      const { error } = await supabase.from("assignments").insert({
+      const cleanOptions = form.options.map((o) => o.trim()).filter(Boolean);
+      if (form.answer_format === "multiple_choice" && cleanOptions.length < 2)
+        throw new Error(lang === "id" ? "Minimal 2 pilihan jawaban" : "At least 2 options");
+      if (form.answer_format === "muroja" && !form.muroja_surah)
+        throw new Error(lang === "id" ? "Pilih surah untuk muroja'ah" : "Select a surah");
+
+      const { data: inserted, error } = await supabase.from("assignments").insert({
         teacher_id: user.id,
         class_id: target === "class" ? form.class_id : null,
         assigned_student_id: target === "student" ? form.assigned_student_id : null,
@@ -77,18 +101,30 @@ function GuruTugasPage() {
         description: form.description || null, due_at: form.due_at ? new Date(form.due_at).toISOString() : null,
         max_score: form.max_score, xp_reward: form.xp_reward, coin_reward: form.coin_reward,
         quiz_link: form.quiz_link.trim() || null, game_link: form.game_link.trim() || null,
-      });
+        answer_format: form.answer_format,
+        options: form.answer_format === "multiple_choice" ? cleanOptions : null,
+        muroja_juz: form.answer_format === "muroja" ? form.muroja_juz || null : null,
+        muroja_surah: form.answer_format === "muroja" ? form.muroja_surah || null : null,
+        muroja_ayat: form.answer_format === "muroja" ? form.muroja_ayat.trim() || null : null,
+      }).select("id").single();
       if (error) throw error;
+
+      // Answer key is stored separately so students can never read it.
+      if (inserted && form.answer_key.trim()) {
+        const { error: keyErr } = await supabase.from("assignment_answer_keys").insert({
+          assignment_id: inserted.id, teacher_id: user.id, answer_key: form.answer_key.trim(),
+        });
+        if (keyErr) throw keyErr;
+      }
     },
     onSuccess: () => {
       toast.success(lang === "id" ? "Tugas dibuat" : "Assignment created");
       setOpen(false);
-      setForm({ class_id: "", assigned_student_id: "", title: "", description: "", due_at: "", max_score: 100, xp_reward: 50, coin_reward: 10, quiz_link: "", game_link: "" });
+      setForm(emptyForm());
       qc.invalidateQueries({ queryKey: ["assignments"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
-
 
   const deleteMut = useMutation({
     mutationFn: async (id: string) => { const { error } = await supabase.from("assignments").delete().eq("id", id); if (error) throw error; },
@@ -97,68 +133,162 @@ function GuruTugasPage() {
 
   const currentAssignment = useMemo(() => assignments.find((a: any) => a.id === selected), [assignments, selected]);
 
+  const exportColumns = [
+    { key: "title", header: lang === "id" ? "Judul" : "Title" },
+    { key: "format", header: lang === "id" ? "Format Jawaban" : "Answer Format" },
+    { key: "target", header: lang === "id" ? "Sasaran" : "Target" },
+    { key: "due", header: lang === "id" ? "Tenggat" : "Due" },
+    { key: "max_score", header: lang === "id" ? "Nilai Maks" : "Max Score" },
+    { key: "xp", header: "XP" },
+    { key: "submissions", header: lang === "id" ? "Pengumpulan" : "Submissions" },
+  ];
+  const exportRows = () => assignments.map((a: any) => ({
+    title: a.title,
+    format: ANSWER_FORMATS.find((f) => f.value === a.answer_format)?.[lang === "id" ? "labelId" : "labelEn"] ?? a.answer_format,
+    target: a.assigned_student_id ? (a.assignee?.full_name ?? "Personal") : a.classes?.name ?? "—",
+    due: a.due_at ? format(new Date(a.due_at), "dd MMM yyyy HH:mm") : "—",
+    max_score: a.max_score, xp: a.xp_reward, submissions: (a.submissions ?? []).length,
+  }));
+
   return (
     <DashboardShell accent="guru">
       <PageHeader
         title={t("navAssignments")}
         subtitle={lang === "id" ? "Buat tugas dan beri nilai pengumpulan siswa" : "Create tasks and grade student submissions"}
         actions={
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild><Button variant="guru"><Plus className="size-4" /> {t("newAssignment")}</Button></DialogTrigger>
-            <DialogContent className="max-w-lg">
-              <DialogHeader><DialogTitle>{t("newAssignment")}</DialogTitle></DialogHeader>
-              <div className="space-y-3">
-                <div>
-                  <Label>{t("assignTarget")}</Label>
-                  <div className="mt-1 grid grid-cols-2 gap-2">
-                    <Button type="button" variant={target === "class" ? "guru" : "outline"} className="w-full" onClick={() => setTarget("class")}>{t("targetClass")}</Button>
-                    <Button type="button" variant={target === "student" ? "guru" : "outline"} className="w-full" onClick={() => setTarget("student")}>{t("targetStudent")}</Button>
-                  </div>
-                </div>
-                {target === "class" ? (
+          <div className="flex flex-wrap gap-2">
+            {assignments.length > 0 && (
+              <ExportMenu filename="tugas" title={lang === "id" ? "Daftar Tugas" : "Assignments"} columns={exportColumns} rows={exportRows} />
+            )}
+            <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o) setForm(emptyForm()); }}>
+              <DialogTrigger asChild><Button variant="guru"><Plus className="size-4" /> {t("newAssignment")}</Button></DialogTrigger>
+              <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+                <DialogHeader><DialogTitle>{t("newAssignment")}</DialogTitle></DialogHeader>
+                <div className="space-y-3">
                   <div>
-                    <Label>{t("navClasses")}</Label>
-                    <Select value={form.class_id} onValueChange={(v) => setForm({ ...form, class_id: v })}>
-                      <SelectTrigger><SelectValue placeholder={t("selectClass")} /></SelectTrigger>
-                      <SelectContent>
-                        {classes.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
+                    <Label>{t("assignTarget")}</Label>
+                    <div className="mt-1 grid grid-cols-2 gap-2">
+                      <Button type="button" variant={target === "class" ? "guru" : "outline"} className="w-full" onClick={() => setTarget("class")}>{t("targetClass")}</Button>
+                      <Button type="button" variant={target === "student" ? "guru" : "outline"} className="w-full" onClick={() => setTarget("student")}>{t("targetStudent")}</Button>
+                    </div>
                   </div>
-                ) : (
+                  {target === "class" ? (
+                    <div>
+                      <Label>{t("navClasses")}</Label>
+                      <Select value={form.class_id} onValueChange={(v) => setForm({ ...form, class_id: v })}>
+                        <SelectTrigger><SelectValue placeholder={t("selectClass")} /></SelectTrigger>
+                        <SelectContent>{classes.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </div>
+                  ) : (
+                    <div>
+                      <Label>{t("navStudents")}</Label>
+                      <Select value={form.assigned_student_id} onValueChange={(v) => setForm({ ...form, assigned_student_id: v })}>
+                        <SelectTrigger><SelectValue placeholder={t("selectStudent")} /></SelectTrigger>
+                        <SelectContent>
+                          {students.map((s: any) => (
+                            <SelectItem key={s.id} value={s.id}>{s.full_name}{s.class_name ? ` · ${s.class_name}` : ""}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  <div><Label>{t("title")}</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
+                  <div><Label>{t("description")}</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
+
+                  {/* Answer format selector */}
                   <div>
-                    <Label>{t("navStudents")}</Label>
-                    <Select value={form.assigned_student_id} onValueChange={(v) => setForm({ ...form, assigned_student_id: v })}>
-                      <SelectTrigger><SelectValue placeholder={t("selectStudent")} /></SelectTrigger>
+                    <Label>{lang === "id" ? "Format Jawaban Siswa" : "Student Answer Format"}</Label>
+                    <Select value={form.answer_format} onValueChange={(v) => setForm({ ...form, answer_format: v as AnswerFormat })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        {students.map((s: any) => (
-                          <SelectItem key={s.id} value={s.id}>
-                            {s.full_name}{s.class_name ? ` · ${s.class_name}` : ""}
-                          </SelectItem>
+                        {ANSWER_FORMATS.map((f) => (
+                          <SelectItem key={f.value} value={f.value}>{f.emoji} {lang === "id" ? f.labelId : f.labelEn}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
-                )}
 
-                <div><Label>{t("title")}</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
-                <div><Label>{t("description")}</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div><Label>{t("deadline")}</Label><Input type="datetime-local" value={form.due_at} onChange={(e) => setForm({ ...form, due_at: e.target.value })} /></div>
-                  <div><Label>{t("maxScore")}</Label><Input type="number" value={form.max_score} onChange={(e) => setForm({ ...form, max_score: +e.target.value })} /></div>
+                  {/* Multiple choice options */}
+                  {form.answer_format === "multiple_choice" && (
+                    <div className="rounded-xl border-2 border-dashed border-guru/40 p-3 space-y-2">
+                      <Label className="flex items-center gap-1.5">🔘 {lang === "id" ? "Pilihan Jawaban" : "Answer Options"}</Label>
+                      {form.options.map((opt, i) => (
+                        <div key={i} className="flex items-center gap-2">
+                          <span className="font-display text-sm font-bold text-guru">{String.fromCharCode(65 + i)}.</span>
+                          <Input value={opt} onChange={(e) => { const o = [...form.options]; o[i] = e.target.value; setForm({ ...form, options: o }); }} placeholder={lang === "id" ? `Pilihan ${i + 1}` : `Option ${i + 1}`} />
+                          {form.options.length > 2 && (
+                            <Button type="button" size="icon" variant="ghost" className="size-8 shrink-0" onClick={() => setForm({ ...form, options: form.options.filter((_, idx) => idx !== i) })}><X className="size-4 text-destructive" /></Button>
+                          )}
+                        </div>
+                      ))}
+                      <Button type="button" size="sm" variant="outline" onClick={() => setForm({ ...form, options: [...form.options, ""] })}><Plus className="size-4" /> {lang === "id" ? "Tambah pilihan" : "Add option"}</Button>
+                    </div>
+                  )}
+
+                  {/* Muroja'ah Al-Qur'an */}
+                  {form.answer_format === "muroja" && (
+                    <div className="rounded-xl border-2 border-dashed border-guru/40 p-3 space-y-2">
+                      <Label className="flex items-center gap-1.5">📖 {lang === "id" ? "Misi Muroja'ah Hafalan" : "Memorization Mission"}</Label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <Label className="text-xs">Juz</Label>
+                          <Select value={form.muroja_juz} onValueChange={(v) => setForm({ ...form, muroja_juz: v })}>
+                            <SelectTrigger><SelectValue placeholder="Juz" /></SelectTrigger>
+                            <SelectContent>{JUZ_LIST.map((j) => <SelectItem key={j} value={String(j)}>Juz {j}</SelectItem>)}</SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label className="text-xs">Surah</Label>
+                          <Select value={form.muroja_surah} onValueChange={(v) => setForm({ ...form, muroja_surah: v })}>
+                            <SelectTrigger><SelectValue placeholder="Surah" /></SelectTrigger>
+                            <SelectContent className="max-h-64">
+                              {SURAHS.map((s) => <SelectItem key={s.number} value={s.name}>{s.number}. {s.name}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <div>
+                        <Label className="text-xs">{lang === "id" ? "Ayat (mis. 1-10)" : "Verses (e.g. 1-10)"}</Label>
+                        <Input value={form.muroja_ayat} onChange={(e) => setForm({ ...form, muroja_ayat: e.target.value })} placeholder={lang === "id" ? "Contoh: 1-10" : "e.g. 1-10"} />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Answer key — hidden from students */}
+                  <div>
+                    <Label className="flex items-center gap-1.5"><KeyRound className="size-3.5 text-guru" /> {lang === "id" ? "Kunci Jawaban (rahasia)" : "Answer Key (secret)"}</Label>
+                    {form.answer_format === "multiple_choice" ? (
+                      <Select value={form.answer_key} onValueChange={(v) => setForm({ ...form, answer_key: v })}>
+                        <SelectTrigger><SelectValue placeholder={lang === "id" ? "Pilih jawaban benar" : "Select correct answer"} /></SelectTrigger>
+                        <SelectContent>
+                          {form.options.map((o) => o.trim()).filter(Boolean).map((o, i) => <SelectItem key={i} value={o}>{String.fromCharCode(65 + i)}. {o}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Textarea value={form.answer_key} onChange={(e) => setForm({ ...form, answer_key: e.target.value })} placeholder={lang === "id" ? "Hanya guru yang dapat melihat ini" : "Only teachers can see this"} />
+                    )}
+                    <p className="mt-1 text-xs text-muted-foreground">🔒 {lang === "id" ? "Kunci jawaban tidak terlihat oleh siswa." : "The answer key is never visible to students."}</p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div><Label>{t("deadline")}</Label><Input type="datetime-local" value={form.due_at} onChange={(e) => setForm({ ...form, due_at: e.target.value })} /></div>
+                    <div><Label>{t("maxScore")}</Label><Input type="number" value={form.max_score} onChange={(e) => setForm({ ...form, max_score: +e.target.value })} /></div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div><Label>{t("xpReward")}</Label><Input type="number" value={form.xp_reward} onChange={(e) => setForm({ ...form, xp_reward: +e.target.value })} /></div>
+                    <div><Label>{t("coinReward")}</Label><Input type="number" value={form.coin_reward} onChange={(e) => setForm({ ...form, coin_reward: +e.target.value })} /></div>
+                  </div>
+                  <LinkFields quizLink={form.quiz_link} gameLink={form.game_link} onQuiz={(v) => setForm({ ...form, quiz_link: v })} onGame={(v) => setForm({ ...form, game_link: v })} />
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div><Label>{t("xpReward")}</Label><Input type="number" value={form.xp_reward} onChange={(e) => setForm({ ...form, xp_reward: +e.target.value })} /></div>
-                  <div><Label>{t("coinReward")}</Label><Input type="number" value={form.coin_reward} onChange={(e) => setForm({ ...form, coin_reward: +e.target.value })} /></div>
-                </div>
-                <LinkFields quizLink={form.quiz_link} gameLink={form.game_link} onQuiz={(v) => setForm({ ...form, quiz_link: v })} onGame={(v) => setForm({ ...form, game_link: v })} />
-              </div>
-              <DialogFooter>
-                <Button variant="ghost" onClick={() => setOpen(false)}>{t("cancel")}</Button>
-                <Button variant="guru" disabled={createMut.isPending} onClick={() => createMut.mutate()}>{t("save")}</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+                <DialogFooter>
+                  <Button variant="ghost" onClick={() => setOpen(false)}>{t("cancel")}</Button>
+                  <Button variant="guru" disabled={createMut.isPending} onClick={() => createMut.mutate()}>{t("save")}</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
         }
       />
 
@@ -174,7 +304,7 @@ function GuruTugasPage() {
                 <button key={a.id} onClick={() => setSelected(a.id)} className={`w-full text-left rounded-2xl border-2 p-4 shadow-soft transition ${selected === a.id ? "border-guru bg-guru/10" : "border-border bg-card hover:border-guru/50"}`}>
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <div className="font-display font-bold truncate">{a.title}</div>
+                      <div className="font-display font-bold truncate">{FORMAT_EMOJI[a.answer_format] ?? "📝"} {a.title}</div>
                       <div className="text-xs text-muted-foreground">
                         {a.assigned_student_id ? (a.assignee?.full_name ?? t("personalTask")) : a.classes?.name} · {a.due_at ? format(new Date(a.due_at), "dd MMM") : "—"}
                       </div>
@@ -186,7 +316,6 @@ function GuruTugasPage() {
                     {a.assigned_student_id && <span className="rounded-full bg-accent/15 px-2 py-0.5 font-display font-bold text-accent">{t("personalTask")}</span>}
                     {pending > 0 && <span className="rounded-full bg-destructive/15 px-2 py-0.5 font-display font-bold text-destructive">{pending} {lang === "id" ? "perlu nilai" : "to grade"}</span>}
                   </div>
-
                 </button>
               );
             })}
@@ -208,6 +337,16 @@ function GuruTugasPage() {
 function AssignmentDetail({ assignment, onDelete }: { assignment: any; onDelete: () => void }) {
   const { t, lang } = useLang();
   const qc = useQueryClient();
+  const fmtLabel = ANSWER_FORMATS.find((f) => f.value === assignment.answer_format);
+
+  const { data: answerKey } = useQuery({
+    queryKey: ["answer-key", assignment.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("assignment_answer_keys").select("answer_key").eq("assignment_id", assignment.id).maybeSingle();
+      return data?.answer_key ?? null;
+    },
+  });
+
   const { data: subs = [] } = useQuery({
     queryKey: ["submissions", assignment.id],
     queryFn: async () => {
@@ -224,9 +363,22 @@ function AssignmentDetail({ assignment, onDelete }: { assignment: any; onDelete:
       const { error } = await supabase.from("submissions").update({ status: "graded", score, feedback }).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { toast.success(lang === "id" ? "Nilai disimpan" : "Grade saved"); qc.invalidateQueries({ queryKey: ["submissions", assignment.id] }); },
+    onSuccess: () => { toast.success(lang === "id" ? "Nilai disimpan ✅" : "Grade saved ✅"); qc.invalidateQueries({ queryKey: ["submissions", assignment.id] }); },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  const exportColumns = [
+    { key: "name", header: lang === "id" ? "Nama Siswa" : "Student" },
+    { key: "status", header: "Status" },
+    { key: "score", header: lang === "id" ? "Nilai" : "Score" },
+    { key: "feedback", header: lang === "id" ? "Umpan Balik" : "Feedback" },
+  ];
+  const exportRows = () => subs.map((s: any) => ({
+    name: s.profile?.full_name ?? "—",
+    status: s.status === "graded" ? (lang === "id" ? "Dinilai" : "Graded") : (lang === "id" ? "Terkumpul" : "Submitted"),
+    score: s.score != null ? `${s.score}/${assignment.max_score}` : "—",
+    feedback: s.feedback ?? "",
+  }));
 
   return (
     <div className="rounded-2xl border-2 border-border bg-card p-5 shadow-card-rpg">
@@ -234,43 +386,85 @@ function AssignmentDetail({ assignment, onDelete }: { assignment: any; onDelete:
         <div>
           <h2 className="font-display text-xl font-bold flex items-center gap-2"><ScrollText className="size-5 text-guru" />{assignment.title}</h2>
           {assignment.description && <p className="mt-1 text-sm text-muted-foreground">{assignment.description}</p>}
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            {fmtLabel && <span className="rounded-full bg-guru/10 px-2.5 py-0.5 text-xs font-display font-bold text-guru">{fmtLabel.emoji} {lang === "id" ? fmtLabel.labelId : fmtLabel.labelEn}</span>}
+            {assignment.answer_format === "muroja" && (
+              <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-display font-bold text-emerald-600">
+                📖 {assignment.muroja_juz ? `Juz ${assignment.muroja_juz} · ` : ""}{assignment.muroja_surah}{assignment.muroja_ayat ? ` : ${assignment.muroja_ayat}` : ""}
+              </span>
+            )}
+          </div>
+          {Array.isArray(assignment.options) && assignment.options.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-1.5 text-xs">
+              {assignment.options.map((o: string, i: number) => <span key={i} className="rounded-md bg-muted px-2 py-0.5">{String.fromCharCode(65 + i)}. {o}</span>)}
+            </div>
+          )}
           <LinkBadges quizLink={assignment.quiz_link} gameLink={assignment.game_link} />
         </div>
         <Button size="sm" variant="ghost" onClick={onDelete}><Trash2 className="size-4 text-destructive" /></Button>
       </div>
 
-      <h3 className="mt-4 mb-2 font-display font-bold text-sm">{t("submissions")} ({subs.length})</h3>
+      {answerKey && (
+        <div className="mb-3 rounded-xl border border-guru/30 bg-guru/5 p-3 text-sm">
+          <div className="flex items-center gap-1.5 font-display font-bold text-guru"><KeyRound className="size-4" /> {lang === "id" ? "Kunci Jawaban" : "Answer Key"} <span className="text-xs font-normal text-muted-foreground">🔒 {lang === "id" ? "rahasia guru" : "teacher only"}</span></div>
+          <p className="mt-1 whitespace-pre-wrap text-foreground/80">{answerKey}</p>
+        </div>
+      )}
+
+      <div className="mt-4 mb-2 flex items-center justify-between">
+        <h3 className="font-display font-bold text-sm">📋 {t("submissions")} ({subs.length})</h3>
+        {subs.length > 0 && <ExportMenu filename={`penilaian-${assignment.title}`} title={`${lang === "id" ? "Penilaian" : "Grades"}: ${assignment.title}`} columns={exportColumns} rows={exportRows} />}
+      </div>
       {subs.length === 0 ? <EmptyState message={t("empty")} /> : (
         <div className="space-y-2">
-          {subs.map((s: any) => <GradeRow key={s.id} sub={s} maxScore={assignment.max_score} onGrade={(score, fb) => gradeMut.mutate({ id: s.id, score, feedback: fb })} />)}
+          {subs.map((s: any) => <GradeRow key={s.id} sub={s} maxScore={assignment.max_score} isVoice={assignment.answer_format === "voice"} onGrade={(score, fb) => gradeMut.mutate({ id: s.id, score, feedback: fb })} />)}
         </div>
       )}
     </div>
   );
 }
 
-function GradeRow({ sub, maxScore, onGrade }: { sub: any; maxScore: number; onGrade: (score: number, feedback: string) => void }) {
-  const { t } = useLang();
+function GradeRow({ sub, maxScore, isVoice, onGrade }: { sub: any; maxScore: number; isVoice: boolean; onGrade: (score: number, feedback: string) => void }) {
+  const { t, lang } = useLang();
   const [score, setScore] = useState<number | "">(sub.score ?? "");
   const [fb, setFb] = useState(sub.feedback ?? "");
+  const [voiceUrl, setVoiceUrl] = useState<string | null>(null);
+  const [loadingVoice, setLoadingVoice] = useState(false);
+
+  async function playVoice() {
+    if (voiceUrl || !sub.file_url) return;
+    setLoadingVoice(true);
+    const { data } = await supabase.storage.from("voice-answers").createSignedUrl(sub.file_url, 3600);
+    setVoiceUrl(data?.signedUrl ?? null);
+    setLoadingVoice(false);
+  }
+
   return (
     <div className="rounded-xl border border-border bg-muted/30 p-3">
       <div className="flex items-center justify-between gap-2">
-        <div className="font-display font-semibold">{sub.profile?.full_name ?? "—"}</div>
-        <span className={`rounded-full px-2 py-0.5 text-xs font-display font-bold ${sub.status === "graded" ? "bg-xp/20 text-xp" : "bg-primary/15 text-primary"}`}>{sub.status === "graded" ? t("graded") : t("submitted")}</span>
+        <div className="font-display font-semibold">👤 {sub.profile?.full_name ?? "—"}</div>
+        <span className={`rounded-full px-2 py-0.5 text-xs font-display font-bold ${sub.status === "graded" ? "bg-xp/20 text-xp" : "bg-primary/15 text-primary"}`}>{sub.status === "graded" ? `✅ ${t("graded")}` : `📤 ${t("submitted")}`}</span>
       </div>
       {sub.content && <p className="mt-2 whitespace-pre-wrap text-sm">{sub.content}</p>}
-      {sub.file_url && <a href={sub.file_url} target="_blank" rel="noreferrer" className="mt-1 inline-block text-xs text-primary underline">📎 {sub.file_url}</a>}
+      {isVoice && sub.file_url ? (
+        <div className="mt-2">
+          {voiceUrl ? (
+            <audio controls src={voiceUrl} className="w-full" />
+          ) : (
+            <Button type="button" size="sm" variant="outline" onClick={playVoice} disabled={loadingVoice}><Play className="size-4" /> 🎙️ {lang === "id" ? "Dengarkan rekaman" : "Listen to recording"}</Button>
+          )}
+        </div>
+      ) : (!isVoice && sub.file_url && <a href={sub.file_url} target="_blank" rel="noreferrer" className="mt-1 inline-block text-xs text-primary underline">📎 {sub.file_url}</a>)}
       <div className="mt-3 grid gap-2 sm:grid-cols-[120px,1fr,auto] sm:items-end">
         <div>
-          <Label className="text-xs">{t("score")} / {maxScore}</Label>
+          <Label className="text-xs">⭐ {t("score")} / {maxScore}</Label>
           <Input type="number" min={0} max={maxScore} value={score} onChange={(e) => setScore(e.target.value === "" ? "" : +e.target.value)} />
         </div>
         <div>
-          <Label className="text-xs">{t("feedback")}</Label>
+          <Label className="text-xs">💬 {t("feedback")}</Label>
           <Input value={fb} onChange={(e) => setFb(e.target.value)} />
         </div>
-        <Button variant="guru" size="sm" disabled={score === ""} onClick={() => onGrade(Number(score), fb)}>{t("giveGrade")}</Button>
+        <Button variant="guru" size="sm" disabled={score === ""} onClick={() => onGrade(Number(score), fb)}>🏆 {t("giveGrade")}</Button>
       </div>
     </div>
   );
