@@ -1,13 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { Award, BookOpen, Coins, GraduationCap, IdCard, Pencil, Sparkles, Star, Trophy } from "lucide-react";
+import { Award, BookOpen, Cake, Coins, GraduationCap, Heart, IdCard, Pencil, Quote, Sparkles, Star, Trophy, User2, Venus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DashboardShell, StatCard } from "@/components/dashboard-shell";
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { getIslamicAvatar } from "@/lib/islamic-avatar";
+import { getCharacterByKey } from "@/lib/character-roster";
+import { format } from "date-fns";
 
 export const Route = createFileRoute("/_authenticated/siswa/profil")({
   head: () => ({ meta: [{ title: "Profil Siswi · EduQuest Academy" }] }),
@@ -18,13 +20,14 @@ function SiswaProfil() {
   const { user, profile } = useAuth();
   const { lang } = useLang();
 
-
+  const p = profile as any;
   const xp = profile?.xp ?? 0;
   const level = profile?.level ?? 1;
   const coins = profile?.coins ?? 0;
   const xpInLevel = xp % 100;
   const pct = Math.min(100, Math.round((xpInLevel / 100) * 100));
-  const avatar = getIslamicAvatar(user?.id ?? profile?.full_name, "siswa");
+  const character = getCharacterByKey(p?.character_key);
+  const avatar = character?.src ?? p?.avatar_url ?? getIslamicAvatar(user?.id ?? profile?.full_name, "siswa");
 
   const { data: stats } = useQuery({
     queryKey: ["siswa-profil-stats", user?.id],
