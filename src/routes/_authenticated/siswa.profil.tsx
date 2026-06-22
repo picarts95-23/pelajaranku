@@ -220,7 +220,7 @@ function ProgressRow({ label, value, max }: { label: string; value: number; max:
   );
 }
 
-function BioItem({ icon, label, value, lang }: { icon: React.ReactNode; label: string; value?: string | null; lang: string }) {
+function BioItem({ icon, label, value, lang }: { icon: ReactNode; label: string; value?: string | null; lang: string }) {
   return (
     <div className="flex items-start gap-3 rounded-2xl border-2 border-border bg-muted/30 p-3">
       <div className="grid size-9 shrink-0 place-items-center rounded-xl bg-gradient-magic text-white">{icon}</div>
