@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Save, Trophy } from "lucide-react";
+import { Save, Trophy, SlidersHorizontal, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
@@ -19,8 +19,32 @@ export const Route = createFileRoute("/_authenticated/guru/presensi")({
 const STATUSES = ["hadir", "izin", "sakit", "alpa"] as const;
 type AttStatus = typeof STATUSES[number];
 
-// Weight each status contributes to the accumulated attendance score (0-100).
-const STATUS_WEIGHT: Record<AttStatus, number> = { hadir: 1, izin: 0.5, sakit: 0.5, alpa: 0 };
+// Weight (0-100) each status contributes per meeting to the accumulated attendance score.
+const DEFAULT_WEIGHTS: Record<AttStatus, number> = { hadir: 100, izin: 50, sakit: 50, alpa: 0 };
+const WEIGHTS_KEY = "eduquest:attendance-weights";
+
+function loadWeights(): Record<AttStatus, number> {
+  if (typeof window === "undefined") return { ...DEFAULT_WEIGHTS };
+  try {
+    const raw = window.localStorage.getItem(WEIGHTS_KEY);
+    if (!raw) return { ...DEFAULT_WEIGHTS };
+    const parsed = JSON.parse(raw);
+    return {
+      hadir: clampWeight(parsed.hadir, DEFAULT_WEIGHTS.hadir),
+      izin: clampWeight(parsed.izin, DEFAULT_WEIGHTS.izin),
+      sakit: clampWeight(parsed.sakit, DEFAULT_WEIGHTS.sakit),
+      alpa: clampWeight(parsed.alpa, DEFAULT_WEIGHTS.alpa),
+    };
+  } catch {
+    return { ...DEFAULT_WEIGHTS };
+  }
+}
+
+function clampWeight(v: unknown, fallback: number): number {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.min(100, Math.max(0, Math.round(n)));
+}
 
 function GuruPresensiPage() {
   const { user, role, loading } = useAuth();
@@ -31,6 +55,15 @@ function GuruPresensiPage() {
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [marks, setMarks] = useState<Record<string, AttStatus>>({});
   const [notes, setNotes] = useState<Record<string, string>>({});
+  const [weights, setWeights] = useState<Record<AttStatus, number>>(DEFAULT_WEIGHTS);
+  const [showSettings, setShowSettings] = useState(false);
+
+  useEffect(() => { setWeights(loadWeights()); }, []);
+
+  function saveWeights(next: Record<AttStatus, number>) {
+    setWeights(next);
+    try { window.localStorage.setItem(WEIGHTS_KEY, JSON.stringify(next)); } catch { /* ignore */ }
+  }
 
   useEffect(() => {
     if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" });
@@ -84,13 +117,14 @@ function GuruPresensiPage() {
       recs.forEach((r) => {
         const st = r.status as AttStatus;
         if (st in counts) counts[st as keyof typeof counts]++;
-        weighted += STATUS_WEIGHT[st] ?? 0;
+        weighted += weights[st] ?? 0;
       });
-      const score = totalMeetings > 0 ? Math.round((weighted / totalMeetings) * 100) : 0;
+      // Each meeting's weight is already on a 0-100 scale, so the average is the score.
+      const score = totalMeetings > 0 ? Math.round(weighted / totalMeetings) : 0;
       byStudent[s.id] = { ...counts, total: recs.length, score };
     });
     return { byStudent, totalMeetings };
-  }, [allAtt, students]);
+  }, [allAtt, students, weights]);
 
   useEffect(() => {
     const initialMarks: Record<string, AttStatus> = {};
@@ -123,16 +157,47 @@ function GuruPresensiPage() {
     <DashboardShell accent="guru">
       <PageHeader title={t("navAttendance")} subtitle={lang === "id" ? "Catat kehadiran harian, urut abjad, dengan akumulasi nilai" : "Mark daily attendance (A-Z) with accumulated score"} />
 
-      <div className="mb-4 grid gap-3 sm:grid-cols-[1fr,200px,auto]">
+      <div className="mb-4 grid gap-3 sm:grid-cols-[1fr,200px,auto,auto]">
         <Select value={classId} onValueChange={setClassId}>
           <SelectTrigger><SelectValue placeholder={t("selectClass")} /></SelectTrigger>
           <SelectContent>{classes.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
         </Select>
         <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+        <Button variant="outline" onClick={() => setShowSettings((v) => !v)}>
+          <SlidersHorizontal className="size-4" /> {t("scoreSettings")}
+        </Button>
         <Button variant="guru" disabled={!classId || students.length === 0 || saveMut.isPending} onClick={() => saveMut.mutate()}>
           <Save className="size-4" /> {t("save")}
         </Button>
       </div>
+
+      {showSettings && (
+        <div className="mb-4 rounded-2xl border-2 border-border bg-card p-4 shadow-card-rpg">
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <h3 className="font-display text-sm font-bold">{t("scoreWeights")}</h3>
+            <Button variant="ghost" size="sm" onClick={() => saveWeights({ ...DEFAULT_WEIGHTS })}>
+              <RotateCcw className="size-3.5" /> {t("resetDefault")}
+            </Button>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-4">
+            {STATUSES.map((st) => (
+              <label key={st} className="flex flex-col gap-1">
+                <span className="text-xs font-display font-semibold capitalize text-muted-foreground">{t(st)}</span>
+                <Input
+                  type="number" min={0} max={100} value={weights[st]}
+                  onChange={(e) => saveWeights({ ...weights, [st]: clampWeight(e.target.value, weights[st]) })}
+                />
+              </label>
+            ))}
+          </div>
+          <p className="mt-3 text-[11px] text-muted-foreground">
+            {lang === "id"
+              ? "Bobot adalah nilai 0–100 yang disumbang setiap status per pertemuan. Nilai akhir = rata-rata bobot seluruh pertemuan. Disimpan otomatis di perangkat ini."
+              : "Weights are 0–100 values each status contributes per meeting. Final score = average weight across all meetings. Saved automatically on this device."}
+          </p>
+        </div>
+      )}
+
 
       {!classId ? <EmptyState message={t("selectClass")} /> : students.length === 0 ? <EmptyState message={t("empty")} /> : (
         <>
@@ -202,8 +267,8 @@ function GuruPresensiPage() {
           </div>
           <p className="mt-2 text-[11px] text-muted-foreground">
             {lang === "id"
-              ? "Nilai = (Hadir×1 + Izin×0,5 + Sakit×0,5 + Alpa×0) ÷ total pertemuan × 100."
-              : "Score = (Present×1 + Excused×0.5 + Sick×0.5 + Absent×0) ÷ total meetings × 100."}
+              ? `Nilai = (Hadir×${weights.hadir} + Izin×${weights.izin} + Sakit×${weights.sakit} + Alpa×${weights.alpa}) ÷ total pertemuan.`
+              : `Score = (Present×${weights.hadir} + Excused×${weights.izin} + Sick×${weights.sakit} + Absent×${weights.alpa}) ÷ total meetings.`}
           </p>
         </>
       )}
