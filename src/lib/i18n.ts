@@ -157,6 +157,10 @@ export const translations = {
   attendanceScore: { id: "Nilai Kehadiran", en: "Attendance Score", ar: "درجة الحضور" },
   totalMeetings: { id: "Pertemuan", en: "Meetings", ar: "اللقاءات" },
   recap: { id: "Rekap Nilai Kehadiran", en: "Attendance Score Recap", ar: "ملخص درجات الحضور" },
+  scoreSettings: { id: "Pengaturan Rumus Nilai", en: "Score Formula Settings", ar: "إعدادات صيغة الدرجة" },
+  scoreWeights: { id: "Bobot Status Kehadiran (0–100)", en: "Attendance Status Weights (0–100)", ar: "أوزان حالة الحضور" },
+  resetDefault: { id: "Kembalikan Default", en: "Reset to Default", ar: "إعادة الضبط" },
+  weightsSaved: { id: "Bobot nilai disimpan", en: "Weights saved", ar: "تم حفظ الأوزان" },
   selectClass: { id: "Pilih kelas", en: "Select a class", ar: "اختر الفصل" },
 
   // Journal & events
