@@ -71,7 +71,9 @@ function GuruDashboard() {
           <div>
             <div className="text-sm font-display font-semibold uppercase tracking-wider opacity-80">{t("dashboard")}</div>
             <h1 className="mt-1 font-display text-3xl font-bold sm:text-4xl">
-              {t("welcome")}, {profile?.full_name ?? "Guru"}
+              {lang === "id"
+                ? `Selamat datang, Guru ${profile?.full_name ?? ""}`.trim()
+                : `${t("welcome")}, ${profile?.full_name ?? "Teacher"}`}
             </h1>
             <p className="mt-2 max-w-xl opacity-90">
               {lang === "id"
