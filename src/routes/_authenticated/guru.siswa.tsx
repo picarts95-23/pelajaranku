@@ -186,10 +186,16 @@ function GuruSiswaPage() {
                     <span className="inline-flex items-center gap-1 text-xs text-coin font-display font-bold"><Coins className="size-3" /> {s.coins}</span>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <Button size="sm" variant="outline" onClick={() => setSelected(s)}>
-                      <Eye className="size-4 sm:mr-1" />
-                      <span className="hidden sm:inline">{t("viewProfile")}</span>
-                    </Button>
+                    <div className="flex justify-end gap-2">
+                      <Button size="sm" variant="quest" onClick={() => { setEnrollTarget(s); setEnrollClassId(""); }}>
+                        <UserPlus className="size-4 sm:mr-1" />
+                        <span className="hidden sm:inline">{lang === "id" ? "Tambah ke kelas" : "Add to class"}</span>
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => setSelected(s)}>
+                        <Eye className="size-4 sm:mr-1" />
+                        <span className="hidden sm:inline">{t("viewProfile")}</span>
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
