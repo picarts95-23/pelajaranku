@@ -65,9 +65,14 @@ function GuruTugasPage() {
 
   const createMut = useMutation({
     mutationFn: async () => {
-      if (!user || !form.class_id || !form.title) throw new Error(t("required"));
+      if (!user || !form.title) throw new Error(t("required"));
+      if (target === "class" && !form.class_id) throw new Error(t("selectClass"));
+      if (target === "student" && !form.assigned_student_id) throw new Error(t("selectStudent"));
       const { error } = await supabase.from("assignments").insert({
-        teacher_id: user.id, class_id: form.class_id, title: form.title,
+        teacher_id: user.id,
+        class_id: target === "class" ? form.class_id : null,
+        assigned_student_id: target === "student" ? form.assigned_student_id : null,
+        title: form.title,
         description: form.description || null, due_at: form.due_at ? new Date(form.due_at).toISOString() : null,
         max_score: form.max_score, xp_reward: form.xp_reward, coin_reward: form.coin_reward,
       });
@@ -76,11 +81,12 @@ function GuruTugasPage() {
     onSuccess: () => {
       toast.success(lang === "id" ? "Tugas dibuat" : "Assignment created");
       setOpen(false);
-      setForm({ class_id: "", title: "", description: "", due_at: "", max_score: 100, xp_reward: 50, coin_reward: 10 });
+      setForm({ class_id: "", assigned_student_id: "", title: "", description: "", due_at: "", max_score: 100, xp_reward: 50, coin_reward: 10 });
       qc.invalidateQueries({ queryKey: ["assignments"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
 
   const deleteMut = useMutation({
     mutationFn: async (id: string) => { const { error } = await supabase.from("assignments").delete().eq("id", id); if (error) throw error; },
