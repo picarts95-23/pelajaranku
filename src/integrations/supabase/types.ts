@@ -118,6 +118,36 @@ export type Database = {
           },
         ]
       }
+      attendance_settings: {
+        Row: {
+          alpa: number
+          created_at: string
+          hadir: number
+          izin: number
+          sakit: number
+          teacher_id: string
+          updated_at: string
+        }
+        Insert: {
+          alpa?: number
+          created_at?: string
+          hadir?: number
+          izin?: number
+          sakit?: number
+          teacher_id: string
+          updated_at?: string
+        }
+        Update: {
+          alpa?: number
+          created_at?: string
+          hadir?: number
+          izin?: number
+          sakit?: number
+          teacher_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       badges: {
         Row: {
           code: string
