@@ -19,6 +19,10 @@ export const Route = createFileRoute("/_authenticated/guru/presensi")({
 const STATUSES = ["hadir", "izin", "sakit", "alpa"] as const;
 type AttStatus = typeof STATUSES[number];
 
+// Stable empty array so query fallbacks keep the same reference across renders
+// (avoids effect/memo dependency loops when a query is disabled/undefined).
+const EMPTY: never[] = [];
+
 // Weight (0-100) each status contributes per meeting to the accumulated attendance score.
 const DEFAULT_WEIGHTS: Record<AttStatus, number> = { hadir: 100, izin: 50, sakit: 50, alpa: 0 };
 const WEIGHTS_KEY = "eduquest:attendance-weights";
@@ -113,7 +117,7 @@ function GuruPresensiPage() {
     queryFn: async () => (await supabase.from("classes").select("id, name").order("name")).data ?? [],
   });
 
-  const { data: students = [] } = useQuery({
+  const { data: students = EMPTY } = useQuery({
     queryKey: ["enrolls", classId], enabled: !!classId,
     queryFn: async () => {
       const { data: enrolls } = await supabase.from("class_enrollments").select("student_id").eq("class_id", classId);
@@ -127,7 +131,7 @@ function GuruPresensiPage() {
     },
   });
 
-  const { data: existing = [] } = useQuery({
+  const { data: existing = EMPTY } = useQuery({
     queryKey: ["att", classId, date], enabled: !!classId && !!date,
     queryFn: async () => {
       const { data } = await supabase.from("attendance").select("*").eq("class_id", classId).eq("date", date);
@@ -136,7 +140,7 @@ function GuruPresensiPage() {
   });
 
   // All attendance records for this class — used to accumulate an attendance score.
-  const { data: allAtt = [] } = useQuery({
+  const { data: allAtt = EMPTY } = useQuery({
     queryKey: ["att-all", classId], enabled: !!classId,
     queryFn: async () => {
       const { data } = await supabase.from("attendance").select("student_id, status, date").eq("class_id", classId);
