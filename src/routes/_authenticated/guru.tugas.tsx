@@ -28,6 +28,7 @@ const FORMAT_EMOJI: Record<string, string> = Object.fromEntries(ANSWER_FORMATS.m
 
 type TForm = {
   class_id: string; assigned_student_id: string; title: string; description: string;
+  subject: string;
   due_at: string; max_score: number; xp_reward: number; coin_reward: number;
   quiz_link: string; game_link: string;
   answer_format: AnswerFormat; options: string[]; answer_key: string;
@@ -35,7 +36,7 @@ type TForm = {
 };
 
 const emptyForm = (): TForm => ({
-  class_id: "", assigned_student_id: "", title: "", description: "", due_at: "",
+  class_id: "", assigned_student_id: "", title: "", description: "", subject: "", due_at: "",
   max_score: 100, xp_reward: 50, coin_reward: 10, quiz_link: "", game_link: "",
   answer_format: "descriptive", options: ["", ""], answer_key: "",
   muroja_juz: "", muroja_surah: "", muroja_ayat: "",
