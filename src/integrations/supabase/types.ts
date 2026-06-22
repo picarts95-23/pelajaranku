@@ -332,41 +332,62 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          bio: string | null
+          birthdate: string | null
+          character_key: string | null
           class_name: string | null
           coins: number
           created_at: string
           full_name: string
+          gender: string | null
+          hobby: string | null
           id: string
           level: number
+          motto: string | null
           school_id_number: string | null
           subject: string | null
           updated_at: string
+          username: string | null
           xp: number
         }
         Insert: {
           avatar_url?: string | null
+          bio?: string | null
+          birthdate?: string | null
+          character_key?: string | null
           class_name?: string | null
           coins?: number
           created_at?: string
           full_name: string
+          gender?: string | null
+          hobby?: string | null
           id: string
           level?: number
+          motto?: string | null
           school_id_number?: string | null
           subject?: string | null
           updated_at?: string
+          username?: string | null
           xp?: number
         }
         Update: {
           avatar_url?: string | null
+          bio?: string | null
+          birthdate?: string | null
+          character_key?: string | null
           class_name?: string | null
           coins?: number
           created_at?: string
           full_name?: string
+          gender?: string | null
+          hobby?: string | null
           id?: string
           level?: number
+          motto?: string | null
           school_id_number?: string | null
           subject?: string | null
           updated_at?: string
+          username?: string | null
           xp?: number
         }
         Relationships: []
