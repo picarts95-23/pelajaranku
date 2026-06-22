@@ -2,7 +2,8 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { Coins, Flame, ScrollText, Sparkles, Star, Sword, Trophy } from "lucide-react";
+import { ArrowRight, Award, BookOpen, ClipboardList, Coins, Flame, GraduationCap, Heart, MessageCircle, NotebookPen, PencilRuler, ScrollText, Send, Smile, Sparkles, Star, Sword, Trophy, UserCircle2 } from "lucide-react";
+import type { ComponentType, ReactNode } from "react";
 import { DashboardShell, StatCard } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
@@ -153,6 +154,61 @@ function SiswaDashboard() {
           )}
         </div>
       </section>
+
+      <section className="mt-8">
+        <div className="mb-4 flex items-end justify-between gap-3">
+          <div>
+            <h2 className="font-display text-2xl font-bold">{lang === "id" ? "Menu Siswa" : "Student Menu"}</h2>
+            <p className="text-sm text-muted-foreground">
+              {lang === "id" ? "Akses cepat ke semua fitur belajar & sosial kamu" : "Quick access to all your learning & social features"}
+            </p>
+          </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <FeatureCard to="/siswa/kelas" icon={BookOpen} title={lang === "id" ? "Kelas" : "Classes"} desc={lang === "id" ? "Lihat kelas yang kamu ikuti" : "View your enrolled classes"} tint="bg-quest text-white" />
+          <FeatureCard href="/siswa/mapel" icon={GraduationCap} title={lang === "id" ? "Mata Pelajaran" : "Subjects"} desc={lang === "id" ? "Jelajahi materi tiap mapel" : "Explore subject materials"} tint="bg-gradient-magic text-white" />
+          <FeatureCard to="/siswa/tugas" icon={ClipboardList} title={lang === "id" ? "Kolom Tugas" : "Task Board"} desc={lang === "id" ? "Daftar tugas dari guru" : "All assignments from teachers"} tint="bg-accent text-accent-foreground" />
+          <FeatureCard to="/siswa/tugas" icon={PencilRuler} title={lang === "id" ? "Mengerjakan Tugas" : "Work on Tasks"} desc={lang === "id" ? "Kerjakan misi & kuis" : "Tackle quests & quizzes"} tint="bg-siswa text-white" />
+          <FeatureCard to="/siswa/tugas" icon={Send} title={lang === "id" ? "Mengumpulkan Tugas" : "Submit Tasks"} desc={lang === "id" ? "Kirim hasil pekerjaanmu" : "Submit your work"} tint="bg-xp text-white" />
+          <FeatureCard href="/siswa/status" icon={NotebookPen} title={lang === "id" ? "Membuat Status" : "Post Status"} desc={lang === "id" ? "Bagikan kegiatan belajarmu" : "Share your learning moments"} tint="bg-gradient-sunset text-white" />
+          <FeatureCard href="/siswa/status" icon={MessageCircle} title={lang === "id" ? "Komentar Teman" : "Comment Friends"} desc={lang === "id" ? "Beri tanggapan pada status teman" : "Reply on friends' status"} tint="bg-primary text-primary-foreground" />
+          <FeatureCard href="/siswa/status" icon={Smile} title={lang === "id" ? "Emoji & Like" : "Emoji & Like"} desc={lang === "id" ? "Beri reaksi seru: ❤️ 😊 🎉 🔥" : "React with fun emojis"} tint="bg-coin text-quest-foreground" />
+          <FeatureCard to="/siswa/profil" icon={UserCircle2} title={lang === "id" ? "Pilih Karakter & Biodata" : "Character & Bio"} desc={lang === "id" ? "Atur avatar, nama akun & profil" : "Set avatar, username & profile"} tint="bg-gradient-hero text-white" />
+          <FeatureCard to="/siswa/nilai" icon={GraduationCap} title={lang === "id" ? "Nilai" : "Grades"} desc={lang === "id" ? "Pantau nilai & rapor" : "Track grades & reports"} tint="bg-secondary text-secondary-foreground" />
+          <FeatureCard to="/siswa/badge" icon={Award} title={lang === "id" ? "Badge" : "Badges"} desc={lang === "id" ? "Koleksi lencana prestasi" : "Achievement collection"} tint="bg-coin text-quest-foreground" />
+          <FeatureCard to="/siswa/leaderboard" icon={Trophy} title={lang === "id" ? "Leaderboard" : "Leaderboard"} desc={lang === "id" ? "Peringkat XP teman sekelas" : "Classmates XP ranking"} tint="bg-gradient-magic text-white" />
+        </div>
+
+        <div className="mt-6 rounded-3xl border-2 border-dashed border-border bg-muted/30 p-5">
+          <div className="flex flex-wrap items-center gap-3 text-sm">
+            <Heart className="size-4 text-destructive" />
+            <span className="font-display font-semibold">{lang === "id" ? "Reaksi favorit" : "Favorite reactions"}:</span>
+            {["❤️","👍","🎉","🔥","😊","😮","👏","🌟","💯","🤲"].map((e) => (
+              <span key={e} className="rounded-full border-2 border-border bg-card px-3 py-1 text-lg shadow-soft transition-transform hover:scale-110 hover:border-accent" role="img" aria-label={`emoji ${e}`}>{e}</span>
+            ))}
+          </div>
+        </div>
+      </section>
     </DashboardShell>
   );
+}
+
+function FeatureCard({
+  to, href, icon: Icon, title, desc, tint,
+}: {
+  to?: string; href?: string; icon: ComponentType<{ className?: string }>; title: string; desc: string; tint: string;
+}) {
+  const inner: ReactNode = (
+    <div className="group relative h-full overflow-hidden rounded-2xl border-2 border-border bg-card p-5 shadow-card-rpg transition-all hover:-translate-y-0.5 hover:border-accent hover:shadow-magic">
+      <div className={`mb-3 grid size-12 place-items-center rounded-xl shadow-soft ${tint}`}>
+        <Icon className="size-6" />
+      </div>
+      <div className="font-display text-lg font-bold">{title}</div>
+      <div className="mt-1 text-sm text-muted-foreground">{desc}</div>
+      <ArrowRight className="absolute right-4 top-5 size-4 text-muted-foreground opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100" />
+    </div>
+  );
+  if (to) return <Link to={to} className="block h-full">{inner}</Link>;
+  return <a href={href} className="block h-full">{inner}</a>;
 }
