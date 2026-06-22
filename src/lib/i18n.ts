@@ -92,7 +92,16 @@ export const translations = {
   navMyQuests: { id: "Misi Saya", en: "My Quests", ar: "مهامي" },
   navGrades: { id: "Nilai Saya", en: "My Grades", ar: "درجاتي" },
   navBadges: { id: "Badge", en: "Badges", ar: "الشارات" },
+  navHistory: { id: "Riwayat", en: "History", ar: "السجل" },
   navProfile: { id: "Profil", en: "Profile", ar: "الملف الشخصي" },
+  gamificationHistory: { id: "Riwayat Gamifikasi", en: "Gamification History", ar: "سجل التحفيز" },
+  historySubtitle: { id: "Rangkuman perubahan skor dan pencapaian badge per tanggal", en: "Summary of score changes and badge achievements by date", ar: "ملخص تغييرات النقاط وإنجازات الشارات حسب التاريخ" },
+  totalXpEarned: { id: "Total XP Diperoleh", en: "Total XP Earned", ar: "إجمالي الخبرة المكتسبة" },
+  totalCoinsEarned: { id: "Total Koin Diperoleh", en: "Total Coins Earned", ar: "إجمالي العملات المكتسبة" },
+  badgesEarnedCount: { id: "Badge Diraih", en: "Badges Earned", ar: "الشارات المكتسبة" },
+  badgeEarned: { id: "Meraih badge", en: "Earned badge", ar: "حصل على شارة" },
+  noHistory: { id: "Belum ada riwayat. Selesaikan tugas untuk mendapat XP & koin!", en: "No history yet. Complete quests to earn XP & coins!", ar: "لا يوجد سجل بعد." },
+  sourceAssignment: { id: "Tugas", en: "Assignment", ar: "مهمة" },
 
   // CRUD/forms
   create: { id: "Buat", en: "Create", ar: "إنشاء" },
