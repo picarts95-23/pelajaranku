@@ -14,6 +14,8 @@ import { VoiceRecorder } from "@/components/voice-recorder";
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
+import { SubjectSelect } from "@/components/subject-select";
+import { LinkFields, LinkBadges } from "@/components/link-fields";
 
 export const Route = createFileRoute("/_authenticated/guru/bank-soal")({
   head: () => ({ meta: [{ title: "Bank Soal · EduQuest Academy" }] }),
@@ -35,6 +37,8 @@ function GuruBankSoalPage() {
     correctIndex: 0,
     answer: "",
     difficulty: "medium",
+    quiz_link: "",
+    game_link: "",
   };
   const [form, setForm] = useState(emptyForm);
 
@@ -74,6 +78,7 @@ function GuruBankSoalPage() {
         teacher_id: user.id, subject: form.subject || null, topic: form.topic || null,
         question: form.question.trim(), type: form.type as any, options: opts,
         answer, difficulty: form.difficulty as any,
+        quiz_link: form.quiz_link.trim() || null, game_link: form.game_link.trim() || null,
       });
       if (error) throw error;
     },

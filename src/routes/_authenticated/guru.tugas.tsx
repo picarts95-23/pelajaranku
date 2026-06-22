@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
+import { LinkFields, LinkBadges } from "@/components/link-fields";
 
 export const Route = createFileRoute("/_authenticated/guru/tugas")({
   head: () => ({ meta: [{ title: "Tugas · EduQuest Academy" }] }),
@@ -28,7 +29,7 @@ function GuruTugasPage() {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const [target, setTarget] = useState<"class" | "student">("class");
-  const [form, setForm] = useState({ class_id: "", assigned_student_id: "", title: "", description: "", due_at: "", max_score: 100, xp_reward: 50, coin_reward: 10 });
+  const [form, setForm] = useState({ class_id: "", assigned_student_id: "", title: "", description: "", due_at: "", max_score: 100, xp_reward: 50, coin_reward: 10, quiz_link: "", game_link: "" });
 
   useEffect(() => {
     if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" });
@@ -75,13 +76,14 @@ function GuruTugasPage() {
         title: form.title,
         description: form.description || null, due_at: form.due_at ? new Date(form.due_at).toISOString() : null,
         max_score: form.max_score, xp_reward: form.xp_reward, coin_reward: form.coin_reward,
+        quiz_link: form.quiz_link.trim() || null, game_link: form.game_link.trim() || null,
       });
       if (error) throw error;
     },
     onSuccess: () => {
       toast.success(lang === "id" ? "Tugas dibuat" : "Assignment created");
       setOpen(false);
-      setForm({ class_id: "", assigned_student_id: "", title: "", description: "", due_at: "", max_score: 100, xp_reward: 50, coin_reward: 10 });
+      setForm({ class_id: "", assigned_student_id: "", title: "", description: "", due_at: "", max_score: 100, xp_reward: 50, coin_reward: 10, quiz_link: "", game_link: "" });
       qc.invalidateQueries({ queryKey: ["assignments"] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -149,6 +151,7 @@ function GuruTugasPage() {
                   <div><Label>{t("xpReward")}</Label><Input type="number" value={form.xp_reward} onChange={(e) => setForm({ ...form, xp_reward: +e.target.value })} /></div>
                   <div><Label>{t("coinReward")}</Label><Input type="number" value={form.coin_reward} onChange={(e) => setForm({ ...form, coin_reward: +e.target.value })} /></div>
                 </div>
+                <LinkFields quizLink={form.quiz_link} gameLink={form.game_link} onQuiz={(v) => setForm({ ...form, quiz_link: v })} onGame={(v) => setForm({ ...form, game_link: v })} />
               </div>
               <DialogFooter>
                 <Button variant="ghost" onClick={() => setOpen(false)}>{t("cancel")}</Button>
@@ -231,6 +234,7 @@ function AssignmentDetail({ assignment, onDelete }: { assignment: any; onDelete:
         <div>
           <h2 className="font-display text-xl font-bold flex items-center gap-2"><ScrollText className="size-5 text-guru" />{assignment.title}</h2>
           {assignment.description && <p className="mt-1 text-sm text-muted-foreground">{assignment.description}</p>}
+          <LinkBadges quizLink={assignment.quiz_link} gameLink={assignment.game_link} />
         </div>
         <Button size="sm" variant="ghost" onClick={onDelete}><Trash2 className="size-4 text-destructive" /></Button>
       </div>
