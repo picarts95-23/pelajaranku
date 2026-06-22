@@ -83,7 +83,26 @@ function GuruSiswaPage() {
     },
   });
 
-  const filtered = students.filter((s) => {
+  const enrollMut = useMutation({
+    mutationFn: async () => {
+      if (!enrollTarget || !enrollClassId) throw new Error(t("required"));
+      const { error } = await supabase
+        .from("class_enrollments")
+        .insert({ class_id: enrollClassId, student_id: enrollTarget.id });
+      if (error) {
+        if (error.code === "23505") throw new Error(lang === "id" ? "Siswa sudah ada di kelas ini" : "Student already in this class");
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      toast.success(lang === "id" ? "Siswa ditambahkan ke kelas" : "Student added to class");
+      setEnrollTarget(null);
+      setEnrollClassId("");
+      qc.invalidateQueries({ queryKey: ["all-students"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
     const matchesSearch =
       !q ||
       s.full_name?.toLowerCase().includes(q.toLowerCase()) ||
