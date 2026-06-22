@@ -189,6 +189,7 @@ function GuruPresensiPage() {
   const saveMut = useMutation({
     mutationFn: async () => {
       if (!user || !classId) return;
+      if (isWeekend) throw new Error(lang === "id" ? "Hari sekolah aktif hanya Senin–Jumat" : "School days are Monday–Friday only");
       const rows = students.map((s: any) => ({
         class_id: classId, student_id: s.id, date, status: marks[s.id] ?? "hadir",
         note: notes[s.id]?.trim() || null, recorded_by: user.id,
