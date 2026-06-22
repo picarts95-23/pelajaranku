@@ -229,10 +229,15 @@ function GuruPresensiPage() {
               </label>
             ))}
           </div>
-          <p className="mt-3 text-[11px] text-muted-foreground">
+          <div className="mt-3 flex justify-end">
+            <Button variant="guru" size="sm" disabled={weightsMut.isPending} onClick={() => weightsMut.mutate(weights)}>
+              <Save className="size-3.5" /> {t("save")}
+            </Button>
+          </div>
+          <p className="mt-2 text-[11px] text-muted-foreground">
             {lang === "id"
-              ? "Bobot adalah nilai 0–100 yang disumbang setiap status per pertemuan. Nilai akhir = rata-rata bobot seluruh pertemuan. Disimpan otomatis di perangkat ini."
-              : "Weights are 0–100 values each status contributes per meeting. Final score = average weight across all meetings. Saved automatically on this device."}
+              ? "Bobot adalah nilai 0–100 yang disumbang setiap status per pertemuan. Nilai akhir = rata-rata bobot seluruh pertemuan. Tekan Simpan untuk menyimpan ke akun Anda."
+              : "Weights are 0–100 values each status contributes per meeting. Final score = average weight across all meetings. Press Save to store on your account."}
           </p>
         </div>
       )}
