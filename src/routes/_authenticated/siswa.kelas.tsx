@@ -110,7 +110,7 @@ function SiswaKelasPage() {
               <p className="text-xs text-muted-foreground">{e.classes?.subject ?? "—"}</p>
               <div className="mt-3 space-y-1.5 text-sm">
                 <div className="flex items-center justify-between"><span className="text-muted-foreground">{t("academicYear")}</span><span>{e.classes?.academic_year ?? "—"}</span></div>
-                <div className="flex items-center justify-between"><span className="text-muted-foreground">{lang === "id" ? "Bergabung" : "Joined"}</span><span>{e.joined_at ? format(new Date(e.joined_at), "dd MMM yyyy") : "—"}</span></div>
+                <div className="flex items-center justify-between"><span className="text-muted-foreground">{t("joinedAt")}</span><span>{e.joined_at ? format(new Date(e.joined_at), "dd MMM yyyy") : "—"}</span></div>
                 <div className="flex items-center justify-between"><span className="text-muted-foreground">{t("guru")}</span><span className="truncate max-w-[140px]">{e.teacherName}</span></div>
               </div>
               {e.classes?.description && <p className="mt-3 line-clamp-2 text-sm text-foreground/80">{e.classes.description}</p>}
