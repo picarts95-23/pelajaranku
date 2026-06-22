@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { ArrowRight, Award, BookOpen, ClipboardList, Coins, Flame, GraduationCap, Heart, MessageCircle, NotebookPen, PencilRuler, ScrollText, Send, Smile, Sparkles, Star, Sword, Trophy, UserCircle2 } from "lucide-react";
+import { ArrowRight, Award, BookOpen, ClipboardList, Coins, Flame, GraduationCap, Heart, LogIn, MessageCircle, NotebookPen, PencilRuler, ScrollText, Send, Smile, Sparkles, Star, Sword, Trophy, UserCircle2 } from "lucide-react";
 import type { ComponentType, ReactNode } from "react";
 import { DashboardShell, StatCard } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
@@ -167,6 +167,7 @@ function SiswaDashboard() {
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           <FeatureCard to="/siswa/kelas" icon={BookOpen} title={lang === "id" ? "Kelas" : "Classes"} desc={lang === "id" ? "Lihat kelas yang kamu ikuti" : "View your enrolled classes"} tint="bg-quest text-white" />
+          <FeatureCard to="/siswa/kelas" icon={LogIn} title={lang === "id" ? "Gabung Kelas" : "Join Class"} desc={lang === "id" ? "Masukkan kode dari guru untuk bergabung" : "Enter code from teacher to join"} tint="bg-siswa text-white" />
           <FeatureCard href="/siswa/mapel" icon={GraduationCap} title={lang === "id" ? "Mata Pelajaran" : "Subjects"} desc={lang === "id" ? "Jelajahi materi tiap mapel" : "Explore subject materials"} tint="bg-gradient-magic text-white" />
           <FeatureCard to="/siswa/tugas" icon={ClipboardList} title={lang === "id" ? "Kolom Tugas" : "Task Board"} desc={lang === "id" ? "Daftar tugas dari guru" : "All assignments from teachers"} tint="bg-accent text-accent-foreground" />
           <FeatureCard to="/siswa/tugas" icon={PencilRuler} title={lang === "id" ? "Mengerjakan Tugas" : "Work on Tasks"} desc={lang === "id" ? "Kerjakan misi & kuis" : "Tackle quests & quizzes"} tint="bg-siswa text-white" />
