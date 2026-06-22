@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Database, Plus, Trash2 } from "lucide-react";
+import { Check, Database, Plus, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
@@ -25,7 +25,17 @@ function GuruBankSoalPage() {
   const { t, lang } = useLang();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ subject: "", topic: "", question: "", type: "multiple_choice", options: "", answer: "", difficulty: "medium" });
+  const emptyForm = {
+    subject: "",
+    topic: "",
+    question: "",
+    type: "multiple_choice",
+    options: ["", "", "", ""] as string[],
+    correctIndex: 0,
+    answer: "",
+    difficulty: "medium",
+  };
+  const [form, setForm] = useState(emptyForm);
 
   useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
 
@@ -34,21 +44,39 @@ function GuruBankSoalPage() {
     queryFn: async () => (await supabase.from("question_bank").select("*").order("created_at", { ascending: false })).data ?? [],
   });
 
+  const setOption = (i: number, v: string) =>
+    setForm((f) => ({ ...f, options: f.options.map((o, idx) => (idx === i ? v : o)) }));
+  const addOption = () => setForm((f) => ({ ...f, options: [...f.options, ""] }));
+  const removeOption = (i: number) =>
+    setForm((f) => {
+      const options = f.options.filter((_, idx) => idx !== i);
+      const correctIndex = f.correctIndex >= options.length ? Math.max(0, options.length - 1) : f.correctIndex;
+      return { ...f, options, correctIndex };
+    });
+
   const createMut = useMutation({
     mutationFn: async () => {
-      if (!user || !form.question) throw new Error(t("required"));
-      const opts = form.type === "multiple_choice" && form.options ? form.options.split("\n").filter(Boolean) : null;
+      if (!user || !form.question.trim()) throw new Error(t("required"));
+      let opts: string[] | null = null;
+      let answer: string | null = form.answer.trim() || null;
+      if (form.type === "multiple_choice") {
+        opts = form.options.map((o) => o.trim()).filter(Boolean);
+        if (opts.length < 2) throw new Error(lang === "id" ? "Minimal 2 pilihan jawaban" : "At least 2 answer options");
+        const chosen = form.options[form.correctIndex]?.trim();
+        if (!chosen) throw new Error(lang === "id" ? "Pilih jawaban yang benar" : "Select the correct answer");
+        answer = chosen;
+      }
       const { error } = await supabase.from("question_bank").insert({
         teacher_id: user.id, subject: form.subject || null, topic: form.topic || null,
-        question: form.question, type: form.type as any, options: opts,
-        answer: form.answer || null, difficulty: form.difficulty as any,
+        question: form.question.trim(), type: form.type as any, options: opts,
+        answer, difficulty: form.difficulty as any,
       });
       if (error) throw error;
     },
     onSuccess: () => {
       toast.success(lang === "id" ? "Soal ditambah" : "Question added");
       setOpen(false);
-      setForm({ subject: "", topic: "", question: "", type: "multiple_choice", options: "", answer: "", difficulty: "medium" });
+      setForm(emptyForm);
       qc.invalidateQueries({ queryKey: ["qb"] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -97,10 +125,34 @@ function GuruBankSoalPage() {
                     </Select>
                   </div>
                 </div>
-                {form.type === "multiple_choice" && (
-                  <div><Label>{t("options")}</Label><Textarea rows={4} value={form.options} onChange={(e) => setForm({ ...form, options: e.target.value })} placeholder="A. ...\nB. ...\nC. ...\nD. ..." /></div>
+                {form.type === "multiple_choice" ? (
+                  <div className="space-y-2">
+                    <Label>{t("options")}</Label>
+                    <p className="text-xs text-muted-foreground">{lang === "id" ? "Tandai lingkaran untuk menentukan jawaban benar." : "Tap the circle to mark the correct answer."}</p>
+                    {form.options.map((opt, i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setForm({ ...form, correctIndex: i })}
+                          aria-label={lang === "id" ? "Jawaban benar" : "Correct answer"}
+                          className={`grid size-7 shrink-0 place-items-center rounded-full border-2 transition-colors ${form.correctIndex === i ? "border-xp bg-xp/20 text-xp" : "border-border text-transparent hover:border-xp/50"}`}
+                        >
+                          <Check className="size-4" />
+                        </button>
+                        <span className="font-display text-sm text-muted-foreground w-5">{String.fromCharCode(65 + i)}.</span>
+                        <Input value={opt} onChange={(e) => setOption(i, e.target.value)} placeholder={lang === "id" ? `Pilihan ${String.fromCharCode(65 + i)}` : `Option ${String.fromCharCode(65 + i)}`} />
+                        {form.options.length > 2 && (
+                          <Button size="icon" variant="ghost" type="button" onClick={() => removeOption(i)}><X className="size-4 text-destructive" /></Button>
+                        )}
+                      </div>
+                    ))}
+                    {form.options.length < 6 && (
+                      <Button size="sm" variant="ghost" type="button" onClick={addOption}><Plus className="size-4" /> {lang === "id" ? "Tambah pilihan" : "Add option"}</Button>
+                    )}
+                  </div>
+                ) : (
+                  <div><Label>{t("answer")}</Label><Input value={form.answer} onChange={(e) => setForm({ ...form, answer: e.target.value })} /></div>
                 )}
-                <div><Label>{t("answer")}</Label><Input value={form.answer} onChange={(e) => setForm({ ...form, answer: e.target.value })} /></div>
               </div>
               <DialogFooter>
                 <Button variant="ghost" onClick={() => setOpen(false)}>{t("cancel")}</Button>
