@@ -20,6 +20,7 @@ import muslimah19 from "@/assets/muslimah-19.png";
 import muslimah20 from "@/assets/muslimah-20.png";
 import guruMale from "@/assets/avatar-guru-male.png";
 import guruFemale from "@/assets/avatar-guru-female.png";
+import guruMuslimah from "@/assets/avatar-guru-muslimah.png";
 
 const SISWA_AVATARS = [
   muslimah01,
@@ -44,7 +45,7 @@ const SISWA_AVATARS = [
   muslimah20,
 ];
 
-const GURU_AVATARS = [guruMale, guruFemale];
+const GURU_AVATARS = [guruMuslimah];
 
 function hashSeed(seed: string): number {
   let h = 0;
@@ -81,4 +82,5 @@ export {
   muslimah20,
   guruMale,
   guruFemale,
+  guruMuslimah,
 };
