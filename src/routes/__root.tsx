@@ -113,8 +113,22 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  const [lang, setLang] = useState<Lang>("id");
+  const [lang, setLangState] = useState<Lang>(() => {
+    if (typeof window === "undefined") return "id";
+    const stored = window.localStorage.getItem("eduquest:lang") as Lang | null;
+    return stored === "id" || stored === "en" || stored === "ar" ? stored : "id";
+  });
+  const setLang = (l: Lang) => {
+    setLangState(l);
+    if (typeof window !== "undefined") window.localStorage.setItem("eduquest:lang", l);
+  };
   const t = useMemo(() => (k: Key) => translations[k][lang], [lang]);
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+  }, [lang]);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -127,3 +141,4 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
+
