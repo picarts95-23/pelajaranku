@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Sparkles, Coins, Award, Sword, History as HistoryIcon } from "lucide-react";
+import { Sparkles, Coins, Award, Sword } from "lucide-react";
 import { DashboardShell, PageHeader, StatCard, EmptyState } from "@/components/dashboard-shell";
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
