@@ -107,14 +107,38 @@ function GuruTugasPage() {
               <DialogHeader><DialogTitle>{t("newAssignment")}</DialogTitle></DialogHeader>
               <div className="space-y-3">
                 <div>
-                  <Label>{t("navClasses")}</Label>
-                  <Select value={form.class_id} onValueChange={(v) => setForm({ ...form, class_id: v })}>
-                    <SelectTrigger><SelectValue placeholder={t("selectClass")} /></SelectTrigger>
-                    <SelectContent>
-                      {classes.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                  <Label>{t("assignTarget")}</Label>
+                  <div className="mt-1 grid grid-cols-2 gap-2">
+                    <Button type="button" variant={target === "class" ? "guru" : "outline"} className="w-full" onClick={() => setTarget("class")}>{t("targetClass")}</Button>
+                    <Button type="button" variant={target === "student" ? "guru" : "outline"} className="w-full" onClick={() => setTarget("student")}>{t("targetStudent")}</Button>
+                  </div>
                 </div>
+                {target === "class" ? (
+                  <div>
+                    <Label>{t("navClasses")}</Label>
+                    <Select value={form.class_id} onValueChange={(v) => setForm({ ...form, class_id: v })}>
+                      <SelectTrigger><SelectValue placeholder={t("selectClass")} /></SelectTrigger>
+                      <SelectContent>
+                        {classes.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ) : (
+                  <div>
+                    <Label>{t("navStudents")}</Label>
+                    <Select value={form.assigned_student_id} onValueChange={(v) => setForm({ ...form, assigned_student_id: v })}>
+                      <SelectTrigger><SelectValue placeholder={t("selectStudent")} /></SelectTrigger>
+                      <SelectContent>
+                        {students.map((s: any) => (
+                          <SelectItem key={s.id} value={s.id}>
+                            {s.full_name}{s.class_name ? ` · ${s.class_name}` : ""}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
                 <div><Label>{t("title")}</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
                 <div><Label>{t("description")}</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
                 <div className="grid grid-cols-2 gap-3">
