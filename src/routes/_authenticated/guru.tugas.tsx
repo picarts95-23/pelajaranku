@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ScrollText, Plus, Trash2, ChevronRight, X, Play, KeyRound } from "lucide-react";
+import { ScrollText, Plus, Trash2, ChevronRight, X, Play, KeyRound, Send } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
