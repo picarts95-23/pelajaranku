@@ -115,69 +115,85 @@ function GuruDashboard() {
       <section className="mt-6">
         <div className="mb-3 flex items-end justify-between">
           <h2 className="font-display text-xl font-bold flex items-center gap-2">
-            <ScrollText className="size-5 text-guru" /> {lang === "id" ? "Menu Guru" : "Teacher Menu"}
+            <ScrollText className="size-5 text-guru" /> {lang === "id" ? "Pintasan" : "Shortcuts"}
           </h2>
           <span className="text-xs text-muted-foreground">
-            {lang === "id" ? "Akses cepat fitur admin" : "Quick access to admin tools"}
+            {lang === "id" ? "Geser untuk lihat semua fitur" : "Scroll to see all tools"}
           </span>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <FeatureCard
-            to="/guru/kelas"
-            icon={<BookOpen className="size-6" />}
-            title={lang === "id" ? "Kelola Kelas" : "Manage Classes"}
-            desc={lang === "id" ? "Buat kelas baru, undang siswi, atur kode kelas." : "Create classes, invite students, manage codes."}
-            tint="bg-guru"
-          />
-          <FeatureCard
-            to="/guru/tugas"
-            icon={<NotebookPen className="size-6" />}
-            title={lang === "id" ? "Buat Tugas & Materi" : "Assignments & Materials"}
-            desc={lang === "id" ? "Susun tugas, materi, dan rubrik penilaian." : "Author assignments and grading rubrics."}
-            tint="bg-quest"
-          />
-          <FeatureCard
-            to="/guru/bank-soal"
-            icon={<FileQuestion className="size-6" />}
-            title={lang === "id" ? "Bank Soal / Kuis" : "Question Bank / Quiz"}
-            desc={lang === "id" ? "Kelola koleksi soal & kuis interaktif." : "Curate questions and interactive quizzes."}
-            tint="bg-accent"
-          />
-          <FeatureCard
-            to="/guru/siswa"
-            icon={<TrendingUp className="size-6" />}
-            title={lang === "id" ? "Progres Siswa" : "Student Progress"}
-            desc={lang === "id" ? "Ringkasan XP, nilai, dan capaian siswi." : "XP, scores, and achievement overview."}
-            tint="bg-siswa"
-          />
-          <FeatureCard
-            to="/guru/presensi"
-            icon={<CalendarCheck className="size-6" />}
-            title={lang === "id" ? "Presensi" : "Attendance"}
-            desc={lang === "id" ? "Catat kehadiran setiap pertemuan." : "Track attendance per session."}
-            tint="bg-xp"
-          />
-          <FeatureCard
-            to="/guru/jurnal"
-            icon={<ScrollText className="size-6" />}
-            title={lang === "id" ? "Jurnal Mengajar" : "Teaching Journal"}
-            desc={lang === "id" ? "Catat aktivitas dan refleksi mengajar." : "Log activities and teaching reflections."}
-            tint="bg-primary"
-          />
-          <FeatureCard
-            to="/guru/gamifikasi"
-            icon={<Trophy className="size-6" />}
-            title={lang === "id" ? "Gamifikasi & Badge" : "Gamification & Badges"}
-            desc={lang === "id" ? "Atur reward XP, koin, dan lencana." : "Set XP rewards, coins, and badges."}
-            tint="bg-quest"
-          />
-          <FeatureCard
-            to="/guru/event"
-            icon={<CalendarDays className="size-6" />}
-            title={lang === "id" ? "Event Kelas" : "Class Events"}
-            desc={lang === "id" ? "Jadwalkan acara, ujian, dan agenda." : "Schedule events, exams, and agendas."}
-            tint="bg-accent"
-          />
+        <div className="max-h-[440px] overflow-y-auto rounded-3xl border-2 border-border bg-muted/20 p-3 shadow-inner">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <FeatureCard
+              to="/guru/kelas"
+              icon={<BookOpen className="size-6" />}
+              title={lang === "id" ? "Kelola Kelas" : "Manage Classes"}
+              desc={lang === "id" ? "Buat kelas baru, undang siswi, atur kode kelas." : "Create classes, invite students, manage codes."}
+              tint="bg-guru"
+            />
+            <FeatureCard
+              to="/guru/mapel"
+              icon={<Library className="size-6" />}
+              title={lang === "id" ? "Mata Pelajaran & Materi" : "Subjects & Materials"}
+              desc={lang === "id" ? "Kelola mapel yang diampu & bagikan materi." : "Manage taught subjects & share materials."}
+              tint="bg-gradient-magic"
+            />
+            <FeatureCard
+              to="/guru/tugas"
+              icon={<NotebookPen className="size-6" />}
+              title={lang === "id" ? "Buat Tugas & Materi" : "Assignments & Materials"}
+              desc={lang === "id" ? "Susun tugas, materi, dan rubrik penilaian." : "Author assignments and grading rubrics."}
+              tint="bg-quest"
+            />
+            <FeatureCard
+              to="/guru/rekap"
+              icon={<BarChart3 className="size-6" />}
+              title={lang === "id" ? "Rekap Nilai" : "Grade Recap"}
+              desc={lang === "id" ? "Arsip nilai per kelas & mata pelajaran." : "Grade archives per class & subject."}
+              tint="bg-siswa"
+            />
+            <FeatureCard
+              to="/guru/bank-soal"
+              icon={<FileQuestion className="size-6" />}
+              title={lang === "id" ? "Bank Soal / Kuis" : "Question Bank / Quiz"}
+              desc={lang === "id" ? "Kelola koleksi soal & kuis interaktif." : "Curate questions and interactive quizzes."}
+              tint="bg-accent"
+            />
+            <FeatureCard
+              to="/guru/siswa"
+              icon={<TrendingUp className="size-6" />}
+              title={lang === "id" ? "Progres Siswa" : "Student Progress"}
+              desc={lang === "id" ? "Ringkasan XP, nilai, dan capaian siswi." : "XP, scores, and achievement overview."}
+              tint="bg-siswa"
+            />
+            <FeatureCard
+              to="/guru/presensi"
+              icon={<CalendarCheck className="size-6" />}
+              title={lang === "id" ? "Presensi" : "Attendance"}
+              desc={lang === "id" ? "Catat kehadiran setiap pertemuan." : "Track attendance per session."}
+              tint="bg-xp"
+            />
+            <FeatureCard
+              to="/guru/jurnal"
+              icon={<ScrollText className="size-6" />}
+              title={lang === "id" ? "Jurnal Mengajar" : "Teaching Journal"}
+              desc={lang === "id" ? "Catat aktivitas dan refleksi mengajar." : "Log activities and teaching reflections."}
+              tint="bg-primary"
+            />
+            <FeatureCard
+              to="/guru/gamifikasi"
+              icon={<Trophy className="size-6" />}
+              title={lang === "id" ? "Gamifikasi & Badge" : "Gamification & Badges"}
+              desc={lang === "id" ? "Atur reward XP, koin, dan lencana." : "Set XP rewards, coins, and badges."}
+              tint="bg-quest"
+            />
+            <FeatureCard
+              to="/guru/event"
+              icon={<CalendarDays className="size-6" />}
+              title={lang === "id" ? "Event Kelas" : "Class Events"}
+              desc={lang === "id" ? "Jadwalkan acara, ujian, dan agenda." : "Schedule events, exams, and agendas."}
+              tint="bg-accent"
+            />
+          </div>
         </div>
       </section>
 
