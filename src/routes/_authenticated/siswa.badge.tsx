@@ -41,7 +41,7 @@ function SiswaBadgePage() {
           return (
             <div key={b.id} className={`rounded-2xl border-2 p-5 text-center shadow-card-rpg transition ${isEarned ? "border-coin bg-card" : "border-border bg-muted/30"}`}>
               <div className={`mx-auto grid size-20 place-items-center rounded-full text-4xl ${isEarned ? "bg-gradient-magic text-white shadow-magic" : "bg-muted text-muted-foreground"}`}>
-                {isEarned ? "🏅" : <Lock className="size-7" />}
+                {isEarned ? (b.icon ?? "🏅") : <Lock className="size-7" />}
               </div>
               <h3 className="mt-3 font-display text-lg font-bold">{b.name}</h3>
               <p className="mt-1 text-xs text-muted-foreground">{b.description}</p>
