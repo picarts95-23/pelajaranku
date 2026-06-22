@@ -103,6 +103,7 @@ function GuruSiswaPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const filtered = students.filter((s) => {
     const matchesSearch =
       !q ||
       s.full_name?.toLowerCase().includes(q.toLowerCase()) ||
