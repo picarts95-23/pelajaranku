@@ -267,8 +267,8 @@ function GuruPresensiPage() {
           </div>
           <p className="mt-2 text-[11px] text-muted-foreground">
             {lang === "id"
-              ? "Nilai = (Hadir×1 + Izin×0,5 + Sakit×0,5 + Alpa×0) ÷ total pertemuan × 100."
-              : "Score = (Present×1 + Excused×0.5 + Sick×0.5 + Absent×0) ÷ total meetings × 100."}
+              ? `Nilai = (Hadir×${weights.hadir} + Izin×${weights.izin} + Sakit×${weights.sakit} + Alpa×${weights.alpa}) ÷ total pertemuan.`
+              : `Score = (Present×${weights.hadir} + Excused×${weights.izin} + Sick×${weights.sakit} + Absent×${weights.alpa}) ÷ total meetings.`}
           </p>
         </>
       )}
