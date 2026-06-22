@@ -274,6 +274,24 @@ function GuruTugasPage() {
                           {form.options.map((o) => o.trim()).filter(Boolean).map((o, i) => <SelectItem key={i} value={o}>{String.fromCharCode(65 + i)}. {o}</SelectItem>)}
                         </SelectContent>
                       </Select>
+                    ) : form.answer_format === "complex_mc" ? (
+                      <div className="space-y-1.5">
+                        {form.options.map((o) => o.trim()).filter(Boolean).map((o, i) => {
+                          const keys = form.answer_key.split(", ").filter(Boolean);
+                          const checked = keys.includes(o);
+                          return (
+                            <button
+                              type="button"
+                              key={i}
+                              onClick={() => { const next = checked ? keys.filter((k) => k !== o) : [...keys, o]; setForm({ ...form, answer_key: next.join(", ") }); }}
+                              className={`flex w-full items-center gap-2 rounded-lg border-2 p-2 text-left text-sm transition-colors ${checked ? "border-guru bg-guru/10" : "border-border hover:border-guru/40"}`}
+                            >
+                              <span className={`grid size-5 shrink-0 place-items-center rounded-md border-2 ${checked ? "border-guru bg-guru text-white" : "border-border text-transparent"}`}>✓</span>
+                              {String.fromCharCode(65 + i)}. {o}
+                            </button>
+                          );
+                        })}
+                      </div>
                     ) : (
                       <Textarea value={form.answer_key} onChange={(e) => setForm({ ...form, answer_key: e.target.value })} placeholder={lang === "id" ? "Hanya guru yang dapat melihat ini" : "Only teachers can see this"} />
                     )}
