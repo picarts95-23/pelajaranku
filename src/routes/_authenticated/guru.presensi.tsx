@@ -124,7 +124,7 @@ function GuruPresensiPage() {
       byStudent[s.id] = { ...counts, total: recs.length, score };
     });
     return { byStudent, totalMeetings };
-  }, [allAtt, students]);
+  }, [allAtt, students, weights]);
 
   useEffect(() => {
     const initialMarks: Record<string, AttStatus> = {};
