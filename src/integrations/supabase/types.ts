@@ -687,6 +687,15 @@ export type Database = {
         Args: { _class_id: string; _user_id: string }
         Returns: boolean
       }
+      search_students: {
+        Args: { _term: string }
+        Returns: {
+          class_name: string
+          full_name: string
+          id: string
+          school_id_number: string
+        }[]
+      }
     }
     Enums: {
       app_role: "guru" | "siswa"
