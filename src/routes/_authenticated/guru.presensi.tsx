@@ -213,14 +213,27 @@ function GuruPresensiPage() {
           <SelectTrigger><SelectValue placeholder={t("selectClass")} /></SelectTrigger>
           <SelectContent>{classes.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
         </Select>
-        <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+        <div>
+          <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+          <p className={`mt-1 text-[11px] font-display ${isWeekend ? "text-destructive" : "text-muted-foreground"}`}>
+            {dayName}{isWeekend ? (lang === "id" ? " · bukan hari sekolah" : " · not a school day") : ""}
+          </p>
+        </div>
         <Button variant="outline" onClick={() => setShowSettings((v) => !v)}>
           <SlidersHorizontal className="size-4" /> {t("scoreSettings")}
         </Button>
-        <Button variant="guru" disabled={!classId || students.length === 0 || saveMut.isPending} onClick={() => saveMut.mutate()}>
+        <Button variant="guru" disabled={!classId || students.length === 0 || isWeekend || saveMut.isPending} onClick={() => saveMut.mutate()}>
           <Save className="size-4" /> {t("save")}
         </Button>
       </div>
+
+      {isWeekend && classId && (
+        <div className="mb-4 rounded-xl border-2 border-destructive/30 bg-destructive/10 px-4 py-2.5 text-sm text-destructive">
+          {lang === "id"
+            ? "Hari sekolah aktif hanya Senin–Jumat. Pilih tanggal hari kerja untuk mencatat presensi."
+            : "Active school days are Monday–Friday only. Pick a weekday to record attendance."}
+        </div>
+      )}
 
       {showSettings && (
         <div className="mb-4 rounded-2xl border-2 border-border bg-card p-4 shadow-card-rpg">
