@@ -15,6 +15,7 @@ import {
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
+import { BADGE_EMOJIS } from "@/lib/badge-emojis";
 
 export const Route = createFileRoute("/_authenticated/guru/gamifikasi")({
   head: () => ({ meta: [{ title: "Gamifikasi · EduQuest Academy" }] }),
