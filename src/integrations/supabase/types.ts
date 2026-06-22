@@ -16,7 +16,8 @@ export type Database = {
     Tables: {
       assignments: {
         Row: {
-          class_id: string
+          assigned_student_id: string | null
+          class_id: string | null
           coin_reward: number
           created_at: string
           description: string | null
@@ -29,7 +30,8 @@ export type Database = {
           xp_reward: number
         }
         Insert: {
-          class_id: string
+          assigned_student_id?: string | null
+          class_id?: string | null
           coin_reward?: number
           created_at?: string
           description?: string | null
@@ -42,7 +44,8 @@ export type Database = {
           xp_reward?: number
         }
         Update: {
-          class_id?: string
+          assigned_student_id?: string | null
+          class_id?: string | null
           coin_reward?: number
           created_at?: string
           description?: string | null
@@ -55,6 +58,13 @@ export type Database = {
           xp_reward?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "assignments_assigned_student_id_fkey"
+            columns: ["assigned_student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "assignments_class_id_fkey"
             columns: ["class_id"]
