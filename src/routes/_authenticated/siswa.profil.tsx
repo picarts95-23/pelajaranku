@@ -50,6 +50,11 @@ function SiswaProfil() {
 
   return (
     <DashboardShell accent="siswa">
+      <div className="mb-4 flex justify-end">
+        <Button asChild size="sm" className="bg-gradient-magic">
+          <Link to="/siswa/profil/edit"><Pencil className="mr-1 size-4" /> {lang === "id" ? "Edit Profil & Karakter" : "Edit Profile & Character"}</Link>
+        </Button>
+      </div>
       <motion.section
         initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
         className="relative overflow-hidden rounded-3xl border-2 border-border bg-gradient-hero p-6 text-primary-foreground shadow-magic sm:p-8"
