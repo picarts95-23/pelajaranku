@@ -18,6 +18,7 @@ function SiswaProfil() {
   const { user, profile } = useAuth();
   const { lang } = useLang();
 
+
   const xp = profile?.xp ?? 0;
   const level = profile?.level ?? 1;
   const coins = profile?.coins ?? 0;
