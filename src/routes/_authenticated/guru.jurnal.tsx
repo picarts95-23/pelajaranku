@@ -102,10 +102,31 @@ function GuruJurnalPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["journals"] }),
   });
 
+  const exportColumns = [
+    { key: "date", header: lang === "id" ? "Tanggal" : "Date" },
+    { key: "class", header: lang === "id" ? "Kelas" : "Class" },
+    { key: "subject", header: lang === "id" ? "Mata Pelajaran" : "Subject" },
+    { key: "student", header: lang === "id" ? "Siswa" : "Student" },
+    { key: "topic", header: lang === "id" ? "Topik" : "Topic" },
+    { key: "notes", header: lang === "id" ? "Catatan" : "Notes" },
+  ];
+  const exportRows = () => journals.map((j: any) => ({
+    date: format(new Date(j.date), "dd MMM yyyy"),
+    class: j.classes?.name ?? "—",
+    subject: j.subject ?? "—",
+    student: j.profiles?.full_name ?? (lang === "id" ? "Semua siswa" : "All students"),
+    topic: j.topic,
+    notes: j.notes ?? "",
+  }));
+
   return (
     <DashboardShell accent="guru">
       <PageHeader title={t("navJournal")} subtitle={lang === "id" ? "Catat materi & refleksi pembelajaran" : "Log lesson topics & reflections"}
         actions={
+          <div className="flex flex-wrap gap-2">
+            {journals.length > 0 && (
+              <ExportMenu filename="jurnal" title={lang === "id" ? "Jurnal Mengajar" : "Teaching Journal"} columns={exportColumns} rows={exportRows} />
+            )}
           <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o) setForm(emptyForm()); }}>
             <DialogTrigger asChild><Button variant="guru"><Plus className="size-4" /> {t("newJournal")}</Button></DialogTrigger>
             <DialogContent>
