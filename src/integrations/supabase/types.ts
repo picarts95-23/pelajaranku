@@ -335,6 +335,8 @@ export type Database = {
           date: string
           id: string
           notes: string | null
+          student_id: string | null
+          subject: string | null
           teacher_id: string
           topic: string
           updated_at: string
@@ -345,6 +347,8 @@ export type Database = {
           date?: string
           id?: string
           notes?: string | null
+          student_id?: string | null
+          subject?: string | null
           teacher_id: string
           topic: string
           updated_at?: string
@@ -355,6 +359,8 @@ export type Database = {
           date?: string
           id?: string
           notes?: string | null
+          student_id?: string | null
+          subject?: string | null
           teacher_id?: string
           topic?: string
           updated_at?: string
@@ -365,6 +371,13 @@ export type Database = {
             columns: ["class_id"]
             isOneToOne: false
             referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "journals_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -790,7 +803,7 @@ export type Database = {
       app_role: "guru" | "siswa"
       attendance_status: "hadir" | "izin" | "sakit" | "alpa"
       question_difficulty: "easy" | "medium" | "hard"
-      question_type: "multiple_choice" | "essay" | "true_false"
+      question_type: "multiple_choice" | "essay" | "true_false" | "voice"
       submission_status: "draft" | "submitted" | "graded" | "returned"
     }
     CompositeTypes: {
@@ -922,7 +935,7 @@ export const Constants = {
       app_role: ["guru", "siswa"],
       attendance_status: ["hadir", "izin", "sakit", "alpa"],
       question_difficulty: ["easy", "medium", "hard"],
-      question_type: ["multiple_choice", "essay", "true_false"],
+      question_type: ["multiple_choice", "essay", "true_false", "voice"],
       submission_status: ["draft", "submitted", "graded", "returned"],
     },
   },
