@@ -141,6 +141,31 @@ function GuruEventPage() {
             </DialogContent>
           </Dialog>
         } />
+
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border-2 border-border bg-card p-4 shadow-soft">
+        <div className="flex items-center gap-3">
+          <div className="grid size-10 place-items-center rounded-xl bg-gradient-quest text-quest-foreground"><CalendarDays className="size-5" /></div>
+          <div>
+            <div className="font-display font-bold">{lang === "id" ? "Google Kalender" : "Google Calendar"}</div>
+            <div className="text-xs text-muted-foreground">
+              {connected
+                ? (lang === "id" ? `Terhubung: ${gcalQ.data?.email ?? ""}` : `Connected: ${gcalQ.data?.email ?? ""}`)
+                : (lang === "id" ? "Hubungkan akun untuk menyinkronkan kegiatan otomatis" : "Connect your account to auto-sync events")}
+            </div>
+          </div>
+        </div>
+        {connected ? (
+          <Button variant="outline" size="sm" disabled={disconnectMut.isPending} onClick={() => disconnectMut.mutate()}>
+            <Unlink className="size-4" /> {lang === "id" ? "Putuskan" : "Disconnect"}
+          </Button>
+        ) : (
+          <Button variant="guru" size="sm" disabled={connectMut.isPending} onClick={() => connectMut.mutate()}>
+            {connectMut.isPending ? <Loader2 className="size-4 animate-spin" /> : <LinkIcon className="size-4" />}
+            {lang === "id" ? "Hubungkan Google Kalender" : "Connect Google Calendar"}
+          </Button>
+        )}
+      </div>
+
       {events.length === 0 ? <EmptyState message={t("empty")} /> : (
         <div className="grid gap-3 sm:grid-cols-2">
           {events.map((e: any) => (
