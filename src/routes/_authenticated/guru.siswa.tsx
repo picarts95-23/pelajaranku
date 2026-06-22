@@ -248,6 +248,35 @@ function GuruSiswaPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      <Dialog open={!!enrollTarget} onOpenChange={(o) => { if (!o) { setEnrollTarget(null); setEnrollClassId(""); } }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{lang === "id" ? "Tambah siswa ke kelas" : "Add student to class"}</DialogTitle>
+          </DialogHeader>
+          {enrollTarget && (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                {lang === "id" ? "Pilih kelas untuk " : "Choose a class for "}
+                <span className="font-display font-semibold text-foreground">{enrollTarget.full_name}</span>
+              </p>
+              <Select value={enrollClassId} onValueChange={setEnrollClassId}>
+                <SelectTrigger><SelectValue placeholder={t("selectClass")} /></SelectTrigger>
+                <SelectContent>
+                  {classes.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => { setEnrollTarget(null); setEnrollClassId(""); }}>{t("cancel")}</Button>
+            <Button variant="quest" disabled={!enrollClassId || enrollMut.isPending} onClick={() => enrollMut.mutate()}>
+              {enrollMut.isPending && <Loader2 className="size-4 animate-spin" />}
+              {lang === "id" ? "Tambahkan" : "Add"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardShell>
   );
 }
