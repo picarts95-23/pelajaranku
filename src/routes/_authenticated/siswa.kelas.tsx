@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
 
 export const Route = createFileRoute("/_authenticated/siswa/kelas")({
   head: () => ({ meta: [{ title: "Kelas Saya · EduQuest Academy" }] }),
