@@ -29,8 +29,23 @@ function SiswaKelasPage() {
   const { data: enrollments = [] } = useQuery({
     queryKey: ["my-classes", user?.id], enabled: !!user,
     queryFn: async () => {
-      const { data } = await supabase.from("class_enrollments").select("id, classes(*)").eq("student_id", user!.id);
-      return data ?? [];
+      const { data: rows, error } = await supabase
+        .from("class_enrollments")
+        .select("id, joined_at, classes(*)")
+        .eq("student_id", user!.id)
+        .order("joined_at", { ascending: false });
+      if (error) throw error;
+      const classes = (rows ?? []).map((r: any) => r.classes).filter(Boolean);
+      const teacherIds = Array.from(new Set(classes.map((c: any) => c.teacher_id).filter(Boolean)));
+      let teachers: Record<string, string> = {};
+      if (teacherIds.length > 0) {
+        const { data: profs } = await supabase.from("profiles").select("id, full_name").in("id", teacherIds);
+        teachers = Object.fromEntries((profs ?? []).map((p: any) => [p.id, p.full_name]));
+      }
+      return (rows ?? []).map((r: any) => ({
+        ...r,
+        teacherName: teachers[r.classes?.teacher_id] ?? "—",
+      }));
     },
   });
 
