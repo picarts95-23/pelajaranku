@@ -1,13 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import type { ReactNode } from "react";
 import { motion } from "framer-motion";
-import { Award, BookOpen, Coins, GraduationCap, IdCard, Pencil, Sparkles, Star, Trophy } from "lucide-react";
+import { Award, BookOpen, Cake, Coins, GraduationCap, Heart, IdCard, Pencil, Quote, Sparkles, Star, Trophy, User2, Venus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DashboardShell, StatCard } from "@/components/dashboard-shell";
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { getIslamicAvatar } from "@/lib/islamic-avatar";
+import { getCharacterByKey } from "@/lib/character-roster";
+import { format } from "date-fns";
 
 export const Route = createFileRoute("/_authenticated/siswa/profil")({
   head: () => ({ meta: [{ title: "Profil Siswi · EduQuest Academy" }] }),
@@ -18,13 +21,14 @@ function SiswaProfil() {
   const { user, profile } = useAuth();
   const { lang } = useLang();
 
-
+  const p = profile as any;
   const xp = profile?.xp ?? 0;
   const level = profile?.level ?? 1;
   const coins = profile?.coins ?? 0;
   const xpInLevel = xp % 100;
   const pct = Math.min(100, Math.round((xpInLevel / 100) * 100));
-  const avatar = getIslamicAvatar(user?.id ?? profile?.full_name, "siswa");
+  const character = getCharacterByKey(p?.character_key);
+  const avatar = character?.src ?? p?.avatar_url ?? getIslamicAvatar(user?.id ?? profile?.full_name, "siswa");
 
   const { data: stats } = useQuery({
     queryKey: ["siswa-profil-stats", user?.id],
@@ -80,6 +84,7 @@ function SiswaProfil() {
               {lang === "id" ? "Profil Siswi" : "Student Profile"}
             </div>
             <h1 className="mt-1 font-display text-3xl font-bold sm:text-4xl">{profile?.full_name ?? "Siswi"} ✨</h1>
+            {p?.username && <div className="mt-1 font-display text-sm opacity-90">@{p.username}</div>}
             <div className="mt-3 flex flex-wrap gap-2 text-sm">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 backdrop-blur">
                 <GraduationCap className="size-4" /> {lang === "id" ? "Kelas" : "Class"} {profile?.class_name ?? "—"}
@@ -92,7 +97,17 @@ function SiswaProfil() {
               <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/30 px-3 py-1 backdrop-blur">
                 <Star className="size-4" /> Level {level}
               </span>
+              {character && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 backdrop-blur">
+                  <Sparkles className="size-4" /> {character.name} · {character.archetype}
+                </span>
+              )}
             </div>
+            {p?.motto && (
+              <p className="mt-3 flex items-start gap-2 text-sm italic opacity-95">
+                <Quote className="mt-0.5 size-4 shrink-0" /> {p.motto}
+              </p>
+            )}
             <div className="mt-6 max-w-md">
               <div className="mb-1.5 flex items-end justify-between text-sm">
                 <span className="font-display font-semibold">{lang === "id" ? "Menuju Level" : "To Level"} {level + 1}</span>
@@ -112,6 +127,27 @@ function SiswaProfil() {
         <StatCard icon={<BookOpen className="size-6" />} label={lang === "id" ? "Kelas Diikuti" : "Classes"} value={stats?.classCount ?? 0} tint="bg-quest" />
         <StatCard icon={<Trophy className="size-6" />} label={lang === "id" ? "Rata-rata Nilai" : "Average Score"} value={stats?.avgScore ?? 0} tint="bg-gradient-sunset" />
       </section>
+
+      <section className="mt-6 rounded-3xl border-2 border-border bg-card p-6 shadow-card-rpg">
+        <h2 className="mb-4 font-display text-xl font-bold flex items-center gap-2">
+          <User2 className="size-5 text-accent" /> {lang === "id" ? "Biodata" : "Biodata"}
+        </h2>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <BioItem icon={<User2 className="size-4" />} label={lang === "id" ? "Nama Akun" : "Username"} value={p?.username ? `@${p.username}` : null} lang={lang} />
+          <BioItem icon={<Venus className="size-4" />} label={lang === "id" ? "Jenis Kelamin" : "Gender"} value={p?.gender} lang={lang} />
+          <BioItem icon={<Cake className="size-4" />} label={lang === "id" ? "Tanggal Lahir" : "Birthdate"} value={p?.birthdate ? format(new Date(p.birthdate), "dd MMM yyyy") : null} lang={lang} />
+          <BioItem icon={<Heart className="size-4" />} label={lang === "id" ? "Hobi" : "Hobby"} value={p?.hobby} lang={lang} />
+          <BioItem icon={<GraduationCap className="size-4" />} label={lang === "id" ? "Kelas" : "Class"} value={profile?.class_name} lang={lang} />
+          <BioItem icon={<IdCard className="size-4" />} label="NIS" value={profile?.school_id_number} lang={lang} />
+        </div>
+        {p?.bio && (
+          <div className="mt-4 rounded-2xl border-2 border-dashed border-border bg-muted/30 p-4">
+            <div className="mb-1 font-display text-sm font-bold text-muted-foreground">{lang === "id" ? "Tentang Saya" : "About Me"}</div>
+            <p className="whitespace-pre-wrap text-sm text-foreground/90">{p.bio}</p>
+          </div>
+        )}
+      </section>
+
 
       <section className="mt-6 grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 rounded-3xl border-2 border-border bg-card p-6 shadow-card-rpg">
@@ -183,3 +219,16 @@ function ProgressRow({ label, value, max }: { label: string; value: number; max:
     </div>
   );
 }
+
+function BioItem({ icon, label, value, lang }: { icon: ReactNode; label: string; value?: string | null; lang: string }) {
+  return (
+    <div className="flex items-start gap-3 rounded-2xl border-2 border-border bg-muted/30 p-3">
+      <div className="grid size-9 shrink-0 place-items-center rounded-xl bg-gradient-magic text-white">{icon}</div>
+      <div className="min-w-0">
+        <div className="font-display text-xs font-bold uppercase tracking-wide text-muted-foreground">{label}</div>
+        <div className="truncate font-display font-semibold">{value || (lang === "id" ? "Belum diisi" : "Not set")}</div>
+      </div>
+    </div>
+  );
+}
+
