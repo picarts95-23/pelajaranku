@@ -53,11 +53,11 @@ function SiswaKelasPage() {
   const joinMut = useMutation({
     mutationFn: async () => {
       if (!user || !code) throw new Error(t("required"));
-      const { data: cls, error: e1 } = await supabase.from("classes").select("id").eq("code", code.trim().toUpperCase()).maybeSingle();
-      if (e1 || !cls) throw new Error(lang === "id" ? "Kode kelas tidak ditemukan" : "Class code not found");
-      const { error } = await supabase.from("class_enrollments").insert({ class_id: cls.id, student_id: user.id });
+      const { error } = await supabase.rpc("join_class_by_code", { _code: code.trim().toUpperCase() });
       if (error) {
-        if (error.code === "23505") throw new Error(lang === "id" ? "Anda sudah tergabung" : "You are already enrolled");
+        const msg = error.message || "";
+        if (msg.includes("CLASS_NOT_FOUND")) throw new Error(lang === "id" ? "Kode kelas tidak ditemukan" : "Class code not found");
+        if (msg.includes("NOT_A_STUDENT")) throw new Error(lang === "id" ? "Hanya siswa yang dapat bergabung kelas" : "Only students can join a class");
         throw error;
       }
     },
