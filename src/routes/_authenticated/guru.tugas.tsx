@@ -310,7 +310,7 @@ function GuruTugasPage() {
                 </div>
                 <DialogFooter>
                   <Button variant="ghost" onClick={() => setOpen(false)}>{t("cancel")}</Button>
-                  <Button variant="guru" disabled={createMut.isPending} onClick={() => createMut.mutate()}>{t("save")}</Button>
+                  <Button variant="guru" disabled={createMut.isPending} onClick={() => createMut.mutate()}><Send className="size-4" /> {t("saveShare")}</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
