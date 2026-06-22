@@ -101,7 +101,7 @@ function SiswaKelasPage() {
                 <div className="grid size-12 place-items-center rounded-xl bg-gradient-hero text-white"><BookOpen className="size-5" /></div>
                 <div className="flex items-center gap-2">
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-siswa/15 px-2.5 py-1 text-xs font-semibold text-siswa">
-                    <Check className="size-3.5" /> {lang === "id" ? "Tergabung" : "Joined"}
+                    <Check className="size-3.5" /> {t("joinedStatus")}
                   </span>
                   <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => { if (confirm(lang === "id" ? "Keluar dari kelas ini?" : "Leave this class?")) leaveMut.mutate(e.id); }}><LogOut className="size-4 text-destructive" /></Button>
                 </div>
