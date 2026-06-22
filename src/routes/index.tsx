@@ -142,7 +142,8 @@ function Landing() {
             title={t("guru")}
             desc={
               { id: "Kelola kelas, beri tugas, pantau progres, dan kerjakan administrasi dalam satu papan komando.",
-                en: "Manage classes, assign tasks, track progress, and handle admin from one command board." }
+                en: "Manage classes, assign tasks, track progress, and handle admin from one command board.",
+                ar: "أدر الفصول، وكلِّف بالواجبات، وتابع التقدم، ونفِّذ الشؤون الإدارية من لوحة واحدة." }
             }
             cta={t("loginGuru")}
             to="/auth"
