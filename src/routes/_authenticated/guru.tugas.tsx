@@ -172,14 +172,18 @@ function GuruTugasPage() {
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <div className="font-display font-bold truncate">{a.title}</div>
-                      <div className="text-xs text-muted-foreground">{a.classes?.name} · {a.due_at ? format(new Date(a.due_at), "dd MMM") : "—"}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {a.assigned_student_id ? (a.assignee?.full_name ?? t("personalTask")) : a.classes?.name} · {a.due_at ? format(new Date(a.due_at), "dd MMM") : "—"}
+                      </div>
                     </div>
                     <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
                   </div>
-                  <div className="mt-2 flex gap-2 text-xs">
+                  <div className="mt-2 flex flex-wrap gap-2 text-xs">
                     <span className="rounded-full bg-xp/15 px-2 py-0.5 font-display font-bold text-xp">+{a.xp_reward} XP</span>
+                    {a.assigned_student_id && <span className="rounded-full bg-accent/15 px-2 py-0.5 font-display font-bold text-accent">{t("personalTask")}</span>}
                     {pending > 0 && <span className="rounded-full bg-destructive/15 px-2 py-0.5 font-display font-bold text-destructive">{pending} {lang === "id" ? "perlu nilai" : "to grade"}</span>}
                   </div>
+
                 </button>
               );
             })}
