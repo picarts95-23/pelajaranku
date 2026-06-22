@@ -83,6 +83,7 @@ function SiswaProfil() {
               {lang === "id" ? "Profil Siswi" : "Student Profile"}
             </div>
             <h1 className="mt-1 font-display text-3xl font-bold sm:text-4xl">{profile?.full_name ?? "Siswi"} ✨</h1>
+            {p?.username && <div className="mt-1 font-display text-sm opacity-90">@{p.username}</div>}
             <div className="mt-3 flex flex-wrap gap-2 text-sm">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 backdrop-blur">
                 <GraduationCap className="size-4" /> {lang === "id" ? "Kelas" : "Class"} {profile?.class_name ?? "—"}
@@ -95,7 +96,17 @@ function SiswaProfil() {
               <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/30 px-3 py-1 backdrop-blur">
                 <Star className="size-4" /> Level {level}
               </span>
+              {character && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 backdrop-blur">
+                  <Sparkles className="size-4" /> {character.name} · {character.archetype}
+                </span>
+              )}
             </div>
+            {p?.motto && (
+              <p className="mt-3 flex items-start gap-2 text-sm italic opacity-95">
+                <Quote className="mt-0.5 size-4 shrink-0" /> {p.motto}
+              </p>
+            )}
             <div className="mt-6 max-w-md">
               <div className="mb-1.5 flex items-end justify-between text-sm">
                 <span className="font-display font-semibold">{lang === "id" ? "Menuju Level" : "To Level"} {level + 1}</span>
