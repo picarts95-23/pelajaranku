@@ -80,7 +80,7 @@ function QuestCard({ a }: { a: any }) {
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
               <div className="font-display text-lg font-bold">{a.title}</div>
-              <div className="text-xs text-muted-foreground">{a.classes?.name} · {a.due_at ? `${t("due")}: ${format(new Date(a.due_at), "dd MMM HH:mm")}` : ""}</div>
+              <div className="text-xs text-muted-foreground">{a.classes?.name ?? t("personalTask")} · {a.due_at ? `${t("due")}: ${format(new Date(a.due_at), "dd MMM HH:mm")}` : ""}</div>
             </div>
             {status === "graded" ? <span className="rounded-full bg-xp/20 px-2 py-0.5 text-xs font-display font-bold text-xp">{a.mySubmission?.score}/{a.max_score}</span>
               : status === "submitted" ? <span className="rounded-full bg-primary/15 px-2 py-0.5 text-xs font-display font-bold text-primary">{t("submitted")}</span>
