@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
+import { LinkBadges } from "@/components/link-fields";
 
 export const Route = createFileRoute("/_authenticated/siswa/tugas")({
   head: () => ({ meta: [{ title: "Misi Saya · EduQuest Academy" }] }),
