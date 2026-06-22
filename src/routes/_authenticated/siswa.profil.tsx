@@ -127,6 +127,27 @@ function SiswaProfil() {
         <StatCard icon={<Trophy className="size-6" />} label={lang === "id" ? "Rata-rata Nilai" : "Average Score"} value={stats?.avgScore ?? 0} tint="bg-gradient-sunset" />
       </section>
 
+      <section className="mt-6 rounded-3xl border-2 border-border bg-card p-6 shadow-card-rpg">
+        <h2 className="mb-4 font-display text-xl font-bold flex items-center gap-2">
+          <User2 className="size-5 text-accent" /> {lang === "id" ? "Biodata" : "Biodata"}
+        </h2>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <BioItem icon={<User2 className="size-4" />} label={lang === "id" ? "Nama Akun" : "Username"} value={p?.username ? `@${p.username}` : null} lang={lang} />
+          <BioItem icon={<Venus className="size-4" />} label={lang === "id" ? "Jenis Kelamin" : "Gender"} value={p?.gender} lang={lang} />
+          <BioItem icon={<Cake className="size-4" />} label={lang === "id" ? "Tanggal Lahir" : "Birthdate"} value={p?.birthdate ? format(new Date(p.birthdate), "dd MMM yyyy") : null} lang={lang} />
+          <BioItem icon={<Heart className="size-4" />} label={lang === "id" ? "Hobi" : "Hobby"} value={p?.hobby} lang={lang} />
+          <BioItem icon={<GraduationCap className="size-4" />} label={lang === "id" ? "Kelas" : "Class"} value={profile?.class_name} lang={lang} />
+          <BioItem icon={<IdCard className="size-4" />} label="NIS" value={profile?.school_id_number} lang={lang} />
+        </div>
+        {p?.bio && (
+          <div className="mt-4 rounded-2xl border-2 border-dashed border-border bg-muted/30 p-4">
+            <div className="mb-1 font-display text-sm font-bold text-muted-foreground">{lang === "id" ? "Tentang Saya" : "About Me"}</div>
+            <p className="whitespace-pre-wrap text-sm text-foreground/90">{p.bio}</p>
+          </div>
+        )}
+      </section>
+
+
       <section className="mt-6 grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 rounded-3xl border-2 border-border bg-card p-6 shadow-card-rpg">
           <h2 className="mb-4 font-display text-xl font-bold flex items-center gap-2">
