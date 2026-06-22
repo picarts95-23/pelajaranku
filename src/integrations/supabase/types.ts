@@ -63,6 +63,7 @@ export type Database = {
           muroja_surah: string | null
           options: Json | null
           quiz_link: string | null
+          subject: string | null
           teacher_id: string
           title: string
           updated_at: string
@@ -84,6 +85,7 @@ export type Database = {
           muroja_surah?: string | null
           options?: Json | null
           quiz_link?: string | null
+          subject?: string | null
           teacher_id: string
           title: string
           updated_at?: string
@@ -105,6 +107,7 @@ export type Database = {
           muroja_surah?: string | null
           options?: Json | null
           quiz_link?: string | null
+          subject?: string | null
           teacher_id?: string
           title?: string
           updated_at?: string
@@ -473,6 +476,56 @@ export type Database = {
             columns: ["student_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      materials: {
+        Row: {
+          class_id: string | null
+          content: string | null
+          created_at: string
+          description: string | null
+          file_url: string | null
+          id: string
+          link: string | null
+          subject: string | null
+          teacher_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          class_id?: string | null
+          content?: string | null
+          created_at?: string
+          description?: string | null
+          file_url?: string | null
+          id?: string
+          link?: string | null
+          subject?: string | null
+          teacher_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          class_id?: string | null
+          content?: string | null
+          created_at?: string
+          description?: string | null
+          file_url?: string | null
+          id?: string
+          link?: string | null
+          subject?: string | null
+          teacher_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "materials_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
             referencedColumns: ["id"]
           },
         ]
@@ -925,7 +978,12 @@ export type Database = {
       app_role: "guru" | "siswa"
       attendance_status: "hadir" | "izin" | "sakit" | "alpa"
       question_difficulty: "easy" | "medium" | "hard"
-      question_type: "multiple_choice" | "essay" | "true_false" | "voice"
+      question_type:
+        | "multiple_choice"
+        | "essay"
+        | "true_false"
+        | "voice"
+        | "complex_multiple_choice"
       submission_status: "draft" | "submitted" | "graded" | "returned"
     }
     CompositeTypes: {
@@ -1057,7 +1115,13 @@ export const Constants = {
       app_role: ["guru", "siswa"],
       attendance_status: ["hadir", "izin", "sakit", "alpa"],
       question_difficulty: ["easy", "medium", "hard"],
-      question_type: ["multiple_choice", "essay", "true_false", "voice"],
+      question_type: [
+        "multiple_choice",
+        "essay",
+        "true_false",
+        "voice",
+        "complex_multiple_choice",
+      ],
       submission_status: ["draft", "submitted", "graded", "returned"],
     },
   },
