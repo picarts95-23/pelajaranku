@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Database, Plus, Trash2, X } from "lucide-react";
+import { Check, Database, Mic, Plus, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { VoiceRecorder } from "@/components/voice-recorder";
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
@@ -65,6 +66,9 @@ function GuruBankSoalPage() {
         const chosen = form.options[form.correctIndex]?.trim();
         if (!chosen) throw new Error(lang === "id" ? "Pilih jawaban yang benar" : "Select the correct answer");
         answer = chosen;
+      } else if (form.type === "voice") {
+        opts = null;
+        answer = null;
       }
       const { error } = await supabase.from("question_bank").insert({
         teacher_id: user.id, subject: form.subject || null, topic: form.topic || null,
@@ -111,6 +115,7 @@ function GuruBankSoalPage() {
                         <SelectItem value="multiple_choice">{t("multipleChoice")}</SelectItem>
                         <SelectItem value="essay">{t("essay")}</SelectItem>
                         <SelectItem value="true_false">{t("trueFalse")}</SelectItem>
+                        <SelectItem value="voice">{lang === "id" ? "Rekam Suara" : "Voice Recording"}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -150,6 +155,11 @@ function GuruBankSoalPage() {
                       <Button size="sm" variant="ghost" type="button" onClick={addOption}><Plus className="size-4" /> {lang === "id" ? "Tambah pilihan" : "Add option"}</Button>
                     )}
                   </div>
+                ) : form.type === "voice" ? (
+                  <div className="rounded-xl border-2 border-dashed border-border bg-muted/30 p-3 text-sm text-muted-foreground">
+                    <div className="mb-1 flex items-center gap-2 font-display font-bold text-foreground"><Mic className="size-4 text-quest" /> {lang === "id" ? "Jawaban Rekam Suara" : "Voice answer"}</div>
+                    {lang === "id" ? "Siswa akan menjawab soal ini dengan merekam suara mereka." : "Students will answer this question by recording their voice."}
+                  </div>
                 ) : (
                   <div><Label>{t("answer")}</Label><Input value={form.answer} onChange={(e) => setForm({ ...form, answer: e.target.value })} /></div>
                 )}
@@ -167,16 +177,22 @@ function GuruBankSoalPage() {
             <div key={q.id} className="rounded-2xl border-2 border-border bg-card p-4 shadow-card-rpg">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-start gap-3 min-w-0">
-                  <div className="grid size-10 place-items-center rounded-xl bg-gradient-magic text-white shrink-0"><Database className="size-4" /></div>
+                  <div className="grid size-10 place-items-center rounded-xl bg-gradient-magic text-white shrink-0">
+                    {q.type === "voice" ? <Mic className="size-4" /> : <Database className="size-4" />}
+                  </div>
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-1.5">
                       {q.subject && <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-display">{q.subject}</span>}
                       {q.topic && <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-display">{q.topic}</span>}
+                      {q.type === "voice" && <span className="inline-flex items-center gap-1 rounded-full bg-quest/15 px-2 py-0.5 text-xs font-display font-bold text-quest"><Mic className="size-3" /> {lang === "id" ? "Rekam Suara" : "Voice"}</span>}
                       <span className={`rounded-full px-2 py-0.5 text-xs font-display font-bold ${diffColor[q.difficulty]}`}>{t(q.difficulty as any)}</span>
                     </div>
                     <p className="mt-2 font-display font-semibold">{q.question}</p>
                     {q.options && <ul className="mt-2 ml-4 list-disc text-sm text-muted-foreground">{(q.options as string[]).map((o, i) => <li key={i}>{o}</li>)}</ul>}
                     {q.answer && <div className="mt-2 text-xs"><span className="font-display font-bold text-xp">{t("answer")}:</span> {q.answer}</div>}
+                    <div className="mt-3">
+                      <AnswerDialog q={q} />
+                    </div>
                   </div>
                 </div>
                 <Button size="sm" variant="ghost" onClick={() => { if (confirm(`${t("delete")}?`)) deleteMut.mutate(q.id); }}><Trash2 className="size-4 text-destructive" /></Button>
@@ -186,5 +202,68 @@ function GuruBankSoalPage() {
         </div>
       )}
     </DashboardShell>
+  );
+}
+
+function AnswerDialog({ q }: { q: any }) {
+  const { lang } = useLang();
+  const [open, setOpen] = useState(false);
+  const [text, setText] = useState("");
+  const [choice, setChoice] = useState<string>("");
+  const [hasVoice, setHasVoice] = useState(false);
+
+  function submit() {
+    if (q.type === "voice" && !hasVoice) {
+      toast.error(lang === "id" ? "Rekam suara dulu ya." : "Please record your voice first.");
+      return;
+    }
+    toast.success(lang === "id" ? "Jawaban tersimpan ✨" : "Answer saved ✨");
+    setOpen(false);
+    setText(""); setChoice(""); setHasVoice(false);
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="outline">
+          {q.type === "voice" ? <Mic className="size-4" /> : null}
+          {lang === "id" ? "Coba Jawab" : "Try Answer"}
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader><DialogTitle>{lang === "id" ? "Jawab Soal" : "Answer Question"}</DialogTitle></DialogHeader>
+        <p className="font-display font-semibold">{q.question}</p>
+        <div className="mt-2">
+          {q.type === "voice" ? (
+            <VoiceRecorder onChange={({ url }) => setHasVoice(!!url)} />
+          ) : q.type === "multiple_choice" && q.options ? (
+            <div className="space-y-2">
+              {(q.options as string[]).map((o, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setChoice(o)}
+                  className={`flex w-full items-center gap-2 rounded-xl border-2 p-2 text-left text-sm transition-colors ${choice === o ? "border-quest bg-quest/10" : "border-border hover:border-quest/40"}`}
+                >
+                  <span className="font-display text-muted-foreground">{String.fromCharCode(65 + i)}.</span> {o}
+                </button>
+              ))}
+            </div>
+          ) : q.type === "true_false" ? (
+            <div className="flex gap-2">
+              {["Benar", "Salah"].map((o) => (
+                <Button key={o} type="button" variant={choice === o ? "quest" : "outline"} onClick={() => setChoice(o)}>{o}</Button>
+              ))}
+            </div>
+          ) : (
+            <Textarea rows={5} value={text} onChange={(e) => setText(e.target.value)} placeholder={lang === "id" ? "Tulis jawabanmu..." : "Write your answer..."} />
+          )}
+        </div>
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => setOpen(false)}>{lang === "id" ? "Tutup" : "Close"}</Button>
+          <Button variant="quest" onClick={submit}>{lang === "id" ? "Kirim" : "Submit"}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
