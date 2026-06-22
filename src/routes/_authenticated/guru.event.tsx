@@ -183,14 +183,27 @@ function GuruEventPage() {
               </div>
               {e.description && <p className="mt-3 text-sm text-foreground/80">{e.description}</p>}
               <LinkBadges quizLink={e.quiz_link} gameLink={e.game_link} />
-              <a
-                href={gcalTemplateUrl({ title: e.title, start: e.start_at, end: e.end_at, details: e.description, location: e.location })}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-quest/10 px-3 py-1 text-xs font-display font-bold text-quest hover:bg-quest/20"
-              >
-                <CalendarDays className="size-3.5" /> {lang === "id" ? "Tambah ke Google Kalender" : "Add to Google Calendar"}
-              </a>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <a
+                  href={gcalTemplateUrl({ title: e.title, start: e.start_at, end: e.end_at, details: e.description, location: e.location })}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-quest/10 px-3 py-1 text-xs font-display font-bold text-quest hover:bg-quest/20"
+                >
+                  <CalendarDays className="size-3.5" /> {lang === "id" ? "Tambah ke Kalender" : "Add to Calendar"}
+                </a>
+                {connected && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={syncMut.isPending}
+                    onClick={() => syncMut.mutate(e.id)}
+                  >
+                    {syncMut.isPending && syncMut.variables === e.id ? <Loader2 className="size-3.5 animate-spin" /> : <RefreshCw className="size-3.5" />}
+                    {e.google_event_id ? (lang === "id" ? "Perbarui Sinkron" : "Re-sync") : (lang === "id" ? "Sinkronkan" : "Sync")}
+                  </Button>
+                )}
+              </div>
             </div>
           ))}
         </div>
