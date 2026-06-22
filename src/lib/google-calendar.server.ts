@@ -133,13 +133,13 @@ export async function upsertConnection(opts: {
 }) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const expiry = new Date(Date.now() + opts.expiresIn * 1000).toISOString();
-  const row: Record<string, unknown> = {
+  const row = {
     user_id: opts.userId,
     google_email: opts.email,
     access_token: opts.accessToken,
     token_expiry: expiry,
+    ...(opts.refreshToken ? { refresh_token: opts.refreshToken } : {}),
   };
-  if (opts.refreshToken) row.refresh_token = opts.refreshToken;
   await supabaseAdmin.from("google_calendar_connections").upsert(row, { onConflict: "user_id" });
 }
 
