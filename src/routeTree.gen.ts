@@ -16,6 +16,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedSiswaTugasRouteImport } from './routes/_authenticated/siswa.tugas'
 import { Route as AuthenticatedSiswaStatusRouteImport } from './routes/_authenticated/siswa.status'
+import { Route as AuthenticatedSiswaRiwayatRouteImport } from './routes/_authenticated/siswa.riwayat'
 import { Route as AuthenticatedSiswaProfilRouteImport } from './routes/_authenticated/siswa.profil'
 import { Route as AuthenticatedSiswaNilaiRouteImport } from './routes/_authenticated/siswa.nilai'
 import { Route as AuthenticatedSiswaLeaderboardRouteImport } from './routes/_authenticated/siswa.leaderboard'
@@ -66,6 +67,12 @@ const AuthenticatedSiswaStatusRoute =
   AuthenticatedSiswaStatusRouteImport.update({
     id: '/siswa/status',
     path: '/siswa/status',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSiswaRiwayatRoute =
+  AuthenticatedSiswaRiwayatRouteImport.update({
+    id: '/siswa/riwayat',
+    path: '/siswa/riwayat',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedSiswaProfilRoute =
@@ -177,6 +184,7 @@ export interface FileRoutesByFullPath {
   '/siswa/leaderboard': typeof AuthenticatedSiswaLeaderboardRoute
   '/siswa/nilai': typeof AuthenticatedSiswaNilaiRoute
   '/siswa/profil': typeof AuthenticatedSiswaProfilRoute
+  '/siswa/riwayat': typeof AuthenticatedSiswaRiwayatRoute
   '/siswa/status': typeof AuthenticatedSiswaStatusRoute
   '/siswa/tugas': typeof AuthenticatedSiswaTugasRoute
   '/siswa/profil/edit': typeof AuthenticatedSiswaProfilEditRoute
@@ -201,6 +209,7 @@ export interface FileRoutesByTo {
   '/siswa/leaderboard': typeof AuthenticatedSiswaLeaderboardRoute
   '/siswa/nilai': typeof AuthenticatedSiswaNilaiRoute
   '/siswa/profil': typeof AuthenticatedSiswaProfilRoute
+  '/siswa/riwayat': typeof AuthenticatedSiswaRiwayatRoute
   '/siswa/status': typeof AuthenticatedSiswaStatusRoute
   '/siswa/tugas': typeof AuthenticatedSiswaTugasRoute
   '/siswa/profil/edit': typeof AuthenticatedSiswaProfilEditRoute
@@ -227,6 +236,7 @@ export interface FileRoutesById {
   '/_authenticated/siswa/leaderboard': typeof AuthenticatedSiswaLeaderboardRoute
   '/_authenticated/siswa/nilai': typeof AuthenticatedSiswaNilaiRoute
   '/_authenticated/siswa/profil': typeof AuthenticatedSiswaProfilRoute
+  '/_authenticated/siswa/riwayat': typeof AuthenticatedSiswaRiwayatRoute
   '/_authenticated/siswa/status': typeof AuthenticatedSiswaStatusRoute
   '/_authenticated/siswa/tugas': typeof AuthenticatedSiswaTugasRoute
   '/_authenticated/siswa/profil_/edit': typeof AuthenticatedSiswaProfilEditRoute
@@ -253,6 +263,7 @@ export interface FileRouteTypes {
     | '/siswa/leaderboard'
     | '/siswa/nilai'
     | '/siswa/profil'
+    | '/siswa/riwayat'
     | '/siswa/status'
     | '/siswa/tugas'
     | '/siswa/profil/edit'
@@ -277,6 +288,7 @@ export interface FileRouteTypes {
     | '/siswa/leaderboard'
     | '/siswa/nilai'
     | '/siswa/profil'
+    | '/siswa/riwayat'
     | '/siswa/status'
     | '/siswa/tugas'
     | '/siswa/profil/edit'
@@ -302,6 +314,7 @@ export interface FileRouteTypes {
     | '/_authenticated/siswa/leaderboard'
     | '/_authenticated/siswa/nilai'
     | '/_authenticated/siswa/profil'
+    | '/_authenticated/siswa/riwayat'
     | '/_authenticated/siswa/status'
     | '/_authenticated/siswa/tugas'
     | '/_authenticated/siswa/profil_/edit'
@@ -364,6 +377,13 @@ declare module '@tanstack/react-router' {
       path: '/siswa/status'
       fullPath: '/siswa/status'
       preLoaderRoute: typeof AuthenticatedSiswaStatusRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/siswa/riwayat': {
+      id: '/_authenticated/siswa/riwayat'
+      path: '/siswa/riwayat'
+      fullPath: '/siswa/riwayat'
+      preLoaderRoute: typeof AuthenticatedSiswaRiwayatRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/siswa/profil': {
@@ -497,6 +517,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSiswaLeaderboardRoute: typeof AuthenticatedSiswaLeaderboardRoute
   AuthenticatedSiswaNilaiRoute: typeof AuthenticatedSiswaNilaiRoute
   AuthenticatedSiswaProfilRoute: typeof AuthenticatedSiswaProfilRoute
+  AuthenticatedSiswaRiwayatRoute: typeof AuthenticatedSiswaRiwayatRoute
   AuthenticatedSiswaStatusRoute: typeof AuthenticatedSiswaStatusRoute
   AuthenticatedSiswaTugasRoute: typeof AuthenticatedSiswaTugasRoute
   AuthenticatedSiswaProfilEditRoute: typeof AuthenticatedSiswaProfilEditRoute
@@ -518,6 +539,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSiswaLeaderboardRoute: AuthenticatedSiswaLeaderboardRoute,
   AuthenticatedSiswaNilaiRoute: AuthenticatedSiswaNilaiRoute,
   AuthenticatedSiswaProfilRoute: AuthenticatedSiswaProfilRoute,
+  AuthenticatedSiswaRiwayatRoute: AuthenticatedSiswaRiwayatRoute,
   AuthenticatedSiswaStatusRoute: AuthenticatedSiswaStatusRoute,
   AuthenticatedSiswaTugasRoute: AuthenticatedSiswaTugasRoute,
   AuthenticatedSiswaProfilEditRoute: AuthenticatedSiswaProfilEditRoute,
