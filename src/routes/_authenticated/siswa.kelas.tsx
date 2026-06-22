@@ -96,14 +96,24 @@ function SiswaKelasPage() {
       {enrollments.length === 0 ? <EmptyState message={lang === "id" ? "Belum tergabung di kelas manapun. Gunakan kode dari guru!" : "No classes yet. Use a code from your teacher!"} /> : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {enrollments.map((e: any) => (
-            <div key={e.id} className="rounded-2xl border-2 border-border bg-card p-5 shadow-card-rpg">
-              <div className="flex items-start justify-between gap-2">
+            <div key={e.id} className="flex flex-col rounded-2xl border-2 border-border bg-card p-5 shadow-card-rpg">
+              <div className="flex items-start justify-between gap-3">
                 <div className="grid size-12 place-items-center rounded-xl bg-gradient-hero text-white"><BookOpen className="size-5" /></div>
-                <Button size="sm" variant="ghost" onClick={() => { if (confirm(lang === "id" ? "Keluar dari kelas ini?" : "Leave this class?")) leaveMut.mutate(e.id); }}><LogOut className="size-4 text-destructive" /></Button>
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-siswa/15 px-2.5 py-1 text-xs font-semibold text-siswa">
+                    <Check className="size-3.5" /> {lang === "id" ? "Tergabung" : "Joined"}
+                  </span>
+                  <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => { if (confirm(lang === "id" ? "Keluar dari kelas ini?" : "Leave this class?")) leaveMut.mutate(e.id); }}><LogOut className="size-4 text-destructive" /></Button>
+                </div>
               </div>
               <h3 className="mt-3 font-display text-lg font-bold">{e.classes?.name}</h3>
-              <div className="text-xs text-muted-foreground">{e.classes?.subject ?? "—"} · {e.classes?.academic_year ?? "—"}</div>
-              {e.classes?.description && <p className="mt-2 line-clamp-2 text-sm text-foreground/80">{e.classes.description}</p>}
+              <p className="text-xs text-muted-foreground">{e.classes?.subject ?? "—"}</p>
+              <div className="mt-3 space-y-1.5 text-sm">
+                <div className="flex items-center justify-between"><span className="text-muted-foreground">{t("academicYear")}</span><span>{e.classes?.academic_year ?? "—"}</span></div>
+                <div className="flex items-center justify-between"><span className="text-muted-foreground">{lang === "id" ? "Bergabung" : "Joined"}</span><span>{e.joined_at ? format(new Date(e.joined_at), "dd MMM yyyy") : "—"}</span></div>
+                <div className="flex items-center justify-between"><span className="text-muted-foreground">{t("guru")}</span><span className="truncate max-w-[140px]">{e.teacherName}</span></div>
+              </div>
+              {e.classes?.description && <p className="mt-3 line-clamp-2 text-sm text-foreground/80">{e.classes.description}</p>}
             </div>
           ))}
         </div>
