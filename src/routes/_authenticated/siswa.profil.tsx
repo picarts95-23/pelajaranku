@@ -1,7 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { Award, BookOpen, Coins, GraduationCap, IdCard, Sparkles, Star, Trophy } from "lucide-react";
+import { Award, BookOpen, Coins, GraduationCap, IdCard, Pencil, Sparkles, Star, Trophy } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { DashboardShell, StatCard } from "@/components/dashboard-shell";
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
@@ -16,6 +17,7 @@ export const Route = createFileRoute("/_authenticated/siswa/profil")({
 function SiswaProfil() {
   const { user, profile } = useAuth();
   const { lang } = useLang();
+
 
   const xp = profile?.xp ?? 0;
   const level = profile?.level ?? 1;
@@ -48,6 +50,11 @@ function SiswaProfil() {
 
   return (
     <DashboardShell accent="siswa">
+      <div className="mb-4 flex justify-end">
+        <Button asChild size="sm" className="bg-gradient-magic">
+          <Link to="/siswa/profil/edit"><Pencil className="mr-1 size-4" /> {lang === "id" ? "Edit Profil & Karakter" : "Edit Profile & Character"}</Link>
+        </Button>
+      </div>
       <motion.section
         initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
         className="relative overflow-hidden rounded-3xl border-2 border-border bg-gradient-hero p-6 text-primary-foreground shadow-magic sm:p-8"
