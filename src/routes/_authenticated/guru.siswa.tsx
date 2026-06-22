@@ -42,9 +42,12 @@ function GuruSiswaPage() {
   const { user, role, loading } = useAuth();
   const navigate = useNavigate();
   const { t, lang } = useLang();
+  const qc = useQueryClient();
   const [filterClass, setFilterClass] = useState<string>("all");
   const [q, setQ] = useState("");
   const [selected, setSelected] = useState<StudentRow | null>(null);
+  const [enrollTarget, setEnrollTarget] = useState<StudentRow | null>(null);
+  const [enrollClassId, setEnrollClassId] = useState("");
 
   useEffect(() => {
     if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" });
