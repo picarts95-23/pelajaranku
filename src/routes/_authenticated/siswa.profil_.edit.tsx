@@ -78,6 +78,7 @@ function EditProfil() {
       const parsed = schema.parse(values);
       const chosen = getCharacterByKey(parsed.character_key || null);
       const payload: Record<string, unknown> = {
+        id: user.id,
         full_name: parsed.full_name,
         username: parsed.username || null,
         class_name: parsed.class_name || null,
@@ -90,7 +91,7 @@ function EditProfil() {
         character_key: parsed.character_key || null,
         avatar_url: chosen?.src ?? (profile?.avatar_url ?? null),
       };
-      const { error } = await supabase.from("profiles").update(payload as any).eq("id", user.id);
+      const { error } = await supabase.from("profiles").upsert(payload as any, { onConflict: "id" }).eq("id", user.id);
       if (error) throw error;
     },
     onSuccess: async () => {
