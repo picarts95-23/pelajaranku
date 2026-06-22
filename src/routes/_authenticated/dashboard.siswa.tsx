@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { ArrowRight, Award, BookOpen, ClipboardList, Coins, Flame, GraduationCap, Heart, MessageCircle, NotebookPen, PencilRuler, ScrollText, Send, Smile, Sparkles, Star, Sword, Trophy, UserCircle2 } from "lucide-react";
+import { ArrowRight, Award, BookOpen, ClipboardList, Coins, Flame, GraduationCap, Heart, LogIn, MessageCircle, NotebookPen, PencilRuler, ScrollText, Send, Smile, Sparkles, Star, Sword, Trophy, UserCircle2 } from "lucide-react";
 import type { ComponentType, ReactNode } from "react";
 import { DashboardShell, StatCard } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
