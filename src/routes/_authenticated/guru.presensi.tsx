@@ -117,9 +117,10 @@ function GuruPresensiPage() {
       recs.forEach((r) => {
         const st = r.status as AttStatus;
         if (st in counts) counts[st as keyof typeof counts]++;
-        weighted += STATUS_WEIGHT[st] ?? 0;
+        weighted += weights[st] ?? 0;
       });
-      const score = totalMeetings > 0 ? Math.round((weighted / totalMeetings) * 100) : 0;
+      // Each meeting's weight is already on a 0-100 scale, so the average is the score.
+      const score = totalMeetings > 0 ? Math.round(weighted / totalMeetings) : 0;
       byStudent[s.id] = { ...counts, total: recs.length, score };
     });
     return { byStudent, totalMeetings };
