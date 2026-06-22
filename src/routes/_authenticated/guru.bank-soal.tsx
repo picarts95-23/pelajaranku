@@ -14,6 +14,8 @@ import { VoiceRecorder } from "@/components/voice-recorder";
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
+import { SubjectSelect } from "@/components/subject-select";
+import { LinkFields, LinkBadges } from "@/components/link-fields";
 
 export const Route = createFileRoute("/_authenticated/guru/bank-soal")({
   head: () => ({ meta: [{ title: "Bank Soal · EduQuest Academy" }] }),
@@ -35,6 +37,8 @@ function GuruBankSoalPage() {
     correctIndex: 0,
     answer: "",
     difficulty: "medium",
+    quiz_link: "",
+    game_link: "",
   };
   const [form, setForm] = useState(emptyForm);
 
@@ -74,6 +78,7 @@ function GuruBankSoalPage() {
         teacher_id: user.id, subject: form.subject || null, topic: form.topic || null,
         question: form.question.trim(), type: form.type as any, options: opts,
         answer, difficulty: form.difficulty as any,
+        quiz_link: form.quiz_link.trim() || null, game_link: form.game_link.trim() || null,
       });
       if (error) throw error;
     },
@@ -102,8 +107,8 @@ function GuruBankSoalPage() {
             <DialogContent className="max-w-lg">
               <DialogHeader><DialogTitle>{t("newQuestion")}</DialogTitle></DialogHeader>
               <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-3">
-                  <div><Label>{t("subject")}</Label><Input value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} /></div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div><Label>{t("subject")}</Label><SubjectSelect value={form.subject} onChange={(v) => setForm({ ...form, subject: v })} /></div>
                   <div><Label>{t("topic")}</Label><Input value={form.topic} onChange={(e) => setForm({ ...form, topic: e.target.value })} /></div>
                 </div>
                 <div><Label>{t("question")}</Label><Textarea rows={3} value={form.question} onChange={(e) => setForm({ ...form, question: e.target.value })} /></div>
@@ -163,6 +168,7 @@ function GuruBankSoalPage() {
                 ) : (
                   <div><Label>{t("answer")}</Label><Input value={form.answer} onChange={(e) => setForm({ ...form, answer: e.target.value })} /></div>
                 )}
+                <LinkFields quizLink={form.quiz_link} gameLink={form.game_link} onQuiz={(v) => setForm({ ...form, quiz_link: v })} onGame={(v) => setForm({ ...form, game_link: v })} />
               </div>
               <DialogFooter>
                 <Button variant="ghost" onClick={() => setOpen(false)}>{t("cancel")}</Button>
@@ -190,6 +196,7 @@ function GuruBankSoalPage() {
                     <p className="mt-2 font-display font-semibold">{q.question}</p>
                     {q.options && <ul className="mt-2 ml-4 list-disc text-sm text-muted-foreground">{(q.options as string[]).map((o, i) => <li key={i}>{o}</li>)}</ul>}
                     {q.answer && <div className="mt-2 text-xs"><span className="font-display font-bold text-xp">{t("answer")}:</span> {q.answer}</div>}
+                    <LinkBadges quizLink={q.quiz_link} gameLink={q.game_link} />
                     <div className="mt-3">
                       <AnswerDialog q={q} />
                     </div>

@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
+import { LinkBadges } from "@/components/link-fields";
 
 export const Route = createFileRoute("/_authenticated/siswa/tugas")({
   head: () => ({ meta: [{ title: "Misi Saya · EduQuest Academy" }] }),
@@ -88,6 +89,7 @@ function QuestCard({ a }: { a: any }) {
               : <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-display font-bold">{t("notSubmitted")}</span>}
           </div>
           {a.description && <p className="mt-2 line-clamp-3 text-sm text-foreground/80">{a.description}</p>}
+          <LinkBadges quizLink={a.quiz_link} gameLink={a.game_link} />
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <span className="inline-flex items-center gap-1 rounded-full bg-xp/15 px-2 py-1 font-display text-xs font-bold text-xp"><Sparkles className="size-3" /> +{a.xp_reward} XP</span>
             <span className="inline-flex items-center gap-1 rounded-full bg-coin/15 px-2 py-1 font-display text-xs font-bold text-coin"><Coins className="size-3" /> +{a.coin_reward}</span>

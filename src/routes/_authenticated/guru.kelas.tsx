@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
+import { SubjectSelect } from "@/components/subject-select";
 
 export const Route = createFileRoute("/_authenticated/guru/kelas")({
   head: () => ({ meta: [{ title: "Kelas · EduQuest Academy" }] }),
@@ -101,8 +102,8 @@ function GuruKelasPage() {
               <DialogHeader><DialogTitle>{t("newClass")}</DialogTitle></DialogHeader>
               <div className="space-y-3">
                 <div><Label>{t("className2")}</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="VIII-A" /></div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div><Label>{t("subject")}</Label><Input value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} placeholder="Matematika" /></div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div><Label>{t("subject")}</Label><SubjectSelect value={form.subject} onChange={(v) => setForm({ ...form, subject: v })} /></div>
                   <div><Label>{t("academicYear")}</Label><Input value={form.academic_year} onChange={(e) => setForm({ ...form, academic_year: e.target.value })} placeholder="2025/2026" /></div>
                 </div>
                 <div><Label>{t("description")}</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>

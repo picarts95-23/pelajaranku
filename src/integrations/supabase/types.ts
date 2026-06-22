@@ -22,8 +22,10 @@ export type Database = {
           created_at: string
           description: string | null
           due_at: string | null
+          game_link: string | null
           id: string
           max_score: number
+          quiz_link: string | null
           teacher_id: string
           title: string
           updated_at: string
@@ -36,8 +38,10 @@ export type Database = {
           created_at?: string
           description?: string | null
           due_at?: string | null
+          game_link?: string | null
           id?: string
           max_score?: number
+          quiz_link?: string | null
           teacher_id: string
           title: string
           updated_at?: string
@@ -50,8 +54,10 @@ export type Database = {
           created_at?: string
           description?: string | null
           due_at?: string | null
+          game_link?: string | null
           id?: string
           max_score?: number
+          quiz_link?: string | null
           teacher_id?: string
           title?: string
           updated_at?: string
@@ -287,8 +293,11 @@ export type Database = {
           created_at: string
           description: string | null
           end_at: string | null
+          game_link: string | null
+          google_event_id: string | null
           id: string
           location: string | null
+          quiz_link: string | null
           start_at: string
           teacher_id: string
           title: string
@@ -299,8 +308,11 @@ export type Database = {
           created_at?: string
           description?: string | null
           end_at?: string | null
+          game_link?: string | null
+          google_event_id?: string | null
           id?: string
           location?: string | null
+          quiz_link?: string | null
           start_at: string
           teacher_id: string
           title: string
@@ -311,8 +323,11 @@ export type Database = {
           created_at?: string
           description?: string | null
           end_at?: string | null
+          game_link?: string | null
+          google_event_id?: string | null
           id?: string
           location?: string | null
+          quiz_link?: string | null
           start_at?: string
           teacher_id?: string
           title?: string
@@ -327,6 +342,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      google_calendar_connections: {
+        Row: {
+          access_token: string | null
+          created_at: string
+          google_email: string | null
+          id: string
+          refresh_token: string | null
+          token_expiry: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token?: string | null
+          created_at?: string
+          google_email?: string | null
+          id?: string
+          refresh_token?: string | null
+          token_expiry?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string | null
+          created_at?: string
+          google_email?: string | null
+          id?: string
+          refresh_token?: string | null
+          token_expiry?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       journals: {
         Row: {
@@ -450,9 +498,11 @@ export type Database = {
           answer: string | null
           created_at: string
           difficulty: Database["public"]["Enums"]["question_difficulty"]
+          game_link: string | null
           id: string
           options: Json | null
           question: string
+          quiz_link: string | null
           subject: string | null
           teacher_id: string
           topic: string | null
@@ -463,9 +513,11 @@ export type Database = {
           answer?: string | null
           created_at?: string
           difficulty?: Database["public"]["Enums"]["question_difficulty"]
+          game_link?: string | null
           id?: string
           options?: Json | null
           question: string
+          quiz_link?: string | null
           subject?: string | null
           teacher_id: string
           topic?: string | null
@@ -476,9 +528,11 @@ export type Database = {
           answer?: string | null
           created_at?: string
           difficulty?: Database["public"]["Enums"]["question_difficulty"]
+          game_link?: string | null
           id?: string
           options?: Json | null
           question?: string
+          quiz_link?: string | null
           subject?: string | null
           teacher_id?: string
           topic?: string | null
@@ -636,6 +690,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      teacher_subjects: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          teacher_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          teacher_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          teacher_id?: string
+        }
+        Relationships: []
       }
       user_badges: {
         Row: {
