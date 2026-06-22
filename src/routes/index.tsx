@@ -155,7 +155,8 @@ function Landing() {
             title={t("siswa")}
             desc={
               { id: "Tunaikan misi belajar, naik tingkat ilmu, kumpulkan kebaikan, dan jadi teladan di kelasmu.",
-                en: "Complete learning missions, level up knowledge, gather rewards, and become a role model in class." }
+                en: "Complete learning missions, level up knowledge, gather rewards, and become a role model in class.",
+                ar: "أنجز مهام التعلم، ارتقِ في مراتب العلم، اجمع الحسنات، وكن قدوة في فصلك." }
             }
             cta={t("loginSiswa")}
             to="/auth"
@@ -219,7 +220,7 @@ function RoleCard({
 }: {
   roleColor: string;
   title: string;
-  desc: { id: string; en: string };
+  desc: { id: string; en: string; ar: string };
   cta: string;
   to: string;
   search: Record<string, string>;
