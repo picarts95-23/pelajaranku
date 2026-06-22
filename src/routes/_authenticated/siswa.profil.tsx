@@ -1,7 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { Award, BookOpen, Coins, GraduationCap, IdCard, Sparkles, Star, Trophy } from "lucide-react";
+import { Award, BookOpen, Coins, GraduationCap, IdCard, Pencil, Sparkles, Star, Trophy } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { DashboardShell, StatCard } from "@/components/dashboard-shell";
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
