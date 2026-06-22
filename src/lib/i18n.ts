@@ -106,6 +106,8 @@ export const translations = {
   joinClass: { id: "Gabung Kelas", en: "Join Class", ar: "الانضمام للفصل" },
   enterCode: { id: "Masukkan kode kelas", en: "Enter class code", ar: "أدخل رمز الفصل" },
   academicYear: { id: "Tahun Ajaran", en: "Academic Year", ar: "العام الدراسي" },
+  joinedAt: { id: "Bergabung", en: "Joined", ar: "انضم" },
+  joinedStatus: { id: "Tergabung", en: "Joined", ar: "منضم" },
   newClass: { id: "Kelas Baru", en: "New Class", ar: "فصل جديد" },
   members: { id: "Anggota", en: "Members", ar: "الأعضاء" },
   copyCode: { id: "Salin kode", en: "Copy code", ar: "نسخ الرمز" },
