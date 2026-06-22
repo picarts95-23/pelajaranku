@@ -27,7 +27,8 @@ function GuruTugasPage() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
-  const [form, setForm] = useState({ class_id: "", title: "", description: "", due_at: "", max_score: 100, xp_reward: 50, coin_reward: 10 });
+  const [target, setTarget] = useState<"class" | "student">("class");
+  const [form, setForm] = useState({ class_id: "", assigned_student_id: "", title: "", description: "", due_at: "", max_score: 100, xp_reward: 50, coin_reward: 10 });
 
   useEffect(() => {
     if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" });
@@ -39,17 +40,28 @@ function GuruTugasPage() {
     queryFn: async () => (await supabase.from("classes").select("id, name").order("name")).data ?? [],
   });
 
+  const { data: students = [] } = useQuery({
+    queryKey: ["students-list", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("list_students");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
   const { data: assignments = [] } = useQuery({
     queryKey: ["assignments", user?.id],
     enabled: !!user,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("assignments").select("*, classes(name), submissions(id, status, score, student_id)")
+        .from("assignments").select("*, classes(name), assignee:profiles!assignments_assigned_student_id_fkey(full_name), submissions(id, status, score, student_id)")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
     },
   });
+
 
   const createMut = useMutation({
     mutationFn: async () => {
