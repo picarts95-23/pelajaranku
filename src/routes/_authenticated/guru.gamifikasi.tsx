@@ -274,16 +274,37 @@ function GuruGamifikasiPage() {
               <Label>{t("badgeDescription")}</Label>
               <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2} />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="grid gap-1.5">
-                <Label>{t("badgeIcon")}</Label>
-                <Input value={form.icon} onChange={(e) => setForm({ ...form, icon: e.target.value })} maxLength={4} placeholder="🏅" />
+            <div className="grid gap-1.5">
+              <Label>{t("badgeIcon")}</Label>
+              <div className="flex items-center gap-3">
+                <div className="grid size-14 shrink-0 place-items-center rounded-xl bg-gradient-magic text-3xl text-white shadow-card-rpg">{form.icon || "🏅"}</div>
+                <Input value={form.icon} onChange={(e) => setForm({ ...form, icon: e.target.value })} maxLength={4} placeholder="🏅" className="text-center text-xl" />
               </div>
-              <div className="grid gap-1.5">
-                <Label>{t("xpRequirement")}</Label>
-                <Input type="number" min={0} value={form.xp_requirement}
-                  onChange={(e) => setForm({ ...form, xp_requirement: Number(e.target.value) })} />
+              <div className="mt-1 max-h-44 space-y-2 overflow-y-auto rounded-xl border-2 border-border bg-muted/30 p-2">
+                {BADGE_EMOJIS.map((group) => (
+                  <div key={group.label}>
+                    <div className="mb-1 px-1 text-[10px] font-display font-bold uppercase tracking-wider text-muted-foreground">{group.label}</div>
+                    <div className="grid grid-cols-10 gap-1">
+                      {group.emojis.map((em) => (
+                        <button
+                          key={em}
+                          type="button"
+                          onClick={() => setForm({ ...form, icon: em })}
+                          className={`grid aspect-square place-items-center rounded-lg text-xl transition-colors hover:bg-quest/20 ${form.icon === em ? "bg-quest/25 ring-2 ring-quest" : "bg-card"}`}
+                          aria-label={em}
+                        >
+                          {em}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
+            </div>
+            <div className="grid gap-1.5">
+              <Label>{t("xpRequirement")}</Label>
+              <Input type="number" min={0} value={form.xp_requirement}
+                onChange={(e) => setForm({ ...form, xp_requirement: Number(e.target.value) })} />
             </div>
           </div>
           <DialogFooter>
