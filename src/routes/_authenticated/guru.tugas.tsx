@@ -216,9 +216,12 @@ function GuruTugasPage() {
                   </div>
 
                   {/* Multiple choice options */}
-                  {form.answer_format === "multiple_choice" && (
+                  {(form.answer_format === "multiple_choice" || form.answer_format === "complex_mc") && (
                     <div className="rounded-xl border-2 border-dashed border-guru/40 p-3 space-y-2">
-                      <Label className="flex items-center gap-1.5">🔘 {lang === "id" ? "Pilihan Jawaban" : "Answer Options"}</Label>
+                      <Label className="flex items-center gap-1.5">
+                        {form.answer_format === "complex_mc" ? "🔢" : "🔘"} {lang === "id" ? "Pilihan Jawaban" : "Answer Options"}
+                        {form.answer_format === "complex_mc" && <span className="text-xs font-normal text-muted-foreground">({lang === "id" ? "boleh >1 jawaban benar" : "multiple correct allowed"})</span>}
+                      </Label>
                       {form.options.map((opt, i) => (
                         <div key={i} className="flex items-center gap-2">
                           <span className="font-display text-sm font-bold text-guru">{String.fromCharCode(65 + i)}.</span>
