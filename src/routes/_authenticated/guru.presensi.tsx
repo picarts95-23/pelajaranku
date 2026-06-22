@@ -58,7 +58,46 @@ function GuruPresensiPage() {
   const [weights, setWeights] = useState<Record<AttStatus, number>>(DEFAULT_WEIGHTS);
   const [showSettings, setShowSettings] = useState(false);
 
+  // Load weights from the database (per teacher); fall back to local cache while fetching.
+  const { data: dbWeights } = useQuery({
+    queryKey: ["attendance-weights", user?.id], enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("attendance_settings")
+        .select("hadir, izin, sakit, alpa")
+        .eq("teacher_id", user!.id)
+        .maybeSingle();
+      return data;
+    },
+  });
+
   useEffect(() => { setWeights(loadWeights()); }, []);
+
+  useEffect(() => {
+    if (dbWeights) {
+      setWeights({
+        hadir: clampWeight(dbWeights.hadir, DEFAULT_WEIGHTS.hadir),
+        izin: clampWeight(dbWeights.izin, DEFAULT_WEIGHTS.izin),
+        sakit: clampWeight(dbWeights.sakit, DEFAULT_WEIGHTS.sakit),
+        alpa: clampWeight(dbWeights.alpa, DEFAULT_WEIGHTS.alpa),
+      });
+    }
+  }, [dbWeights]);
+
+  const weightsMut = useMutation({
+    mutationFn: async (next: Record<AttStatus, number>) => {
+      if (!user) return;
+      const { error } = await supabase
+        .from("attendance_settings")
+        .upsert({ teacher_id: user.id, ...next }, { onConflict: "teacher_id" });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success(t("weightsSaved"));
+      qc.invalidateQueries({ queryKey: ["attendance-weights", user?.id] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   function saveWeights(next: Record<AttStatus, number>) {
     setWeights(next);
