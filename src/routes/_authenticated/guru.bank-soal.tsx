@@ -25,7 +25,17 @@ function GuruBankSoalPage() {
   const { t, lang } = useLang();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ subject: "", topic: "", question: "", type: "multiple_choice", options: "", answer: "", difficulty: "medium" });
+  const emptyForm = {
+    subject: "",
+    topic: "",
+    question: "",
+    type: "multiple_choice",
+    options: ["", "", "", ""] as string[],
+    correctIndex: 0,
+    answer: "",
+    difficulty: "medium",
+  };
+  const [form, setForm] = useState(emptyForm);
 
   useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
 
@@ -34,21 +44,39 @@ function GuruBankSoalPage() {
     queryFn: async () => (await supabase.from("question_bank").select("*").order("created_at", { ascending: false })).data ?? [],
   });
 
+  const setOption = (i: number, v: string) =>
+    setForm((f) => ({ ...f, options: f.options.map((o, idx) => (idx === i ? v : o)) }));
+  const addOption = () => setForm((f) => ({ ...f, options: [...f.options, ""] }));
+  const removeOption = (i: number) =>
+    setForm((f) => {
+      const options = f.options.filter((_, idx) => idx !== i);
+      const correctIndex = f.correctIndex >= options.length ? Math.max(0, options.length - 1) : f.correctIndex;
+      return { ...f, options, correctIndex };
+    });
+
   const createMut = useMutation({
     mutationFn: async () => {
-      if (!user || !form.question) throw new Error(t("required"));
-      const opts = form.type === "multiple_choice" && form.options ? form.options.split("\n").filter(Boolean) : null;
+      if (!user || !form.question.trim()) throw new Error(t("required"));
+      let opts: string[] | null = null;
+      let answer: string | null = form.answer.trim() || null;
+      if (form.type === "multiple_choice") {
+        opts = form.options.map((o) => o.trim()).filter(Boolean);
+        if (opts.length < 2) throw new Error(lang === "id" ? "Minimal 2 pilihan jawaban" : "At least 2 answer options");
+        const chosen = form.options[form.correctIndex]?.trim();
+        if (!chosen) throw new Error(lang === "id" ? "Pilih jawaban yang benar" : "Select the correct answer");
+        answer = chosen;
+      }
       const { error } = await supabase.from("question_bank").insert({
         teacher_id: user.id, subject: form.subject || null, topic: form.topic || null,
-        question: form.question, type: form.type as any, options: opts,
-        answer: form.answer || null, difficulty: form.difficulty as any,
+        question: form.question.trim(), type: form.type as any, options: opts,
+        answer, difficulty: form.difficulty as any,
       });
       if (error) throw error;
     },
     onSuccess: () => {
       toast.success(lang === "id" ? "Soal ditambah" : "Question added");
       setOpen(false);
-      setForm({ subject: "", topic: "", question: "", type: "multiple_choice", options: "", answer: "", difficulty: "medium" });
+      setForm(emptyForm);
       qc.invalidateQueries({ queryKey: ["qb"] });
     },
     onError: (e: Error) => toast.error(e.message),
