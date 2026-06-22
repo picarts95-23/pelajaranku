@@ -216,24 +216,15 @@ function ManageMembersDialog({ klass, onClose }: { klass: ClassRow | null; onClo
     [enrolledQ.data]
   );
 
-  // Search students (only those with role 'siswa') matching name / school id
+  // Search students (only role 'siswa') via secure RPC — works regardless of
+  // user_roles RLS, and an empty term browses all students.
   const searchQ = useQuery({
     queryKey: ["student-search", klass?.id, search],
-    enabled: !!klass && search.trim().length >= 2,
+    enabled: !!klass,
     queryFn: async () => {
-      const term = search.trim();
-      // Get user ids with siswa role
-      const { data: roles, error: rErr } = await supabase
-        .from("user_roles").select("user_id").eq("role", "siswa");
-      if (rErr) throw rErr;
-      const ids = (roles ?? []).map((r) => r.user_id);
-      if (ids.length === 0) return [] as StudentProfile[];
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id, full_name, class_name, school_id_number")
-        .in("id", ids)
-        .or(`full_name.ilike.%${term}%,school_id_number.ilike.%${term}%`)
-        .limit(15);
+      const { data, error } = await supabase.rpc("search_students", {
+        _term: search.trim(),
+      });
       if (error) throw error;
       return (data ?? []) as StudentProfile[];
     },
@@ -317,10 +308,10 @@ function ManageMembersDialog({ klass, onClose }: { klass: ClassRow | null; onClo
           </p>
         </div>
 
-        {/* Add by search */}
+        {/* Add by name — no code required */}
         <div>
           <Label className="mb-1.5 block">
-            {lang === "id" ? "Daftarkan siswa langsung" : "Enroll students directly"}
+            {lang === "id" ? "Undang siswa berdasarkan nama" : "Invite students by name"}
           </Label>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -331,48 +322,49 @@ function ManageMembersDialog({ klass, onClose }: { klass: ClassRow | null; onClo
               className="pl-9"
             />
           </div>
-          {search.trim().length >= 2 && (
-            <div className="mt-2 max-h-48 overflow-y-auto rounded-xl border-2 border-border">
-              {searchQ.isLoading ? (
-                <div className="flex items-center justify-center gap-2 p-4 text-sm text-muted-foreground">
-                  <Loader2 className="size-4 animate-spin" /> {lang === "id" ? "Mencari…" : "Searching…"}
-                </div>
-              ) : (searchQ.data ?? []).length === 0 ? (
-                <div className="p-4 text-center text-sm text-muted-foreground">
-                  {lang === "id" ? "Tidak ada hasil" : "No results"}
-                </div>
-              ) : (
-                <ul className="divide-y divide-border">
-                  {(searchQ.data ?? []).map((s) => {
-                    const already = enrolledIds.has(s.id);
-                    return (
-                      <li key={s.id} className="flex items-center justify-between gap-3 p-3">
-                        <div className="min-w-0">
-                          <div className="truncate font-display text-sm font-semibold">{s.full_name}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {s.class_name ?? "—"} {s.school_id_number ? `· ${s.school_id_number}` : ""}
-                          </div>
+          <div className="mt-2 max-h-56 overflow-y-auto rounded-xl border-2 border-border">
+            {searchQ.isLoading ? (
+              <div className="flex items-center justify-center gap-2 p-4 text-sm text-muted-foreground">
+                <Loader2 className="size-4 animate-spin" /> {lang === "id" ? "Mencari…" : "Searching…"}
+              </div>
+            ) : (searchQ.data ?? []).length === 0 ? (
+              <div className="p-4 text-center text-sm text-muted-foreground">
+                {search.trim()
+                  ? (lang === "id" ? "Tidak ada hasil" : "No results")
+                  : (lang === "id" ? "Belum ada siswa terdaftar" : "No students registered yet")}
+              </div>
+            ) : (
+              <ul className="divide-y divide-border">
+                {(searchQ.data ?? []).map((s) => {
+                  const already = enrolledIds.has(s.id);
+                  return (
+                    <li key={s.id} className="flex items-center justify-between gap-3 p-3">
+                      <div className="min-w-0">
+                        <div className="truncate font-display text-sm font-semibold">{s.full_name}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {s.class_name ?? "—"} {s.school_id_number ? `· ${s.school_id_number}` : ""}
                         </div>
-                        <Button
-                          size="sm"
-                          variant={already ? "ghost" : "siswa"}
-                          disabled={already || addMut.isPending}
-                          onClick={() => addMut.mutate(s.id)}
-                        >
-                          {already ? (
-                            lang === "id" ? "Sudah anggota" : "Enrolled"
-                          ) : (
-                            <><UserPlus className="size-4" /> {lang === "id" ? "Tambah" : "Add"}</>
-                          )}
-                        </Button>
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </div>
-          )}
+                      </div>
+                      <Button
+                        size="sm"
+                        variant={already ? "ghost" : "siswa"}
+                        disabled={already || addMut.isPending}
+                        onClick={() => addMut.mutate(s.id)}
+                      >
+                        {already ? (
+                          lang === "id" ? "Sudah anggota" : "Enrolled"
+                        ) : (
+                          <><UserPlus className="size-4" /> {lang === "id" ? "Undang" : "Invite"}</>
+                        )}
+                      </Button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
         </div>
+
 
         {/* Member list */}
         <div>
