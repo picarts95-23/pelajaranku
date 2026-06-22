@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import type { ReactNode } from "react";
 import { motion } from "framer-motion";
 import { Award, BookOpen, Cake, Coins, GraduationCap, Heart, IdCard, Pencil, Quote, Sparkles, Star, Trophy, User2, Venus } from "lucide-react";
 import { Button } from "@/components/ui/button";
