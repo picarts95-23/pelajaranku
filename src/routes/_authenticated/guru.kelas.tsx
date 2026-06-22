@@ -216,24 +216,15 @@ function ManageMembersDialog({ klass, onClose }: { klass: ClassRow | null; onClo
     [enrolledQ.data]
   );
 
-  // Search students (only those with role 'siswa') matching name / school id
+  // Search students (only role 'siswa') via secure RPC — works regardless of
+  // user_roles RLS, and an empty term browses all students.
   const searchQ = useQuery({
     queryKey: ["student-search", klass?.id, search],
-    enabled: !!klass && search.trim().length >= 2,
+    enabled: !!klass,
     queryFn: async () => {
-      const term = search.trim();
-      // Get user ids with siswa role
-      const { data: roles, error: rErr } = await supabase
-        .from("user_roles").select("user_id").eq("role", "siswa");
-      if (rErr) throw rErr;
-      const ids = (roles ?? []).map((r) => r.user_id);
-      if (ids.length === 0) return [] as StudentProfile[];
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id, full_name, class_name, school_id_number")
-        .in("id", ids)
-        .or(`full_name.ilike.%${term}%,school_id_number.ilike.%${term}%`)
-        .limit(15);
+      const { data, error } = await supabase.rpc("search_students", {
+        _term: search.trim(),
+      });
       if (error) throw error;
       return (data ?? []) as StudentProfile[];
     },
