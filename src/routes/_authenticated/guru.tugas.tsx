@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ScrollText, Plus, Trash2, ChevronRight, X, Play, KeyRound } from "lucide-react";
+import { ScrollText, Plus, Trash2, ChevronRight, X, Play, KeyRound, Send } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
@@ -15,6 +15,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { LinkFields, LinkBadges } from "@/components/link-fields";
+import { SubjectSelect } from "@/components/subject-select";
 import { ExportMenu } from "@/components/export-menu";
 import { ANSWER_FORMATS, JUZ_LIST, SURAHS, type AnswerFormat } from "@/lib/quran-data";
 
@@ -27,6 +28,7 @@ const FORMAT_EMOJI: Record<string, string> = Object.fromEntries(ANSWER_FORMATS.m
 
 type TForm = {
   class_id: string; assigned_student_id: string; title: string; description: string;
+  subject: string;
   due_at: string; max_score: number; xp_reward: number; coin_reward: number;
   quiz_link: string; game_link: string;
   answer_format: AnswerFormat; options: string[]; answer_key: string;
@@ -34,7 +36,7 @@ type TForm = {
 };
 
 const emptyForm = (): TForm => ({
-  class_id: "", assigned_student_id: "", title: "", description: "", due_at: "",
+  class_id: "", assigned_student_id: "", title: "", description: "", subject: "", due_at: "",
   max_score: 100, xp_reward: 50, coin_reward: 10, quiz_link: "", game_link: "",
   answer_format: "descriptive", options: ["", ""], answer_key: "",
   muroja_juz: "", muroja_surah: "", muroja_ayat: "",
@@ -88,7 +90,8 @@ function GuruTugasPage() {
       if (target === "class" && !form.class_id) throw new Error(t("selectClass"));
       if (target === "student" && !form.assigned_student_id) throw new Error(t("selectStudent"));
       const cleanOptions = form.options.map((o) => o.trim()).filter(Boolean);
-      if (form.answer_format === "multiple_choice" && cleanOptions.length < 2)
+      const isMC = form.answer_format === "multiple_choice" || form.answer_format === "complex_mc";
+      if (isMC && cleanOptions.length < 2)
         throw new Error(lang === "id" ? "Minimal 2 pilihan jawaban" : "At least 2 options");
       if (form.answer_format === "muroja" && !form.muroja_surah)
         throw new Error(lang === "id" ? "Pilih surah untuk muroja'ah" : "Select a surah");
@@ -98,11 +101,12 @@ function GuruTugasPage() {
         class_id: target === "class" ? form.class_id : null,
         assigned_student_id: target === "student" ? form.assigned_student_id : null,
         title: form.title,
+        subject: form.subject || null,
         description: form.description || null, due_at: form.due_at ? new Date(form.due_at).toISOString() : null,
         max_score: form.max_score, xp_reward: form.xp_reward, coin_reward: form.coin_reward,
         quiz_link: form.quiz_link.trim() || null, game_link: form.game_link.trim() || null,
         answer_format: form.answer_format,
-        options: form.answer_format === "multiple_choice" ? cleanOptions : null,
+        options: isMC ? cleanOptions : null,
         muroja_juz: form.answer_format === "muroja" ? form.muroja_juz || null : null,
         muroja_surah: form.answer_format === "muroja" ? form.muroja_surah || null : null,
         muroja_ayat: form.answer_format === "muroja" ? form.muroja_ayat.trim() || null : null,
@@ -195,6 +199,7 @@ function GuruTugasPage() {
                   )}
 
                   <div><Label>{t("title")}</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
+                  <div><Label>{t("subject")}</Label><SubjectSelect value={form.subject} onChange={(v) => setForm({ ...form, subject: v })} /></div>
                   <div><Label>{t("description")}</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
 
                   {/* Answer format selector */}
@@ -211,9 +216,12 @@ function GuruTugasPage() {
                   </div>
 
                   {/* Multiple choice options */}
-                  {form.answer_format === "multiple_choice" && (
+                  {(form.answer_format === "multiple_choice" || form.answer_format === "complex_mc") && (
                     <div className="rounded-xl border-2 border-dashed border-guru/40 p-3 space-y-2">
-                      <Label className="flex items-center gap-1.5">🔘 {lang === "id" ? "Pilihan Jawaban" : "Answer Options"}</Label>
+                      <Label className="flex items-center gap-1.5">
+                        {form.answer_format === "complex_mc" ? "🔢" : "🔘"} {lang === "id" ? "Pilihan Jawaban" : "Answer Options"}
+                        {form.answer_format === "complex_mc" && <span className="text-xs font-normal text-muted-foreground">({lang === "id" ? "boleh >1 jawaban benar" : "multiple correct allowed"})</span>}
+                      </Label>
                       {form.options.map((opt, i) => (
                         <div key={i} className="flex items-center gap-2">
                           <span className="font-display text-sm font-bold text-guru">{String.fromCharCode(65 + i)}.</span>
@@ -266,6 +274,24 @@ function GuruTugasPage() {
                           {form.options.map((o) => o.trim()).filter(Boolean).map((o, i) => <SelectItem key={i} value={o}>{String.fromCharCode(65 + i)}. {o}</SelectItem>)}
                         </SelectContent>
                       </Select>
+                    ) : form.answer_format === "complex_mc" ? (
+                      <div className="space-y-1.5">
+                        {form.options.map((o) => o.trim()).filter(Boolean).map((o, i) => {
+                          const keys = form.answer_key.split(", ").filter(Boolean);
+                          const checked = keys.includes(o);
+                          return (
+                            <button
+                              type="button"
+                              key={i}
+                              onClick={() => { const next = checked ? keys.filter((k) => k !== o) : [...keys, o]; setForm({ ...form, answer_key: next.join(", ") }); }}
+                              className={`flex w-full items-center gap-2 rounded-lg border-2 p-2 text-left text-sm transition-colors ${checked ? "border-guru bg-guru/10" : "border-border hover:border-guru/40"}`}
+                            >
+                              <span className={`grid size-5 shrink-0 place-items-center rounded-md border-2 ${checked ? "border-guru bg-guru text-white" : "border-border text-transparent"}`}>✓</span>
+                              {String.fromCharCode(65 + i)}. {o}
+                            </button>
+                          );
+                        })}
+                      </div>
                     ) : (
                       <Textarea value={form.answer_key} onChange={(e) => setForm({ ...form, answer_key: e.target.value })} placeholder={lang === "id" ? "Hanya guru yang dapat melihat ini" : "Only teachers can see this"} />
                     )}
@@ -284,7 +310,7 @@ function GuruTugasPage() {
                 </div>
                 <DialogFooter>
                   <Button variant="ghost" onClick={() => setOpen(false)}>{t("cancel")}</Button>
-                  <Button variant="guru" disabled={createMut.isPending} onClick={() => createMut.mutate()}>{t("save")}</Button>
+                  <Button variant="guru" disabled={createMut.isPending} onClick={() => createMut.mutate()}><Send className="size-4" /> {t("saveShare")}</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>

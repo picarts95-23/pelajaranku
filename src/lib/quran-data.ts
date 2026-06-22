@@ -124,6 +124,7 @@ export const SURAHS: Surah[] = [
 export const ANSWER_FORMATS = [
   { value: "descriptive", labelId: "Uraian / Deskripsi", labelEn: "Descriptive", emoji: "✍️" },
   { value: "multiple_choice", labelId: "Pilihan Ganda", labelEn: "Multiple Choice", emoji: "🔘" },
+  { value: "complex_mc", labelId: "Pilihan Ganda Kompleks", labelEn: "Complex Multiple Choice", emoji: "🔢" },
   { value: "voice", labelId: "Rekaman Suara", labelEn: "Voice Recording", emoji: "🎙️" },
   { value: "muroja", labelId: "Muroja'ah Hafalan Al-Qur'an", labelEn: "Qur'an Memorization", emoji: "📖" },
 ] as const;

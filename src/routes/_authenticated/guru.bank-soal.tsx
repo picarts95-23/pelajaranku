@@ -35,6 +35,7 @@ function GuruBankSoalPage() {
     type: "multiple_choice",
     options: ["", "", "", ""] as string[],
     correctIndex: 0,
+    correctIndices: [] as number[],
     answer: "",
     difficulty: "medium",
     quiz_link: "",
@@ -70,6 +71,12 @@ function GuruBankSoalPage() {
         const chosen = form.options[form.correctIndex]?.trim();
         if (!chosen) throw new Error(lang === "id" ? "Pilih jawaban yang benar" : "Select the correct answer");
         answer = chosen;
+      } else if (form.type === "complex_multiple_choice") {
+        opts = form.options.map((o) => o.trim()).filter(Boolean);
+        if (opts.length < 2) throw new Error(lang === "id" ? "Minimal 2 pilihan jawaban" : "At least 2 answer options");
+        const chosen = form.correctIndices.map((i) => form.options[i]?.trim()).filter(Boolean);
+        if (chosen.length < 1) throw new Error(lang === "id" ? "Tandai minimal satu jawaban benar" : "Mark at least one correct answer");
+        answer = chosen.join(", ");
       } else if (form.type === "voice") {
         opts = null;
         answer = null;
@@ -104,7 +111,7 @@ function GuruBankSoalPage() {
         actions={
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild><Button variant="guru"><Plus className="size-4" /> {t("newQuestion")}</Button></DialogTrigger>
-            <DialogContent className="max-w-lg">
+            <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
               <DialogHeader><DialogTitle>{t("newQuestion")}</DialogTitle></DialogHeader>
               <div className="space-y-3">
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -118,6 +125,7 @@ function GuruBankSoalPage() {
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="multiple_choice">{t("multipleChoice")}</SelectItem>
+                        <SelectItem value="complex_multiple_choice">{t("complexMultipleChoice")}</SelectItem>
                         <SelectItem value="essay">{t("essay")}</SelectItem>
                         <SelectItem value="true_false">{t("trueFalse")}</SelectItem>
                         <SelectItem value="voice">{lang === "id" ? "Rekam Suara" : "Voice Recording"}</SelectItem>
@@ -135,27 +143,37 @@ function GuruBankSoalPage() {
                     </Select>
                   </div>
                 </div>
-                {form.type === "multiple_choice" ? (
+                {form.type === "multiple_choice" || form.type === "complex_multiple_choice" ? (
                   <div className="space-y-2">
                     <Label>{t("options")}</Label>
-                    <p className="text-xs text-muted-foreground">{lang === "id" ? "Tandai lingkaran untuk menentukan jawaban benar." : "Tap the circle to mark the correct answer."}</p>
-                    {form.options.map((opt, i) => (
-                      <div key={i} className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setForm({ ...form, correctIndex: i })}
-                          aria-label={lang === "id" ? "Jawaban benar" : "Correct answer"}
-                          className={`grid size-7 shrink-0 place-items-center rounded-full border-2 transition-colors ${form.correctIndex === i ? "border-xp bg-xp/20 text-xp" : "border-border text-transparent hover:border-xp/50"}`}
-                        >
-                          <Check className="size-4" />
-                        </button>
-                        <span className="font-display text-sm text-muted-foreground w-5">{String.fromCharCode(65 + i)}.</span>
-                        <Input value={opt} onChange={(e) => setOption(i, e.target.value)} placeholder={lang === "id" ? `Pilihan ${String.fromCharCode(65 + i)}` : `Option ${String.fromCharCode(65 + i)}`} />
-                        {form.options.length > 2 && (
-                          <Button size="icon" variant="ghost" type="button" onClick={() => removeOption(i)}><X className="size-4 text-destructive" /></Button>
-                        )}
-                      </div>
-                    ))}
+                    <p className="text-xs text-muted-foreground">
+                      {form.type === "complex_multiple_choice"
+                        ? (lang === "id" ? "Tandai semua jawaban benar (boleh lebih dari satu)." : "Mark all correct answers (more than one allowed).")
+                        : (lang === "id" ? "Tandai lingkaran untuk menentukan jawaban benar." : "Tap the circle to mark the correct answer.")}
+                    </p>
+                    {form.options.map((opt, i) => {
+                      const isComplex = form.type === "complex_multiple_choice";
+                      const checked = isComplex ? form.correctIndices.includes(i) : form.correctIndex === i;
+                      return (
+                        <div key={i} className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => isComplex
+                              ? setForm({ ...form, correctIndices: form.correctIndices.includes(i) ? form.correctIndices.filter((x) => x !== i) : [...form.correctIndices, i] })
+                              : setForm({ ...form, correctIndex: i })}
+                            aria-label={lang === "id" ? "Jawaban benar" : "Correct answer"}
+                            className={`grid size-7 shrink-0 place-items-center border-2 transition-colors ${isComplex ? "rounded-md" : "rounded-full"} ${checked ? "border-xp bg-xp/20 text-xp" : "border-border text-transparent hover:border-xp/50"}`}
+                          >
+                            <Check className="size-4" />
+                          </button>
+                          <span className="font-display text-sm text-muted-foreground w-5">{String.fromCharCode(65 + i)}.</span>
+                          <Input value={opt} onChange={(e) => setOption(i, e.target.value)} placeholder={lang === "id" ? `Pilihan ${String.fromCharCode(65 + i)}` : `Option ${String.fromCharCode(65 + i)}`} />
+                          {form.options.length > 2 && (
+                            <Button size="icon" variant="ghost" type="button" onClick={() => removeOption(i)}><X className="size-4 text-destructive" /></Button>
+                          )}
+                        </div>
+                      );
+                    })}
                     {form.options.length < 6 && (
                       <Button size="sm" variant="ghost" type="button" onClick={addOption}><Plus className="size-4" /> {lang === "id" ? "Tambah pilihan" : "Add option"}</Button>
                     )}
@@ -243,7 +261,7 @@ function AnswerDialog({ q }: { q: any }) {
         <div className="mt-2">
           {q.type === "voice" ? (
             <VoiceRecorder onChange={({ url }) => setHasVoice(!!url)} />
-          ) : q.type === "multiple_choice" && q.options ? (
+          ) : (q.type === "multiple_choice" || q.type === "complex_multiple_choice") && q.options ? (
             <div className="space-y-2">
               {(q.options as string[]).map((o, i) => (
                 <button

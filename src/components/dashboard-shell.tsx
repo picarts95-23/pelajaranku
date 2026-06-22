@@ -2,10 +2,12 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   LogOut, Compass, LayoutDashboard, BookOpen, Users, ScrollText, CalendarCheck,
   NotebookPen, CalendarDays, Database, Trophy, Sword, GraduationCap, Award, Menu, X, UserCircle2, History,
+  Library, BarChart3,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { LangToggle } from "@/components/lang-toggle";
+import { AiAssistant } from "@/components/ai-assistant";
 import { useAuth } from "@/lib/auth-context";
 import { useLang, type Key } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -17,7 +19,9 @@ const GURU_NAV: NavItem[] = [
   { to: "/dashboard/guru", key: "navDashboard", icon: LayoutDashboard },
   { to: "/guru/kelas", key: "navClasses", icon: BookOpen },
   { to: "/guru/siswa", key: "navStudents", icon: Users },
+  { to: "/guru/mapel", key: "navSubjects", icon: Library },
   { to: "/guru/tugas", key: "navAssignments", icon: ScrollText },
+  { to: "/guru/rekap", key: "navRecap", icon: BarChart3 },
   { to: "/guru/presensi", key: "navAttendance", icon: CalendarCheck },
   { to: "/guru/jurnal", key: "navJournal", icon: NotebookPen },
   { to: "/guru/event", key: "navEvents", icon: CalendarDays },
@@ -28,6 +32,7 @@ const GURU_NAV: NavItem[] = [
 const SISWA_NAV: NavItem[] = [
   { to: "/dashboard/siswa", key: "navDashboard", icon: LayoutDashboard },
   { to: "/siswa/kelas", key: "myClasses", icon: BookOpen },
+  { to: "/siswa/mapel", key: "navSubjects", icon: Library },
   { to: "/siswa/tugas", key: "navMyQuests", icon: Sword },
   { to: "/siswa/nilai", key: "navGrades", icon: GraduationCap },
   { to: "/siswa/badge", key: "navBadges", icon: Award },
@@ -35,6 +40,7 @@ const SISWA_NAV: NavItem[] = [
   { to: "/siswa/leaderboard", key: "leaderboard", icon: Trophy },
   { to: "/siswa/profil", key: "navProfile", icon: UserCircle2 },
 ];
+
 
 export function DashboardShell({
   children,
@@ -133,6 +139,8 @@ export function DashboardShell({
       <footer className="border-t-2 border-border py-6 text-center text-xs text-muted-foreground">
         {lang === "id" ? "Tetap semangat menuntut ilmu, siswi!" : "Stay curious, dear student!"} ✨
       </footer>
+
+      {accent === "guru" && <AiAssistant />}
     </div>
   );
 }

@@ -60,6 +60,7 @@ function QuestCard({ a }: { a: any }) {
   const fmt: string = a.answer_format ?? "descriptive";
   const [content, setContent] = useState(a.mySubmission?.content ?? "");
   const [choice, setChoice] = useState(a.mySubmission?.content ?? "");
+  const [choices, setChoices] = useState<string[]>(() => (a.mySubmission?.content ? String(a.mySubmission.content).split(", ").filter(Boolean) : []));
   const [fileUrl, setFileUrl] = useState(a.mySubmission?.file_url ?? "");
   const [voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
   const isVoiceFmt = fmt === "voice" || fmt === "muroja";
@@ -87,6 +88,9 @@ function QuestCard({ a }: { a: any }) {
       if (fmt === "multiple_choice") {
         if (!choice) throw new Error(lang === "id" ? "Pilih salah satu jawaban." : "Choose an answer.");
         finalContent = choice;
+      } else if (fmt === "complex_mc") {
+        if (choices.length === 0) throw new Error(lang === "id" ? "Pilih minimal satu jawaban." : "Choose at least one answer.");
+        finalContent = choices.join(", ");
       }
 
       const payload = {
@@ -156,6 +160,26 @@ function QuestCard({ a }: { a: any }) {
                           </label>
                         ))}
                       </RadioGroup>
+                    </div>
+                  ) : fmt === "complex_mc" && Array.isArray(a.options) ? (
+                    <div>
+                      <Label>{lang === "id" ? "Pilih semua jawaban benar" : "Select all correct answers"}</Label>
+                      <div className="mt-2 space-y-2">
+                        {a.options.map((o: string, i: number) => {
+                          const checked = choices.includes(o);
+                          return (
+                            <button
+                              type="button"
+                              key={i}
+                              onClick={() => setChoices(checked ? choices.filter((c) => c !== o) : [...choices, o])}
+                              className={`flex w-full items-center gap-3 rounded-xl border-2 p-3 text-left transition-colors ${checked ? "border-siswa bg-siswa/10" : "border-border hover:border-siswa/50"}`}
+                            >
+                              <span className={`grid size-5 shrink-0 place-items-center rounded-md border-2 ${checked ? "border-siswa bg-siswa text-white" : "border-border text-transparent"}`}>✓</span>
+                              <span className="font-display text-sm font-semibold">{String.fromCharCode(65 + i)}. {o}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   ) : isVoiceFmt ? (
                     <div>
