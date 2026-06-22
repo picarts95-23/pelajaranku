@@ -62,6 +62,14 @@ function GuruPresensiPage() {
   const [weights, setWeights] = useState<Record<AttStatus, number>>(DEFAULT_WEIGHTS);
   const [showSettings, setShowSettings] = useState(false);
 
+  // School is active Monday–Friday only. getDay(): 0 = Sunday, 6 = Saturday.
+  const weekday = new Date(date + "T00:00:00").getDay();
+  const isWeekend = weekday === 0 || weekday === 6;
+  const dayNames = lang === "id"
+    ? ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"]
+    : ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const dayName = dayNames[weekday];
+
   // Load weights from the database (per teacher); fall back to local cache while fetching.
   const { data: dbWeights } = useQuery({
     queryKey: ["attendance-weights", user?.id], enabled: !!user,
