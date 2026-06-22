@@ -166,6 +166,7 @@ function GuruJurnalPage() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          </div>
         } />
       {journals.length === 0 ? <EmptyState message={t("empty")} /> : (
         <div className="space-y-3">
