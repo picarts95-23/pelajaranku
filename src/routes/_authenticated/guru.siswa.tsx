@@ -1,13 +1,14 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Search, Trophy, Coins, Star, Eye, BookOpen } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Search, Trophy, Coins, Star, Eye, BookOpen, UserPlus, Loader2 } from "lucide-react";
 import { format } from "date-fns";
+import { toast } from "sonner";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,9 +42,12 @@ function GuruSiswaPage() {
   const { user, role, loading } = useAuth();
   const navigate = useNavigate();
   const { t, lang } = useLang();
+  const qc = useQueryClient();
   const [filterClass, setFilterClass] = useState<string>("all");
   const [q, setQ] = useState("");
   const [selected, setSelected] = useState<StudentRow | null>(null);
+  const [enrollTarget, setEnrollTarget] = useState<StudentRow | null>(null);
+  const [enrollClassId, setEnrollClassId] = useState("");
 
   useEffect(() => {
     if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" });
@@ -77,6 +81,26 @@ function GuruSiswaPage() {
           .filter(Boolean),
       })) as StudentRow[];
     },
+  });
+
+  const enrollMut = useMutation({
+    mutationFn: async () => {
+      if (!enrollTarget || !enrollClassId) throw new Error(t("required"));
+      const { error } = await supabase
+        .from("class_enrollments")
+        .insert({ class_id: enrollClassId, student_id: enrollTarget.id });
+      if (error) {
+        if (error.code === "23505") throw new Error(lang === "id" ? "Siswa sudah ada di kelas ini" : "Student already in this class");
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      toast.success(lang === "id" ? "Siswa ditambahkan ke kelas" : "Student added to class");
+      setEnrollTarget(null);
+      setEnrollClassId("");
+      qc.invalidateQueries({ queryKey: ["all-students"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
   });
 
   const filtered = students.filter((s) => {
@@ -162,10 +186,16 @@ function GuruSiswaPage() {
                     <span className="inline-flex items-center gap-1 text-xs text-coin font-display font-bold"><Coins className="size-3" /> {s.coins}</span>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <Button size="sm" variant="outline" onClick={() => setSelected(s)}>
-                      <Eye className="size-4 sm:mr-1" />
-                      <span className="hidden sm:inline">{t("viewProfile")}</span>
-                    </Button>
+                    <div className="flex justify-end gap-2">
+                      <Button size="sm" variant="quest" onClick={() => { setEnrollTarget(s); setEnrollClassId(""); }}>
+                        <UserPlus className="size-4 sm:mr-1" />
+                        <span className="hidden sm:inline">{lang === "id" ? "Tambah ke kelas" : "Add to class"}</span>
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => setSelected(s)}>
+                        <Eye className="size-4 sm:mr-1" />
+                        <span className="hidden sm:inline">{t("viewProfile")}</span>
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -216,6 +246,35 @@ function GuruSiswaPage() {
               </dl>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!enrollTarget} onOpenChange={(o) => { if (!o) { setEnrollTarget(null); setEnrollClassId(""); } }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{lang === "id" ? "Tambah siswa ke kelas" : "Add student to class"}</DialogTitle>
+          </DialogHeader>
+          {enrollTarget && (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                {lang === "id" ? "Pilih kelas untuk " : "Choose a class for "}
+                <span className="font-display font-semibold text-foreground">{enrollTarget.full_name}</span>
+              </p>
+              <Select value={enrollClassId} onValueChange={setEnrollClassId}>
+                <SelectTrigger><SelectValue placeholder={t("selectClass")} /></SelectTrigger>
+                <SelectContent>
+                  {classes.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => { setEnrollTarget(null); setEnrollClassId(""); }}>{t("cancel")}</Button>
+            <Button variant="quest" disabled={!enrollClassId || enrollMut.isPending} onClick={() => enrollMut.mutate()}>
+              {enrollMut.isPending && <Loader2 className="size-4 animate-spin" />}
+              {lang === "id" ? "Tambahkan" : "Add"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </DashboardShell>
