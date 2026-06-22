@@ -19,6 +19,10 @@ export const Route = createFileRoute("/_authenticated/guru/presensi")({
 const STATUSES = ["hadir", "izin", "sakit", "alpa"] as const;
 type AttStatus = typeof STATUSES[number];
 
+// Stable empty array so query fallbacks keep the same reference across renders
+// (avoids effect/memo dependency loops when a query is disabled/undefined).
+const EMPTY: never[] = [];
+
 // Weight (0-100) each status contributes per meeting to the accumulated attendance score.
 const DEFAULT_WEIGHTS: Record<AttStatus, number> = { hadir: 100, izin: 50, sakit: 50, alpa: 0 };
 const WEIGHTS_KEY = "eduquest:attendance-weights";
