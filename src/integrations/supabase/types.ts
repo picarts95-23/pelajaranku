@@ -14,8 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      assignment_answer_keys: {
+        Row: {
+          answer_key: string | null
+          assignment_id: string
+          created_at: string
+          teacher_id: string
+          updated_at: string
+        }
+        Insert: {
+          answer_key?: string | null
+          assignment_id: string
+          created_at?: string
+          teacher_id: string
+          updated_at?: string
+        }
+        Update: {
+          answer_key?: string | null
+          assignment_id?: string
+          created_at?: string
+          teacher_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assignment_answer_keys_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: true
+            referencedRelation: "assignments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assignments: {
         Row: {
+          answer_format: string
           assigned_student_id: string | null
           class_id: string | null
           coin_reward: number
@@ -25,6 +58,10 @@ export type Database = {
           game_link: string | null
           id: string
           max_score: number
+          muroja_ayat: string | null
+          muroja_juz: string | null
+          muroja_surah: string | null
+          options: Json | null
           quiz_link: string | null
           teacher_id: string
           title: string
@@ -32,6 +69,7 @@ export type Database = {
           xp_reward: number
         }
         Insert: {
+          answer_format?: string
           assigned_student_id?: string | null
           class_id?: string | null
           coin_reward?: number
@@ -41,6 +79,10 @@ export type Database = {
           game_link?: string | null
           id?: string
           max_score?: number
+          muroja_ayat?: string | null
+          muroja_juz?: string | null
+          muroja_surah?: string | null
+          options?: Json | null
           quiz_link?: string | null
           teacher_id: string
           title: string
@@ -48,6 +90,7 @@ export type Database = {
           xp_reward?: number
         }
         Update: {
+          answer_format?: string
           assigned_student_id?: string | null
           class_id?: string | null
           coin_reward?: number
@@ -57,6 +100,10 @@ export type Database = {
           game_link?: string | null
           id?: string
           max_score?: number
+          muroja_ayat?: string | null
+          muroja_juz?: string | null
+          muroja_surah?: string | null
+          options?: Json | null
           quiz_link?: string | null
           teacher_id?: string
           title?: string
