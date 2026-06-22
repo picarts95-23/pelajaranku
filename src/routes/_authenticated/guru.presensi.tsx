@@ -55,6 +55,15 @@ function GuruPresensiPage() {
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [marks, setMarks] = useState<Record<string, AttStatus>>({});
   const [notes, setNotes] = useState<Record<string, string>>({});
+  const [weights, setWeights] = useState<Record<AttStatus, number>>(DEFAULT_WEIGHTS);
+  const [showSettings, setShowSettings] = useState(false);
+
+  useEffect(() => { setWeights(loadWeights()); }, []);
+
+  function saveWeights(next: Record<AttStatus, number>) {
+    setWeights(next);
+    try { window.localStorage.setItem(WEIGHTS_KEY, JSON.stringify(next)); } catch { /* ignore */ }
+  }
 
   useEffect(() => {
     if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" });
