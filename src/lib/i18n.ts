@@ -139,6 +139,11 @@ export const translations = {
   giveGrade: { id: "Beri Nilai", en: "Grade", ar: "ضع درجة" },
   score: { id: "Nilai", en: "Score", ar: "الدرجة" },
   feedback: { id: "Umpan Balik", en: "Feedback", ar: "التغذية الراجعة" },
+  assignTarget: { id: "Tujukan kepada", en: "Assign to", ar: "إسناد إلى" },
+  targetClass: { id: "Satu Kelas", en: "A Class", ar: "فصل" },
+  targetStudent: { id: "Siswa Tertentu", en: "Specific Student", ar: "طالب محدد" },
+  selectStudent: { id: "Pilih siswa", en: "Select a student", ar: "اختر الطالب" },
+  personalTask: { id: "Tugas Personal", en: "Personal Task", ar: "مهمة شخصية" },
 
   // Attendance
   date: { id: "Tanggal", en: "Date", ar: "التاريخ" },

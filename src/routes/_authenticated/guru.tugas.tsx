@@ -27,7 +27,8 @@ function GuruTugasPage() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
-  const [form, setForm] = useState({ class_id: "", title: "", description: "", due_at: "", max_score: 100, xp_reward: 50, coin_reward: 10 });
+  const [target, setTarget] = useState<"class" | "student">("class");
+  const [form, setForm] = useState({ class_id: "", assigned_student_id: "", title: "", description: "", due_at: "", max_score: 100, xp_reward: 50, coin_reward: 10 });
 
   useEffect(() => {
     if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" });
@@ -39,23 +40,39 @@ function GuruTugasPage() {
     queryFn: async () => (await supabase.from("classes").select("id, name").order("name")).data ?? [],
   });
 
+  const { data: students = [] } = useQuery({
+    queryKey: ["students-list", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("list_students");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
   const { data: assignments = [] } = useQuery({
     queryKey: ["assignments", user?.id],
     enabled: !!user,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("assignments").select("*, classes(name), submissions(id, status, score, student_id)")
+        .from("assignments").select("*, classes(name), assignee:profiles!assignments_assigned_student_id_fkey(full_name), submissions(id, status, score, student_id)")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
     },
   });
 
+
   const createMut = useMutation({
     mutationFn: async () => {
-      if (!user || !form.class_id || !form.title) throw new Error(t("required"));
+      if (!user || !form.title) throw new Error(t("required"));
+      if (target === "class" && !form.class_id) throw new Error(t("selectClass"));
+      if (target === "student" && !form.assigned_student_id) throw new Error(t("selectStudent"));
       const { error } = await supabase.from("assignments").insert({
-        teacher_id: user.id, class_id: form.class_id, title: form.title,
+        teacher_id: user.id,
+        class_id: target === "class" ? form.class_id : null,
+        assigned_student_id: target === "student" ? form.assigned_student_id : null,
+        title: form.title,
         description: form.description || null, due_at: form.due_at ? new Date(form.due_at).toISOString() : null,
         max_score: form.max_score, xp_reward: form.xp_reward, coin_reward: form.coin_reward,
       });
@@ -64,11 +81,12 @@ function GuruTugasPage() {
     onSuccess: () => {
       toast.success(lang === "id" ? "Tugas dibuat" : "Assignment created");
       setOpen(false);
-      setForm({ class_id: "", title: "", description: "", due_at: "", max_score: 100, xp_reward: 50, coin_reward: 10 });
+      setForm({ class_id: "", assigned_student_id: "", title: "", description: "", due_at: "", max_score: 100, xp_reward: 50, coin_reward: 10 });
       qc.invalidateQueries({ queryKey: ["assignments"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
 
   const deleteMut = useMutation({
     mutationFn: async (id: string) => { const { error } = await supabase.from("assignments").delete().eq("id", id); if (error) throw error; },
@@ -89,14 +107,38 @@ function GuruTugasPage() {
               <DialogHeader><DialogTitle>{t("newAssignment")}</DialogTitle></DialogHeader>
               <div className="space-y-3">
                 <div>
-                  <Label>{t("navClasses")}</Label>
-                  <Select value={form.class_id} onValueChange={(v) => setForm({ ...form, class_id: v })}>
-                    <SelectTrigger><SelectValue placeholder={t("selectClass")} /></SelectTrigger>
-                    <SelectContent>
-                      {classes.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                  <Label>{t("assignTarget")}</Label>
+                  <div className="mt-1 grid grid-cols-2 gap-2">
+                    <Button type="button" variant={target === "class" ? "guru" : "outline"} className="w-full" onClick={() => setTarget("class")}>{t("targetClass")}</Button>
+                    <Button type="button" variant={target === "student" ? "guru" : "outline"} className="w-full" onClick={() => setTarget("student")}>{t("targetStudent")}</Button>
+                  </div>
                 </div>
+                {target === "class" ? (
+                  <div>
+                    <Label>{t("navClasses")}</Label>
+                    <Select value={form.class_id} onValueChange={(v) => setForm({ ...form, class_id: v })}>
+                      <SelectTrigger><SelectValue placeholder={t("selectClass")} /></SelectTrigger>
+                      <SelectContent>
+                        {classes.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ) : (
+                  <div>
+                    <Label>{t("navStudents")}</Label>
+                    <Select value={form.assigned_student_id} onValueChange={(v) => setForm({ ...form, assigned_student_id: v })}>
+                      <SelectTrigger><SelectValue placeholder={t("selectStudent")} /></SelectTrigger>
+                      <SelectContent>
+                        {students.map((s: any) => (
+                          <SelectItem key={s.id} value={s.id}>
+                            {s.full_name}{s.class_name ? ` · ${s.class_name}` : ""}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
                 <div><Label>{t("title")}</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
                 <div><Label>{t("description")}</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
                 <div className="grid grid-cols-2 gap-3">
@@ -130,14 +172,18 @@ function GuruTugasPage() {
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <div className="font-display font-bold truncate">{a.title}</div>
-                      <div className="text-xs text-muted-foreground">{a.classes?.name} · {a.due_at ? format(new Date(a.due_at), "dd MMM") : "—"}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {a.assigned_student_id ? (a.assignee?.full_name ?? t("personalTask")) : a.classes?.name} · {a.due_at ? format(new Date(a.due_at), "dd MMM") : "—"}
+                      </div>
                     </div>
                     <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
                   </div>
-                  <div className="mt-2 flex gap-2 text-xs">
+                  <div className="mt-2 flex flex-wrap gap-2 text-xs">
                     <span className="rounded-full bg-xp/15 px-2 py-0.5 font-display font-bold text-xp">+{a.xp_reward} XP</span>
+                    {a.assigned_student_id && <span className="rounded-full bg-accent/15 px-2 py-0.5 font-display font-bold text-accent">{t("personalTask")}</span>}
                     {pending > 0 && <span className="rounded-full bg-destructive/15 px-2 py-0.5 font-display font-bold text-destructive">{pending} {lang === "id" ? "perlu nilai" : "to grade"}</span>}
                   </div>
+
                 </button>
               );
             })}
