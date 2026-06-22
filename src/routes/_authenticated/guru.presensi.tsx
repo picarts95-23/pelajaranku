@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Save, Trophy } from "lucide-react";
+import { Save, Trophy, SlidersHorizontal, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
@@ -19,8 +19,32 @@ export const Route = createFileRoute("/_authenticated/guru/presensi")({
 const STATUSES = ["hadir", "izin", "sakit", "alpa"] as const;
 type AttStatus = typeof STATUSES[number];
 
-// Weight each status contributes to the accumulated attendance score (0-100).
-const STATUS_WEIGHT: Record<AttStatus, number> = { hadir: 1, izin: 0.5, sakit: 0.5, alpa: 0 };
+// Weight (0-100) each status contributes per meeting to the accumulated attendance score.
+const DEFAULT_WEIGHTS: Record<AttStatus, number> = { hadir: 100, izin: 50, sakit: 50, alpa: 0 };
+const WEIGHTS_KEY = "eduquest:attendance-weights";
+
+function loadWeights(): Record<AttStatus, number> {
+  if (typeof window === "undefined") return { ...DEFAULT_WEIGHTS };
+  try {
+    const raw = window.localStorage.getItem(WEIGHTS_KEY);
+    if (!raw) return { ...DEFAULT_WEIGHTS };
+    const parsed = JSON.parse(raw);
+    return {
+      hadir: clampWeight(parsed.hadir, DEFAULT_WEIGHTS.hadir),
+      izin: clampWeight(parsed.izin, DEFAULT_WEIGHTS.izin),
+      sakit: clampWeight(parsed.sakit, DEFAULT_WEIGHTS.sakit),
+      alpa: clampWeight(parsed.alpa, DEFAULT_WEIGHTS.alpa),
+    };
+  } catch {
+    return { ...DEFAULT_WEIGHTS };
+  }
+}
+
+function clampWeight(v: unknown, fallback: number): number {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.min(100, Math.max(0, Math.round(n)));
+}
 
 function GuruPresensiPage() {
   const { user, role, loading } = useAuth();
