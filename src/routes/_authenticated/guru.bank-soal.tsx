@@ -196,6 +196,7 @@ function GuruBankSoalPage() {
                     <p className="mt-2 font-display font-semibold">{q.question}</p>
                     {q.options && <ul className="mt-2 ml-4 list-disc text-sm text-muted-foreground">{(q.options as string[]).map((o, i) => <li key={i}>{o}</li>)}</ul>}
                     {q.answer && <div className="mt-2 text-xs"><span className="font-display font-bold text-xp">{t("answer")}:</span> {q.answer}</div>}
+                    <LinkBadges quizLink={q.quiz_link} gameLink={q.game_link} />
                     <div className="mt-3">
                       <AnswerDialog q={q} />
                     </div>
