@@ -18,7 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { SISWA_CHARACTERS, GURU_CHARACTERS, getCharacterByKey } from "@/lib/character-roster";
 import { getIslamicAvatar } from "@/lib/islamic-avatar";
 
-export const Route = createFileRoute("/_authenticated/siswa/profil/edit")({
+export const Route = createFileRoute("/_authenticated/siswa/profil_/edit")({
   head: () => ({ meta: [{ title: "Atur Profil & Karakter · EduQuest" }] }),
   component: EditProfil,
 });

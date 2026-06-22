@@ -31,7 +31,7 @@ import { Route as AuthenticatedGuruEventRouteImport } from './routes/_authentica
 import { Route as AuthenticatedGuruBankSoalRouteImport } from './routes/_authenticated/guru.bank-soal'
 import { Route as AuthenticatedDashboardSiswaRouteImport } from './routes/_authenticated/dashboard.siswa'
 import { Route as AuthenticatedDashboardGuruRouteImport } from './routes/_authenticated/dashboard.guru'
-import { Route as AuthenticatedSiswaProfilEditRouteImport } from './routes/_authenticated/siswa.profil.edit'
+import { Route as AuthenticatedSiswaProfilEditRouteImport } from './routes/_authenticated/siswa.profil_.edit'
 
 const VerifyRoleRoute = VerifyRoleRouteImport.update({
   id: '/verify-role',
@@ -152,9 +152,9 @@ const AuthenticatedDashboardGuruRoute =
   } as any)
 const AuthenticatedSiswaProfilEditRoute =
   AuthenticatedSiswaProfilEditRouteImport.update({
-    id: '/edit',
-    path: '/edit',
-    getParentRoute: () => AuthenticatedSiswaProfilRoute,
+    id: '/siswa/profil_/edit',
+    path: '/siswa/profil/edit',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -176,7 +176,7 @@ export interface FileRoutesByFullPath {
   '/siswa/kelas': typeof AuthenticatedSiswaKelasRoute
   '/siswa/leaderboard': typeof AuthenticatedSiswaLeaderboardRoute
   '/siswa/nilai': typeof AuthenticatedSiswaNilaiRoute
-  '/siswa/profil': typeof AuthenticatedSiswaProfilRouteWithChildren
+  '/siswa/profil': typeof AuthenticatedSiswaProfilRoute
   '/siswa/status': typeof AuthenticatedSiswaStatusRoute
   '/siswa/tugas': typeof AuthenticatedSiswaTugasRoute
   '/siswa/profil/edit': typeof AuthenticatedSiswaProfilEditRoute
@@ -200,7 +200,7 @@ export interface FileRoutesByTo {
   '/siswa/kelas': typeof AuthenticatedSiswaKelasRoute
   '/siswa/leaderboard': typeof AuthenticatedSiswaLeaderboardRoute
   '/siswa/nilai': typeof AuthenticatedSiswaNilaiRoute
-  '/siswa/profil': typeof AuthenticatedSiswaProfilRouteWithChildren
+  '/siswa/profil': typeof AuthenticatedSiswaProfilRoute
   '/siswa/status': typeof AuthenticatedSiswaStatusRoute
   '/siswa/tugas': typeof AuthenticatedSiswaTugasRoute
   '/siswa/profil/edit': typeof AuthenticatedSiswaProfilEditRoute
@@ -226,10 +226,10 @@ export interface FileRoutesById {
   '/_authenticated/siswa/kelas': typeof AuthenticatedSiswaKelasRoute
   '/_authenticated/siswa/leaderboard': typeof AuthenticatedSiswaLeaderboardRoute
   '/_authenticated/siswa/nilai': typeof AuthenticatedSiswaNilaiRoute
-  '/_authenticated/siswa/profil': typeof AuthenticatedSiswaProfilRouteWithChildren
+  '/_authenticated/siswa/profil': typeof AuthenticatedSiswaProfilRoute
   '/_authenticated/siswa/status': typeof AuthenticatedSiswaStatusRoute
   '/_authenticated/siswa/tugas': typeof AuthenticatedSiswaTugasRoute
-  '/_authenticated/siswa/profil/edit': typeof AuthenticatedSiswaProfilEditRoute
+  '/_authenticated/siswa/profil_/edit': typeof AuthenticatedSiswaProfilEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -304,7 +304,7 @@ export interface FileRouteTypes {
     | '/_authenticated/siswa/profil'
     | '/_authenticated/siswa/status'
     | '/_authenticated/siswa/tugas'
-    | '/_authenticated/siswa/profil/edit'
+    | '/_authenticated/siswa/profil_/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -471,29 +471,15 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardGuruRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/siswa/profil/edit': {
-      id: '/_authenticated/siswa/profil/edit'
-      path: '/edit'
+    '/_authenticated/siswa/profil_/edit': {
+      id: '/_authenticated/siswa/profil_/edit'
+      path: '/siswa/profil/edit'
       fullPath: '/siswa/profil/edit'
       preLoaderRoute: typeof AuthenticatedSiswaProfilEditRouteImport
-      parentRoute: typeof AuthenticatedSiswaProfilRoute
+      parentRoute: typeof AuthenticatedRouteRoute
     }
   }
 }
-
-interface AuthenticatedSiswaProfilRouteChildren {
-  AuthenticatedSiswaProfilEditRoute: typeof AuthenticatedSiswaProfilEditRoute
-}
-
-const AuthenticatedSiswaProfilRouteChildren: AuthenticatedSiswaProfilRouteChildren =
-  {
-    AuthenticatedSiswaProfilEditRoute: AuthenticatedSiswaProfilEditRoute,
-  }
-
-const AuthenticatedSiswaProfilRouteWithChildren =
-  AuthenticatedSiswaProfilRoute._addFileChildren(
-    AuthenticatedSiswaProfilRouteChildren,
-  )
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardGuruRoute: typeof AuthenticatedDashboardGuruRoute
@@ -510,9 +496,10 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSiswaKelasRoute: typeof AuthenticatedSiswaKelasRoute
   AuthenticatedSiswaLeaderboardRoute: typeof AuthenticatedSiswaLeaderboardRoute
   AuthenticatedSiswaNilaiRoute: typeof AuthenticatedSiswaNilaiRoute
-  AuthenticatedSiswaProfilRoute: typeof AuthenticatedSiswaProfilRouteWithChildren
+  AuthenticatedSiswaProfilRoute: typeof AuthenticatedSiswaProfilRoute
   AuthenticatedSiswaStatusRoute: typeof AuthenticatedSiswaStatusRoute
   AuthenticatedSiswaTugasRoute: typeof AuthenticatedSiswaTugasRoute
+  AuthenticatedSiswaProfilEditRoute: typeof AuthenticatedSiswaProfilEditRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -530,9 +517,10 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSiswaKelasRoute: AuthenticatedSiswaKelasRoute,
   AuthenticatedSiswaLeaderboardRoute: AuthenticatedSiswaLeaderboardRoute,
   AuthenticatedSiswaNilaiRoute: AuthenticatedSiswaNilaiRoute,
-  AuthenticatedSiswaProfilRoute: AuthenticatedSiswaProfilRouteWithChildren,
+  AuthenticatedSiswaProfilRoute: AuthenticatedSiswaProfilRoute,
   AuthenticatedSiswaStatusRoute: AuthenticatedSiswaStatusRoute,
   AuthenticatedSiswaTugasRoute: AuthenticatedSiswaTugasRoute,
+  AuthenticatedSiswaProfilEditRoute: AuthenticatedSiswaProfilEditRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -548,13 +536,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
