@@ -152,6 +152,12 @@ function Landing() {
           <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/40 to-background/80" />
         </div>
         <div className="mx-auto max-w-5xl px-6">
+          <div className="mb-8 text-center">
+            <h2 className="font-display text-3xl font-bold md:text-4xl">
+              <span className="text-gradient-magic">Pilih Jalurmu</span>
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">Masuk sebagai guru atau siswi untuk memulai.</p>
+          </div>
           <div className="grid gap-5 sm:grid-cols-2">
           <RoleCard
             roleColor="bg-guru"
