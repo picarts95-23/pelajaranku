@@ -115,3 +115,83 @@ export function SubjectSelect({
     </div>
   );
 }
+
+/**
+ * Multi-select for the teacher's subjects. A class can have several subjects;
+ * selected ones are toggle chips, and new subjects can be added inline.
+ */
+export function MultiSubjectSelect({
+  value,
+  onChange,
+}: {
+  value: string[];
+  onChange: (v: string[]) => void;
+}) {
+  const { user } = useAuth();
+  const { lang } = useLang();
+  const qc = useQueryClient();
+  const { data: subjects = [] } = useTeacherSubjects();
+  const [draft, setDraft] = useState("");
+
+  const toggle = (name: string) =>
+    onChange(value.includes(name) ? value.filter((s) => s !== name) : [...value, name]);
+
+  const addMut = useMutation({
+    mutationFn: async (name: string) => {
+      if (!user) throw new Error("not signed in");
+      const trimmed = name.trim();
+      if (!trimmed) throw new Error(lang === "id" ? "Nama mapel kosong" : "Empty subject name");
+      const { error } = await supabase
+        .from("teacher_subjects")
+        .insert({ teacher_id: user.id, name: trimmed });
+      if (error && error.code !== "23505") throw error; // ignore duplicate
+      return trimmed;
+    },
+    onSuccess: (name) => {
+      qc.invalidateQueries({ queryKey: ["teacher-subjects"] });
+      if (!value.includes(name)) onChange([...value, name]);
+      setDraft("");
+      toast.success(lang === "id" ? "Mata pelajaran ditambahkan" : "Subject added");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <div className="space-y-2">
+      {subjects.length > 0 ? (
+        <div className="flex flex-wrap gap-2">
+          {subjects.map((s) => {
+            const active = value.includes(s.name);
+            return (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => toggle(s.name)}
+                className={`inline-flex items-center gap-1 rounded-full border-2 px-3 py-1 text-sm font-display font-semibold transition ${
+                  active ? "border-guru bg-guru/15 text-guru" : "border-border bg-card text-muted-foreground hover:border-foreground/30"
+                }`}
+              >
+                {active && <Check className="size-3.5" />} {s.name}
+              </button>
+            );
+          })}
+        </div>
+      ) : (
+        <p className="text-xs text-muted-foreground">
+          {lang === "id" ? "Belum ada mapel — tambahkan di bawah." : "No subjects yet — add below."}
+        </p>
+      )}
+      <div className="flex items-center gap-2">
+        <Input
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addMut.mutate(draft); } }}
+          placeholder={lang === "id" ? "Tambah mapel baru…" : "Add new subject…"}
+        />
+        <Button type="button" size="icon" variant="guru" disabled={addMut.isPending || !draft.trim()} onClick={() => addMut.mutate(draft)}>
+          {addMut.isPending ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />}
+        </Button>
+      </div>
+    </div>
+  );
+}
