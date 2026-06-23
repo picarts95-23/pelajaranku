@@ -131,6 +131,10 @@ function GuruDashboard() {
         <Link to="/guru/tugas" className="transition-transform hover:-translate-y-0.5"><StatCard icon={<ScrollText className="size-6" />} label={t("assignments")} value={stats?.assignments ?? 0} tint="bg-quest" /></Link>
       </section>
 
+      <SheetBackupCard />
+
+
+
       {recentSubs.length > 0 && (
         <section className="mt-6 rounded-3xl border-2 border-guru/40 bg-guru/5 p-5 shadow-card-rpg">
           <div className="mb-3 flex items-center justify-between">
