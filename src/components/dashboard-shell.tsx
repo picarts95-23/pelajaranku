@@ -5,6 +5,7 @@ import {
   Library, BarChart3,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { LangToggle } from "@/components/lang-toggle";
 import { AiAssistant } from "@/components/ai-assistant";
@@ -12,6 +13,8 @@ import { useAuth } from "@/lib/auth-context";
 import { useLang, type Key } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { getIslamicAvatar } from "@/lib/islamic-avatar";
+import { supabase } from "@/integrations/supabase/client";
+import { useUnseenCount } from "@/lib/notifications";
 
 type NavItem = { to: string; key: Key; icon: React.ComponentType<{ className?: string }> };
 
@@ -49,12 +52,28 @@ export function DashboardShell({
   children: ReactNode;
   accent: "guru" | "siswa";
 }) {
-  const { profile, role, signOut } = useAuth();
+  const { profile, role, user, signOut } = useAuth();
   const navigate = useNavigate();
   const { t, lang } = useLang();
   const [open, setOpen] = useState(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const nav = accent === "guru" ? GURU_NAV : SISWA_NAV;
+
+  // Student "new since last visit" badges for materials & assignments
+  const { data: matList } = useQuery({
+    queryKey: ["nav-materials", user?.id], enabled: !!user && accent === "siswa",
+    queryFn: async () => (await supabase.from("materials").select("created_at")).data ?? [],
+  });
+  const { data: tugasList } = useQuery({
+    queryKey: ["nav-assignments", user?.id], enabled: !!user && accent === "siswa",
+    queryFn: async () => (await supabase.from("assignments").select("created_at")).data ?? [],
+  });
+  const unseenMaterials = useUnseenCount(user?.id, "materials", matList ?? []);
+  const unseenTugas = useUnseenCount(user?.id, "assignments", tugasList ?? []);
+  const badgeFor = (to: string) =>
+    accent === "siswa" && to === "/siswa/mapel" ? unseenMaterials
+      : accent === "siswa" && to === "/siswa/tugas" ? unseenTugas
+      : 0;
 
   const handleLogout = async () => {
     await signOut();
@@ -103,20 +122,21 @@ export function DashboardShell({
       <div className="mx-auto flex max-w-[1400px] gap-6 px-2 sm:px-4 lg:px-6">
         {/* Sidebar */}
         <aside className={cn(
-          "fixed inset-y-16 left-0 z-30 w-64 border-r-2 border-border bg-card p-3 transition-transform lg:sticky lg:top-[65px] lg:h-[calc(100vh-65px)] lg:translate-x-0",
+          "fixed inset-y-16 left-0 z-30 flex w-64 flex-col border-r-2 border-border bg-card p-3 transition-transform lg:sticky lg:top-[65px] lg:h-[calc(100vh-65px)] lg:translate-x-0",
           open ? "translate-x-0" : "-translate-x-full",
         )}>
-          <nav className="flex flex-col gap-1 overflow-y-auto">
+          <nav className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto pr-1">
             {nav.map((item) => {
               const active = pathname === item.to;
               const Icon = item.icon;
+              const badge = badgeFor(item.to);
               return (
                 <Link
                   key={item.to}
                   to={item.to}
                   onClick={() => setOpen(false)}
                   className={cn(
-                    "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-display font-semibold transition-all",
+                    "flex shrink-0 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-display font-semibold transition-all",
                     active
                       ? accent === "guru"
                         ? "bg-guru text-white shadow-soft"
@@ -124,7 +144,15 @@ export function DashboardShell({
                       : "text-foreground/80 hover:bg-muted",
                   )}
                 >
-                  <Icon className="size-4" /> {t(item.key)}
+                  <Icon className="size-4" /> <span className="flex-1">{t(item.key)}</span>
+                  {badge > 0 && (
+                    <span className={cn(
+                      "grid min-w-5 place-items-center rounded-full px-1.5 text-[10px] font-bold",
+                      active ? "bg-white text-siswa" : "bg-destructive text-white",
+                    )}>
+                      {badge > 9 ? "9+" : badge}
+                    </span>
+                  )}
                 </Link>
               );
             })}
@@ -137,7 +165,9 @@ export function DashboardShell({
       </div>
 
       <footer className="border-t-2 border-border py-6 text-center text-xs text-muted-foreground">
-        {lang === "id" ? "Tetap semangat menuntut ilmu, siswi!" : "Stay curious, dear student!"} ✨
+        {accent === "guru"
+          ? (lang === "id" ? "Barakallahu fiikum, semoga ilmu yang diajarkan menjadi amal jariyah. ✨" : "May your teaching be a lasting good deed. ✨")
+          : (lang === "id" ? "Tetap semangat menuntut ilmu! ✨" : "Stay curious, dear student! ✨")}
       </footer>
 
       {accent === "guru" && <AiAssistant />}

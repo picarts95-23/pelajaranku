@@ -59,6 +59,24 @@ function GuruDashboard() {
     },
   });
 
+  // Students who recently submitted a task (awaiting grading)
+  const { data: recentSubs = [] } = useQuery({
+    queryKey: ["guru-recent-subs", user?.id], enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("submissions")
+        .select("id, status, submitted_at, student_id, assignments!inner(title, teacher_id)")
+        .eq("assignments.teacher_id", user!.id)
+        .eq("status", "submitted")
+        .order("submitted_at", { ascending: false })
+        .limit(8);
+      const ids = Array.from(new Set((data ?? []).map((s: any) => s.student_id)));
+      if (ids.length === 0) return [];
+      const { data: profs } = await supabase.from("profiles").select("id, full_name").in("id", ids);
+      return (data ?? []).map((s: any) => ({ ...s, name: profs?.find((p: any) => p.id === s.student_id)?.full_name ?? "—" }));
+    },
+  });
+
   return (
     <DashboardShell accent="guru">
       <motion.section
@@ -69,16 +87,16 @@ function GuruDashboard() {
         <div className="absolute -left-10 -bottom-10 size-56 rounded-full bg-guru/40 blur-3xl" />
         <div className="relative grid gap-6 sm:grid-cols-[1fr_auto] sm:items-center">
           <div>
-            <div className="text-sm font-display font-semibold uppercase tracking-wider opacity-80">{t("dashboard")}</div>
+            <div className="text-sm font-display font-semibold uppercase tracking-wider opacity-80">{t("dashboard")} · {t("guru")}</div>
             <h1 className="mt-1 font-display text-3xl font-bold sm:text-4xl">
               {lang === "id"
-                ? `Selamat datang, Guru ${profile?.full_name ?? ""}`.trim()
-                : `${t("welcome")}, ${profile?.full_name ?? "Teacher"}`}
+                ? `Selamat datang kembali, ${profile?.full_name ?? "Bapak/Ibu Guru"} 🌟`
+                : `Welcome back, ${profile?.full_name ?? "Teacher"} 🌟`}
             </h1>
             <p className="mt-2 max-w-xl opacity-90">
               {lang === "id"
-                ? `Mata pelajaran: ${profile?.subject ?? "—"} · Kelola guild kelasmu hari ini.`
-                : `Subject: ${profile?.subject ?? "—"} · Manage your class guild today.`}
+                ? `Mata pelajaran: ${profile?.subject ?? "—"} · Semoga mengajarmu hari ini penuh berkah.`
+                : `Subject: ${profile?.subject ?? "—"} · May your teaching today be blessed.`}
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
               <Link to="/guru/kelas"><Button variant="outline" className="bg-white/10 border-white/30 text-white hover:bg-white/20">{t("navClasses")}</Button></Link>
@@ -106,11 +124,34 @@ function GuruDashboard() {
       </motion.section>
 
       <section className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard icon={<BookOpen className="size-6" />} label={t("navClasses")} value={stats?.classes ?? 0} tint="bg-guru" />
-        <StatCard icon={<Users className="size-6" />} label={t("navStudents")} value={stats?.students ?? 0} tint="bg-siswa" />
-        <StatCard icon={<ClipboardCheck className="size-6" />} label={t("submissions")} value={stats?.pending ?? 0} tint="bg-xp" sub={lang === "id" ? "menunggu nilai" : "to review"} />
-        <StatCard icon={<ScrollText className="size-6" />} label={t("assignments")} value={stats?.assignments ?? 0} tint="bg-quest" />
+        <Link to="/guru/kelas" className="transition-transform hover:-translate-y-0.5"><StatCard icon={<BookOpen className="size-6" />} label={t("navClasses")} value={stats?.classes ?? 0} tint="bg-guru" /></Link>
+        <Link to="/guru/siswa" className="transition-transform hover:-translate-y-0.5"><StatCard icon={<Users className="size-6" />} label={t("navStudents")} value={stats?.students ?? 0} tint="bg-siswa" /></Link>
+        <Link to="/guru/tugas" className="transition-transform hover:-translate-y-0.5"><StatCard icon={<ClipboardCheck className="size-6" />} label={t("submissions")} value={stats?.pending ?? 0} tint="bg-xp" sub={lang === "id" ? "menunggu nilai" : "to review"} /></Link>
+        <Link to="/guru/tugas" className="transition-transform hover:-translate-y-0.5"><StatCard icon={<ScrollText className="size-6" />} label={t("assignments")} value={stats?.assignments ?? 0} tint="bg-quest" /></Link>
       </section>
+
+      {recentSubs.length > 0 && (
+        <section className="mt-6 rounded-3xl border-2 border-guru/40 bg-guru/5 p-5 shadow-card-rpg">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="font-display text-lg font-bold flex items-center gap-2">
+              <ClipboardCheck className="size-5 text-guru" /> {lang === "id" ? "Pengumpulan Baru Siswa" : "New Student Submissions"}
+              <span className="grid min-w-6 place-items-center rounded-full bg-destructive px-1.5 text-xs font-bold text-white">{recentSubs.length}</span>
+            </h2>
+            <Link to="/guru/tugas"><Button size="sm" variant="ghost">{lang === "id" ? "Nilai sekarang" : "Grade now"} →</Button></Link>
+          </div>
+          <ul className="grid gap-2 sm:grid-cols-2">
+            {recentSubs.map((s: any) => (
+              <li key={s.id} className="flex items-center gap-3 rounded-xl bg-card p-3 shadow-soft">
+                <div className="grid size-9 place-items-center rounded-lg bg-guru/15 text-guru">📤</div>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate font-display font-semibold">{s.name}</div>
+                  <div className="truncate text-xs text-muted-foreground">{s.assignments?.title} · {s.submitted_at ? format(new Date(s.submitted_at), "dd MMM HH:mm") : ""}</div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section className="mt-6">
         <div className="mb-3 flex items-end justify-between">

@@ -16,6 +16,7 @@ import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { SubjectSelect } from "@/components/subject-select";
 import { LinkFields, LinkBadges } from "@/components/link-fields";
+import { MediaViewer } from "@/components/media-input";
 
 export const Route = createFileRoute("/_authenticated/guru/bank-soal")({
   head: () => ({ meta: [{ title: "Bank Soal · EduQuest Academy" }] }),
@@ -28,6 +29,7 @@ function GuruBankSoalPage() {
   const { t, lang } = useLang();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [uploadingImg, setUploadingImg] = useState(false);
   const emptyForm = {
     subject: "",
     topic: "",
@@ -40,8 +42,26 @@ function GuruBankSoalPage() {
     difficulty: "medium",
     quiz_link: "",
     game_link: "",
+    image_url: "",
   };
   const [form, setForm] = useState(emptyForm);
+
+  async function uploadImage(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    setUploadingImg(true);
+    try {
+      const path = `${user.id}/qb-${crypto.randomUUID()}.${file.name.split(".").pop() || "jpg"}`;
+      const { error } = await supabase.storage.from("lesson-media").upload(path, file);
+      if (error) throw error;
+      setForm((f) => ({ ...f, image_url: path }));
+      toast.success(lang === "id" ? "Gambar diunggah" : "Image uploaded");
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setUploadingImg(false);
+    }
+  }
 
   useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
 
@@ -86,6 +106,7 @@ function GuruBankSoalPage() {
         question: form.question.trim(), type: form.type as any, options: opts,
         answer, difficulty: form.difficulty as any,
         quiz_link: form.quiz_link.trim() || null, game_link: form.game_link.trim() || null,
+        image_url: form.image_url || null,
       });
       if (error) throw error;
     },
@@ -118,7 +139,14 @@ function GuruBankSoalPage() {
                   <div><Label>{t("subject")}</Label><SubjectSelect value={form.subject} onChange={(v) => setForm({ ...form, subject: v })} /></div>
                   <div><Label>{t("topic")}</Label><Input value={form.topic} onChange={(e) => setForm({ ...form, topic: e.target.value })} /></div>
                 </div>
-                <div><Label>{t("question")}</Label><Textarea rows={3} value={form.question} onChange={(e) => setForm({ ...form, question: e.target.value })} /></div>
+                <div><Label>{t("question")} <span className="text-destructive">*</span></Label><Textarea rows={3} value={form.question} onChange={(e) => setForm({ ...form, question: e.target.value })} /></div>
+                <div>
+                  <Label>{lang === "id" ? "Gambar Soal (opsional)" : "Question Image (optional)"}</Label>
+                  <input type="file" accept="image/*" onChange={uploadImage} disabled={uploadingImg}
+                    className="mt-1 block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-guru file:px-3 file:py-1.5 file:text-white" />
+                  {uploadingImg && <p className="mt-1 text-xs text-muted-foreground">{lang === "id" ? "Mengunggah…" : "Uploading…"}</p>}
+                  {form.image_url && <p className="mt-1 text-xs text-emerald-600">✅ {lang === "id" ? "Gambar siap" : "Image attached"}</p>}
+                </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div><Label>{t("qType")}</Label>
                     <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}>
@@ -212,6 +240,7 @@ function GuruBankSoalPage() {
                       <span className={`rounded-full px-2 py-0.5 text-xs font-display font-bold ${diffColor[q.difficulty]}`}>{t(q.difficulty as any)}</span>
                     </div>
                     <p className="mt-2 font-display font-semibold">{q.question}</p>
+                    {q.image_url && <MediaViewer mediaType="image" mediaUrl={q.image_url} />}
                     {q.options && <ul className="mt-2 ml-4 list-disc text-sm text-muted-foreground">{(q.options as string[]).map((o, i) => <li key={i}>{o}</li>)}</ul>}
                     {q.answer && <div className="mt-2 text-xs"><span className="font-display font-bold text-xp">{t("answer")}:</span> {q.answer}</div>}
                     <LinkBadges quizLink={q.quiz_link} gameLink={q.game_link} />

@@ -8,6 +8,8 @@ import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { MediaViewer } from "@/components/media-input";
+import { useMarkSeen } from "@/lib/notifications";
 
 export const Route = createFileRoute("/_authenticated/siswa/mapel")({
   head: () => ({ meta: [{ title: "Mata Pelajaran · EduQuest Academy" }] }),
@@ -31,6 +33,10 @@ function SiswaMapelPage() {
       return data ?? [];
     },
   });
+
+  // Mark materials as seen when the student opens this page (clears the "new" badge).
+  const markSeen = useMarkSeen(user?.id, "materials");
+  useEffect(() => { if (materials.length) markSeen(); }, [materials.length, markSeen]);
 
   const subjects = useMemo(() => {
     const set = new Set<string>();
@@ -82,6 +88,7 @@ function SiswaMapelPage() {
                     <div className="mt-1.5 font-display text-lg font-bold">{m.title}</div>
                     {m.description && <p className="text-sm text-muted-foreground">{m.description}</p>}
                     {m.content && <p className="mt-2 whitespace-pre-wrap text-sm">{m.content}</p>}
+                    <MediaViewer mediaType={m.media_type} mediaUrl={m.media_url} />
                     {m.link && (
                       <a href={m.link} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-siswa/10 px-3 py-1.5 text-xs font-display font-bold text-siswa hover:bg-siswa/20">
                         <ExternalLink className="size-3.5" /> {t("openLink")}

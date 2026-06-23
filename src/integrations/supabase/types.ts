@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      adab_scores: {
+        Row: {
+          class_id: string
+          created_at: string
+          id: string
+          score: number
+          student_id: string
+          subject: string
+          teacher_id: string
+          updated_at: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          id?: string
+          score?: number
+          student_id: string
+          subject: string
+          teacher_id: string
+          updated_at?: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          id?: string
+          score?: number
+          student_id?: string
+          subject?: string
+          teacher_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "adab_scores_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assignment_answer_keys: {
         Row: {
           answer_key: string | null
@@ -55,6 +96,7 @@ export type Database = {
           created_at: string
           description: string | null
           due_at: string | null
+          exam_type: string
           game_link: string | null
           id: string
           max_score: number
@@ -77,6 +119,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           due_at?: string | null
+          exam_type?: string
           game_link?: string | null
           id?: string
           max_score?: number
@@ -99,6 +142,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           due_at?: string | null
+          exam_type?: string
           game_link?: string | null
           id?: string
           max_score?: number
@@ -489,6 +533,8 @@ export type Database = {
           file_url: string | null
           id: string
           link: string | null
+          media_type: string | null
+          media_url: string | null
           subject: string | null
           teacher_id: string
           title: string
@@ -502,6 +548,8 @@ export type Database = {
           file_url?: string | null
           id?: string
           link?: string | null
+          media_type?: string | null
+          media_url?: string | null
           subject?: string | null
           teacher_id: string
           title: string
@@ -515,6 +563,8 @@ export type Database = {
           file_url?: string | null
           id?: string
           link?: string | null
+          media_type?: string | null
+          media_url?: string | null
           subject?: string | null
           teacher_id?: string
           title?: string
@@ -529,6 +579,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      peer_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          reactor_id: string
+          target_student_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          reactor_id: string
+          target_student_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          reactor_id?: string
+          target_student_id?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -600,6 +674,7 @@ export type Database = {
           difficulty: Database["public"]["Enums"]["question_difficulty"]
           game_link: string | null
           id: string
+          image_url: string | null
           options: Json | null
           question: string
           quiz_link: string | null
@@ -615,6 +690,7 @@ export type Database = {
           difficulty?: Database["public"]["Enums"]["question_difficulty"]
           game_link?: string | null
           id?: string
+          image_url?: string | null
           options?: Json | null
           question: string
           quiz_link?: string | null
@@ -630,6 +706,7 @@ export type Database = {
           difficulty?: Database["public"]["Enums"]["question_difficulty"]
           game_link?: string | null
           id?: string
+          image_url?: string | null
           options?: Json | null
           question?: string
           quiz_link?: string | null

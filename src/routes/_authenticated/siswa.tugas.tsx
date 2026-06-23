@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { LinkBadges } from "@/components/link-fields";
 import { VoiceRecorder } from "@/components/voice-recorder";
 import { ANSWER_FORMATS } from "@/lib/quran-data";
+import { useMarkSeen } from "@/lib/notifications";
 
 export const Route = createFileRoute("/_authenticated/siswa/tugas")({
   head: () => ({ meta: [{ title: "Misi Saya · EduQuest Academy" }] }),
@@ -39,6 +40,10 @@ function SiswaTugasPage() {
       return (data ?? []).map((a: any) => ({ ...a, mySubmission: a.submissions?.find((s: any) => s.student_id === user!.id) }));
     },
   });
+
+  // Mark assignments as seen so the "new task" badge clears.
+  const markSeen = useMarkSeen(user?.id, "assignments");
+  useEffect(() => { if (assignments.length) markSeen(); }, [assignments.length, markSeen]);
 
   return (
     <DashboardShell accent="siswa">

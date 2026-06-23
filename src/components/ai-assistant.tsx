@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
-import { askAssistant, type ChatMessage } from "@/lib/ai-assistant.functions";
+import { askAssistant, type ChatMessage, type AiProvider } from "@/lib/ai-assistant.functions";
 
 const SUGGESTIONS_ID = [
   "Buatkan 5 soal pilihan ganda tentang wudhu untuk kelas 5",
@@ -15,17 +15,18 @@ const SUGGESTIONS_ID = [
   "Beri ide tugas proyek tema lingkungan",
 ];
 
-/** Floating AI assistant for teachers. Uses Lovable AI via an authenticated server function. */
+/** Floating AI assistant for teachers. Uses Gemini or ChatGPT via an authenticated server function. */
 export function AiAssistant() {
   const { t, lang } = useLang();
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
+  const [provider, setProvider] = useState<AiProvider>("gemini");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const ask = useServerFn(askAssistant);
 
   const mut = useMutation({
-    mutationFn: async (history: ChatMessage[]) => ask({ data: { messages: history } }),
+    mutationFn: async (history: ChatMessage[]) => ask({ data: { messages: history, provider } }),
     onSuccess: (res) => {
       setMessages((m) => [...m, { role: "assistant", content: res.reply || "…" }]);
       setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" }), 50);
@@ -66,9 +67,23 @@ export function AiAssistant() {
             <div className="flex items-center gap-2 font-display font-bold">
               <Bot className="size-5" /> {t("aiAssistant")}
             </div>
-            <Button size="icon" variant="ghost" className="text-primary-foreground hover:bg-white/20" onClick={() => setOpen(false)} aria-label="Close">
-              <X className="size-5" />
-            </Button>
+            <div className="flex items-center gap-2">
+              <div className="inline-flex rounded-full bg-white/15 p-0.5 text-xs font-display font-semibold">
+                {(["gemini", "openai"] as const).map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setProvider(p)}
+                    className={cn("rounded-full px-2.5 py-1 transition", provider === p ? "bg-white text-guru" : "text-white/80 hover:text-white")}
+                  >
+                    {p === "gemini" ? "Gemini" : "ChatGPT"}
+                  </button>
+                ))}
+              </div>
+              <Button size="icon" variant="ghost" className="text-primary-foreground hover:bg-white/20" onClick={() => setOpen(false)} aria-label="Close">
+                <X className="size-5" />
+              </Button>
+            </div>
           </div>
 
           <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto p-4">

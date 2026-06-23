@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Compass } from "lucide-react";
 import { z } from "zod";
-import { useAuth, type AppRole } from "@/lib/auth-context";
+import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 
 const searchSchema = z.object({
@@ -29,19 +29,22 @@ function LoadingPortal() {
       navigate({ to: "/auth" });
       return;
     }
-    // Prefer role from user_roles table; fall back to chosen role at login,
-    // then to user metadata (signup payload).
-    const metaRole = (user?.user_metadata?.role as AppRole | undefined) ?? null;
-    const resolved: AppRole | null = role ?? preferredRole ?? metaRole;
-    if (resolved) {
+    // The database role (user_roles) is the ONLY source of truth for routing.
+    // The role chosen on the login form must never decide the destination,
+    // otherwise a teacher could land on the student dashboard and vice-versa.
+    if (role) {
       const timer = setTimeout(() => {
-        navigate({ to: resolved === "guru" ? "/dashboard/guru" : "/dashboard/siswa" });
-      }, 1200);
+        navigate({ to: role === "guru" ? "/dashboard/guru" : "/dashboard/siswa" });
+      }, 1000);
       return () => clearTimeout(timer);
     }
-    // Still waiting for role — show a hint after a while.
-    const hint = setTimeout(() => setWaitedTooLong(true), 4000);
-    return () => clearTimeout(hint);
+    // Role not loaded yet — wait briefly, then send to verify-role to resolve it
+    // authoritatively (it reads user_roles directly and reports mismatches).
+    const hint = setTimeout(() => setWaitedTooLong(true), 3000);
+    const fallback = setTimeout(() => {
+      navigate({ to: "/verify-role", search: { role: preferredRole, auto: true } });
+    }, 6000);
+    return () => { clearTimeout(hint); clearTimeout(fallback); };
   }, [role, loading, session, user, preferredRole, navigate]);
 
   return (

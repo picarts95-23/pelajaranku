@@ -15,14 +15,15 @@ import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { useTeacherSubjects } from "@/components/subject-select";
+import { MediaInput, MediaViewer } from "@/components/media-input";
 
 export const Route = createFileRoute("/_authenticated/guru/mapel")({
   head: () => ({ meta: [{ title: "Mata Pelajaran · EduQuest Academy" }] }),
   component: GuruMapelPage,
 });
 
-type MForm = { class_id: string; subject: string; title: string; description: string; content: string; link: string };
-const emptyForm = (): MForm => ({ class_id: "", subject: "", title: "", description: "", content: "", link: "" });
+type MForm = { class_id: string; subject: string; title: string; description: string; content: string; link: string; media_type: string | null; media_url: string | null };
+const emptyForm = (): MForm => ({ class_id: "", subject: "", title: "", description: "", content: "", link: "", media_type: null, media_url: null });
 
 function GuruMapelPage() {
   const { user, role, loading } = useAuth();
@@ -77,6 +78,7 @@ function GuruMapelPage() {
         teacher_id: user.id, class_id: form.class_id, subject: form.subject,
         title: form.title.trim(), description: form.description.trim() || null,
         content: form.content.trim() || null, link: form.link.trim() || null,
+        media_type: form.media_url ? form.media_type : null, media_url: form.media_url,
       });
       if (error) throw error;
     },
@@ -120,9 +122,10 @@ function GuruMapelPage() {
                     </Select>
                   </div>
                 </div>
-                <div><Label>{t("title")}</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
+                <div><Label>{t("title")} <span className="text-destructive">*</span></Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
                 <div><Label>{t("description")}</Label><Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
                 <div><Label>{t("content")}</Label><Textarea rows={5} value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} placeholder={lang === "id" ? "Tulis ringkasan / isi materi…" : "Write material content…"} /></div>
+                {user && <MediaInput userId={user.id} value={{ media_type: form.media_type, media_url: form.media_url }} onChange={(v) => setForm({ ...form, media_type: v.media_type, media_url: v.media_url })} />}
                 <div><Label>{t("link")}</Label><Input value={form.link} onChange={(e) => setForm({ ...form, link: e.target.value })} placeholder="https://…" /></div>
               </div>
               <DialogFooter>
@@ -176,6 +179,7 @@ function GuruMapelPage() {
                   <div className="mt-1.5 font-display font-bold">{m.title}</div>
                   {m.description && <p className="text-sm text-muted-foreground">{m.description}</p>}
                   {m.content && <p className="mt-2 whitespace-pre-wrap text-sm">{m.content}</p>}
+                  <MediaViewer mediaType={m.media_type} mediaUrl={m.media_url} />
                   {m.link && (
                     <a href={m.link} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-quest/10 px-2.5 py-1 text-xs font-display font-bold text-quest hover:bg-quest/20">
                       <ExternalLink className="size-3.5" /> {t("openLink")}

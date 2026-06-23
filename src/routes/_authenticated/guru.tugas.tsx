@@ -24,11 +24,11 @@ export const Route = createFileRoute("/_authenticated/guru/tugas")({
   component: GuruTugasPage,
 });
 
-const FORMAT_EMOJI: Record<string, string> = Object.fromEntries(ANSWER_FORMATS.map((f) => [f.value, f.emoji]));
+
 
 type TForm = {
   class_id: string; assigned_student_id: string; title: string; description: string;
-  subject: string;
+  subject: string; exam_type: string;
   due_at: string; max_score: number; xp_reward: number; coin_reward: number;
   quiz_link: string; game_link: string;
   answer_format: AnswerFormat; options: string[]; answer_key: string;
@@ -36,11 +36,17 @@ type TForm = {
 };
 
 const emptyForm = (): TForm => ({
-  class_id: "", assigned_student_id: "", title: "", description: "", subject: "", due_at: "",
+  class_id: "", assigned_student_id: "", title: "", description: "", subject: "", exam_type: "harian", due_at: "",
   max_score: 100, xp_reward: 50, coin_reward: 10, quiz_link: "", game_link: "",
   answer_format: "descriptive", options: ["", ""], answer_key: "",
   muroja_juz: "", muroja_surah: "", muroja_ayat: "",
 });
+
+const EXAM_TYPES = [
+  { value: "harian", labelId: "Tugas Harian", labelEn: "Daily Task", emoji: "📚" },
+  { value: "uts", labelId: "UTS (Tengah Semester)", labelEn: "Midterm", emoji: "📝" },
+  { value: "uas", labelId: "UAS (Akhir Semester)", labelEn: "Final Exam", emoji: "🎓" },
+];
 
 function GuruTugasPage() {
   const { user, role, loading } = useAuth();
@@ -50,6 +56,7 @@ function GuruTugasPage() {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const [target, setTarget] = useState<"class" | "student">("class");
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const [form, setForm] = useState<TForm>(emptyForm());
 
   useEffect(() => {
@@ -102,6 +109,7 @@ function GuruTugasPage() {
         assigned_student_id: target === "student" ? form.assigned_student_id : null,
         title: form.title,
         subject: form.subject || null,
+        exam_type: form.exam_type,
         description: form.description || null, due_at: form.due_at ? new Date(form.due_at).toISOString() : null,
         max_score: form.max_score, xp_reward: form.xp_reward, coin_reward: form.coin_reward,
         quiz_link: form.quiz_link.trim() || null, game_link: form.game_link.trim() || null,
@@ -136,6 +144,18 @@ function GuruTugasPage() {
   });
 
   const currentAssignment = useMemo(() => assignments.find((a: any) => a.id === selected), [assignments, selected]);
+
+  // Group assignments by answer format so the teacher can browse by type.
+  const groupedAssignments = useMemo(() => {
+    const groups: Record<string, any[]> = {};
+    (assignments as any[]).forEach((a) => {
+      const key = a.answer_format ?? "descriptive";
+      (groups[key] ??= []).push(a);
+    });
+    return ANSWER_FORMATS
+      .filter((f) => groups[f.value]?.length)
+      .map((f) => ({ format: f, items: groups[f.value] }));
+  }, [assignments]);
 
   const exportColumns = [
     { key: "title", header: lang === "id" ? "Judul" : "Title" },
@@ -198,8 +218,18 @@ function GuruTugasPage() {
                     </div>
                   )}
 
-                  <div><Label>{t("title")}</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
+                  <div><Label>{t("title")} <span className="text-destructive">*</span></Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
                   <div><Label>{t("subject")}</Label><SubjectSelect value={form.subject} onChange={(v) => setForm({ ...form, subject: v })} /></div>
+                  <div>
+                    <Label>{lang === "id" ? "Jenis Penilaian" : "Assessment Type"}</Label>
+                    <Select value={form.exam_type} onValueChange={(v) => setForm({ ...form, exam_type: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {EXAM_TYPES.map((e) => <SelectItem key={e.value} value={e.value}>{e.emoji} {lang === "id" ? e.labelId : e.labelEn}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    <p className="mt-1 text-xs text-muted-foreground">{lang === "id" ? "Menentukan bobot pada rekap nilai (Harian 20%, UTS 20%, UAS 30%)." : "Sets the weight in the grade recap."}</p>
+                  </div>
                   <div><Label>{t("description")}</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
 
                   {/* Answer format selector */}
@@ -322,27 +352,49 @@ function GuruTugasPage() {
         <EmptyState message={t("empty")} />
       ) : (
         <div className="grid gap-4 lg:grid-cols-3">
-          <div className="lg:col-span-1 space-y-2">
-            {assignments.map((a: any) => {
-              const subs = a.submissions ?? [];
-              const pending = subs.filter((s: any) => s.status === "submitted").length;
+          <div className="lg:col-span-1 space-y-3">
+            {groupedAssignments.map(({ format: f, items }) => {
+              const groupPending = items.reduce((n, a) => n + (a.submissions ?? []).filter((s: any) => s.status === "submitted").length, 0);
+              const isOpen = openGroups[f.value] ?? false;
               return (
-                <button key={a.id} onClick={() => setSelected(a.id)} className={`w-full text-left rounded-2xl border-2 p-4 shadow-soft transition ${selected === a.id ? "border-guru bg-guru/10" : "border-border bg-card hover:border-guru/50"}`}>
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <div className="font-display font-bold truncate">{FORMAT_EMOJI[a.answer_format] ?? "📝"} {a.title}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {a.assigned_student_id ? (a.assignee?.full_name ?? t("personalTask")) : a.classes?.name} · {a.due_at ? format(new Date(a.due_at), "dd MMM") : "—"}
-                      </div>
+                <div key={f.value} className="rounded-2xl border-2 border-border bg-card shadow-soft">
+                  <button
+                    onClick={() => setOpenGroups((g) => ({ ...g, [f.value]: !isOpen }))}
+                    className="flex w-full items-center justify-between gap-2 rounded-2xl px-4 py-3 text-left hover:bg-muted/40"
+                  >
+                    <span className="font-display font-bold">{f.emoji} {lang === "id" ? f.labelId : f.labelEn}</span>
+                    <span className="flex items-center gap-2">
+                      <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-display font-bold">{items.length}</span>
+                      {groupPending > 0 && <span className="rounded-full bg-destructive/15 px-2 py-0.5 text-xs font-display font-bold text-destructive">{groupPending}</span>}
+                      <ChevronRight className={`size-4 shrink-0 text-muted-foreground transition-transform ${isOpen ? "rotate-90" : ""}`} />
+                    </span>
+                  </button>
+                  {isOpen && (
+                    <div className="space-y-2 border-t-2 border-border p-2">
+                      {items.map((a: any) => {
+                        const pending = (a.submissions ?? []).filter((s: any) => s.status === "submitted").length;
+                        return (
+                          <button key={a.id} onClick={() => setSelected(a.id)} className={`w-full text-left rounded-xl border-2 p-3 transition ${selected === a.id ? "border-guru bg-guru/10" : "border-border bg-card hover:border-guru/50"}`}>
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="min-w-0">
+                                <div className="font-display font-bold truncate">{a.title}</div>
+                                <div className="text-xs text-muted-foreground">
+                                  {a.assigned_student_id ? (a.assignee?.full_name ?? t("personalTask")) : a.classes?.name} · {a.due_at ? format(new Date(a.due_at), "dd MMM") : "—"}
+                                </div>
+                              </div>
+                              <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+                            </div>
+                            <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                              <span className="rounded-full bg-xp/15 px-2 py-0.5 font-display font-bold text-xp">+{a.xp_reward} XP</span>
+                              {a.exam_type && a.exam_type !== "harian" && <span className="rounded-full bg-guru/15 px-2 py-0.5 font-display font-bold uppercase text-guru">{a.exam_type}</span>}
+                              {pending > 0 && <span className="rounded-full bg-destructive/15 px-2 py-0.5 font-display font-bold text-destructive">{pending} {lang === "id" ? "perlu nilai" : "to grade"}</span>}
+                            </div>
+                          </button>
+                        );
+                      })}
                     </div>
-                    <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
-                  </div>
-                  <div className="mt-2 flex flex-wrap gap-2 text-xs">
-                    <span className="rounded-full bg-xp/15 px-2 py-0.5 font-display font-bold text-xp">+{a.xp_reward} XP</span>
-                    {a.assigned_student_id && <span className="rounded-full bg-accent/15 px-2 py-0.5 font-display font-bold text-accent">{t("personalTask")}</span>}
-                    {pending > 0 && <span className="rounded-full bg-destructive/15 px-2 py-0.5 font-display font-bold text-destructive">{pending} {lang === "id" ? "perlu nilai" : "to grade"}</span>}
-                  </div>
-                </button>
+                  )}
+                </div>
               );
             })}
           </div>
@@ -480,7 +532,15 @@ function GradeRow({ sub, maxScore, isVoice, onGrade }: { sub: any; maxScore: num
             <Button type="button" size="sm" variant="outline" onClick={playVoice} disabled={loadingVoice}><Play className="size-4" /> 🎙️ {lang === "id" ? "Dengarkan rekaman" : "Listen to recording"}</Button>
           )}
         </div>
-      ) : (!isVoice && sub.file_url && <a href={sub.file_url} target="_blank" rel="noreferrer" className="mt-1 inline-block text-xs text-primary underline">📎 {sub.file_url}</a>)}
+      ) : (!isVoice && sub.file_url && (
+        /\.(jpg|jpeg|png|gif|webp|avif)(\?|$)/i.test(sub.file_url) ? (
+          <a href={sub.file_url} target="_blank" rel="noreferrer" className="mt-2 block"><img src={sub.file_url} alt="jawaban siswa" className="max-h-64 rounded-xl border-2 border-border object-contain" /></a>
+        ) : /\.(mp4|webm|mov|ogg)(\?|$)/i.test(sub.file_url) ? (
+          <video controls src={sub.file_url} className="mt-2 max-h-64 w-full rounded-xl border-2 border-border" />
+        ) : (
+          <a href={sub.file_url} target="_blank" rel="noreferrer" className="mt-1 inline-block text-xs text-primary underline">📎 {lang === "id" ? "Lihat lampiran" : "View attachment"}</a>
+        )
+      ))}
       <div className="mt-3 grid gap-2 sm:grid-cols-[120px,1fr,auto] sm:items-end">
         <div>
           <Label className="text-xs">⭐ {t("score")} / {maxScore}</Label>
