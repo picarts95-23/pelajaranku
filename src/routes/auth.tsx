@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { LangToggle } from "@/components/lang-toggle";
 import { useLang } from "@/lib/i18n";
 import { useAuth, type AppRole } from "@/lib/auth-context";
-import { DEMO_ACCOUNTS } from "@/lib/demo-accounts";
+import { claimTeacherRole } from "@/lib/roles.functions";
 
 const searchSchema = z.object({
   mode: z.enum(["login", "signup"]).optional().default("login"),
