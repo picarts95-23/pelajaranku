@@ -679,6 +679,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          archived_at: string | null
           avatar_url: string | null
           bio: string | null
           character_key: string | null
@@ -695,6 +696,7 @@ export type Database = {
           xp: number
         }
         Insert: {
+          archived_at?: string | null
           avatar_url?: string | null
           bio?: string | null
           character_key?: string | null
@@ -711,6 +713,7 @@ export type Database = {
           xp?: number
         }
         Update: {
+          archived_at?: string | null
           avatar_url?: string | null
           bio?: string | null
           character_key?: string | null
