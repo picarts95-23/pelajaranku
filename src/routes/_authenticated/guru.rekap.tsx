@@ -1,9 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { BarChart3, GraduationCap, Trophy } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { BarChart3, GraduationCap, Trophy, Save, HeartHandshake } from "lucide-react";
+import { toast } from "sonner";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { ExportMenu } from "@/components/export-menu";
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
@@ -14,12 +17,24 @@ export const Route = createFileRoute("/_authenticated/guru/rekap")({
   component: GuruRekapPage,
 });
 
+// Attendance status -> weight (%)
+const ATT_WEIGHT: Record<string, number> = { hadir: 100, izin: 60, sakit: 60, alpa: 0 };
+
+function predicate(score: number, lang: string) {
+  if (score >= 90) return { label: "A", tone: "text-emerald-600" };
+  if (score >= 80) return { label: "B", tone: "text-xp" };
+  if (score >= 70) return { label: "C", tone: "text-coin" };
+  return { label: lang === "id" ? "Perlu Perbaikan" : "Needs work", tone: "text-destructive" };
+}
+
 function GuruRekapPage() {
   const { user, role, loading } = useAuth();
   const navigate = useNavigate();
   const { t, lang } = useLang();
+  const qc = useQueryClient();
   const [classId, setClassId] = useState("");
   const [subject, setSubject] = useState("");
+  const [adabDraft, setAdabDraft] = useState<Record<string, number>>({});
 
   useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
 
@@ -28,7 +43,6 @@ function GuruRekapPage() {
     queryFn: async () => (await supabase.from("classes").select("id, name").order("name")).data ?? [],
   });
 
-  // Enrolled students of the selected class (id + name)
   const { data: students = [] } = useQuery({
     queryKey: ["rekap-students", classId], enabled: !!classId,
     queryFn: async () => {
@@ -40,17 +54,33 @@ function GuruRekapPage() {
     },
   });
 
-  // Assignments of the class + their submissions
   const { data: assignments = [] } = useQuery({
     queryKey: ["rekap-assignments", classId], enabled: !!classId,
     queryFn: async () => {
       const { data } = await supabase
         .from("assignments")
-        .select("id, title, subject, max_score, submissions(student_id, score, status)")
+        .select("id, title, subject, exam_type, max_score, submissions(student_id, score, status)")
         .eq("class_id", classId);
       return data ?? [];
     },
   });
+
+  const { data: attendance = [] } = useQuery({
+    queryKey: ["rekap-attendance", classId], enabled: !!classId,
+    queryFn: async () => (await supabase.from("attendance").select("student_id, status").eq("class_id", classId)).data ?? [],
+  });
+
+  const { data: adabScores = [] } = useQuery({
+    queryKey: ["rekap-adab", classId, subject], enabled: !!classId && !!subject,
+    queryFn: async () => (await supabase.from("adab_scores").select("student_id, score").eq("class_id", classId).eq("subject", subject)).data ?? [],
+  });
+
+  // Sync adab draft from DB whenever scores load
+  useEffect(() => {
+    const map: Record<string, number> = {};
+    (adabScores as any[]).forEach((a) => { map[a.student_id] = a.score; });
+    setAdabDraft(map);
+  }, [adabScores]);
 
   const subjects = useMemo(() => {
     const set = new Set<string>();
@@ -58,34 +88,76 @@ function GuruRekapPage() {
     return Array.from(set).sort();
   }, [assignments]);
 
+  const saveAdab = useMutation({
+    mutationFn: async () => {
+      if (!user) return;
+      const rows = (students as any[]).map((s) => ({
+        teacher_id: user.id, student_id: s.id, class_id: classId, subject,
+        score: Math.max(0, Math.min(100, adabDraft[s.id] ?? 0)),
+      }));
+      const { error } = await supabase.from("adab_scores").upsert(rows, { onConflict: "teacher_id,student_id,class_id,subject" });
+      if (error) throw error;
+    },
+    onSuccess: () => { toast.success(lang === "id" ? "Nilai adab disimpan ✅" : "Adab scores saved ✅"); qc.invalidateQueries({ queryKey: ["rekap-adab"] }); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  function avgPct(stuId: string, examType: string) {
+    const relevant = (assignments as any[]).filter((a) => a.subject === subject && a.exam_type === examType);
+    let sum = 0, count = 0;
+    relevant.forEach((a) => {
+      const sub = (a.submissions ?? []).find((s: any) => s.student_id === stuId && s.status === "graded" && s.score != null);
+      if (sub) { sum += a.max_score ? (sub.score / a.max_score) * 100 : 0; count += 1; }
+    });
+    return count ? sum / count : 0;
+  }
+
+  function attendancePct(stuId: string) {
+    const recs = (attendance as any[]).filter((a) => a.student_id === stuId);
+    if (recs.length === 0) return 0;
+    const sum = recs.reduce((n, r) => n + (ATT_WEIGHT[r.status] ?? 0), 0);
+    return sum / recs.length;
+  }
+
   const rows = useMemo(() => {
     if (!subject) return [];
-    const relevant = (assignments as any[]).filter((a) => a.subject === subject);
     return (students as any[]).map((stu) => {
-      let total = 0, count = 0, pctSum = 0;
-      relevant.forEach((a) => {
-        const sub = (a.submissions ?? []).find((s: any) => s.student_id === stu.id && s.status === "graded" && s.score != null);
-        if (sub) { total += sub.score; count += 1; pctSum += a.max_score ? (sub.score / a.max_score) * 100 : 0; }
-      });
-      const avg = count ? Math.round(pctSum / count) : 0;
-      return { id: stu.id, name: stu.full_name, total, count, avg };
-    }).sort((a, b) => b.avg - a.avg);
-  }, [subject, assignments, students]);
+      const kehadiran = attendancePct(stu.id);
+      const adab = Math.max(0, Math.min(100, adabDraft[stu.id] ?? 0));
+      const harian = avgPct(stu.id, "harian");
+      const uts = avgPct(stu.id, "uts");
+      const uas = avgPct(stu.id, "uas");
+      const final = kehadiran * 0.1 + adab * 0.2 + harian * 0.2 + uts * 0.2 + uas * 0.3;
+      return {
+        id: stu.id, name: stu.full_name,
+        kehadiran: Math.round(kehadiran), adab, harian: Math.round(harian),
+        uts: Math.round(uts), uas: Math.round(uas), final: Math.round(final),
+      };
+    }).sort((a, b) => b.final - a.final);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subject, assignments, students, attendance, adabDraft]);
 
   const exportColumns = [
     { key: "name", header: t("studentName") },
-    { key: "count", header: t("tasksGraded") },
-    { key: "total", header: t("totalScore") },
-    { key: "avg", header: `${t("average")} (%)` },
+    { key: "kehadiran", header: lang === "id" ? "Kehadiran (10%)" : "Attendance (10%)" },
+    { key: "adab", header: lang === "id" ? "Adab (20%)" : "Adab (20%)" },
+    { key: "harian", header: lang === "id" ? "Tugas Harian (20%)" : "Daily (20%)" },
+    { key: "uts", header: "UTS (20%)" },
+    { key: "uas", header: "UAS (30%)" },
+    { key: "final", header: lang === "id" ? "Nilai Akhir" : "Final" },
+    { key: "predikat", header: lang === "id" ? "Predikat" : "Grade" },
   ];
+  const exportRows = () => rows.map((r) => ({ ...r, predikat: predicate(r.final, lang).label }));
 
   return (
     <DashboardShell accent="guru">
       <PageHeader
         title={t("recapTitle")}
-        subtitle={t("recapSubtitle")}
+        subtitle={lang === "id"
+          ? "Kehadiran 10% · Adab 20% · Tugas Harian 20% · UTS 20% · UAS 30%"
+          : "Attendance 10% · Adab 20% · Daily 20% · Midterm 20% · Final 30%"}
         actions={subject && rows.length > 0 ? (
-          <ExportMenu filename={`rekap-${subject}`} title={`${t("recapTitle")} · ${subject}`} columns={exportColumns} rows={() => rows} />
+          <ExportMenu filename={`rekap-${subject}`} title={`${t("recapTitle")} · ${subject}`} columns={exportColumns} rows={exportRows} />
         ) : undefined}
       />
 
@@ -113,39 +185,62 @@ function GuruRekapPage() {
       {!classId ? (
         <EmptyState message={lang === "id" ? "Pilih kelas untuk mulai." : "Select a class to begin."} />
       ) : !subject ? (
-        <EmptyState message={lang === "id" ? "Pilih mata pelajaran untuk melihat arsip nilai." : "Select a subject to view grade archives."} />
+        <EmptyState message={lang === "id" ? "Pilih mata pelajaran untuk melihat rekap nilai." : "Select a subject to view the grade recap."} />
       ) : rows.length === 0 ? (
         <EmptyState message={t("noGradesSubject")} />
       ) : (
-        <div className="overflow-hidden rounded-3xl border-2 border-border bg-card shadow-card-rpg">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/60 text-left text-xs uppercase tracking-wider text-muted-foreground">
-              <tr>
-                <th className="px-4 py-3">#</th>
-                <th className="px-4 py-3">{t("studentName")}</th>
-                <th className="px-4 py-3 text-center">{t("tasksGraded")}</th>
-                <th className="px-4 py-3 text-center">{t("totalScore")}</th>
-                <th className="px-4 py-3 text-right">{t("average")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r, i) => (
-                <tr key={r.id} className="border-t border-border">
-                  <td className="px-4 py-3">
-                    {i < 3 ? <Trophy className={`size-4 ${i === 0 ? "text-coin" : i === 1 ? "text-muted-foreground" : "text-secondary-foreground"}`} /> : i + 1}
-                  </td>
-                  <td className="px-4 py-3 font-display font-semibold flex items-center gap-2"><GraduationCap className="size-4 text-guru" /> {r.name}</td>
-                  <td className="px-4 py-3 text-center">{r.count}</td>
-                  <td className="px-4 py-3 text-center font-display font-bold">{r.total}</td>
-                  <td className="px-4 py-3 text-right">
-                    <span className={`font-display text-lg font-bold ${r.avg >= 80 ? "text-xp" : r.avg >= 60 ? "text-coin" : "text-destructive"}`}>{r.avg}%</span>
-                  </td>
+        <div className="space-y-3">
+          <div className="flex items-center justify-end">
+            <Button variant="guru" size="sm" disabled={saveAdab.isPending} onClick={() => saveAdab.mutate()}>
+              <Save className="size-4" /> {lang === "id" ? "Simpan Nilai Adab" : "Save Adab Scores"}
+            </Button>
+          </div>
+          <div className="overflow-x-auto rounded-3xl border-2 border-border bg-card shadow-card-rpg">
+            <table className="w-full min-w-[760px] text-sm">
+              <thead className="bg-muted/60 text-left text-xs uppercase tracking-wider text-muted-foreground">
+                <tr>
+                  <th className="px-3 py-3">#</th>
+                  <th className="px-3 py-3">{t("studentName")}</th>
+                  <th className="px-3 py-3 text-center">{lang === "id" ? "Hadir" : "Att."}<br /><span className="normal-case">10%</span></th>
+                  <th className="px-3 py-3 text-center"><HeartHandshake className="mx-auto size-3.5" />{lang === "id" ? "Adab" : "Adab"}<br /><span className="normal-case">20%</span></th>
+                  <th className="px-3 py-3 text-center">{lang === "id" ? "Harian" : "Daily"}<br /><span className="normal-case">20%</span></th>
+                  <th className="px-3 py-3 text-center">UTS<br /><span className="normal-case">20%</span></th>
+                  <th className="px-3 py-3 text-center">UAS<br /><span className="normal-case">30%</span></th>
+                  <th className="px-3 py-3 text-center">{lang === "id" ? "Akhir" : "Final"}</th>
+                  <th className="px-3 py-3 text-center">{lang === "id" ? "Predikat" : "Grade"}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          <div className="flex items-center gap-2 border-t-2 border-border bg-muted/30 px-4 py-3 text-xs text-muted-foreground">
-            <BarChart3 className="size-4" /> {lang === "id" ? "Nilai terhitung dari akumulasi tugas dinilai siswa pada mapel ini." : "Computed from each student's graded tasks in this subject."}
+              </thead>
+              <tbody>
+                {rows.map((r, i) => {
+                  const pred = predicate(r.final, lang);
+                  return (
+                    <tr key={r.id} className="border-t border-border">
+                      <td className="px-3 py-3">{i < 3 ? <Trophy className={`size-4 ${i === 0 ? "text-coin" : i === 1 ? "text-muted-foreground" : "text-secondary-foreground"}`} /> : i + 1}</td>
+                      <td className="px-3 py-3 font-display font-semibold flex items-center gap-2"><GraduationCap className="size-4 text-guru" /> {r.name}</td>
+                      <td className="px-3 py-3 text-center">{r.kehadiran}</td>
+                      <td className="px-3 py-3 text-center">
+                        <Input
+                          type="number" min={0} max={100}
+                          value={adabDraft[r.id] ?? 0}
+                          onChange={(e) => setAdabDraft((d) => ({ ...d, [r.id]: e.target.value === "" ? 0 : +e.target.value }))}
+                          className="mx-auto h-8 w-16 text-center"
+                        />
+                      </td>
+                      <td className="px-3 py-3 text-center">{r.harian}</td>
+                      <td className="px-3 py-3 text-center">{r.uts}</td>
+                      <td className="px-3 py-3 text-center">{r.uas}</td>
+                      <td className="px-3 py-3 text-center font-display text-lg font-bold">{r.final}</td>
+                      <td className={`px-3 py-3 text-center font-display font-bold ${pred.tone}`}>{pred.label}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            <div className="flex items-center gap-2 border-t-2 border-border bg-muted/30 px-4 py-3 text-xs text-muted-foreground">
+              <BarChart3 className="size-4" /> {lang === "id"
+                ? "Predikat: A (90–100) · B (80–89) · C (70–79). Kehadiran otomatis dari presensi; UTS/UAS dari tugas bertanda."
+                : "Grades: A (90–100) · B (80–89) · C (70–79). Attendance auto from records; UTS/UAS from tagged tasks."}
+            </div>
           </div>
         </div>
       )}
