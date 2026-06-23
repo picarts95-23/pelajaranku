@@ -179,6 +179,7 @@ function GuruMapelPage() {
                   <div className="mt-1.5 font-display font-bold">{m.title}</div>
                   {m.description && <p className="text-sm text-muted-foreground">{m.description}</p>}
                   {m.content && <p className="mt-2 whitespace-pre-wrap text-sm">{m.content}</p>}
+                  <MediaViewer mediaType={m.media_type} mediaUrl={m.media_url} />
                   {m.link && (
                     <a href={m.link} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-quest/10 px-2.5 py-1 text-xs font-display font-bold text-quest hover:bg-quest/20">
                       <ExternalLink className="size-3.5" /> {t("openLink")}
