@@ -67,9 +67,23 @@ export function AiAssistant() {
             <div className="flex items-center gap-2 font-display font-bold">
               <Bot className="size-5" /> {t("aiAssistant")}
             </div>
-            <Button size="icon" variant="ghost" className="text-primary-foreground hover:bg-white/20" onClick={() => setOpen(false)} aria-label="Close">
-              <X className="size-5" />
-            </Button>
+            <div className="flex items-center gap-2">
+              <div className="inline-flex rounded-full bg-white/15 p-0.5 text-xs font-display font-semibold">
+                {(["gemini", "openai"] as const).map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setProvider(p)}
+                    className={cn("rounded-full px-2.5 py-1 transition", provider === p ? "bg-white text-guru" : "text-white/80 hover:text-white")}
+                  >
+                    {p === "gemini" ? "Gemini" : "ChatGPT"}
+                  </button>
+                ))}
+              </div>
+              <Button size="icon" variant="ghost" className="text-primary-foreground hover:bg-white/20" onClick={() => setOpen(false)} aria-label="Close">
+                <X className="size-5" />
+              </Button>
+            </div>
           </div>
 
           <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto p-4">
