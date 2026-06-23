@@ -1,18 +1,21 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { FileQuestion, Sparkles, Coins, CheckCircle2, Trophy } from "lucide-react";
+import { FileQuestion, Sparkles, Coins, CheckCircle2, Trophy, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { VoiceRecorder } from "@/components/voice-recorder";
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/siswa/latihan")({
-  head: () => ({ meta: [{ title: "Latihan Kuis · EduQuest Academy" }] }),
+  head: () => ({ meta: [{ title: "Latihan & Tugas · EduQuest Academy" }] }),
   component: SiswaLatihanPage,
 });
 
@@ -38,7 +41,7 @@ function SiswaLatihanPage() {
 
   return (
     <DashboardShell accent="siswa">
-      <PageHeader title={lang === "id" ? "Latihan Kuis" : "Quiz Practice"} subtitle={lang === "id" ? "Kerjakan kuis pilihan ganda & dapatkan XP otomatis!" : "Answer multiple-choice quizzes & earn XP instantly!"} />
+      <PageHeader title={lang === "id" ? "Latihan & Tugas" : "Practice & Assignments"} subtitle={lang === "id" ? "Kerjakan kuis campuran soal & dapatkan XP!" : "Answer mixed quizzes & earn XP!"} />
       {(quizzes as any[]).length === 0 ? (
         <EmptyState message={lang === "id" ? "Belum ada kuis. Gabung ke kelas dulu ya!" : "No quizzes yet. Join a class first!"} />
       ) : (
@@ -50,29 +53,51 @@ function SiswaLatihanPage() {
   );
 }
 
+type QResult = { auto_correct: number; total: number; manual_pending: number; score: number; max_score: number; status: string };
+
 function QuizCard({ quiz }: { quiz: any }) {
   const { user } = useAuth();
   const { lang } = useLang();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
-  const questions: { q: string; options: string[] }[] = Array.isArray(quiz.questions) ? quiz.questions : [];
-  const [answers, setAnswers] = useState<(number | null)[]>(() => questions.map(() => null));
-  const [result, setResult] = useState<{ correct: number; total: number; score: number; max_score: number } | null>(null);
+  const questions: any[] = Array.isArray(quiz.questions) ? quiz.questions : [];
+  const [answers, setAnswers] = useState<any[]>(() => questions.map(() => null));
+  const [voiceBlobs, setVoiceBlobs] = useState<Record<number, Blob | null>>({});
+  const [result, setResult] = useState<QResult | null>(null);
   const done = !!quiz.mySubmission;
+
+  const setAns = (i: number, v: any) => setAnswers((a) => a.map((x, idx) => (idx === i ? v : x)));
 
   const submitMut = useMutation({
     mutationFn: async () => {
-      if (answers.some((a) => a === null)) throw new Error(lang === "id" ? "Jawab semua soal dulu ya!" : "Answer every question first!");
+      const finalAnswers = [...answers];
+      for (let i = 0; i < questions.length; i++) {
+        const type = questions[i]?.type ?? "multiple_choice";
+        if (type === "voice") {
+          const blob = voiceBlobs[i];
+          if (!blob) throw new Error(lang === "id" ? `Rekam jawaban soal ${i + 1}` : `Record answer for Q${i + 1}`);
+          const path = `${user!.id}/${quiz.id}-${i}-${crypto.randomUUID()}.webm`;
+          const { error: upErr } = await supabase.storage.from("voice-answers").upload(path, blob);
+          if (upErr) throw upErr;
+          finalAnswers[i] = path;
+        } else if (finalAnswers[i] === null || finalAnswers[i] === undefined || String(finalAnswers[i]).trim() === "") {
+          throw new Error(lang === "id" ? `Jawab soal ${i + 1} dulu ya!` : `Answer Q${i + 1} first!`);
+        }
+      }
       const { data, error } = await (supabase as any).rpc("grade_quiz_submission", {
         _assignment_id: quiz.id,
-        _answers: answers,
+        _answers: finalAnswers,
       });
       if (error) throw error;
-      return data as { correct: number; total: number; score: number; max_score: number };
+      return data as QResult;
     },
     onSuccess: (data) => {
       setResult(data);
-      toast.success(lang === "id" ? `Skor kamu ${data.score}/${data.max_score} 🎉` : `Your score ${data.score}/${data.max_score} 🎉`);
+      if (data.manual_pending > 0) {
+        toast.success(lang === "id" ? "Jawaban terkirim, menunggu penilaian guru 📝" : "Submitted, awaiting teacher grading 📝");
+      } else {
+        toast.success(lang === "id" ? `Skor kamu ${data.score}/${data.max_score} 🎉` : `Your score ${data.score}/${data.max_score} 🎉`);
+      }
       qc.invalidateQueries({ queryKey: ["siswa-quizzes"] });
     },
     onError: (e: Error) => {
@@ -82,6 +107,8 @@ function QuizCard({ quiz }: { quiz: any }) {
       toast.error(msg);
     },
   });
+
+  const pendingGrade = done && quiz.mySubmission.status === "submitted";
 
   return (
     <div className="rounded-2xl border-2 border-border bg-card p-5 shadow-card-rpg">
@@ -99,45 +126,94 @@ function QuizCard({ quiz }: { quiz: any }) {
       </div>
 
       {done ? (
-        <div className="mt-4 flex items-center gap-2 rounded-xl bg-xp/10 px-4 py-3 text-sm font-display font-bold text-xp">
-          <Trophy className="size-5" /> {lang === "id" ? "Selesai" : "Done"} · {quiz.mySubmission.score ?? 0}/{quiz.max_score}
-        </div>
+        pendingGrade ? (
+          <div className="mt-4 flex items-center gap-2 rounded-xl bg-amber-500/10 px-4 py-3 text-sm font-display font-bold text-amber-700">
+            <Clock className="size-5" /> {lang === "id" ? "Terkirim · menunggu nilai guru" : "Submitted · awaiting grade"}
+          </div>
+        ) : (
+          <div className="mt-4 flex items-center gap-2 rounded-xl bg-xp/10 px-4 py-3 text-sm font-display font-bold text-xp">
+            <Trophy className="size-5" /> {lang === "id" ? "Selesai" : "Done"} · {quiz.mySubmission.score ?? 0}/{quiz.max_score}
+          </div>
+        )
       ) : (
-        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o) { setAnswers(questions.map(() => null)); setResult(null); } }}>
+        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o) { setAnswers(questions.map(() => null)); setVoiceBlobs({}); setResult(null); } }}>
           <DialogTrigger asChild>
-            <Button variant="siswa" className="mt-4 w-full"><FileQuestion className="size-4" /> {lang === "id" ? "Kerjakan Kuis" : "Take Quiz"}</Button>
+            <Button variant="siswa" className="mt-4 w-full"><FileQuestion className="size-4" /> {lang === "id" ? "Kerjakan" : "Take Quiz"}</Button>
           </DialogTrigger>
           <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
             <DialogHeader><DialogTitle>{quiz.title}</DialogTitle></DialogHeader>
             {result ? (
               <div className="space-y-4 py-4 text-center">
-                <div className="text-5xl">🎉</div>
-                <div className="font-display text-3xl font-bold text-primary">{result.score}<span className="text-lg text-muted-foreground">/{result.max_score}</span></div>
-                <p className="text-sm text-muted-foreground">{lang === "id" ? `Benar ${result.correct} dari ${result.total} soal` : `${result.correct} of ${result.total} correct`}</p>
+                <div className="text-5xl">{result.manual_pending > 0 ? "📝" : "🎉"}</div>
+                {result.manual_pending > 0 ? (
+                  <p className="text-sm text-muted-foreground">{lang === "id" ? "Jawabanmu terkirim. Sebagian soal dinilai guru secara manual." : "Submitted. Some answers will be graded by your teacher."}</p>
+                ) : (
+                  <>
+                    <div className="font-display text-3xl font-bold text-primary">{result.score}<span className="text-lg text-muted-foreground">/{result.max_score}</span></div>
+                    <p className="text-sm text-muted-foreground">{lang === "id" ? `Benar ${result.auto_correct} dari ${result.total} soal` : `${result.auto_correct} of ${result.total} correct`}</p>
+                  </>
+                )}
               </div>
             ) : (
               <div className="space-y-4">
-                {questions.map((qq, qi) => (
-                  <div key={qi} className="rounded-xl border-2 border-border bg-muted/20 p-3">
-                    <p className="font-display text-sm font-bold">{qi + 1}. {qq.q}</p>
-                    <div className="mt-2 space-y-1.5">
-                      {qq.options.map((opt, oi) => {
-                        const selected = answers[qi] === oi;
-                        return (
-                          <button key={oi} type="button"
-                            onClick={() => setAnswers((a) => a.map((v, idx) => (idx === qi ? oi : v)))}
-                            className={`flex w-full items-center gap-2 rounded-lg border-2 px-3 py-2 text-left text-sm transition-colors ${selected ? "border-siswa bg-siswa/10 font-semibold" : "border-border hover:bg-muted"}`}>
-                            <span className={`grid size-5 shrink-0 place-items-center rounded-full border-2 ${selected ? "border-siswa bg-siswa text-white" : "border-muted-foreground/40"}`}>
-                              {selected && <CheckCircle2 className="size-3.5" />}
-                            </span>
-                            <span className="font-display text-xs font-bold text-muted-foreground">{String.fromCharCode(65 + oi)}</span>
-                            <span>{opt}</span>
-                          </button>
-                        );
-                      })}
+                {questions.map((qq, qi) => {
+                  const type = qq.type ?? "multiple_choice";
+                  return (
+                    <div key={qi} className="rounded-xl border-2 border-border bg-muted/20 p-3">
+                      <p className="font-display text-sm font-bold">{qi + 1}. {qq.q}</p>
+
+                      {type === "multiple_choice" && (
+                        <div className="mt-2 space-y-1.5">
+                          {(qq.options ?? []).map((opt: string, oi: number) => {
+                            const selected = answers[qi] === oi;
+                            return (
+                              <button key={oi} type="button" onClick={() => setAns(qi, oi)}
+                                className={`flex w-full items-center gap-2 rounded-lg border-2 px-3 py-2 text-left text-sm transition-colors ${selected ? "border-siswa bg-siswa/10 font-semibold" : "border-border hover:bg-muted"}`}>
+                                <span className={`grid size-5 shrink-0 place-items-center rounded-full border-2 ${selected ? "border-siswa bg-siswa text-white" : "border-muted-foreground/40"}`}>
+                                  {selected && <CheckCircle2 className="size-3.5" />}
+                                </span>
+                                <span className="font-display text-xs font-bold text-muted-foreground">{String.fromCharCode(65 + oi)}</span>
+                                <span>{opt}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {type === "true_false" && (
+                        <div className="mt-2 flex gap-2">
+                          {[["true", lang === "id" ? "Benar" : "True"], ["false", lang === "id" ? "Salah" : "False"]].map(([val, label]) => {
+                            const selected = answers[qi] === val;
+                            return (
+                              <button key={val} type="button" onClick={() => setAns(qi, val)}
+                                className={`flex-1 rounded-lg border-2 px-3 py-2 text-sm font-semibold ${selected ? "border-siswa bg-siswa/10 text-siswa" : "border-border hover:bg-muted"}`}>
+                                {label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {type === "short_answer" && (
+                        <Input className="mt-2" placeholder={lang === "id" ? "Tulis jawaban singkat…" : "Short answer…"} value={answers[qi] ?? ""} onChange={(e) => setAns(qi, e.target.value)} />
+                      )}
+
+                      {type === "essay" && (
+                        <Textarea className="mt-2" rows={3} placeholder={lang === "id" ? "Tulis jawaban esai…" : "Write your essay…"} value={answers[qi] ?? ""} onChange={(e) => setAns(qi, e.target.value)} />
+                      )}
+
+                      {type === "voice" && (
+                        <div className="mt-2">
+                          <VoiceRecorder onChange={({ blob }) => setVoiceBlobs((v) => ({ ...v, [qi]: blob }))} />
+                        </div>
+                      )}
+
+                      {(type === "essay" || type === "voice") && (
+                        <p className="mt-1.5 text-xs text-muted-foreground">{lang === "id" ? "Dinilai oleh guru." : "Graded by teacher."}</p>
+                      )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
             <DialogFooter>
@@ -145,7 +221,7 @@ function QuizCard({ quiz }: { quiz: any }) {
                 <Button variant="siswa" onClick={() => setOpen(false)}>{lang === "id" ? "Tutup" : "Close"}</Button>
               ) : (
                 <Button variant="siswa" onClick={() => submitMut.mutate()} disabled={submitMut.isPending}>
-                  {submitMut.isPending ? (lang === "id" ? "Menilai…" : "Grading…") : (lang === "id" ? "Kirim Jawaban" : "Submit Answers")}
+                  {submitMut.isPending ? (lang === "id" ? "Mengirim…" : "Submitting…") : (lang === "id" ? "Kirim Jawaban" : "Submit Answers")}
                 </Button>
               )}
             </DialogFooter>
