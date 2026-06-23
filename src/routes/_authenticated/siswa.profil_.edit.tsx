@@ -77,8 +77,11 @@ function EditProfil() {
       if (!user) throw new Error("No user");
       const parsed = schema.parse(values);
       const chosen = getCharacterByKey(parsed.character_key || null);
+      // The profile row already exists (created by the signup trigger). Use
+      // UPDATE rather than upsert: authenticated users only hold column-level
+      // UPDATE grants (excluding id/xp/coins/level), and an upsert would try to
+      // write the `id` column on conflict, which fails with permission denied.
       const payload: Record<string, unknown> = {
-        id: user.id,
         full_name: parsed.full_name,
         username: parsed.username || null,
         class_name: parsed.class_name || null,
@@ -87,7 +90,7 @@ function EditProfil() {
         character_key: parsed.character_key || null,
         avatar_url: chosen?.src ?? (profile?.avatar_url ?? null),
       };
-      const { error } = await supabase.from("profiles").upsert(payload as any, { onConflict: "id" });
+      const { error } = await supabase.from("profiles").update(payload as any).eq("id", user.id);
       if (error) throw error;
       const { error: privError } = await supabase.from("profile_private").upsert({
         id: user.id,

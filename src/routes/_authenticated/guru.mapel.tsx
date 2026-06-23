@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BookMarked, GraduationCap, Plus, Trash2, ExternalLink, Library, Loader2 } from "lucide-react";
+import { BookMarked, GraduationCap, Plus, Trash2, ExternalLink, Library, Loader2, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
@@ -50,6 +50,37 @@ function GuruMapelPage() {
         .from("materials").select("*, classes(name)").order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
+    },
+  });
+
+  // Which students have finished reading each material (synced from the student
+  // dashboard's "tandai sudah dibaca" action). Teachers can read these rows via
+  // the "Teachers view reads of their materials" policy.
+  const materialIds = (materials as any[]).map((m) => m.id).join(",");
+  const { data: reads = [] } = useQuery({
+    queryKey: ["material-reads-guru", materialIds], enabled: !!user && materialIds.length > 0,
+    queryFn: async () => {
+      const ids = materialIds.split(",").filter(Boolean);
+      const { data } = await supabase
+        .from("material_reads").select("material_id, user_id, updated_at").in("material_id", ids);
+      const readerIds = [...new Set((data ?? []).map((r: any) => r.user_id))];
+      const names: Record<string, string> = {};
+      if (readerIds.length) {
+        const { data: profs } = await supabase.from("profiles").select("id, full_name").in("id", readerIds);
+        (profs ?? []).forEach((p: any) => { names[p.id] = p.full_name; });
+      }
+      return (data ?? []).map((r: any) => ({ ...r, full_name: names[r.user_id] ?? "Siswa" }));
+    },
+  });
+
+  // Per-class enrollment counts to show "X/Y siswa membaca".
+  const { data: enrollCounts = {} } = useQuery({
+    queryKey: ["class-enroll-counts", user?.id], enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase.from("class_enrollments").select("class_id");
+      const counts: Record<string, number> = {};
+      (data ?? []).forEach((e: any) => { counts[e.class_id] = (counts[e.class_id] ?? 0) + 1; });
+      return counts;
     },
   });
 
@@ -185,6 +216,27 @@ function GuruMapelPage() {
                       <ExternalLink className="size-3.5" /> {t("openLink")}
                     </a>
                   )}
+                  {(() => {
+                    const readers = (reads as any[]).filter((r) => r.material_id === m.id);
+                    const total = enrollCounts[m.class_id] ?? 0;
+                    return (
+                      <div className="mt-3 rounded-xl border border-border bg-muted/30 p-2.5">
+                        <div className="flex items-center gap-1.5 text-xs font-display font-bold text-emerald-600">
+                          <CheckCircle2 className="size-3.5" />
+                          {lang === "id" ? "Sudah membaca" : "Read"}: {readers.length}{total ? `/${total}` : ""} {lang === "id" ? "siswa" : "students"}
+                        </div>
+                        {readers.length > 0 && (
+                          <div className="mt-1.5 flex flex-wrap gap-1">
+                            {readers.map((r) => (
+                              <span key={r.user_id} className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
+                                <CheckCircle2 className="size-3" /> {r.full_name}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
                 <Button size="sm" variant="ghost" onClick={() => { if (confirm(`${t("delete")}?`)) delMat.mutate(m.id); }}><Trash2 className="size-4 text-destructive" /></Button>
               </div>

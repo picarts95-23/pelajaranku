@@ -70,6 +70,11 @@ function GuruRekapPage() {
     queryFn: async () => (await supabase.from("attendance").select("student_id, status").eq("class_id", classId)).data ?? [],
   });
 
+  const { data: classMaterials = [] } = useQuery({
+    queryKey: ["rekap-materials", classId], enabled: !!classId,
+    queryFn: async () => (await supabase.from("materials").select("subject").eq("class_id", classId)).data ?? [],
+  });
+
   const { data: adabScores } = useQuery({
     queryKey: ["rekap-adab", classId, subject], enabled: !!classId && !!subject,
     queryFn: async () => (await supabase.from("adab_scores").select("student_id, score").eq("class_id", classId).eq("subject", subject)).data ?? [],
@@ -84,11 +89,15 @@ function GuruRekapPage() {
     setAdabDraft(map);
   }, [adabScores]);
 
+  // Subjects available for THIS class only: union of subjects used on its
+  // tagged assignments and its shared materials, deduplicated — so the subject
+  // dropdown adjusts to the selected class instead of repeating unrelated ones.
   const subjects = useMemo(() => {
     const set = new Set<string>();
     (assignments as any[]).forEach((a) => { if (a.subject) set.add(a.subject); });
+    (classMaterials as any[]).forEach((m) => { if (m.subject) set.add(m.subject); });
     return Array.from(set).sort();
-  }, [assignments]);
+  }, [assignments, classMaterials]);
 
   const saveAdab = useMutation({
     mutationFn: async () => {
