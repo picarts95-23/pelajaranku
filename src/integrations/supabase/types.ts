@@ -779,6 +779,36 @@ export type Database = {
         }
         Relationships: []
       }
+      sheet_sync_state: {
+        Row: {
+          created_at: string
+          id: number
+          last_status: string | null
+          last_synced_at: string | null
+          spreadsheet_id: string | null
+          spreadsheet_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          last_status?: string | null
+          last_synced_at?: string | null
+          spreadsheet_id?: string | null
+          spreadsheet_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          last_status?: string | null
+          last_synced_at?: string | null
+          spreadsheet_id?: string | null
+          spreadsheet_url?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       status_comments: {
         Row: {
           author_id: string
