@@ -38,7 +38,7 @@ function cell(v: unknown): string {
 }
 
 async function fetchTableRows(table: string, columns: string[], order?: string): Promise<string[][]> {
-  let q = supabaseAdmin.from(table).select(columns.join(",")).limit(5000);
+  let q = (supabaseAdmin as any).from(table).select(columns.join(",")).limit(5000);
   if (order) q = q.order(order, { ascending: true });
   const { data, error } = await q;
   if (error) throw new Error(`Gagal membaca tabel ${table}: ${error.message}`);
