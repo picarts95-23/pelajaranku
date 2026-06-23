@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Download, FileSpreadsheet, FileText, FileType, Table2 } from "lucide-react";
+import { Download, FileSpreadsheet, FileText, FileType, Table2, Cloud, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -9,7 +9,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
 import { useLang } from "@/lib/i18n";
+import { exportToGoogleSheet } from "@/lib/google-sheets.functions";
 import {
   exportToCSV,
   exportToExcel,
@@ -28,12 +31,44 @@ type Props = {
   rows: ExportRow[] | (() => ExportRow[]);
   variant?: "guru" | "siswa" | "outline";
   size?: "sm" | "default";
+  /** Show the "sync to Google Sheets" option (teachers only). */
+  allowGoogleSheets?: boolean;
 };
 
-export function ExportMenu({ filename, title, columns, rows, variant = "outline", size = "sm" }: Props) {
+export function ExportMenu({ filename, title, columns, rows, variant = "outline", size = "sm", allowGoogleSheets = true }: Props) {
   const { lang } = useLang();
   const [open, setOpen] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const sheetFn = useServerFn(exportToGoogleSheet);
   const getRows = () => (typeof rows === "function" ? rows() : rows);
+
+  function cellText(v: unknown): string {
+    if (v === null || v === undefined) return "";
+    if (v instanceof Date) return v.toLocaleString();
+    return String(v);
+  }
+
+  async function syncGoogleSheet() {
+    setSyncing(true);
+    const tid = toast.loading(lang === "id" ? "Mengirim data ke Google Spreadsheet…" : "Sending data to Google Sheets…");
+    try {
+      const dataRows = getRows();
+      const values = [
+        columns.map((c) => c.header),
+        ...dataRows.map((r) => columns.map((c) => cellText(r[c.key]))),
+      ];
+      const res = await sheetFn({ data: { title, values } });
+      toast.success(lang === "id" ? "Spreadsheet berhasil dibuat!" : "Spreadsheet created!", {
+        id: tid,
+        action: { label: lang === "id" ? "Buka" : "Open", onClick: () => window.open(res.url, "_blank") },
+      });
+      window.open(res.url, "_blank");
+    } catch (e: any) {
+      toast.error(e?.message ?? (lang === "id" ? "Gagal mengekspor ke Google Spreadsheet." : "Failed to export to Google Sheets."), { id: tid });
+    } finally {
+      setSyncing(false);
+    }
+  }
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -42,11 +77,20 @@ export function ExportMenu({ filename, title, columns, rows, variant = "outline"
           <Download className="size-4" /> {lang === "id" ? "Ekspor" : "Export"}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
+      <DropdownMenuContent align="end" className="w-64">
         <DropdownMenuLabel>{lang === "id" ? "Unduh sebagai" : "Download as"}</DropdownMenuLabel>
         <DropdownMenuSeparator />
+        {allowGoogleSheets && (
+          <>
+            <DropdownMenuItem disabled={syncing} onClick={(e) => { e.preventDefault(); syncGoogleSheet(); }}>
+              {syncing ? <Loader2 className="size-4 animate-spin text-emerald-600" /> : <Cloud className="size-4 text-emerald-600" />}
+              {lang === "id" ? "Google Spreadsheet (otomatis)" : "Google Sheets (auto-sync)"}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
         <DropdownMenuItem onClick={() => exportToCSV(filename, columns, getRows())}>
-          <FileSpreadsheet className="size-4 text-emerald-600" /> Google Spreadsheet / CSV
+          <FileSpreadsheet className="size-4 text-emerald-600" /> {lang === "id" ? "CSV (impor manual)" : "CSV file"}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => exportToExcel(filename, title, columns, getRows())}>
           <Table2 className="size-4 text-emerald-700" /> Microsoft Excel (.xls)
