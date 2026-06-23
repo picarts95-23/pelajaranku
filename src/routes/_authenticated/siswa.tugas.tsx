@@ -41,6 +41,10 @@ function SiswaTugasPage() {
     },
   });
 
+  // Mark assignments as seen so the "new task" badge clears.
+  const markSeen = useMarkSeen(user?.id, "assignments");
+  useEffect(() => { if (assignments.length) markSeen(); }, [assignments.length, markSeen]);
+
   return (
     <DashboardShell accent="siswa">
       <PageHeader title={t("navMyQuests")} subtitle={lang === "id" ? "Tunaikan misi untuk meraih XP & koin!" : "Complete missions to earn XP & coins!"} />
