@@ -106,6 +106,7 @@ function GuruBankSoalPage() {
         question: form.question.trim(), type: form.type as any, options: opts,
         answer, difficulty: form.difficulty as any,
         quiz_link: form.quiz_link.trim() || null, game_link: form.game_link.trim() || null,
+        image_url: form.image_url || null,
       });
       if (error) throw error;
     },
