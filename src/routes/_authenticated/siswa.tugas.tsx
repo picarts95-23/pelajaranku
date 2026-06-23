@@ -36,7 +36,7 @@ function SiswaTugasPage() {
   const { data: assignments = [] } = useQuery({
     queryKey: ["siswa-quests", user?.id], enabled: !!user,
     queryFn: async () => {
-      const { data } = await supabase.from("assignments").select("*, classes(name), submissions(*)").order("due_at", { ascending: true, nullsFirst: false });
+      const { data } = await supabase.from("assignments").select("*, classes(name), submissions(*)").neq("answer_format", "quiz").order("due_at", { ascending: true, nullsFirst: false });
       return (data ?? []).map((a: any) => ({ ...a, mySubmission: a.submissions?.find((s: any) => s.student_id === user!.id) }));
     },
   });
