@@ -37,7 +37,7 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const { mode: initialMode, role: initialRole } = Route.useSearch();
   const navigate = useNavigate();
-  const { session } = useAuth();
+  const { session, refresh } = useAuth();
   const { t, lang } = useLang();
 
   const [mode, setMode] = useState<"login" | "signup">(initialMode);
@@ -50,14 +50,18 @@ function AuthPage() {
   const [subject, setSubject] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [teacherCode, setTeacherCode] = useState("");
+  // Prevents the session listener from redirecting mid-signup, before the
+  // teacher role has been granted (which would land teachers on /siswa).
+  const submittingRef = useRef(false);
 
   useEffect(() => {
-    if (session) navigate({ to: "/loading" });
+    if (session && !submittingRef.current) navigate({ to: "/loading" });
   }, [session, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
+    submittingRef.current = true;
     try {
       if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
@@ -76,24 +80,32 @@ function AuthPage() {
         // Roles are assigned server-side only. Teacher accounts must prove the
         // shared teacher access code to be elevated from the default student role.
         if (role === "guru") {
-          try {
-            await claimTeacherRole({ data: { code: teacherCode } });
-            toast.success(lang === "id" ? "Akun guru dibuat! Mengarahkan…" : "Teacher account created! Redirecting…");
-          } catch (elevErr) {
-            toast.error((elevErr as Error).message);
-          }
-        } else {
-          toast.success(lang === "id" ? "Akun dibuat! Mengarahkan…" : "Account created! Redirecting…");
+          await claimTeacherRole({ data: { code: teacherCode } });
+          // Re-read the role into context BEFORE navigating so the loading
+          // screen routes to the teacher dashboard, not the student one.
+          await refresh();
+          toast.success(lang === "id" ? "Akun guru dibuat! Mengarahkan…" : "Teacher account created! Redirecting…");
+          submittingRef.current = false;
+          navigate({ to: "/loading", search: { role: "guru" } });
+          return;
         }
+        toast.success(lang === "id" ? "Akun dibuat! Mengarahkan…" : "Account created! Redirecting…");
+        submittingRef.current = false;
+        navigate({ to: "/loading", search: { role: "siswa" } });
+        return;
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        await refresh();
         toast.success(lang === "id" ? "Selamat datang kembali!" : "Welcome back!");
-        navigate({ to: "/loading", search: { role } });
+        submittingRef.current = false;
+        navigate({ to: "/loading" });
+        return;
       }
     } catch (err) {
       toast.error((err as Error).message);
     } finally {
+      submittingRef.current = false;
       setSubmitting(false);
     }
   };
