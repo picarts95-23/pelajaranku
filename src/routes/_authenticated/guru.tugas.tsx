@@ -24,7 +24,7 @@ export const Route = createFileRoute("/_authenticated/guru/tugas")({
   component: GuruTugasPage,
 });
 
-const FORMAT_EMOJI: Record<string, string> = Object.fromEntries(ANSWER_FORMATS.map((f) => [f.value, f.emoji]));
+
 
 type TForm = {
   class_id: string; assigned_student_id: string; title: string; description: string;
