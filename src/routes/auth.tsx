@@ -129,29 +129,17 @@ function AuthPage() {
           </p>
 
           <div className="mt-8 rounded-2xl border-2 border-dashed border-accent/40 bg-card p-5 shadow-card-rpg">
-            <div className="flex items-center justify-between">
-              <div className="font-display font-semibold">{t("demoCreds")}</div>
-              <Button size="sm" variant="quest" onClick={seedDemo} disabled={seeding}>
-                {seeding ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
-                {t("seedDemo")}
-              </Button>
+            <div className="font-display font-semibold">
+              {lang === "id" ? "Mendaftar sebagai guru?" : "Registering as a teacher?"}
             </div>
-            <div className="mt-4 grid gap-3 text-sm">
-              {DEMO_ACCOUNTS.map((a) => (
-                <div key={a.email} className="rounded-xl bg-muted p-3 font-mono text-xs">
-                  <div className="mb-1 flex items-center gap-2">
-                    <span className={`rounded-full px-2 py-0.5 font-display text-[10px] font-bold uppercase ${
-                      a.role === "guru" ? "bg-guru text-white" : "bg-siswa text-white"
-                    }`}>{a.role}</span>
-                    <span className="font-semibold">{a.full_name}</span>
-                  </div>
-                  <div>📧 {a.email}</div>
-                  <div>🔑 {a.password}</div>
-                </div>
-              ))}
-            </div>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {lang === "id"
+                ? "Peran guru hanya dapat diaktifkan dengan kode akses guru yang diberikan admin sekolah. Tanpa kode, akun akan terdaftar sebagai siswa."
+                : "Teacher access is granted only with the school admin's teacher access code. Without it, the account is registered as a student."}
+            </p>
           </div>
         </motion.div>
+
 
         {/* Form */}
         <motion.div
