@@ -265,17 +265,36 @@ function Field({
   label: string; value: string; onChange: (v: string) => void;
   type?: string; required?: boolean; placeholder?: string;
 }) {
+  const [show, setShow] = useState(false);
+  const isPassword = type === "password";
+  const inputType = isPassword ? (show ? "text" : "password") : type;
   return (
     <div>
-      <Label className="mb-1.5 block">{label}</Label>
-      <Input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        required={required}
-        placeholder={placeholder}
-        className="h-11 rounded-xl border-2 bg-card"
-      />
+      <Label className="mb-1.5 block">
+        {label}
+        {required && <span className="ml-0.5 text-destructive" aria-hidden> *</span>}
+      </Label>
+      <div className="relative">
+        <Input
+          type={inputType}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          required={required}
+          placeholder={placeholder}
+          aria-required={required}
+          className={`h-11 rounded-xl border-2 bg-card ${isPassword ? "pr-11" : ""}`}
+        />
+        {isPassword && (
+          <button
+            type="button"
+            onClick={() => setShow((v) => !v)}
+            aria-label={show ? "Sembunyikan kata sandi" : "Lihat kata sandi"}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+          >
+            {show ? <EyeOff className="size-5" /> : <Eye className="size-5" />}
+          </button>
+        )}
+      </div>
     </div>
   );
 }
