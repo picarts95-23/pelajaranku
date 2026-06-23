@@ -103,10 +103,10 @@ export function DashboardShell({
       <div className="mx-auto flex max-w-[1400px] gap-6 px-2 sm:px-4 lg:px-6">
         {/* Sidebar */}
         <aside className={cn(
-          "fixed inset-y-16 left-0 z-30 w-64 border-r-2 border-border bg-card p-3 transition-transform lg:sticky lg:top-[65px] lg:h-[calc(100vh-65px)] lg:translate-x-0",
+          "fixed inset-y-16 left-0 z-30 flex w-64 flex-col border-r-2 border-border bg-card p-3 transition-transform lg:sticky lg:top-[65px] lg:h-[calc(100vh-65px)] lg:translate-x-0",
           open ? "translate-x-0" : "-translate-x-full",
         )}>
-          <nav className="flex flex-col gap-1 overflow-y-auto">
+          <nav className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto pr-1">
             {nav.map((item) => {
               const active = pathname === item.to;
               const Icon = item.icon;
@@ -116,7 +116,7 @@ export function DashboardShell({
                   to={item.to}
                   onClick={() => setOpen(false)}
                   className={cn(
-                    "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-display font-semibold transition-all",
+                    "flex shrink-0 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-display font-semibold transition-all",
                     active
                       ? accent === "guru"
                         ? "bg-guru text-white shadow-soft"
