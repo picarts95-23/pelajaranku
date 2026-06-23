@@ -116,9 +116,12 @@ export const deleteUserAccount = createServerFn({ method: "POST" })
       throw new Error("Anda tidak dapat menghapus akun sendiri.");
     }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    // Hard delete: removes the auth user and cascades to profiles and all
-    // related rows via ON DELETE CASCADE foreign keys.
+    // Hard delete: remove the auth user first, then clean up app-side rows that
+    // are not linked to auth.users by a cascading foreign key.
     const { error } = await supabaseAdmin.auth.admin.deleteUser(data.userId);
     if (error) throw error;
+    // profiles -> cascades to profile_private and assignments.assigned_student_id.
+    await supabaseAdmin.from("profiles").delete().eq("id", data.userId);
+    await supabaseAdmin.from("user_roles").delete().eq("user_id", data.userId);
     return { ok: true };
   });

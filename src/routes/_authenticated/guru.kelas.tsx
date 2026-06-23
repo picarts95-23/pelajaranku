@@ -89,6 +89,7 @@ function GuruKelasPage() {
       toast.success(lang === "id" ? "Kelas dihapus" : "Class deleted");
       qc.invalidateQueries({ queryKey: ["classes"] });
     },
+    onError: (e: Error) => toast.error(e.message),
   });
 
   return (
