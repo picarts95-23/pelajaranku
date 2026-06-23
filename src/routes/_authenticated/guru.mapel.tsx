@@ -21,8 +21,8 @@ export const Route = createFileRoute("/_authenticated/guru/mapel")({
   component: GuruMapelPage,
 });
 
-type MForm = { class_id: string; subject: string; title: string; description: string; content: string; link: string };
-const emptyForm = (): MForm => ({ class_id: "", subject: "", title: "", description: "", content: "", link: "" });
+type MForm = { class_id: string; subject: string; title: string; description: string; content: string; link: string; media_type: string | null; media_url: string | null };
+const emptyForm = (): MForm => ({ class_id: "", subject: "", title: "", description: "", content: "", link: "", media_type: null, media_url: null });
 
 function GuruMapelPage() {
   const { user, role, loading } = useAuth();
