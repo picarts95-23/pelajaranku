@@ -205,8 +205,18 @@ function GuruTugasPage() {
                     </div>
                   )}
 
-                  <div><Label>{t("title")}</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
+                  <div><Label>{t("title")} <span className="text-destructive">*</span></Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
                   <div><Label>{t("subject")}</Label><SubjectSelect value={form.subject} onChange={(v) => setForm({ ...form, subject: v })} /></div>
+                  <div>
+                    <Label>{lang === "id" ? "Jenis Penilaian" : "Assessment Type"}</Label>
+                    <Select value={form.exam_type} onValueChange={(v) => setForm({ ...form, exam_type: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {EXAM_TYPES.map((e) => <SelectItem key={e.value} value={e.value}>{e.emoji} {lang === "id" ? e.labelId : e.labelEn}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    <p className="mt-1 text-xs text-muted-foreground">{lang === "id" ? "Menentukan bobot pada rekap nilai (Harian 20%, UTS 20%, UAS 30%)." : "Sets the weight in the grade recap."}</p>
+                  </div>
                   <div><Label>{t("description")}</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
 
                   {/* Answer format selector */}
