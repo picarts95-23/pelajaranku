@@ -163,26 +163,7 @@ function GuruRekapPage() {
         ) : undefined}
       />
 
-      <div className="mb-6 grid gap-3 sm:grid-cols-2">
-        <div>
-          <label className="text-sm font-display font-semibold">{t("navClasses")}</label>
-          <Select value={classId} onValueChange={(v) => { setClassId(v); setSubject(""); }}>
-            <SelectTrigger className="mt-1"><SelectValue placeholder={t("selectClass")} /></SelectTrigger>
-            <SelectContent>{classes.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
-          </Select>
-        </div>
-        <div>
-          <label className="text-sm font-display font-semibold">{t("subject")}</label>
-          <Select value={subject} onValueChange={setSubject} disabled={!classId}>
-            <SelectTrigger className="mt-1"><SelectValue placeholder={t("selectSubject")} /></SelectTrigger>
-            <SelectContent>
-              {subjects.length === 0
-                ? <div className="px-3 py-2 text-xs text-muted-foreground">{lang === "id" ? "Belum ada tugas bermapel di kelas ini" : "No subject-tagged tasks in this class"}</div>
-                : subjects.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+      <div>BISECT-NOSELECT</div>
 
       {!classId ? (
         <EmptyState message={lang === "id" ? "Pilih kelas untuk mulai." : "Select a class to begin."} />
