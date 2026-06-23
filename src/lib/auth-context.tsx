@@ -44,6 +44,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const loadProfile = async (uid: string) => {
+    // Best-effort: promote the fixed admin email to the admin role server-side.
+    // Safe no-op for everyone else and when ADMIN_EMAIL is not configured.
+    try {
+      await syncMyRole();
+    } catch {
+      /* ignore — never block profile loading on the admin sync */
+    }
     const [{ data: p }, { data: r }, { data: priv }] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", uid).maybeSingle(),
       supabase.from("user_roles").select("role").eq("user_id", uid).maybeSingle(),
