@@ -52,12 +52,28 @@ export function DashboardShell({
   children: ReactNode;
   accent: "guru" | "siswa";
 }) {
-  const { profile, role, signOut } = useAuth();
+  const { profile, role, user, signOut } = useAuth();
   const navigate = useNavigate();
   const { t, lang } = useLang();
   const [open, setOpen] = useState(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const nav = accent === "guru" ? GURU_NAV : SISWA_NAV;
+
+  // Student "new since last visit" badges for materials & assignments
+  const { data: matList } = useQuery({
+    queryKey: ["nav-materials", user?.id], enabled: !!user && accent === "siswa",
+    queryFn: async () => (await supabase.from("materials").select("created_at")).data ?? [],
+  });
+  const { data: tugasList } = useQuery({
+    queryKey: ["nav-assignments", user?.id], enabled: !!user && accent === "siswa",
+    queryFn: async () => (await supabase.from("assignments").select("created_at")).data ?? [],
+  });
+  const unseenMaterials = useUnseenCount(user?.id, "materials", matList ?? []);
+  const unseenTugas = useUnseenCount(user?.id, "assignments", tugasList ?? []);
+  const badgeFor = (to: string) =>
+    accent === "siswa" && to === "/siswa/mapel" ? unseenMaterials
+      : accent === "siswa" && to === "/siswa/tugas" ? unseenTugas
+      : 0;
 
   const handleLogout = async () => {
     await signOut();
