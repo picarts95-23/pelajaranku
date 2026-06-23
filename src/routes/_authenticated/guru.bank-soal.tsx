@@ -139,7 +139,14 @@ function GuruBankSoalPage() {
                   <div><Label>{t("subject")}</Label><SubjectSelect value={form.subject} onChange={(v) => setForm({ ...form, subject: v })} /></div>
                   <div><Label>{t("topic")}</Label><Input value={form.topic} onChange={(e) => setForm({ ...form, topic: e.target.value })} /></div>
                 </div>
-                <div><Label>{t("question")}</Label><Textarea rows={3} value={form.question} onChange={(e) => setForm({ ...form, question: e.target.value })} /></div>
+                <div><Label>{t("question")} <span className="text-destructive">*</span></Label><Textarea rows={3} value={form.question} onChange={(e) => setForm({ ...form, question: e.target.value })} /></div>
+                <div>
+                  <Label>{lang === "id" ? "Gambar Soal (opsional)" : "Question Image (optional)"}</Label>
+                  <input type="file" accept="image/*" onChange={uploadImage} disabled={uploadingImg}
+                    className="mt-1 block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-guru file:px-3 file:py-1.5 file:text-white" />
+                  {uploadingImg && <p className="mt-1 text-xs text-muted-foreground">{lang === "id" ? "Mengunggah…" : "Uploading…"}</p>}
+                  {form.image_url && <p className="mt-1 text-xs text-emerald-600">✅ {lang === "id" ? "Gambar siap" : "Image attached"}</p>}
+                </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div><Label>{t("qType")}</Label>
                     <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}>
