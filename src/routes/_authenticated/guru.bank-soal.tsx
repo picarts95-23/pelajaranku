@@ -29,6 +29,7 @@ function GuruBankSoalPage() {
   const { t, lang } = useLang();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [uploadingImg, setUploadingImg] = useState(false);
   const emptyForm = {
     subject: "",
     topic: "",
@@ -41,8 +42,26 @@ function GuruBankSoalPage() {
     difficulty: "medium",
     quiz_link: "",
     game_link: "",
+    image_url: "",
   };
   const [form, setForm] = useState(emptyForm);
+
+  async function uploadImage(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    setUploadingImg(true);
+    try {
+      const path = `${user.id}/qb-${crypto.randomUUID()}.${file.name.split(".").pop() || "jpg"}`;
+      const { error } = await supabase.storage.from("lesson-media").upload(path, file);
+      if (error) throw error;
+      setForm((f) => ({ ...f, image_url: path }));
+      toast.success(lang === "id" ? "Gambar diunggah" : "Image uploaded");
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setUploadingImg(false);
+    }
+  }
 
   useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
 
