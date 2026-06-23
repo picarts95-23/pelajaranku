@@ -34,6 +34,10 @@ function SiswaMapelPage() {
     },
   });
 
+  // Mark materials as seen when the student opens this page (clears the "new" badge).
+  const markSeen = useMarkSeen(user?.id, "materials");
+  useEffect(() => { if (materials.length) markSeen(); }, [materials.length, markSeen]);
+
   const subjects = useMemo(() => {
     const set = new Set<string>();
     (materials as any[]).forEach((m) => { if (m.subject) set.add(m.subject); });
