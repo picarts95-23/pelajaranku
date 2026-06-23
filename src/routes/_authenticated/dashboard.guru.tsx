@@ -207,8 +207,8 @@ function GuruDashboard() {
             <FeatureCard
               to="/guru/kuis"
               icon={<FileQuestion className="size-6" />}
-              title={lang === "id" ? "Kuis Pilihan Ganda" : "Multiple-Choice Quiz"}
-              desc={lang === "id" ? "Susun kuis sampai 40 soal — dinilai otomatis." : "Build quizzes up to 40 questions — auto-graded."}
+              title={lang === "id" ? "Tugas & Kuis" : "Assignments & Quizzes"}
+              desc={lang === "id" ? "Campur PG, isian, esai & audio — sampai 40 soal." : "Mix MC, short answer, essay & audio — up to 40."}
               tint="bg-gradient-sunset"
             />
             <FeatureCard
