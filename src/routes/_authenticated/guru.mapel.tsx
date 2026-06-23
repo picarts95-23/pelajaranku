@@ -77,6 +77,7 @@ function GuruMapelPage() {
         teacher_id: user.id, class_id: form.class_id, subject: form.subject,
         title: form.title.trim(), description: form.description.trim() || null,
         content: form.content.trim() || null, link: form.link.trim() || null,
+        media_type: form.media_url ? form.media_type : null, media_url: form.media_url,
       });
       if (error) throw error;
     },
