@@ -354,6 +354,7 @@ export type Database = {
           id: string
           name: string
           subject: string | null
+          subjects: string[]
           teacher_id: string
           updated_at: string
         }
@@ -365,6 +366,7 @@ export type Database = {
           id?: string
           name: string
           subject?: string | null
+          subjects?: string[]
           teacher_id: string
           updated_at?: string
         }
@@ -376,6 +378,7 @@ export type Database = {
           id?: string
           name?: string
           subject?: string | null
+          subjects?: string[]
           teacher_id?: string
           updated_at?: string
         }
@@ -1096,6 +1099,7 @@ export type Database = {
           id: string
           name: string
           subject: string | null
+          subjects: string[]
           teacher_id: string
           updated_at: string
         }

@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
-import { SubjectSelect } from "@/components/subject-select";
+import { MultiSubjectSelect } from "@/components/subject-select";
 
 export const Route = createFileRoute("/_authenticated/guru/kelas")({
   head: () => ({ meta: [{ title: "Kelas · EduQuest Academy" }] }),
@@ -28,6 +28,7 @@ interface ClassRow {
   name: string;
   code: string;
   subject: string | null;
+  subjects: string[] | null;
   academic_year: string | null;
   description: string | null;
   class_enrollments?: { count: number }[];
@@ -39,7 +40,7 @@ function GuruKelasPage() {
   const { t, lang } = useLang();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ name: "", subject: "", academic_year: "", description: "" });
+  const [form, setForm] = useState({ name: "", subjects: [] as string[], academic_year: "", description: "" });
   const [manageClass, setManageClass] = useState<ClassRow | null>(null);
   const [historyClass, setHistoryClass] = useState<ClassRow | null>(null);
 
@@ -64,14 +65,16 @@ function GuruKelasPage() {
       if (!user) throw new Error("not signed in");
       const { error } = await supabase.from("classes").insert({
         teacher_id: user.id, name: payload.name, code: genCode(),
-        subject: payload.subject || null, academic_year: payload.academic_year || null,
+        subjects: payload.subjects,
+        subject: payload.subjects[0] ?? null,
+        academic_year: payload.academic_year || null,
         description: payload.description || null,
       });
       if (error) throw error;
     },
     onSuccess: () => {
       toast.success(lang === "id" ? "Kelas dibuat" : "Class created");
-      setOpen(false); setForm({ name: "", subject: "", academic_year: "", description: "" });
+      setOpen(false); setForm({ name: "", subjects: [], academic_year: "", description: "" });
       qc.invalidateQueries({ queryKey: ["classes"] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -102,11 +105,21 @@ function GuruKelasPage() {
               <DialogHeader><DialogTitle>{t("newClass")}</DialogTitle></DialogHeader>
               <div className="space-y-3">
                 <div><Label>{t("className2")}</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="VIII-A" /></div>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div><Label>{t("subject")}</Label><SubjectSelect value={form.subject} onChange={(v) => setForm({ ...form, subject: v })} /></div>
-                  <div><Label>{t("academicYear")}</Label><Input value={form.academic_year} onChange={(e) => setForm({ ...form, academic_year: e.target.value })} placeholder="2025/2026" /></div>
+                <div>
+                  <Label>{lang === "id" ? "Mata Pelajaran (bisa lebih dari satu)" : "Subjects (one or more)"}</Label>
+                  <div className="mt-1.5">
+                    <MultiSubjectSelect value={form.subjects} onChange={(v) => setForm({ ...form, subjects: v })} />
+                  </div>
                 </div>
-                <div><Label>{t("description")}</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
+                <details className="rounded-xl border-2 border-border bg-muted/30 p-3">
+                  <summary className="cursor-pointer text-sm font-display font-semibold text-muted-foreground">
+                    {lang === "id" ? "Opsional (tahun ajaran & deskripsi)" : "Optional (academic year & description)"}
+                  </summary>
+                  <div className="mt-3 space-y-3">
+                    <div><Label>{t("academicYear")}</Label><Input value={form.academic_year} onChange={(e) => setForm({ ...form, academic_year: e.target.value })} placeholder="2025/2026" /></div>
+                    <div><Label>{t("description")}</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
+                  </div>
+                </details>
               </div>
               <DialogFooter>
                 <Button variant="ghost" onClick={() => setOpen(false)}>{t("cancel")}</Button>
@@ -136,7 +149,16 @@ function GuruKelasPage() {
                 </button>
               </div>
               <h3 className="mt-3 font-display text-lg font-bold">{c.name}</h3>
-              <div className="text-xs text-muted-foreground">{c.subject ?? "—"} · {c.academic_year ?? "—"}</div>
+              {(c.subjects && c.subjects.length > 0) ? (
+                <div className="mt-1.5 flex flex-wrap gap-1">
+                  {c.subjects.map((s) => (
+                    <span key={s} className="rounded-full bg-guru/10 px-2 py-0.5 text-xs font-semibold text-guru">{s}</span>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-xs text-muted-foreground">{c.subject ?? "—"}</div>
+              )}
+              {c.academic_year && <div className="mt-1 text-xs text-muted-foreground">{c.academic_year}</div>}
               {c.description && <p className="mt-2 line-clamp-2 text-sm text-foreground/80">{c.description}</p>}
               <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
                 <div className="flex items-center gap-1.5 text-sm text-muted-foreground">

@@ -107,7 +107,15 @@ function SiswaKelasPage() {
                 </div>
               </div>
               <h3 className="mt-3 font-display text-lg font-bold">{e.classes?.name}</h3>
-              <p className="text-xs text-muted-foreground">{e.classes?.subject ?? "—"}</p>
+              {(e.classes?.subjects && e.classes.subjects.length > 0) ? (
+                <div className="mt-1 flex flex-wrap gap-1">
+                  {e.classes.subjects.map((s: string) => (
+                    <span key={s} className="rounded-full bg-siswa/15 px-2 py-0.5 text-xs font-semibold text-siswa">{s}</span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground">{e.classes?.subject ?? "—"}</p>
+              )}
               <div className="mt-3 space-y-1.5 text-sm">
                 <div className="flex items-center justify-between"><span className="text-muted-foreground">{t("academicYear")}</span><span>{e.classes?.academic_year ?? "—"}</span></div>
                 <div className="flex items-center justify-between"><span className="text-muted-foreground">{t("joinedAt")}</span><span>{e.joined_at ? format(new Date(e.joined_at), "dd MMM yyyy") : "—"}</span></div>
