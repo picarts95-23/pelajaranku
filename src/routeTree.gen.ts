@@ -23,6 +23,7 @@ import { Route as AuthenticatedSiswaProfilRouteImport } from './routes/_authenti
 import { Route as AuthenticatedSiswaNilaiRouteImport } from './routes/_authenticated/siswa.nilai'
 import { Route as AuthenticatedSiswaMapelRouteImport } from './routes/_authenticated/siswa.mapel'
 import { Route as AuthenticatedSiswaLeaderboardRouteImport } from './routes/_authenticated/siswa.leaderboard'
+import { Route as AuthenticatedSiswaLatihanRouteImport } from './routes/_authenticated/siswa.latihan'
 import { Route as AuthenticatedSiswaKelasRouteImport } from './routes/_authenticated/siswa.kelas'
 import { Route as AuthenticatedSiswaBadgeRouteImport } from './routes/_authenticated/siswa.badge'
 import { Route as AuthenticatedGuruTugasRouteImport } from './routes/_authenticated/guru.tugas'
@@ -30,6 +31,7 @@ import { Route as AuthenticatedGuruSiswaRouteImport } from './routes/_authentica
 import { Route as AuthenticatedGuruRekapRouteImport } from './routes/_authenticated/guru.rekap'
 import { Route as AuthenticatedGuruPresensiRouteImport } from './routes/_authenticated/guru.presensi'
 import { Route as AuthenticatedGuruMapelRouteImport } from './routes/_authenticated/guru.mapel'
+import { Route as AuthenticatedGuruKuisRouteImport } from './routes/_authenticated/guru.kuis'
 import { Route as AuthenticatedGuruKelasRouteImport } from './routes/_authenticated/guru.kelas'
 import { Route as AuthenticatedGuruJurnalRouteImport } from './routes/_authenticated/guru.jurnal'
 import { Route as AuthenticatedGuruGamifikasiRouteImport } from './routes/_authenticated/guru.gamifikasi'
@@ -114,6 +116,12 @@ const AuthenticatedSiswaLeaderboardRoute =
     path: '/siswa/leaderboard',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSiswaLatihanRoute =
+  AuthenticatedSiswaLatihanRouteImport.update({
+    id: '/siswa/latihan',
+    path: '/siswa/latihan',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSiswaKelasRoute = AuthenticatedSiswaKelasRouteImport.update({
   id: '/siswa/kelas',
   path: '/siswa/kelas',
@@ -148,6 +156,11 @@ const AuthenticatedGuruPresensiRoute =
 const AuthenticatedGuruMapelRoute = AuthenticatedGuruMapelRouteImport.update({
   id: '/guru/mapel',
   path: '/guru/mapel',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedGuruKuisRoute = AuthenticatedGuruKuisRouteImport.update({
+  id: '/guru/kuis',
+  path: '/guru/kuis',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedGuruKelasRoute = AuthenticatedGuruKelasRouteImport.update({
@@ -222,6 +235,7 @@ export interface FileRoutesByFullPath {
   '/guru/gamifikasi': typeof AuthenticatedGuruGamifikasiRoute
   '/guru/jurnal': typeof AuthenticatedGuruJurnalRoute
   '/guru/kelas': typeof AuthenticatedGuruKelasRoute
+  '/guru/kuis': typeof AuthenticatedGuruKuisRoute
   '/guru/mapel': typeof AuthenticatedGuruMapelRoute
   '/guru/presensi': typeof AuthenticatedGuruPresensiRoute
   '/guru/rekap': typeof AuthenticatedGuruRekapRoute
@@ -229,6 +243,7 @@ export interface FileRoutesByFullPath {
   '/guru/tugas': typeof AuthenticatedGuruTugasRoute
   '/siswa/badge': typeof AuthenticatedSiswaBadgeRoute
   '/siswa/kelas': typeof AuthenticatedSiswaKelasRoute
+  '/siswa/latihan': typeof AuthenticatedSiswaLatihanRoute
   '/siswa/leaderboard': typeof AuthenticatedSiswaLeaderboardRoute
   '/siswa/mapel': typeof AuthenticatedSiswaMapelRoute
   '/siswa/nilai': typeof AuthenticatedSiswaNilaiRoute
@@ -254,6 +269,7 @@ export interface FileRoutesByTo {
   '/guru/gamifikasi': typeof AuthenticatedGuruGamifikasiRoute
   '/guru/jurnal': typeof AuthenticatedGuruJurnalRoute
   '/guru/kelas': typeof AuthenticatedGuruKelasRoute
+  '/guru/kuis': typeof AuthenticatedGuruKuisRoute
   '/guru/mapel': typeof AuthenticatedGuruMapelRoute
   '/guru/presensi': typeof AuthenticatedGuruPresensiRoute
   '/guru/rekap': typeof AuthenticatedGuruRekapRoute
@@ -261,6 +277,7 @@ export interface FileRoutesByTo {
   '/guru/tugas': typeof AuthenticatedGuruTugasRoute
   '/siswa/badge': typeof AuthenticatedSiswaBadgeRoute
   '/siswa/kelas': typeof AuthenticatedSiswaKelasRoute
+  '/siswa/latihan': typeof AuthenticatedSiswaLatihanRoute
   '/siswa/leaderboard': typeof AuthenticatedSiswaLeaderboardRoute
   '/siswa/mapel': typeof AuthenticatedSiswaMapelRoute
   '/siswa/nilai': typeof AuthenticatedSiswaNilaiRoute
@@ -288,6 +305,7 @@ export interface FileRoutesById {
   '/_authenticated/guru/gamifikasi': typeof AuthenticatedGuruGamifikasiRoute
   '/_authenticated/guru/jurnal': typeof AuthenticatedGuruJurnalRoute
   '/_authenticated/guru/kelas': typeof AuthenticatedGuruKelasRoute
+  '/_authenticated/guru/kuis': typeof AuthenticatedGuruKuisRoute
   '/_authenticated/guru/mapel': typeof AuthenticatedGuruMapelRoute
   '/_authenticated/guru/presensi': typeof AuthenticatedGuruPresensiRoute
   '/_authenticated/guru/rekap': typeof AuthenticatedGuruRekapRoute
@@ -295,6 +313,7 @@ export interface FileRoutesById {
   '/_authenticated/guru/tugas': typeof AuthenticatedGuruTugasRoute
   '/_authenticated/siswa/badge': typeof AuthenticatedSiswaBadgeRoute
   '/_authenticated/siswa/kelas': typeof AuthenticatedSiswaKelasRoute
+  '/_authenticated/siswa/latihan': typeof AuthenticatedSiswaLatihanRoute
   '/_authenticated/siswa/leaderboard': typeof AuthenticatedSiswaLeaderboardRoute
   '/_authenticated/siswa/mapel': typeof AuthenticatedSiswaMapelRoute
   '/_authenticated/siswa/nilai': typeof AuthenticatedSiswaNilaiRoute
@@ -322,6 +341,7 @@ export interface FileRouteTypes {
     | '/guru/gamifikasi'
     | '/guru/jurnal'
     | '/guru/kelas'
+    | '/guru/kuis'
     | '/guru/mapel'
     | '/guru/presensi'
     | '/guru/rekap'
@@ -329,6 +349,7 @@ export interface FileRouteTypes {
     | '/guru/tugas'
     | '/siswa/badge'
     | '/siswa/kelas'
+    | '/siswa/latihan'
     | '/siswa/leaderboard'
     | '/siswa/mapel'
     | '/siswa/nilai'
@@ -354,6 +375,7 @@ export interface FileRouteTypes {
     | '/guru/gamifikasi'
     | '/guru/jurnal'
     | '/guru/kelas'
+    | '/guru/kuis'
     | '/guru/mapel'
     | '/guru/presensi'
     | '/guru/rekap'
@@ -361,6 +383,7 @@ export interface FileRouteTypes {
     | '/guru/tugas'
     | '/siswa/badge'
     | '/siswa/kelas'
+    | '/siswa/latihan'
     | '/siswa/leaderboard'
     | '/siswa/mapel'
     | '/siswa/nilai'
@@ -387,6 +410,7 @@ export interface FileRouteTypes {
     | '/_authenticated/guru/gamifikasi'
     | '/_authenticated/guru/jurnal'
     | '/_authenticated/guru/kelas'
+    | '/_authenticated/guru/kuis'
     | '/_authenticated/guru/mapel'
     | '/_authenticated/guru/presensi'
     | '/_authenticated/guru/rekap'
@@ -394,6 +418,7 @@ export interface FileRouteTypes {
     | '/_authenticated/guru/tugas'
     | '/_authenticated/siswa/badge'
     | '/_authenticated/siswa/kelas'
+    | '/_authenticated/siswa/latihan'
     | '/_authenticated/siswa/leaderboard'
     | '/_authenticated/siswa/mapel'
     | '/_authenticated/siswa/nilai'
@@ -517,6 +542,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSiswaLeaderboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/siswa/latihan': {
+      id: '/_authenticated/siswa/latihan'
+      path: '/siswa/latihan'
+      fullPath: '/siswa/latihan'
+      preLoaderRoute: typeof AuthenticatedSiswaLatihanRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/siswa/kelas': {
       id: '/_authenticated/siswa/kelas'
       path: '/siswa/kelas'
@@ -564,6 +596,13 @@ declare module '@tanstack/react-router' {
       path: '/guru/mapel'
       fullPath: '/guru/mapel'
       preLoaderRoute: typeof AuthenticatedGuruMapelRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/guru/kuis': {
+      id: '/_authenticated/guru/kuis'
+      path: '/guru/kuis'
+      fullPath: '/guru/kuis'
+      preLoaderRoute: typeof AuthenticatedGuruKuisRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/guru/kelas': {
@@ -648,6 +687,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedGuruGamifikasiRoute: typeof AuthenticatedGuruGamifikasiRoute
   AuthenticatedGuruJurnalRoute: typeof AuthenticatedGuruJurnalRoute
   AuthenticatedGuruKelasRoute: typeof AuthenticatedGuruKelasRoute
+  AuthenticatedGuruKuisRoute: typeof AuthenticatedGuruKuisRoute
   AuthenticatedGuruMapelRoute: typeof AuthenticatedGuruMapelRoute
   AuthenticatedGuruPresensiRoute: typeof AuthenticatedGuruPresensiRoute
   AuthenticatedGuruRekapRoute: typeof AuthenticatedGuruRekapRoute
@@ -655,6 +695,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedGuruTugasRoute: typeof AuthenticatedGuruTugasRoute
   AuthenticatedSiswaBadgeRoute: typeof AuthenticatedSiswaBadgeRoute
   AuthenticatedSiswaKelasRoute: typeof AuthenticatedSiswaKelasRoute
+  AuthenticatedSiswaLatihanRoute: typeof AuthenticatedSiswaLatihanRoute
   AuthenticatedSiswaLeaderboardRoute: typeof AuthenticatedSiswaLeaderboardRoute
   AuthenticatedSiswaMapelRoute: typeof AuthenticatedSiswaMapelRoute
   AuthenticatedSiswaNilaiRoute: typeof AuthenticatedSiswaNilaiRoute
@@ -674,6 +715,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedGuruGamifikasiRoute: AuthenticatedGuruGamifikasiRoute,
   AuthenticatedGuruJurnalRoute: AuthenticatedGuruJurnalRoute,
   AuthenticatedGuruKelasRoute: AuthenticatedGuruKelasRoute,
+  AuthenticatedGuruKuisRoute: AuthenticatedGuruKuisRoute,
   AuthenticatedGuruMapelRoute: AuthenticatedGuruMapelRoute,
   AuthenticatedGuruPresensiRoute: AuthenticatedGuruPresensiRoute,
   AuthenticatedGuruRekapRoute: AuthenticatedGuruRekapRoute,
@@ -681,6 +723,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedGuruTugasRoute: AuthenticatedGuruTugasRoute,
   AuthenticatedSiswaBadgeRoute: AuthenticatedSiswaBadgeRoute,
   AuthenticatedSiswaKelasRoute: AuthenticatedSiswaKelasRoute,
+  AuthenticatedSiswaLatihanRoute: AuthenticatedSiswaLatihanRoute,
   AuthenticatedSiswaLeaderboardRoute: AuthenticatedSiswaLeaderboardRoute,
   AuthenticatedSiswaMapelRoute: AuthenticatedSiswaMapelRoute,
   AuthenticatedSiswaNilaiRoute: AuthenticatedSiswaNilaiRoute,

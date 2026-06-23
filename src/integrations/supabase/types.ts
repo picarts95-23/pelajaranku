@@ -104,6 +104,7 @@ export type Database = {
           muroja_juz: string | null
           muroja_surah: string | null
           options: Json | null
+          questions: Json | null
           quiz_link: string | null
           subject: string | null
           teacher_id: string
@@ -127,6 +128,7 @@ export type Database = {
           muroja_juz?: string | null
           muroja_surah?: string | null
           options?: Json | null
+          questions?: Json | null
           quiz_link?: string | null
           subject?: string | null
           teacher_id: string
@@ -150,6 +152,7 @@ export type Database = {
           muroja_juz?: string | null
           muroja_surah?: string | null
           options?: Json | null
+          questions?: Json | null
           quiz_link?: string | null
           subject?: string | null
           teacher_id?: string
@@ -1074,6 +1077,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      grade_quiz_submission: {
+        Args: { _answers: Json; _assignment_id: string }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

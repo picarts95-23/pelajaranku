@@ -85,6 +85,7 @@ function GuruTugasPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("assignments").select("*, classes(name), assignee:profiles!assignments_assigned_student_id_fkey(full_name), submissions(id, status, score, student_id)")
+        .neq("answer_format", "quiz")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
