@@ -124,11 +124,34 @@ function GuruDashboard() {
       </motion.section>
 
       <section className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard icon={<BookOpen className="size-6" />} label={t("navClasses")} value={stats?.classes ?? 0} tint="bg-guru" />
-        <StatCard icon={<Users className="size-6" />} label={t("navStudents")} value={stats?.students ?? 0} tint="bg-siswa" />
-        <StatCard icon={<ClipboardCheck className="size-6" />} label={t("submissions")} value={stats?.pending ?? 0} tint="bg-xp" sub={lang === "id" ? "menunggu nilai" : "to review"} />
-        <StatCard icon={<ScrollText className="size-6" />} label={t("assignments")} value={stats?.assignments ?? 0} tint="bg-quest" />
+        <Link to="/guru/kelas" className="transition-transform hover:-translate-y-0.5"><StatCard icon={<BookOpen className="size-6" />} label={t("navClasses")} value={stats?.classes ?? 0} tint="bg-guru" /></Link>
+        <Link to="/guru/siswa" className="transition-transform hover:-translate-y-0.5"><StatCard icon={<Users className="size-6" />} label={t("navStudents")} value={stats?.students ?? 0} tint="bg-siswa" /></Link>
+        <Link to="/guru/tugas" className="transition-transform hover:-translate-y-0.5"><StatCard icon={<ClipboardCheck className="size-6" />} label={t("submissions")} value={stats?.pending ?? 0} tint="bg-xp" sub={lang === "id" ? "menunggu nilai" : "to review"} /></Link>
+        <Link to="/guru/tugas" className="transition-transform hover:-translate-y-0.5"><StatCard icon={<ScrollText className="size-6" />} label={t("assignments")} value={stats?.assignments ?? 0} tint="bg-quest" /></Link>
       </section>
+
+      {recentSubs.length > 0 && (
+        <section className="mt-6 rounded-3xl border-2 border-guru/40 bg-guru/5 p-5 shadow-card-rpg">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="font-display text-lg font-bold flex items-center gap-2">
+              <ClipboardCheck className="size-5 text-guru" /> {lang === "id" ? "Pengumpulan Baru Siswa" : "New Student Submissions"}
+              <span className="grid min-w-6 place-items-center rounded-full bg-destructive px-1.5 text-xs font-bold text-white">{recentSubs.length}</span>
+            </h2>
+            <Link to="/guru/tugas"><Button size="sm" variant="ghost">{lang === "id" ? "Nilai sekarang" : "Grade now"} →</Button></Link>
+          </div>
+          <ul className="grid gap-2 sm:grid-cols-2">
+            {recentSubs.map((s: any) => (
+              <li key={s.id} className="flex items-center gap-3 rounded-xl bg-card p-3 shadow-soft">
+                <div className="grid size-9 place-items-center rounded-lg bg-guru/15 text-guru">📤</div>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate font-display font-semibold">{s.name}</div>
+                  <div className="truncate text-xs text-muted-foreground">{s.assignments?.title} · {s.submitted_at ? format(new Date(s.submitted_at), "dd MMM HH:mm") : ""}</div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section className="mt-6">
         <div className="mb-3 flex items-end justify-between">
