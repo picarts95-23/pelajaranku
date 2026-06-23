@@ -137,7 +137,9 @@ export function DashboardShell({
       </div>
 
       <footer className="border-t-2 border-border py-6 text-center text-xs text-muted-foreground">
-        {lang === "id" ? "Tetap semangat menuntut ilmu, siswi!" : "Stay curious, dear student!"} ✨
+        {accent === "guru"
+          ? (lang === "id" ? "Barakallahu fiikum, semoga ilmu yang diajarkan menjadi amal jariyah. ✨" : "May your teaching be a lasting good deed. ✨")
+          : (lang === "id" ? "Tetap semangat menuntut ilmu! ✨" : "Stay curious, dear student! ✨")}
       </footer>
 
       {accent === "guru" && <AiAssistant />}
