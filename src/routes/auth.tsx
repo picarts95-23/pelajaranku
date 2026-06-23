@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import { motion } from "framer-motion";
-import { ArrowLeft, Loader2, Sparkles, Compass } from "lucide-react";
+import { ArrowLeft, Loader2, Sparkles, Compass, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
