@@ -8,6 +8,8 @@ import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { MediaViewer } from "@/components/media-input";
+import { useMarkSeen } from "@/lib/notifications";
 
 export const Route = createFileRoute("/_authenticated/siswa/mapel")({
   head: () => ({ meta: [{ title: "Mata Pelajaran · EduQuest Academy" }] }),
