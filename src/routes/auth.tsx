@@ -203,6 +203,16 @@ function AuthPage() {
             <Field label={t("email")} type="email" value={email} onChange={setEmail} required placeholder="you@school.edu" />
             <Field label={t("password")} type="password" value={password} onChange={setPassword} required placeholder="••••••••" />
 
+            {mode === "signup" && role === "guru" && (
+              <Field
+                label={lang === "id" ? "Kode Akses Guru" : "Teacher Access Code"}
+                value={teacherCode}
+                onChange={setTeacherCode}
+                required
+                placeholder={lang === "id" ? "Dari admin sekolah" : "From school admin"}
+              />
+            )}
+
             <Button
               type="submit"
               variant={role === "guru" ? "guru" : "siswa"}
