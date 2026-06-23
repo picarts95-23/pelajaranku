@@ -166,6 +166,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "assignments_assigned_student_id_fkey"
+            columns: ["assigned_student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "assignments_class_id_fkey"
             columns: ["class_id"]
             isOneToOne: false
@@ -520,6 +527,13 @@ export type Database = {
             columns: ["student_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "journals_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
         ]
@@ -974,7 +988,57 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      profiles_public: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          character_key: string | null
+          class_name: string | null
+          coins: number | null
+          created_at: string | null
+          full_name: string | null
+          id: string | null
+          level: number | null
+          motto: string | null
+          subject: string | null
+          updated_at: string | null
+          username: string | null
+          xp: number | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          character_key?: string | null
+          class_name?: string | null
+          coins?: number | null
+          created_at?: string | null
+          full_name?: string | null
+          id?: string | null
+          level?: number | null
+          motto?: string | null
+          subject?: string | null
+          updated_at?: string | null
+          username?: string | null
+          xp?: number | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          character_key?: string | null
+          class_name?: string | null
+          coins?: number | null
+          created_at?: string | null
+          full_name?: string | null
+          id?: string | null
+          level?: number | null
+          motto?: string | null
+          subject?: string | null
+          updated_at?: string | null
+          username?: string | null
+          xp?: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {
