@@ -15,6 +15,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { useTeacherSubjects } from "@/components/subject-select";
+import { MediaInput, MediaViewer } from "@/components/media-input";
 
 export const Route = createFileRoute("/_authenticated/guru/mapel")({
   head: () => ({ meta: [{ title: "Mata Pelajaran · EduQuest Academy" }] }),
