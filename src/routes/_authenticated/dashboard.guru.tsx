@@ -59,6 +59,24 @@ function GuruDashboard() {
     },
   });
 
+  // Students who recently submitted a task (awaiting grading)
+  const { data: recentSubs = [] } = useQuery({
+    queryKey: ["guru-recent-subs", user?.id], enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("submissions")
+        .select("id, status, submitted_at, student_id, assignments!inner(title, teacher_id)")
+        .eq("assignments.teacher_id", user!.id)
+        .eq("status", "submitted")
+        .order("submitted_at", { ascending: false })
+        .limit(8);
+      const ids = Array.from(new Set((data ?? []).map((s: any) => s.student_id)));
+      if (ids.length === 0) return [];
+      const { data: profs } = await supabase.from("profiles").select("id, full_name").in("id", ids);
+      return (data ?? []).map((s: any) => ({ ...s, name: profs?.find((p: any) => p.id === s.student_id)?.full_name ?? "—" }));
+    },
+  });
+
   return (
     <DashboardShell accent="guru">
       <motion.section
