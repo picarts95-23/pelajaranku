@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VerifyRoleRouteImport } from './routes/verify-role'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as LoadingRouteImport } from './routes/loading'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
@@ -42,6 +43,11 @@ import { Route as ApiPublicGoogleCalendarCallbackRouteImport } from './routes/ap
 const VerifyRoleRoute = VerifyRoleRouteImport.update({
   id: '/verify-role',
   path: '/verify-role',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoadingRoute = LoadingRouteImport.update({
@@ -200,6 +206,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/loading': typeof LoadingRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/verify-role': typeof VerifyRoleRoute
   '/dashboard/guru': typeof AuthenticatedDashboardGuruRoute
   '/dashboard/siswa': typeof AuthenticatedDashboardSiswaRoute
@@ -230,6 +237,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/loading': typeof LoadingRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/verify-role': typeof VerifyRoleRoute
   '/dashboard/guru': typeof AuthenticatedDashboardGuruRoute
   '/dashboard/siswa': typeof AuthenticatedDashboardSiswaRoute
@@ -262,6 +270,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/loading': typeof LoadingRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/verify-role': typeof VerifyRoleRoute
   '/_authenticated/dashboard/guru': typeof AuthenticatedDashboardGuruRoute
   '/_authenticated/dashboard/siswa': typeof AuthenticatedDashboardSiswaRoute
@@ -294,6 +303,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/loading'
+    | '/sitemap.xml'
     | '/verify-role'
     | '/dashboard/guru'
     | '/dashboard/siswa'
@@ -324,6 +334,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/loading'
+    | '/sitemap.xml'
     | '/verify-role'
     | '/dashboard/guru'
     | '/dashboard/siswa'
@@ -355,6 +366,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/loading'
+    | '/sitemap.xml'
     | '/verify-role'
     | '/_authenticated/dashboard/guru'
     | '/_authenticated/dashboard/siswa'
@@ -387,6 +399,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   LoadingRoute: typeof LoadingRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   VerifyRoleRoute: typeof VerifyRoleRoute
   ApiPublicHooksSyncSheetsRoute: typeof ApiPublicHooksSyncSheetsRoute
   ApiPublicGoogleCalendarCallbackRoute: typeof ApiPublicGoogleCalendarCallbackRoute
@@ -399,6 +412,13 @@ declare module '@tanstack/react-router' {
       path: '/verify-role'
       fullPath: '/verify-role'
       preLoaderRoute: typeof VerifyRoleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/loading': {
@@ -658,6 +678,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   LoadingRoute: LoadingRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   VerifyRoleRoute: VerifyRoleRoute,
   ApiPublicHooksSyncSheetsRoute: ApiPublicHooksSyncSheetsRoute,
   ApiPublicGoogleCalendarCallbackRoute: ApiPublicGoogleCalendarCallbackRoute,

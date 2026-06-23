@@ -14,8 +14,24 @@ export const Route = createFileRoute("/")({
     meta: [
       { title: "EduQuest Academy — Belajar Jadi Perjalanan Ilmu" },
       { name: "description", content: "Platform pembelajaran interaktif bernuansa islami untuk siswi. Misi harian, tantangan kuis, dan dashboard guru & siswi yang menyenangkan." },
-      { property: "og:title", content: "EduQuest Academy" },
-      { property: "og:description", content: "Belajar terasa bermakna. Naik tingkat ilmu setiap hari." },
+      { property: "og:title", content: "EduQuest Academy — Platform Belajar Islami" },
+      { property: "og:description", content: "Belajar terasa bermakna. Naik tingkat ilmu setiap hari dengan misi, kuis, dan hadiah." },
+      { property: "og:url", content: "https://pelajaranku.lovable.app/" },
+      { property: "og:type", content: "website" },
+    ],
+    links: [{ rel: "canonical", href: "https://pelajaranku.lovable.app/" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "EducationalOrganization",
+          name: "EduQuest Academy",
+          url: "https://pelajaranku.lovable.app/",
+          description:
+            "Platform pembelajaran interaktif bernuansa islami untuk guru dan siswi dengan misi harian, kuis, dan gamifikasi.",
+        }),
+      },
     ],
   }),
   component: Landing,
@@ -136,6 +152,12 @@ function Landing() {
           <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/40 to-background/80" />
         </div>
         <div className="mx-auto max-w-5xl px-6">
+          <div className="mb-8 text-center">
+            <h2 className="font-display text-3xl font-bold md:text-4xl">
+              <span className="text-gradient-magic">Pilih Jalurmu</span>
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">Masuk sebagai guru atau siswi untuk memulai.</p>
+          </div>
           <div className="grid gap-5 sm:grid-cols-2">
           <RoleCard
             roleColor="bg-guru"

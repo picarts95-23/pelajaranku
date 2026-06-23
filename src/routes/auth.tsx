@@ -23,9 +23,13 @@ export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Masuk · EduQuest Academy" },
-      { name: "description", content: "Masuk atau daftar sebagai guru atau siswi untuk memulai perjalanan menuntut ilmu." },
+      { title: "Masuk atau Daftar · EduQuest Academy" },
+      { name: "description", content: "Masuk atau daftar sebagai guru atau siswi untuk memulai perjalanan menuntut ilmu di EduQuest Academy." },
+      { property: "og:title", content: "Masuk atau Daftar · EduQuest Academy" },
+      { property: "og:description", content: "Masuk atau daftar sebagai guru atau siswi untuk memulai perjalanan menuntut ilmu." },
+      { property: "og:url", content: "https://pelajaranku.lovable.app/auth" },
     ],
+    links: [{ rel: "canonical", href: "https://pelajaranku.lovable.app/auth" }],
   }),
   component: AuthPage,
 });
