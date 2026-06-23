@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { LinkBadges } from "@/components/link-fields";
 import { VoiceRecorder } from "@/components/voice-recorder";
 import { ANSWER_FORMATS } from "@/lib/quran-data";
+import { useMarkSeen } from "@/lib/notifications";
 
 export const Route = createFileRoute("/_authenticated/siswa/tugas")({
   head: () => ({ meta: [{ title: "Misi Saya · EduQuest Academy" }] }),
