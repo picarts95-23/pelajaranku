@@ -161,7 +161,19 @@ export function DashboardShell({
 
         {open && <button aria-label="close" className="fixed inset-0 z-20 bg-black/40 lg:hidden" onClick={() => setOpen(false)} />}
 
-        <main className="min-w-0 flex-1 py-4 sm:py-6">{children}</main>
+        <main className="min-w-0 flex-1 py-4 sm:py-6">
+          {pathname !== (accent === "guru" ? "/dashboard/guru" : "/dashboard/siswa") && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="mb-3"
+              onClick={() => navigate({ to: accent === "guru" ? "/dashboard/guru" : "/dashboard/siswa" })}
+            >
+              <ArrowLeft className="size-4" /> {lang === "id" ? "Kembali ke Dashboard" : "Back to Dashboard"}
+            </Button>
+          )}
+          {children}
+        </main>
       </div>
 
       <footer className="border-t-2 border-border py-6 text-center text-xs text-muted-foreground">
