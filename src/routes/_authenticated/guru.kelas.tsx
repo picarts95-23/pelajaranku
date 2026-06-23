@@ -196,12 +196,18 @@ function ManageMembersDialog({ klass, onClose }: { klass: ClassRow | null; onClo
       const ids = enrollments.map((r) => r.student_id);
       let profiles: StudentProfile[] = [];
       if (ids.length > 0) {
-        const { data: profs, error: pErr } = await supabase
-          .from("profiles")
-          .select("id, full_name, class_name, school_id_number")
-          .in("id", ids);
+        const [{ data: profs, error: pErr }, { data: privs }] = await Promise.all([
+          supabase.from("profiles").select("id, full_name, class_name").in("id", ids),
+          supabase.from("profile_private").select("id, school_id_number").in("id", ids),
+        ]);
         if (pErr) throw pErr;
-        profiles = (profs ?? []) as StudentProfile[];
+        const nisMap = new Map((privs ?? []).map((r: any) => [r.id, r.school_id_number]));
+        profiles = (profs ?? []).map((p: any) => ({
+          id: p.id,
+          full_name: p.full_name,
+          class_name: p.class_name,
+          school_id_number: nisMap.get(p.id) ?? null,
+        })) as StudentProfile[];
       }
       const map = new Map(profiles.map((p) => [p.id, p]));
       return enrollments.map((e) => ({

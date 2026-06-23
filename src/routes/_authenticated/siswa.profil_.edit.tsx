@@ -82,10 +82,6 @@ function EditProfil() {
         full_name: parsed.full_name,
         username: parsed.username || null,
         class_name: parsed.class_name || null,
-        school_id_number: parsed.school_id_number || null,
-        gender: parsed.gender || null,
-        birthdate: parsed.birthdate || null,
-        hobby: parsed.hobby || null,
         motto: parsed.motto || null,
         bio: parsed.bio || null,
         character_key: parsed.character_key || null,
@@ -93,6 +89,14 @@ function EditProfil() {
       };
       const { error } = await supabase.from("profiles").upsert(payload as any, { onConflict: "id" });
       if (error) throw error;
+      const { error: privError } = await supabase.from("profile_private").upsert({
+        id: user.id,
+        school_id_number: parsed.school_id_number || null,
+        gender: parsed.gender || null,
+        birthdate: parsed.birthdate || null,
+        hobby: parsed.hobby || null,
+      } as any, { onConflict: "id" });
+      if (privError) throw privError;
     },
     onSuccess: async () => {
       await refresh();

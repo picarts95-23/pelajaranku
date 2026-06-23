@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import { motion } from "framer-motion";
-import { ArrowLeft, Loader2, Sparkles, Compass, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Loader2, Compass, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { LangToggle } from "@/components/lang-toggle";
 import { useLang } from "@/lib/i18n";
 import { useAuth, type AppRole } from "@/lib/auth-context";
-import { DEMO_ACCOUNTS } from "@/lib/demo-accounts";
+import { claimTeacherRole } from "@/lib/roles.functions";
 
 const searchSchema = z.object({
   mode: z.enum(["login", "signup"]).optional().default("login"),
@@ -45,7 +45,7 @@ function AuthPage() {
   const [schoolId, setSchoolId] = useState("");
   const [subject, setSubject] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [seeding, setSeeding] = useState(false);
+  const [teacherCode, setTeacherCode] = useState("");
 
   useEffect(() => {
     if (session) navigate({ to: "/loading" });
@@ -62,7 +62,6 @@ function AuthPage() {
             emailRedirectTo: `${window.location.origin}/loading`,
             data: {
               full_name: fullName,
-              role,
               class_name: role === "siswa" ? className : null,
               school_id_number: schoolId,
               subject: role === "guru" ? subject : null,
@@ -70,11 +69,22 @@ function AuthPage() {
           },
         });
         if (error) throw error;
-        toast.success(lang === "id" ? "Akun dibuat! Mengarahkan…" : "Account created! Redirecting…");
+        // Roles are assigned server-side only. Teacher accounts must prove the
+        // shared teacher access code to be elevated from the default student role.
+        if (role === "guru") {
+          try {
+            await claimTeacherRole({ data: { code: teacherCode } });
+            toast.success(lang === "id" ? "Akun guru dibuat! Mengarahkan…" : "Teacher account created! Redirecting…");
+          } catch (elevErr) {
+            toast.error((elevErr as Error).message);
+          }
+        } else {
+          toast.success(lang === "id" ? "Akun dibuat! Mengarahkan…" : "Account created! Redirecting…");
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        toast.success(lang === "id" ? "Selamat datang kembali, siswi!" : "Welcome back!");
+        toast.success(lang === "id" ? "Selamat datang kembali!" : "Welcome back!");
         navigate({ to: "/loading", search: { role } });
       }
     } catch (err) {
@@ -84,35 +94,6 @@ function AuthPage() {
     }
   };
 
-  const seedDemo = async () => {
-    setSeeding(true);
-    let created = 0;
-    for (const acc of DEMO_ACCOUNTS) {
-      const { error } = await supabase.auth.signUp({
-        email: acc.email,
-        password: acc.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/loading`,
-          data: {
-            full_name: acc.full_name,
-            role: acc.role,
-            class_name: "class_name" in acc ? acc.class_name : null,
-            school_id_number: acc.school_id_number,
-            subject: "subject" in acc ? acc.subject : null,
-          },
-        },
-      });
-      if (!error) created++;
-    }
-    // Sign back out in case the seeding logged us in as the last account
-    await supabase.auth.signOut();
-    toast.success(
-      lang === "id"
-        ? `Selesai! ${created} akun baru ditambahkan (yang sudah ada dilewati).`
-        : `Done! ${created} new accounts added (existing ones skipped).`
-    );
-    setSeeding(false);
-  };
 
   return (
     <div className="relative min-h-screen overflow-hidden">
@@ -148,29 +129,17 @@ function AuthPage() {
           </p>
 
           <div className="mt-8 rounded-2xl border-2 border-dashed border-accent/40 bg-card p-5 shadow-card-rpg">
-            <div className="flex items-center justify-between">
-              <div className="font-display font-semibold">{t("demoCreds")}</div>
-              <Button size="sm" variant="quest" onClick={seedDemo} disabled={seeding}>
-                {seeding ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
-                {t("seedDemo")}
-              </Button>
+            <div className="font-display font-semibold">
+              {lang === "id" ? "Mendaftar sebagai guru?" : "Registering as a teacher?"}
             </div>
-            <div className="mt-4 grid gap-3 text-sm">
-              {DEMO_ACCOUNTS.map((a) => (
-                <div key={a.email} className="rounded-xl bg-muted p-3 font-mono text-xs">
-                  <div className="mb-1 flex items-center gap-2">
-                    <span className={`rounded-full px-2 py-0.5 font-display text-[10px] font-bold uppercase ${
-                      a.role === "guru" ? "bg-guru text-white" : "bg-siswa text-white"
-                    }`}>{a.role}</span>
-                    <span className="font-semibold">{a.full_name}</span>
-                  </div>
-                  <div>📧 {a.email}</div>
-                  <div>🔑 {a.password}</div>
-                </div>
-              ))}
-            </div>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {lang === "id"
+                ? "Peran guru hanya dapat diaktifkan dengan kode akses guru yang diberikan admin sekolah. Tanpa kode, akun akan terdaftar sebagai siswa."
+                : "Teacher access is granted only with the school admin's teacher access code. Without it, the account is registered as a student."}
+            </p>
           </div>
         </motion.div>
+
 
         {/* Form */}
         <motion.div
@@ -234,6 +203,16 @@ function AuthPage() {
             <Field label={t("email")} type="email" value={email} onChange={setEmail} required placeholder="you@school.edu" />
             <Field label={t("password")} type="password" value={password} onChange={setPassword} required placeholder="••••••••" />
 
+            {mode === "signup" && role === "guru" && (
+              <Field
+                label={lang === "id" ? "Kode Akses Guru" : "Teacher Access Code"}
+                value={teacherCode}
+                onChange={setTeacherCode}
+                required
+                placeholder={lang === "id" ? "Dari admin sekolah" : "From school admin"}
+              />
+            )}
+
             <Button
               type="submit"
               variant={role === "guru" ? "guru" : "siswa"}
@@ -245,15 +224,8 @@ function AuthPage() {
               {mode === "login" ? t("login") : t("signup")} · {role === "guru" ? t("guru") : t("siswa")}
             </Button>
           </form>
-
-          {/* Mobile-only seed */}
-          <div className="mt-6 block border-t-2 border-dashed border-border pt-4 md:hidden">
-            <Button variant="outline" size="sm" onClick={seedDemo} disabled={seeding} className="w-full">
-              {seeding ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
-              {t("seedDemo")}
-            </Button>
-          </div>
         </motion.div>
+
       </div>
     </div>
   );

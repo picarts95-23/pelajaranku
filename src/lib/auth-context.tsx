@@ -14,6 +14,9 @@ export interface ProfileRow {
   xp: number;
   level: number;
   coins: number;
+  gender?: string | null;
+  birthdate?: string | null;
+  hobby?: string | null;
 }
 
 interface AuthCtx {
@@ -40,11 +43,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const loadProfile = async (uid: string) => {
-    const [{ data: p }, { data: r }] = await Promise.all([
+    const [{ data: p }, { data: r }, { data: priv }] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", uid).maybeSingle(),
       supabase.from("user_roles").select("role").eq("user_id", uid).maybeSingle(),
+      supabase.from("profile_private").select("school_id_number, gender, birthdate, hobby").eq("id", uid).maybeSingle(),
     ]);
-    setProfile((p as ProfileRow) ?? null);
+    if (p) {
+      setProfile({
+        ...(p as Record<string, unknown>),
+        school_id_number: priv?.school_id_number ?? null,
+        gender: priv?.gender ?? null,
+        birthdate: priv?.birthdate ?? null,
+        hobby: priv?.hobby ?? null,
+      } as ProfileRow);
+    } else {
+      setProfile(null);
+    }
     setRole(((r as { role: AppRole } | null)?.role) ?? null);
   };
 
