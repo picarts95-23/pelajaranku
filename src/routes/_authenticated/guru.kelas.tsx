@@ -149,7 +149,16 @@ function GuruKelasPage() {
                 </button>
               </div>
               <h3 className="mt-3 font-display text-lg font-bold">{c.name}</h3>
-              <div className="text-xs text-muted-foreground">{c.subject ?? "—"} · {c.academic_year ?? "—"}</div>
+              {(c.subjects && c.subjects.length > 0) ? (
+                <div className="mt-1.5 flex flex-wrap gap-1">
+                  {c.subjects.map((s) => (
+                    <span key={s} className="rounded-full bg-guru/10 px-2 py-0.5 text-xs font-semibold text-guru">{s}</span>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-xs text-muted-foreground">{c.subject ?? "—"}</div>
+              )}
+              {c.academic_year && <div className="mt-1 text-xs text-muted-foreground">{c.academic_year}</div>}
               {c.description && <p className="mt-2 line-clamp-2 text-sm text-foreground/80">{c.description}</p>}
               <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
                 <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
