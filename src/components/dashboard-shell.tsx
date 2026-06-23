@@ -129,6 +129,7 @@ export function DashboardShell({
             {nav.map((item) => {
               const active = pathname === item.to;
               const Icon = item.icon;
+              const badge = badgeFor(item.to);
               return (
                 <Link
                   key={item.to}
@@ -143,7 +144,15 @@ export function DashboardShell({
                       : "text-foreground/80 hover:bg-muted",
                   )}
                 >
-                  <Icon className="size-4" /> {t(item.key)}
+                  <Icon className="size-4" /> <span className="flex-1">{t(item.key)}</span>
+                  {badge > 0 && (
+                    <span className={cn(
+                      "grid min-w-5 place-items-center rounded-full px-1.5 text-[10px] font-bold",
+                      active ? "bg-white text-siswa" : "bg-destructive text-white",
+                    )}>
+                      {badge > 9 ? "9+" : badge}
+                    </span>
+                  )}
                 </Link>
               );
             })}
