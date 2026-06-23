@@ -246,6 +246,13 @@ function GuruDashboard() {
               desc={lang === "id" ? "Jadwalkan acara, ujian, dan agenda." : "Schedule events, exams, and agendas."}
               tint="bg-accent"
             />
+            <FeatureCard
+              to="/guru/mutabaah"
+              icon={<BookOpenCheck className="size-6" />}
+              title={lang === "id" ? "Mutaba'ah Tahfidz" : "Tahfidz Mutaba'ah"}
+              desc={lang === "id" ? "Nilai setoran Halaqoh: Tajwid, Kelancaran, Fashohah & Adab." : "Assess Halaqoh: Tajwid, Fluency, Fashohah & Adab."}
+              tint="bg-gradient-magic"
+            />
           </div>
         </div>
       </section>
