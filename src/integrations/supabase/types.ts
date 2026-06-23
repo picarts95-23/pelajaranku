@@ -166,13 +166,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "assignments_assigned_student_id_fkey"
-            columns: ["assigned_student_id"]
-            isOneToOne: false
-            referencedRelation: "profiles_public"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "assignments_class_id_fkey"
             columns: ["class_id"]
             isOneToOne: false
@@ -529,13 +522,6 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "journals_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "profiles_public"
-            referencedColumns: ["id"]
-          },
         ]
       }
       materials: {
@@ -618,22 +604,56 @@ export type Database = {
         }
         Relationships: []
       }
+      profile_private: {
+        Row: {
+          birthdate: string | null
+          created_at: string
+          gender: string | null
+          hobby: string | null
+          id: string
+          school_id_number: string | null
+          updated_at: string
+        }
+        Insert: {
+          birthdate?: string | null
+          created_at?: string
+          gender?: string | null
+          hobby?: string | null
+          id: string
+          school_id_number?: string | null
+          updated_at?: string
+        }
+        Update: {
+          birthdate?: string | null
+          created_at?: string
+          gender?: string | null
+          hobby?: string | null
+          id?: string
+          school_id_number?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_private_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
           bio: string | null
-          birthdate: string | null
           character_key: string | null
           class_name: string | null
           coins: number
           created_at: string
           full_name: string
-          gender: string | null
-          hobby: string | null
           id: string
           level: number
           motto: string | null
-          school_id_number: string | null
           subject: string | null
           updated_at: string
           username: string | null
@@ -642,18 +662,14 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           bio?: string | null
-          birthdate?: string | null
           character_key?: string | null
           class_name?: string | null
           coins?: number
           created_at?: string
           full_name: string
-          gender?: string | null
-          hobby?: string | null
           id: string
           level?: number
           motto?: string | null
-          school_id_number?: string | null
           subject?: string | null
           updated_at?: string
           username?: string | null
@@ -662,18 +678,14 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           bio?: string | null
-          birthdate?: string | null
           character_key?: string | null
           class_name?: string | null
           coins?: number
           created_at?: string
           full_name?: string
-          gender?: string | null
-          hobby?: string | null
           id?: string
           level?: number
           motto?: string | null
-          school_id_number?: string | null
           subject?: string | null
           updated_at?: string
           username?: string | null
@@ -988,57 +1000,7 @@ export type Database = {
       }
     }
     Views: {
-      profiles_public: {
-        Row: {
-          avatar_url: string | null
-          bio: string | null
-          character_key: string | null
-          class_name: string | null
-          coins: number | null
-          created_at: string | null
-          full_name: string | null
-          id: string | null
-          level: number | null
-          motto: string | null
-          subject: string | null
-          updated_at: string | null
-          username: string | null
-          xp: number | null
-        }
-        Insert: {
-          avatar_url?: string | null
-          bio?: string | null
-          character_key?: string | null
-          class_name?: string | null
-          coins?: number | null
-          created_at?: string | null
-          full_name?: string | null
-          id?: string | null
-          level?: number | null
-          motto?: string | null
-          subject?: string | null
-          updated_at?: string | null
-          username?: string | null
-          xp?: number | null
-        }
-        Update: {
-          avatar_url?: string | null
-          bio?: string | null
-          character_key?: string | null
-          class_name?: string | null
-          coins?: number | null
-          created_at?: string | null
-          full_name?: string | null
-          id?: string | null
-          level?: number | null
-          motto?: string | null
-          subject?: string | null
-          updated_at?: string | null
-          username?: string | null
-          xp?: number | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       has_role: {
@@ -1079,31 +1041,25 @@ export type Database = {
       list_students: {
         Args: never
         Returns: {
-          avatar_url: string | null
-          bio: string | null
-          birthdate: string | null
-          character_key: string | null
-          class_name: string | null
+          avatar_url: string
+          bio: string
+          birthdate: string
+          character_key: string
+          class_name: string
           coins: number
           created_at: string
           full_name: string
-          gender: string | null
-          hobby: string | null
+          gender: string
+          hobby: string
           id: string
           level: number
-          motto: string | null
-          school_id_number: string | null
-          subject: string | null
+          motto: string
+          school_id_number: string
+          subject: string
           updated_at: string
-          username: string | null
+          username: string
           xp: number
         }[]
-        SetofOptions: {
-          from: "*"
-          to: "profiles"
-          isOneToOne: false
-          isSetofReturn: true
-        }
       }
       search_students: {
         Args: { _term: string }
