@@ -15,7 +15,13 @@ const searchSchema = z.object({
 
 export const Route = createFileRoute("/verify-role")({
   validateSearch: searchSchema,
-  head: () => ({ meta: [{ title: "Verifikasi Peran · EduQuest Academy" }] }),
+  head: () => ({
+    meta: [
+      { title: "Verifikasi Peran · EduQuest Academy" },
+      { name: "description", content: "Memverifikasi peran akunmu untuk mengarahkan ke dashboard yang tepat." },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
   component: VerifyRolePage,
 });
 
