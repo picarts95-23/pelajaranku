@@ -224,15 +224,8 @@ function AuthPage() {
               {mode === "login" ? t("login") : t("signup")} · {role === "guru" ? t("guru") : t("siswa")}
             </Button>
           </form>
-
-          {/* Mobile-only seed */}
-          <div className="mt-6 block border-t-2 border-dashed border-border pt-4 md:hidden">
-            <Button variant="outline" size="sm" onClick={seedDemo} disabled={seeding} className="w-full">
-              {seeding ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
-              {t("seedDemo")}
-            </Button>
-          </div>
         </motion.div>
+
       </div>
     </div>
   );
