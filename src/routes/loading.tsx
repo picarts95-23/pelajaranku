@@ -12,7 +12,13 @@ const searchSchema = z.object({
 
 export const Route = createFileRoute("/loading")({
   validateSearch: searchSchema,
-  head: () => ({ meta: [{ title: "Loading… · EduQuest Academy" }] }),
+  head: () => ({
+    meta: [
+      { title: "Menyiapkan Portal · EduQuest Academy" },
+      { name: "description", content: "Menyiapkan ruang belajarmu di EduQuest Academy. Mohon tunggu sebentar." },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
   component: LoadingPortal,
 });
 
@@ -57,12 +63,12 @@ function LoadingPortal() {
         >
           <Compass className="size-10 text-primary-foreground" />
         </motion.div>
-        <motion.h2
+        <motion.h1
           initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
           className="mt-6 font-display text-2xl font-bold text-foreground"
         >
           {t("loadingPortal")}
-        </motion.h2>
+        </motion.h1>
         {preferredRole && (
           <p className="mt-2 text-sm text-muted-foreground">
             {lang === "id" ? "Membuka gerbang " : "Opening the "}
