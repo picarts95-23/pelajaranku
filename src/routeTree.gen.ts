@@ -35,6 +35,7 @@ import { Route as AuthenticatedGuruEventRouteImport } from './routes/_authentica
 import { Route as AuthenticatedGuruBankSoalRouteImport } from './routes/_authenticated/guru.bank-soal'
 import { Route as AuthenticatedDashboardSiswaRouteImport } from './routes/_authenticated/dashboard.siswa'
 import { Route as AuthenticatedDashboardGuruRouteImport } from './routes/_authenticated/dashboard.guru'
+import { Route as ApiPublicHooksSyncSheetsRouteImport } from './routes/api/public/hooks/sync-sheets'
 import { Route as AuthenticatedSiswaProfilEditRouteImport } from './routes/_authenticated/siswa.profil_.edit'
 import { Route as ApiPublicGoogleCalendarCallbackRouteImport } from './routes/api/public/google.calendar.callback'
 
@@ -176,6 +177,12 @@ const AuthenticatedDashboardGuruRoute =
     path: '/dashboard/guru',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicHooksSyncSheetsRoute =
+  ApiPublicHooksSyncSheetsRouteImport.update({
+    id: '/api/public/hooks/sync-sheets',
+    path: '/api/public/hooks/sync-sheets',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedSiswaProfilEditRoute =
   AuthenticatedSiswaProfilEditRouteImport.update({
     id: '/siswa/profil_/edit',
@@ -216,6 +223,7 @@ export interface FileRoutesByFullPath {
   '/siswa/status': typeof AuthenticatedSiswaStatusRoute
   '/siswa/tugas': typeof AuthenticatedSiswaTugasRoute
   '/siswa/profil/edit': typeof AuthenticatedSiswaProfilEditRoute
+  '/api/public/hooks/sync-sheets': typeof ApiPublicHooksSyncSheetsRoute
   '/api/public/google/calendar/callback': typeof ApiPublicGoogleCalendarCallbackRoute
 }
 export interface FileRoutesByTo {
@@ -245,6 +253,7 @@ export interface FileRoutesByTo {
   '/siswa/status': typeof AuthenticatedSiswaStatusRoute
   '/siswa/tugas': typeof AuthenticatedSiswaTugasRoute
   '/siswa/profil/edit': typeof AuthenticatedSiswaProfilEditRoute
+  '/api/public/hooks/sync-sheets': typeof ApiPublicHooksSyncSheetsRoute
   '/api/public/google/calendar/callback': typeof ApiPublicGoogleCalendarCallbackRoute
 }
 export interface FileRoutesById {
@@ -276,6 +285,7 @@ export interface FileRoutesById {
   '/_authenticated/siswa/status': typeof AuthenticatedSiswaStatusRoute
   '/_authenticated/siswa/tugas': typeof AuthenticatedSiswaTugasRoute
   '/_authenticated/siswa/profil_/edit': typeof AuthenticatedSiswaProfilEditRoute
+  '/api/public/hooks/sync-sheets': typeof ApiPublicHooksSyncSheetsRoute
   '/api/public/google/calendar/callback': typeof ApiPublicGoogleCalendarCallbackRoute
 }
 export interface FileRouteTypes {
@@ -307,6 +317,7 @@ export interface FileRouteTypes {
     | '/siswa/status'
     | '/siswa/tugas'
     | '/siswa/profil/edit'
+    | '/api/public/hooks/sync-sheets'
     | '/api/public/google/calendar/callback'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -336,6 +347,7 @@ export interface FileRouteTypes {
     | '/siswa/status'
     | '/siswa/tugas'
     | '/siswa/profil/edit'
+    | '/api/public/hooks/sync-sheets'
     | '/api/public/google/calendar/callback'
   id:
     | '__root__'
@@ -366,6 +378,7 @@ export interface FileRouteTypes {
     | '/_authenticated/siswa/status'
     | '/_authenticated/siswa/tugas'
     | '/_authenticated/siswa/profil_/edit'
+    | '/api/public/hooks/sync-sheets'
     | '/api/public/google/calendar/callback'
   fileRoutesById: FileRoutesById
 }
@@ -375,6 +388,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   LoadingRoute: typeof LoadingRoute
   VerifyRoleRoute: typeof VerifyRoleRoute
+  ApiPublicHooksSyncSheetsRoute: typeof ApiPublicHooksSyncSheetsRoute
   ApiPublicGoogleCalendarCallbackRoute: typeof ApiPublicGoogleCalendarCallbackRoute
 }
 
@@ -562,6 +576,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardGuruRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/hooks/sync-sheets': {
+      id: '/api/public/hooks/sync-sheets'
+      path: '/api/public/hooks/sync-sheets'
+      fullPath: '/api/public/hooks/sync-sheets'
+      preLoaderRoute: typeof ApiPublicHooksSyncSheetsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/siswa/profil_/edit': {
       id: '/_authenticated/siswa/profil_/edit'
       path: '/siswa/profil/edit'
@@ -638,6 +659,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   LoadingRoute: LoadingRoute,
   VerifyRoleRoute: VerifyRoleRoute,
+  ApiPublicHooksSyncSheetsRoute: ApiPublicHooksSyncSheetsRoute,
   ApiPublicGoogleCalendarCallbackRoute: ApiPublicGoogleCalendarCallbackRoute,
 }
 export const routeTree = rootRouteImport

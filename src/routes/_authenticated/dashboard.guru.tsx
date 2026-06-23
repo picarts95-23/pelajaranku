@@ -9,6 +9,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { getIslamicAvatar } from "@/lib/islamic-avatar";
+import { SheetBackupCard } from "@/components/sheet-backup-card";
 import { format } from "date-fns";
 
 export const Route = createFileRoute("/_authenticated/dashboard/guru")({
@@ -129,6 +130,10 @@ function GuruDashboard() {
         <Link to="/guru/tugas" className="transition-transform hover:-translate-y-0.5"><StatCard icon={<ClipboardCheck className="size-6" />} label={t("submissions")} value={stats?.pending ?? 0} tint="bg-xp" sub={lang === "id" ? "menunggu nilai" : "to review"} /></Link>
         <Link to="/guru/tugas" className="transition-transform hover:-translate-y-0.5"><StatCard icon={<ScrollText className="size-6" />} label={t("assignments")} value={stats?.assignments ?? 0} tint="bg-quest" /></Link>
       </section>
+
+      <SheetBackupCard />
+
+
 
       {recentSubs.length > 0 && (
         <section className="mt-6 rounded-3xl border-2 border-guru/40 bg-guru/5 p-5 shadow-card-rpg">
