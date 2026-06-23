@@ -40,7 +40,7 @@ function GuruKelasPage() {
   const { t, lang } = useLang();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ name: "", subject: "", academic_year: "", description: "" });
+  const [form, setForm] = useState({ name: "", subjects: [] as string[], academic_year: "", description: "" });
   const [manageClass, setManageClass] = useState<ClassRow | null>(null);
   const [historyClass, setHistoryClass] = useState<ClassRow | null>(null);
 
