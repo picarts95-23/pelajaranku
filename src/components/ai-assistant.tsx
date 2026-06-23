@@ -26,7 +26,7 @@ export function AiAssistant() {
   const ask = useServerFn(askAssistant);
 
   const mut = useMutation({
-    mutationFn: async (history: ChatMessage[]) => ask({ data: { messages: history } }),
+    mutationFn: async (history: ChatMessage[]) => ask({ data: { messages: history, provider } }),
     onSuccess: (res) => {
       setMessages((m) => [...m, { role: "assistant", content: res.reply || "…" }]);
       setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" }), 50);
