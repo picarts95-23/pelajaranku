@@ -28,6 +28,7 @@ interface ClassRow {
   name: string;
   code: string;
   subject: string | null;
+  subjects: string[] | null;
   academic_year: string | null;
   description: string | null;
   class_enrollments?: { count: number }[];
