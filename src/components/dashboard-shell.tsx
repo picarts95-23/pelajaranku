@@ -5,6 +5,7 @@ import {
   Library, BarChart3,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { LangToggle } from "@/components/lang-toggle";
 import { AiAssistant } from "@/components/ai-assistant";
@@ -12,6 +13,8 @@ import { useAuth } from "@/lib/auth-context";
 import { useLang, type Key } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { getIslamicAvatar } from "@/lib/islamic-avatar";
+import { supabase } from "@/integrations/supabase/client";
+import { useUnseenCount } from "@/lib/notifications";
 
 type NavItem = { to: string; key: Key; icon: React.ComponentType<{ className?: string }> };
 
