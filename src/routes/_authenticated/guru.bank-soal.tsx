@@ -16,6 +16,7 @@ import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { SubjectSelect } from "@/components/subject-select";
 import { LinkFields, LinkBadges } from "@/components/link-fields";
+import { MediaViewer } from "@/components/media-input";
 
 export const Route = createFileRoute("/_authenticated/guru/bank-soal")({
   head: () => ({ meta: [{ title: "Bank Soal · EduQuest Academy" }] }),
