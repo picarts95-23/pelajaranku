@@ -65,14 +65,16 @@ function GuruKelasPage() {
       if (!user) throw new Error("not signed in");
       const { error } = await supabase.from("classes").insert({
         teacher_id: user.id, name: payload.name, code: genCode(),
-        subject: payload.subject || null, academic_year: payload.academic_year || null,
+        subjects: payload.subjects,
+        subject: payload.subjects[0] ?? null,
+        academic_year: payload.academic_year || null,
         description: payload.description || null,
       });
       if (error) throw error;
     },
     onSuccess: () => {
       toast.success(lang === "id" ? "Kelas dibuat" : "Class created");
-      setOpen(false); setForm({ name: "", subject: "", academic_year: "", description: "" });
+      setOpen(false); setForm({ name: "", subjects: [], academic_year: "", description: "" });
       qc.invalidateQueries({ queryKey: ["classes"] });
     },
     onError: (e: Error) => toast.error(e.message),
