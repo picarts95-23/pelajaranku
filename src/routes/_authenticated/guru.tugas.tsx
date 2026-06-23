@@ -145,6 +145,18 @@ function GuruTugasPage() {
 
   const currentAssignment = useMemo(() => assignments.find((a: any) => a.id === selected), [assignments, selected]);
 
+  // Group assignments by answer format so the teacher can browse by type.
+  const groupedAssignments = useMemo(() => {
+    const groups: Record<string, any[]> = {};
+    (assignments as any[]).forEach((a) => {
+      const key = a.answer_format ?? "descriptive";
+      (groups[key] ??= []).push(a);
+    });
+    return ANSWER_FORMATS
+      .filter((f) => groups[f.value]?.length)
+      .map((f) => ({ format: f, items: groups[f.value] }));
+  }, [assignments]);
+
   const exportColumns = [
     { key: "title", header: lang === "id" ? "Judul" : "Title" },
     { key: "format", header: lang === "id" ? "Format Jawaban" : "Answer Format" },
