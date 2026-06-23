@@ -56,6 +56,7 @@ function GuruTugasPage() {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const [target, setTarget] = useState<"class" | "student">("class");
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const [form, setForm] = useState<TForm>(emptyForm());
 
   useEffect(() => {
