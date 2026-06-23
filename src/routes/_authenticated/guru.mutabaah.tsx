@@ -91,7 +91,14 @@ function GuruMutabaahPage() {
 
   const { data: records = [] } = useQuery({
     queryKey: ["mutabaah", user?.id], enabled: !!user,
-    queryFn: async () => (await (supabase as any).from("tahfidz_mutabaah").select("*, classes(name), profiles!tahfidz_mutabaah_student_id_fkey(full_name)").order("session_date", { ascending: false })).data ?? [],
+    queryFn: async () => {
+      const { data } = await (supabase as any).from("tahfidz_mutabaah").select("*, classes(name)").order("session_date", { ascending: false });
+      const rows = (data ?? []) as any[];
+      const ids = Array.from(new Set(rows.map((r) => r.student_id)));
+      if (ids.length === 0) return rows;
+      const { data: profs } = await supabase.from("profiles").select("id, full_name").in("id", ids);
+      return rows.map((r) => ({ ...r, profiles: (profs ?? []).find((p: any) => p.id === r.student_id) ?? null }));
+    },
   });
 
   const total = computeTotal(form.tajwid_score, form.kelancaran_score, form.fashohah_score);
