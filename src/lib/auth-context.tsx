@@ -14,6 +14,9 @@ export interface ProfileRow {
   xp: number;
   level: number;
   coins: number;
+  gender?: string | null;
+  birthdate?: string | null;
+  hobby?: string | null;
 }
 
 interface AuthCtx {
