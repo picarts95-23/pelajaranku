@@ -45,7 +45,7 @@ function AuthPage() {
   const [schoolId, setSchoolId] = useState("");
   const [subject, setSubject] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [seeding, setSeeding] = useState(false);
+  const [teacherCode, setTeacherCode] = useState("");
 
   useEffect(() => {
     if (session) navigate({ to: "/loading" });
@@ -62,7 +62,6 @@ function AuthPage() {
             emailRedirectTo: `${window.location.origin}/loading`,
             data: {
               full_name: fullName,
-              role,
               class_name: role === "siswa" ? className : null,
               school_id_number: schoolId,
               subject: role === "guru" ? subject : null,
@@ -70,11 +69,22 @@ function AuthPage() {
           },
         });
         if (error) throw error;
-        toast.success(lang === "id" ? "Akun dibuat! Mengarahkan…" : "Account created! Redirecting…");
+        // Roles are assigned server-side only. Teacher accounts must prove the
+        // shared teacher access code to be elevated from the default student role.
+        if (role === "guru") {
+          try {
+            await claimTeacherRole({ data: { code: teacherCode } });
+            toast.success(lang === "id" ? "Akun guru dibuat! Mengarahkan…" : "Teacher account created! Redirecting…");
+          } catch (elevErr) {
+            toast.error((elevErr as Error).message);
+          }
+        } else {
+          toast.success(lang === "id" ? "Akun dibuat! Mengarahkan…" : "Account created! Redirecting…");
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        toast.success(lang === "id" ? "Selamat datang kembali, siswi!" : "Welcome back!");
+        toast.success(lang === "id" ? "Selamat datang kembali!" : "Welcome back!");
         navigate({ to: "/loading", search: { role } });
       }
     } catch (err) {
@@ -84,35 +94,6 @@ function AuthPage() {
     }
   };
 
-  const seedDemo = async () => {
-    setSeeding(true);
-    let created = 0;
-    for (const acc of DEMO_ACCOUNTS) {
-      const { error } = await supabase.auth.signUp({
-        email: acc.email,
-        password: acc.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/loading`,
-          data: {
-            full_name: acc.full_name,
-            role: acc.role,
-            class_name: "class_name" in acc ? acc.class_name : null,
-            school_id_number: acc.school_id_number,
-            subject: "subject" in acc ? acc.subject : null,
-          },
-        },
-      });
-      if (!error) created++;
-    }
-    // Sign back out in case the seeding logged us in as the last account
-    await supabase.auth.signOut();
-    toast.success(
-      lang === "id"
-        ? `Selesai! ${created} akun baru ditambahkan (yang sudah ada dilewati).`
-        : `Done! ${created} new accounts added (existing ones skipped).`
-    );
-    setSeeding(false);
-  };
 
   return (
     <div className="relative min-h-screen overflow-hidden">
