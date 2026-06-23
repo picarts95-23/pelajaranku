@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
-import { askAssistant, type ChatMessage } from "@/lib/ai-assistant.functions";
+import { askAssistant, type ChatMessage, type AiProvider } from "@/lib/ai-assistant.functions";
 
 const SUGGESTIONS_ID = [
   "Buatkan 5 soal pilihan ganda tentang wudhu untuk kelas 5",
@@ -15,11 +15,12 @@ const SUGGESTIONS_ID = [
   "Beri ide tugas proyek tema lingkungan",
 ];
 
-/** Floating AI assistant for teachers. Uses Lovable AI via an authenticated server function. */
+/** Floating AI assistant for teachers. Uses Gemini or ChatGPT via an authenticated server function. */
 export function AiAssistant() {
   const { t, lang } = useLang();
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
+  const [provider, setProvider] = useState<AiProvider>("gemini");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const ask = useServerFn(askAssistant);
