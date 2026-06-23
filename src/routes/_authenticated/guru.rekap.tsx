@@ -28,29 +28,7 @@ function predicate(score: number, lang: string) {
 }
 
 function GuruRekapPage() {
-  const { user, role, loading } = useAuth();
-  const navigate = useNavigate();
-  const { t, lang } = useLang();
-  const qc = useQueryClient();
-  const [classId, setClassId] = useState("");
-  const [subject, setSubject] = useState("");
-  const [adabDraft, setAdabDraft] = useState<Record<string, number>>({});
-
-  useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
-
-  const { data: classes = [] } = useQuery({
-    queryKey: ["classes-list", user?.id], enabled: !!user,
-    queryFn: async () => (await supabase.from("classes").select("id, name").order("name")).data ?? [],
-  });
-
-  const { data: students = [] } = useQuery({
-    queryKey: ["rekap-students", classId], enabled: !!classId,
-    queryFn: async () => {
-      const { data: en } = await supabase.from("class_enrollments").select("student_id").eq("class_id", classId);
-      const ids = (en ?? []).map((e: any) => e.student_id);
-      if (ids.length === 0) return [] as { id: string; full_name: string }[];
-      const { data: profs } = await supabase.from("profiles").select("id, full_name").in("id", ids);
-      return (
+  return (
     <DashboardShell accent="guru"><div>HELLO-REKAP</div></DashboardShell>
   );
 }
