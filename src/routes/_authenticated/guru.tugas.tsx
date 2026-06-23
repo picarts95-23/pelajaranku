@@ -495,7 +495,7 @@ function AssignmentDetail({ assignment, onDelete }: { assignment: any; onDelete:
       </div>
       {subs.length === 0 ? <EmptyState message={t("empty")} /> : (
         <div className="space-y-2">
-          {subs.map((s: any) => <GradeRow key={s.id} sub={s} maxScore={assignment.max_score} isVoice={assignment.answer_format === "voice"} onGrade={(score, fb) => gradeMut.mutate({ id: s.id, score, feedback: fb })} />)}
+          {subs.map((s: any) => <GradeRow key={s.id} sub={s} maxScore={assignment.max_score} isVoice={assignment.answer_format === "voice" || assignment.answer_format === "muroja"} onGrade={(score, fb) => gradeMut.mutate({ id: s.id, score, feedback: fb })} />)}
         </div>
       )}
     </div>
@@ -507,15 +507,22 @@ function GradeRow({ sub, maxScore, isVoice, onGrade }: { sub: any; maxScore: num
   const [score, setScore] = useState<number | "">(sub.score ?? "");
   const [fb, setFb] = useState(sub.feedback ?? "");
   const [voiceUrl, setVoiceUrl] = useState<string | null>(null);
-  const [loadingVoice, setLoadingVoice] = useState(false);
+  const [voiceError, setVoiceError] = useState(false);
 
-  async function playVoice() {
-    if (voiceUrl || !sub.file_url) return;
-    setLoadingVoice(true);
-    const { data } = await supabase.storage.from("voice-answers").createSignedUrl(sub.file_url, 3600);
-    setVoiceUrl(data?.signedUrl ?? null);
-    setLoadingVoice(false);
-  }
+  // Automatically resolve a signed URL for the student's recording so the teacher
+  // can play it straight away in the grading panel.
+  useEffect(() => {
+    let active = true;
+    async function load() {
+      if (!isVoice || !sub.file_url) return;
+      const { data, error } = await supabase.storage.from("voice-answers").createSignedUrl(sub.file_url, 3600);
+      if (!active) return;
+      if (error || !data?.signedUrl) { setVoiceError(true); return; }
+      setVoiceUrl(data.signedUrl);
+    }
+    load();
+    return () => { active = false; };
+  }, [isVoice, sub.file_url]);
 
   return (
     <div className="rounded-xl border border-border bg-muted/30 p-3">
@@ -524,14 +531,21 @@ function GradeRow({ sub, maxScore, isVoice, onGrade }: { sub: any; maxScore: num
         <span className={`rounded-full px-2 py-0.5 text-xs font-display font-bold ${sub.status === "graded" ? "bg-xp/20 text-xp" : "bg-primary/15 text-primary"}`}>{sub.status === "graded" ? `✅ ${t("graded")}` : `📤 ${t("submitted")}`}</span>
       </div>
       {sub.content && <p className="mt-2 whitespace-pre-wrap text-sm">{sub.content}</p>}
-      {isVoice && sub.file_url ? (
-        <div className="mt-2">
-          {voiceUrl ? (
-            <audio controls src={voiceUrl} className="w-full" />
-          ) : (
-            <Button type="button" size="sm" variant="outline" onClick={playVoice} disabled={loadingVoice}><Play className="size-4" /> 🎙️ {lang === "id" ? "Dengarkan rekaman" : "Listen to recording"}</Button>
-          )}
-        </div>
+      {isVoice ? (
+        sub.file_url ? (
+          <div className="mt-2">
+            <div className="mb-1 flex items-center gap-1.5 text-xs font-display font-bold text-quest">🎙️ {lang === "id" ? "Rekaman jawaban siswa" : "Student voice answer"}</div>
+            {voiceUrl ? (
+              <audio controls preload="metadata" src={voiceUrl} className="w-full" />
+            ) : voiceError ? (
+              <p className="text-xs text-destructive">{lang === "id" ? "Gagal memuat rekaman." : "Failed to load recording."}</p>
+            ) : (
+              <p className="flex items-center gap-1.5 text-xs text-muted-foreground"><Play className="size-3.5" /> {lang === "id" ? "Memuat rekaman…" : "Loading recording…"}</p>
+            )}
+          </div>
+        ) : (
+          <p className="mt-2 text-xs text-muted-foreground">{lang === "id" ? "Belum ada rekaman dikirim." : "No recording submitted yet."}</p>
+        )
       ) : (!isVoice && sub.file_url && (
         /\.(jpg|jpeg|png|gif|webp|avif)(\?|$)/i.test(sub.file_url) ? (
           <a href={sub.file_url} target="_blank" rel="noreferrer" className="mt-2 block"><img src={sub.file_url} alt="jawaban siswa" className="max-h-64 rounded-xl border-2 border-border object-contain" /></a>
