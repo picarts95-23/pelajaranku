@@ -532,7 +532,15 @@ function GradeRow({ sub, maxScore, isVoice, onGrade }: { sub: any; maxScore: num
             <Button type="button" size="sm" variant="outline" onClick={playVoice} disabled={loadingVoice}><Play className="size-4" /> 🎙️ {lang === "id" ? "Dengarkan rekaman" : "Listen to recording"}</Button>
           )}
         </div>
-      ) : (!isVoice && sub.file_url && <a href={sub.file_url} target="_blank" rel="noreferrer" className="mt-1 inline-block text-xs text-primary underline">📎 {sub.file_url}</a>)}
+      ) : (!isVoice && sub.file_url && (
+        /\.(jpg|jpeg|png|gif|webp|avif)(\?|$)/i.test(sub.file_url) ? (
+          <a href={sub.file_url} target="_blank" rel="noreferrer" className="mt-2 block"><img src={sub.file_url} alt="jawaban siswa" className="max-h-64 rounded-xl border-2 border-border object-contain" /></a>
+        ) : /\.(mp4|webm|mov|ogg)(\?|$)/i.test(sub.file_url) ? (
+          <video controls src={sub.file_url} className="mt-2 max-h-64 w-full rounded-xl border-2 border-border" />
+        ) : (
+          <a href={sub.file_url} target="_blank" rel="noreferrer" className="mt-1 inline-block text-xs text-primary underline">📎 {lang === "id" ? "Lihat lampiran" : "View attachment"}</a>
+        )
+      ))}
       <div className="mt-3 grid gap-2 sm:grid-cols-[120px,1fr,auto] sm:items-end">
         <div>
           <Label className="text-xs">⭐ {t("score")} / {maxScore}</Label>
