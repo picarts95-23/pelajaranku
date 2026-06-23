@@ -88,6 +88,7 @@ function SiswaMapelPage() {
                     <div className="mt-1.5 font-display text-lg font-bold">{m.title}</div>
                     {m.description && <p className="text-sm text-muted-foreground">{m.description}</p>}
                     {m.content && <p className="mt-2 whitespace-pre-wrap text-sm">{m.content}</p>}
+                    <MediaViewer mediaType={m.media_type} mediaUrl={m.media_url} />
                     {m.link && (
                       <a href={m.link} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-siswa/10 px-3 py-1.5 text-xs font-display font-bold text-siswa hover:bg-siswa/20">
                         <ExternalLink className="size-3.5" /> {t("openLink")}
