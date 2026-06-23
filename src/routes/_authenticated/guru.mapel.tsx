@@ -122,9 +122,10 @@ function GuruMapelPage() {
                     </Select>
                   </div>
                 </div>
-                <div><Label>{t("title")}</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
+                <div><Label>{t("title")} <span className="text-destructive">*</span></Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
                 <div><Label>{t("description")}</Label><Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
                 <div><Label>{t("content")}</Label><Textarea rows={5} value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} placeholder={lang === "id" ? "Tulis ringkasan / isi materi…" : "Write material content…"} /></div>
+                {user && <MediaInput userId={user.id} value={{ media_type: form.media_type, media_url: form.media_url }} onChange={(v) => setForm({ ...form, media_type: v.media_type, media_url: v.media_url })} />}
                 <div><Label>{t("link")}</Label><Input value={form.link} onChange={(e) => setForm({ ...form, link: e.target.value })} placeholder="https://…" /></div>
               </div>
               <DialogFooter>
