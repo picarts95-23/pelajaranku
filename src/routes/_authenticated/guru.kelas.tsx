@@ -105,11 +105,21 @@ function GuruKelasPage() {
               <DialogHeader><DialogTitle>{t("newClass")}</DialogTitle></DialogHeader>
               <div className="space-y-3">
                 <div><Label>{t("className2")}</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="VIII-A" /></div>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div><Label>{t("subject")}</Label><SubjectSelect value={form.subject} onChange={(v) => setForm({ ...form, subject: v })} /></div>
-                  <div><Label>{t("academicYear")}</Label><Input value={form.academic_year} onChange={(e) => setForm({ ...form, academic_year: e.target.value })} placeholder="2025/2026" /></div>
+                <div>
+                  <Label>{lang === "id" ? "Mata Pelajaran (bisa lebih dari satu)" : "Subjects (one or more)"}</Label>
+                  <div className="mt-1.5">
+                    <MultiSubjectSelect value={form.subjects} onChange={(v) => setForm({ ...form, subjects: v })} />
+                  </div>
                 </div>
-                <div><Label>{t("description")}</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
+                <details className="rounded-xl border-2 border-border bg-muted/30 p-3">
+                  <summary className="cursor-pointer text-sm font-display font-semibold text-muted-foreground">
+                    {lang === "id" ? "Opsional (tahun ajaran & deskripsi)" : "Optional (academic year & description)"}
+                  </summary>
+                  <div className="mt-3 space-y-3">
+                    <div><Label>{t("academicYear")}</Label><Input value={form.academic_year} onChange={(e) => setForm({ ...form, academic_year: e.target.value })} placeholder="2025/2026" /></div>
+                    <div><Label>{t("description")}</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
+                  </div>
+                </details>
               </div>
               <DialogFooter>
                 <Button variant="ghost" onClick={() => setOpen(false)}>{t("cancel")}</Button>
