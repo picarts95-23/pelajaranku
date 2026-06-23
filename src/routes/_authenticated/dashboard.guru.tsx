@@ -87,16 +87,16 @@ function GuruDashboard() {
         <div className="absolute -left-10 -bottom-10 size-56 rounded-full bg-guru/40 blur-3xl" />
         <div className="relative grid gap-6 sm:grid-cols-[1fr_auto] sm:items-center">
           <div>
-            <div className="text-sm font-display font-semibold uppercase tracking-wider opacity-80">{t("dashboard")}</div>
+            <div className="text-sm font-display font-semibold uppercase tracking-wider opacity-80">{t("dashboard")} · {t("guru")}</div>
             <h1 className="mt-1 font-display text-3xl font-bold sm:text-4xl">
               {lang === "id"
-                ? `Selamat datang, Guru ${profile?.full_name ?? ""}`.trim()
-                : `${t("welcome")}, ${profile?.full_name ?? "Teacher"}`}
+                ? `Selamat datang kembali, ${profile?.full_name ?? "Bapak/Ibu Guru"} 🌟`
+                : `Welcome back, ${profile?.full_name ?? "Teacher"} 🌟`}
             </h1>
             <p className="mt-2 max-w-xl opacity-90">
               {lang === "id"
-                ? `Mata pelajaran: ${profile?.subject ?? "—"} · Kelola guild kelasmu hari ini.`
-                : `Subject: ${profile?.subject ?? "—"} · Manage your class guild today.`}
+                ? `Mata pelajaran: ${profile?.subject ?? "—"} · Semoga mengajarmu hari ini penuh berkah.`
+                : `Subject: ${profile?.subject ?? "—"} · May your teaching today be blessed.`}
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
               <Link to="/guru/kelas"><Button variant="outline" className="bg-white/10 border-white/30 text-white hover:bg-white/20">{t("navClasses")}</Button></Link>
