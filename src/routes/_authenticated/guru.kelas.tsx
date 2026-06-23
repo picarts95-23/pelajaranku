@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
-import { SubjectSelect, MultiSubjectSelect } from "@/components/subject-select";
+import { MultiSubjectSelect } from "@/components/subject-select";
 
 export const Route = createFileRoute("/_authenticated/guru/kelas")({
   head: () => ({ meta: [{ title: "Kelas · EduQuest Academy" }] }),
