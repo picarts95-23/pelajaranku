@@ -240,6 +240,7 @@ function GuruBankSoalPage() {
                       <span className={`rounded-full px-2 py-0.5 text-xs font-display font-bold ${diffColor[q.difficulty]}`}>{t(q.difficulty as any)}</span>
                     </div>
                     <p className="mt-2 font-display font-semibold">{q.question}</p>
+                    {q.image_url && <MediaViewer mediaType="image" mediaUrl={q.image_url} />}
                     {q.options && <ul className="mt-2 ml-4 list-disc text-sm text-muted-foreground">{(q.options as string[]).map((o, i) => <li key={i}>{o}</li>)}</ul>}
                     {q.answer && <div className="mt-2 text-xs"><span className="font-display font-bold text-xp">{t("answer")}:</span> {q.answer}</div>}
                     <LinkBadges quizLink={q.quiz_link} gameLink={q.game_link} />
