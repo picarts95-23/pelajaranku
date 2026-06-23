@@ -968,6 +968,92 @@ export type Database = {
           },
         ]
       }
+      tahfidz_mutabaah: {
+        Row: {
+          adab_aurat: boolean
+          adab_etika: boolean
+          adab_focus: boolean
+          ayat_from: number | null
+          ayat_to: number | null
+          class_id: string | null
+          created_at: string
+          fashohah_score: number
+          id: string
+          juz: number | null
+          kelancaran_helps: number
+          kelancaran_score: number
+          notes: string | null
+          predikat: string | null
+          session_date: string
+          session_type: string
+          student_id: string
+          surah: string | null
+          tajwid_errors: number
+          tajwid_score: number
+          teacher_id: string
+          total_score: number
+          updated_at: string
+        }
+        Insert: {
+          adab_aurat?: boolean
+          adab_etika?: boolean
+          adab_focus?: boolean
+          ayat_from?: number | null
+          ayat_to?: number | null
+          class_id?: string | null
+          created_at?: string
+          fashohah_score?: number
+          id?: string
+          juz?: number | null
+          kelancaran_helps?: number
+          kelancaran_score?: number
+          notes?: string | null
+          predikat?: string | null
+          session_date?: string
+          session_type?: string
+          student_id: string
+          surah?: string | null
+          tajwid_errors?: number
+          tajwid_score?: number
+          teacher_id: string
+          total_score?: number
+          updated_at?: string
+        }
+        Update: {
+          adab_aurat?: boolean
+          adab_etika?: boolean
+          adab_focus?: boolean
+          ayat_from?: number | null
+          ayat_to?: number | null
+          class_id?: string | null
+          created_at?: string
+          fashohah_score?: number
+          id?: string
+          juz?: number | null
+          kelancaran_helps?: number
+          kelancaran_score?: number
+          notes?: string | null
+          predikat?: string | null
+          session_date?: string
+          session_type?: string
+          student_id?: string
+          surah?: string | null
+          tajwid_errors?: number
+          tajwid_score?: number
+          teacher_id?: string
+          total_score?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tahfidz_mutabaah_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       teacher_subjects: {
         Row: {
           created_at: string

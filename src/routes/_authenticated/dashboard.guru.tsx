@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { BookOpen, GraduationCap, ScrollText, TrendingUp, Users, ClipboardCheck, FileQuestion, CalendarCheck, NotebookPen, Trophy, CalendarDays, ArrowRight, Library, BarChart3 } from "lucide-react";
+import { BookOpen, GraduationCap, ScrollText, TrendingUp, Users, ClipboardCheck, FileQuestion, CalendarCheck, NotebookPen, Trophy, CalendarDays, ArrowRight, Library, BarChart3, BookOpenCheck } from "lucide-react";
 import { DashboardShell, StatCard } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
@@ -245,6 +245,13 @@ function GuruDashboard() {
               title={lang === "id" ? "Event Kelas" : "Class Events"}
               desc={lang === "id" ? "Jadwalkan acara, ujian, dan agenda." : "Schedule events, exams, and agendas."}
               tint="bg-accent"
+            />
+            <FeatureCard
+              to="/guru/mutabaah"
+              icon={<BookOpenCheck className="size-6" />}
+              title={lang === "id" ? "Mutaba'ah Tahfidz" : "Tahfidz Mutaba'ah"}
+              desc={lang === "id" ? "Nilai setoran Halaqoh: Tajwid, Kelancaran, Fashohah & Adab." : "Assess Halaqoh: Tajwid, Fluency, Fashohah & Adab."}
+              tint="bg-gradient-magic"
             />
           </div>
         </div>

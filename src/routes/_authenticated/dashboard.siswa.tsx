@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { ArrowRight, Award, BookOpen, ClipboardList, Coins, FileQuestion, Flame, GraduationCap, Heart, MessageCircle, ScrollText, Sparkles, Star, Sword, Trophy, UserCircle2 } from "lucide-react";
+import { ArrowRight, Award, BookOpen, BookOpenCheck, ClipboardList, Coins, FileQuestion, Flame, GraduationCap, Heart, MessageCircle, ScrollText, Sparkles, Star, Sword, Trophy, UserCircle2 } from "lucide-react";
 import type { ComponentType, ReactNode } from "react";
 import { DashboardShell, StatCard } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
@@ -170,6 +170,7 @@ function SiswaDashboard() {
           <FeatureCard to="/siswa/mapel" icon={GraduationCap} title={lang === "id" ? "Mata Pelajaran & Materi" : "Subjects & Materials"} desc={lang === "id" ? "Jelajahi materi tiap mapel" : "Explore subject materials"} tint="bg-gradient-magic text-white" />
           <FeatureCard to="/siswa/tugas" icon={ClipboardList} title={lang === "id" ? "Tugas Saya" : "My Tasks"} desc={lang === "id" ? "Daftar tugas, kerjakan, tandai selesai & kirim" : "List, work on, mark done & submit tasks"} tint="bg-accent text-accent-foreground" />
           <FeatureCard to="/siswa/latihan" icon={FileQuestion} title={lang === "id" ? "Latihan Kuis" : "Quiz Practice"} desc={lang === "id" ? "Kerjakan kuis pilihan ganda, nilai otomatis & dapat XP" : "Take multiple-choice quizzes, auto-graded with XP"} tint="bg-gradient-magic text-white" />
+          <FeatureCard to="/siswa/mutabaah" icon={BookOpenCheck} title={lang === "id" ? "Mutaba'ah Tahfidz" : "Tahfidz Mutaba'ah"} desc={lang === "id" ? "Riwayat penilaian hafalan: Tajwid, Kelancaran, Adab" : "Hifz assessment history: Tajwid, Fluency, Adab"} tint="bg-gradient-hero text-white" />
           <FeatureCard to="/siswa/status" icon={MessageCircle} title={lang === "id" ? "Status & Interaksi" : "Status & Interaction"} desc={lang === "id" ? "Buat status, komentar, beri emoji & like" : "Post status, comment, emoji & like"} tint="bg-gradient-sunset text-white" />
           <FeatureCard to="/siswa/profil" icon={UserCircle2} title={lang === "id" ? "Pilih Karakter & Biodata" : "Character & Bio"} desc={lang === "id" ? "Atur avatar, nama akun & profil" : "Set avatar, username & profile"} tint="bg-gradient-hero text-white" />
           <FeatureCard to="/siswa/nilai" icon={GraduationCap} title={lang === "id" ? "Nilai" : "Grades"} desc={lang === "id" ? "Pantau nilai & rapor" : "Track grades & reports"} tint="bg-secondary text-secondary-foreground" />
