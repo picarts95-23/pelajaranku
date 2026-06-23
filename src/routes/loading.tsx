@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Compass } from "lucide-react";
 import { z } from "zod";
-import { useAuth, type AppRole } from "@/lib/auth-context";
+import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 
 const searchSchema = z.object({
