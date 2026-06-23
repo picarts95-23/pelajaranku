@@ -70,13 +70,15 @@ function GuruRekapPage() {
     queryFn: async () => (await supabase.from("attendance").select("student_id, status").eq("class_id", classId)).data ?? [],
   });
 
-  const { data: adabScores = [] } = useQuery({
+  const { data: adabScores } = useQuery({
     queryKey: ["rekap-adab", classId, subject], enabled: !!classId && !!subject,
     queryFn: async () => (await supabase.from("adab_scores").select("student_id, score").eq("class_id", classId).eq("subject", subject)).data ?? [],
   });
 
-  // Sync adab draft from DB whenever scores load
+  // Sync adab draft from DB whenever scores load (depend on the stable query
+  // reference, not a freshly-allocated default array — that caused an infinite loop).
   useEffect(() => {
+    if (!adabScores) return;
     const map: Record<string, number> = {};
     (adabScores as any[]).forEach((a) => { map[a.student_id] = a.score; });
     setAdabDraft(map);
