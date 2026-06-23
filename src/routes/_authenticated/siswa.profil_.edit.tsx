@@ -70,7 +70,7 @@ function EditProfil() {
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) => setForm((f) => ({ ...f, [k]: v }));
 
   const selectedChar = getCharacterByKey(form.character_key) ?? null;
-  const previewSrc = selectedChar?.src ?? getIslamicAvatar(user?.id ?? form.full_name, role ?? "siswa");
+  const previewSrc = selectedChar?.src ?? getIslamicAvatar(user?.id ?? form.full_name, role === "guru" ? "guru" : "siswa");
 
   const saveMut = useMutation({
     mutationFn: async (values: FormState) => {

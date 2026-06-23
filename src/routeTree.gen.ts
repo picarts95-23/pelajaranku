@@ -15,6 +15,7 @@ import { Route as LoadingRouteImport } from './routes/loading'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedSiswaTugasRouteImport } from './routes/_authenticated/siswa.tugas'
 import { Route as AuthenticatedSiswaStatusRouteImport } from './routes/_authenticated/siswa.status'
 import { Route as AuthenticatedSiswaRiwayatRouteImport } from './routes/_authenticated/siswa.riwayat'
@@ -68,6 +69,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSiswaTugasRoute = AuthenticatedSiswaTugasRouteImport.update({
   id: '/siswa/tugas',
@@ -208,6 +214,7 @@ export interface FileRoutesByFullPath {
   '/loading': typeof LoadingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/verify-role': typeof VerifyRoleRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/dashboard/guru': typeof AuthenticatedDashboardGuruRoute
   '/dashboard/siswa': typeof AuthenticatedDashboardSiswaRoute
   '/guru/bank-soal': typeof AuthenticatedGuruBankSoalRoute
@@ -239,6 +246,7 @@ export interface FileRoutesByTo {
   '/loading': typeof LoadingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/verify-role': typeof VerifyRoleRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/dashboard/guru': typeof AuthenticatedDashboardGuruRoute
   '/dashboard/siswa': typeof AuthenticatedDashboardSiswaRoute
   '/guru/bank-soal': typeof AuthenticatedGuruBankSoalRoute
@@ -272,6 +280,7 @@ export interface FileRoutesById {
   '/loading': typeof LoadingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/verify-role': typeof VerifyRoleRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/dashboard/guru': typeof AuthenticatedDashboardGuruRoute
   '/_authenticated/dashboard/siswa': typeof AuthenticatedDashboardSiswaRoute
   '/_authenticated/guru/bank-soal': typeof AuthenticatedGuruBankSoalRoute
@@ -305,6 +314,7 @@ export interface FileRouteTypes {
     | '/loading'
     | '/sitemap.xml'
     | '/verify-role'
+    | '/admin'
     | '/dashboard/guru'
     | '/dashboard/siswa'
     | '/guru/bank-soal'
@@ -336,6 +346,7 @@ export interface FileRouteTypes {
     | '/loading'
     | '/sitemap.xml'
     | '/verify-role'
+    | '/admin'
     | '/dashboard/guru'
     | '/dashboard/siswa'
     | '/guru/bank-soal'
@@ -368,6 +379,7 @@ export interface FileRouteTypes {
     | '/loading'
     | '/sitemap.xml'
     | '/verify-role'
+    | '/_authenticated/admin'
     | '/_authenticated/dashboard/guru'
     | '/_authenticated/dashboard/siswa'
     | '/_authenticated/guru/bank-soal'
@@ -448,6 +460,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/siswa/tugas': {
       id: '/_authenticated/siswa/tugas'
@@ -621,6 +640,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedDashboardGuruRoute: typeof AuthenticatedDashboardGuruRoute
   AuthenticatedDashboardSiswaRoute: typeof AuthenticatedDashboardSiswaRoute
   AuthenticatedGuruBankSoalRoute: typeof AuthenticatedGuruBankSoalRoute
@@ -646,6 +666,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedDashboardGuruRoute: AuthenticatedDashboardGuruRoute,
   AuthenticatedDashboardSiswaRoute: AuthenticatedDashboardSiswaRoute,
   AuthenticatedGuruBankSoalRoute: AuthenticatedGuruBankSoalRoute,

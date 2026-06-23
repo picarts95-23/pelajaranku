@@ -69,11 +69,13 @@ function VerifyRolePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, session?.user?.id]);
 
+  const destFor = (r: AppRole) => (r === "admin" ? "/admin" : r === "guru" ? "/dashboard/guru" : "/dashboard/siswa");
+
   // Auto redirect only after we've authoritatively synced with user_roles
   useEffect(() => {
     if (!auto || syncState !== "ready" || !dbRole) return;
     if (countdown <= 0) {
-      navigate({ to: dbRole === "guru" ? "/dashboard/guru" : "/dashboard/siswa" });
+      navigate({ to: destFor(dbRole) });
       return;
     }
     const t = setTimeout(() => setCountdown((c) => c - 1), 1000);
@@ -82,7 +84,7 @@ function VerifyRolePage() {
 
   const goToDashboard = () => {
     if (!dbRole) return;
-    navigate({ to: dbRole === "guru" ? "/dashboard/guru" : "/dashboard/siswa" });
+    navigate({ to: destFor(dbRole) });
   };
 
   // ---------- Render states ----------

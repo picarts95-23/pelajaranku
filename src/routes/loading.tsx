@@ -39,8 +39,9 @@ function LoadingPortal() {
     // The role chosen on the login form must never decide the destination,
     // otherwise a teacher could land on the student dashboard and vice-versa.
     if (role) {
+      const dest = role === "admin" ? "/admin" : role === "guru" ? "/dashboard/guru" : "/dashboard/siswa";
       const timer = setTimeout(() => {
-        navigate({ to: role === "guru" ? "/dashboard/guru" : "/dashboard/siswa" });
+        navigate({ to: dest });
       }, 1000);
       return () => clearTimeout(timer);
     }
