@@ -72,6 +72,19 @@ type BQ = {
   image_url: string | null;
   surah: string;
   target: string;
+  setoranKind: string;
+  minPages: string;
+};
+
+// Setoran kinds for Halaqoh setoran / tilawah items.
+const SETORAN_KINDS: { value: string; id: string; en: string }[] = [
+  { value: "ziyadah", id: "Ziyadah (Hafalan Baru)", en: "Ziyadah (New)" },
+  { value: "murajaah", id: "Muraja'ah (Mengulang)", en: "Muraja'ah (Review)" },
+  { value: "tilawah_harian", id: "Tilawah Harian", en: "Daily Tilawah" },
+];
+const setoranLabel = (v: string | null | undefined, lang: string) => {
+  const f = SETORAN_KINDS.find((s) => s.value === v);
+  return f ? (lang === "id" ? f.id : f.en) : "";
 };
 
 const emptyQ = (type: BType = "multiple_choice"): BQ => ({
@@ -86,6 +99,8 @@ const emptyQ = (type: BType = "multiple_choice"): BQ => ({
   image_url: null,
   surah: "",
   target: "",
+  setoranKind: type === "halaqoh_tilawah" ? "tilawah_harian" : type === "halaqoh_setoran" ? "ziyadah" : "",
+  minPages: type === "halaqoh_tilawah" ? "1" : "",
 });
 
 function GuruBankSoalPage() {
