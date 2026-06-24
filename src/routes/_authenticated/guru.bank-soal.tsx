@@ -104,6 +104,91 @@ const emptyQ = (type: BType = "multiple_choice"): BQ => ({
   minPages: type === "halaqoh_tilawah" ? "1" : "",
 });
 
+// Build DB rows from the form, collecting ALL validation errors (never throws).
+// Returns rows only when there are zero errors.
+function buildBankRows(
+  questions: BQ[],
+  subject: string,
+  gradeLevel: string,
+  userId: string,
+  lang: string,
+): { rows: any[]; errors: string[] } {
+  const errors: string[] = [];
+  const rows: any[] = [];
+
+  if (questions.length === 0) {
+    errors.push(lang === "id" ? "Tambahkan minimal 1 soal." : "Add at least 1 question.");
+  }
+  if (questions.length > MAX_QUESTIONS) {
+    errors.push(lang === "id" ? `Maksimal ${MAX_QUESTIONS} soal (sekarang ${questions.length}).` : `Max ${MAX_QUESTIONS} (now ${questions.length}).`);
+  }
+
+  questions.forEach((q, i) => {
+    const at = (lang === "id" ? "Soal " : "Q ") + (i + 1);
+    const prompt = q.question.trim();
+
+    if (isHalaqohType(q.type)) {
+      if (!q.surah.trim() && !prompt) {
+        errors.push(`${at}: ${lang === "id" ? "isi Surah atau instruksi." : "fill surah or instruction."}`);
+      }
+      const isSetoranLike = q.type === "halaqoh_setoran" || q.type === "halaqoh_tilawah";
+      if (isSetoranLike && !q.setoranKind) {
+        errors.push(`${at}: ${lang === "id" ? "pilih Jenis Setoran." : "choose setoran type."}`);
+      }
+      if (q.minPages.trim() && (isNaN(Number(q.minPages)) || Number(q.minPages) < 0)) {
+        errors.push(`${at}: ${lang === "id" ? "Min. Halaman harus angka ≥ 0." : "Min pages must be a number ≥ 0."}`);
+      }
+      const kind = q.type.replace("halaqoh_", "");
+      const setoranTxt = isSetoranLike && q.setoranKind ? ` · ${setoranLabel(q.setoranKind, lang)}` : "";
+      const pagesTxt = q.minPages.trim() ? ` · min ${q.minPages.trim()} hlm` : "";
+      const defaultPrompt = `${TYPE_LABEL(q.type, lang)}${q.surah.trim() ? ` — ${q.surah.trim()}` : ""}${q.target.trim() ? ` (${q.target.trim()})` : ""}${setoranTxt}${pagesTxt}`;
+      rows.push({
+        teacher_id: userId, subject: subject || null, grade_level: gradeLevel || null,
+        topic: q.surah.trim() || null, question: prompt || defaultPrompt, type: "voice" as const,
+        halaqoh_kind: kind, options: null, answer: q.target.trim() || null,
+        difficulty: q.difficulty as any, image_url: q.image_url || null,
+        setoran_kind: isSetoranLike ? (q.setoranKind || null) : null,
+        min_pages: q.minPages.trim() ? Number(q.minPages.trim()) : null,
+      });
+      return;
+    }
+
+    if (!prompt) {
+      errors.push(`${at}: ${lang === "id" ? "pertanyaan masih kosong." : "question is empty."}`);
+    }
+    let opts: string[] | null = null;
+    let answer: string | null = q.answer.trim() || null;
+    if (q.type === "multiple_choice") {
+      opts = q.options.map((o) => o.trim()).filter(Boolean);
+      if (opts.length < 2) errors.push(`${at}: ${lang === "id" ? "minimal 2 pilihan jawaban." : "min 2 options."}`);
+      const chosen = q.options[q.correctIndex]?.trim();
+      if (!chosen) errors.push(`${at}: ${lang === "id" ? "tandai jawaban yang benar." : "mark the correct answer."}`);
+      answer = chosen || null;
+    } else if (q.type === "complex_multiple_choice") {
+      opts = q.options.map((o) => o.trim()).filter(Boolean);
+      if (opts.length < 2) errors.push(`${at}: ${lang === "id" ? "minimal 2 pilihan jawaban." : "min 2 options."}`);
+      const chosen = q.correctIndices.map((idx) => q.options[idx]?.trim()).filter(Boolean);
+      if (chosen.length < 1) errors.push(`${at}: ${lang === "id" ? "tandai minimal 1 jawaban benar." : "mark at least 1 correct answer."}`);
+      answer = chosen.join(", ") || null;
+    } else if (q.type === "true_false") {
+      opts = null;
+      if (!answer) answer = "Benar";
+    } else if (q.type === "short_answer") {
+      if (!answer) errors.push(`${at}: ${lang === "id" ? "isi kunci jawaban." : "fill the answer key."}`);
+    } else if (q.type === "voice") {
+      opts = null; answer = null;
+    }
+    rows.push({
+      teacher_id: userId, subject: subject || null, grade_level: gradeLevel || null,
+      topic: q.topic.trim() || null, question: prompt, type: q.type as any,
+      halaqoh_kind: null, options: opts, answer, difficulty: q.difficulty as any,
+      image_url: q.image_url || null,
+    });
+  });
+
+  return { rows: errors.length ? [] : rows, errors };
+}
+
 function GuruBankSoalPage() {
   const { user, role, loading } = useAuth();
   const navigate = useNavigate();
