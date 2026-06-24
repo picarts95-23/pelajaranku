@@ -287,6 +287,20 @@ function GuruBankSoalPage() {
 
   const ALL_TYPES: BType[] = ["multiple_choice", "complex_multiple_choice", "true_false", "short_answer", "essay", "voice", "halaqoh_menyimak", "halaqoh_setoran", "halaqoh_tilawah"];
 
+  // Available grade levels for the filter dropdown.
+  const gradeOptions = Array.from(new Set((items as any[]).map((q) => q.grade_level).filter(Boolean))) as string[];
+  // Map a stored row to its UI BType for filtering.
+  const rowUiType = (q: any): BType => (q.halaqoh_kind ? (HALAQOH_KIND[q.halaqoh_kind] ?? "halaqoh_setoran") : (q.type as BType));
+  const filteredItems = (items as any[]).filter((q) => {
+    if (filterGrade !== "all" && q.grade_level !== filterGrade) return false;
+    if (filterType !== "all" && rowUiType(q) !== filterType) return false;
+    if (search.trim()) {
+      const hay = `${q.question ?? ""} ${q.subject ?? ""} ${q.topic ?? ""} ${q.grade_level ?? ""}`.toLowerCase();
+      if (!hay.includes(search.trim().toLowerCase())) return false;
+    }
+    return true;
+  });
+
   return (
     <DashboardShell accent="guru">
       <QuizTabs active="bank" />
