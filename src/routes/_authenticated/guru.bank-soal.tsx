@@ -469,38 +469,7 @@ function GuruBankSoalPage() {
   );
 }
 
-// Map a bank row to a quiz question + answer-key entry for the assignments feature.
-// Halaqoh metadata is preserved on the question so grading can auto-record to Mutaba'ah.
-function mapBankToQuiz(b: any): { question: any; key: any } {
-  const opts: string[] = Array.isArray(b.options) ? b.options : [];
-  if (b.halaqoh_kind || b.type === "voice") {
-    return {
-      question: {
-        type: "voice", q: b.question, image_url: b.image_url ?? null,
-        halaqoh_kind: b.halaqoh_kind ?? null,
-        setoran_kind: b.setoran_kind ?? null,
-        surah: b.topic ?? null,
-        target: b.answer ?? null,
-        min_pages: b.min_pages ?? null,
-      },
-      key: null,
-    };
-  }
-  if (b.type === "multiple_choice") {
-    const idx = Math.max(0, opts.findIndex((o) => o.trim().toLowerCase() === String(b.answer ?? "").split(",")[0].trim().toLowerCase()));
-    return { question: { type: "multiple_choice", q: b.question, options: opts.length ? opts : ["", ""], image_url: b.image_url ?? null }, key: idx };
-  }
-  if (b.type === "true_false") {
-    const a = String(b.answer ?? "").trim().toLowerCase();
-    const truthy = ["true", "benar", "b", "ya", "yes", "1"].includes(a);
-    return { question: { type: "true_false", q: b.question, options: ["Benar", "Salah"], image_url: b.image_url ?? null }, key: truthy ? "true" : "false" };
-  }
-  if (b.type === "short_answer") {
-    return { question: { type: "short_answer", q: b.question, image_url: b.image_url ?? null }, key: String(b.answer ?? "").trim() };
-  }
-  // essay / complex / others -> manual essay
-  return { question: { type: "essay", q: b.question, image_url: b.image_url ?? null }, key: null };
-}
+
 
 function TransferDialog({ open, onOpenChange, items, onDone }: { open: boolean; onOpenChange: (o: boolean) => void; items: any[]; onDone: () => void }) {
   const { user } = useAuth();
