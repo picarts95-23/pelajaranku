@@ -1,13 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Database, Mic, Plus, Send, Trash2, X, BookOpenCheck, CheckCircle2 } from "lucide-react";
+import { Database, Mic, Plus, Send, Trash2, X, BookOpenCheck, CheckCircle2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/lib/auth-context";
@@ -17,177 +16,18 @@ import { SubjectSelect } from "@/components/subject-select";
 import { QuizTabs } from "@/components/quiz-tabs";
 import { LinkBadges } from "@/components/link-fields";
 import { MediaViewer } from "@/components/media-input";
+import {
+  MAX_QUESTIONS, ALL_TYPES, type BType, type BQ,
+  TYPE_LABEL, HALAQOH_KIND, SETORAN_KINDS, setoranLabel,
+  isHalaqohType, emptyQ, buildBankRows, mapBankToQuiz, bankRowToBQ,
+  QuestionEditorList,
+} from "@/components/question-fields";
 
 export const Route = createFileRoute("/_authenticated/guru/bank-soal")({
   head: () => ({ meta: [{ title: "Bank Soal · EduQuest Academy" }] }),
   component: GuruBankSoalPage,
 });
 
-const MAX_QUESTIONS = 40;
-
-// UI-level question type. Halaqoh kinds are stored as type='voice' + halaqoh_kind in DB.
-type BType =
-  | "multiple_choice"
-  | "complex_multiple_choice"
-  | "true_false"
-  | "short_answer"
-  | "essay"
-  | "voice"
-  | "halaqoh_menyimak"
-  | "halaqoh_setoran"
-  | "halaqoh_tilawah";
-
-const HALAQOH_TYPES: BType[] = ["halaqoh_menyimak", "halaqoh_setoran", "halaqoh_tilawah"];
-const isHalaqohType = (t: BType) => HALAQOH_TYPES.includes(t);
-
-const TYPE_LABEL = (t: BType, lang: string): string => {
-  const map: Record<BType, [string, string]> = {
-    multiple_choice: ["Pilihan Ganda", "Multiple Choice"],
-    complex_multiple_choice: ["Pilihan Ganda Kompleks", "Complex Multiple Choice"],
-    true_false: ["Benar / Salah", "True / False"],
-    short_answer: ["Isian Singkat", "Short Answer"],
-    essay: ["Esai (manual)", "Essay (manual)"],
-    voice: ["Jawaban Audio", "Audio Answer"],
-    halaqoh_menyimak: ["Halaqoh: Menyimak Surah", "Halaqoh: Listening"],
-    halaqoh_setoran: ["Halaqoh: Setoran Hafalan", "Halaqoh: Memorization"],
-    halaqoh_tilawah: ["Halaqoh: Tilawah Harian", "Halaqoh: Daily Tilawah"],
-  };
-  return lang === "id" ? map[t][0] : map[t][1];
-};
-
-const HALAQOH_KIND: Record<string, BType> = {
-  menyimak: "halaqoh_menyimak",
-  setoran: "halaqoh_setoran",
-  tilawah: "halaqoh_tilawah",
-};
-
-type BQ = {
-  type: BType;
-  topic: string;
-  question: string;
-  options: string[];
-  correctIndex: number;
-  correctIndices: number[];
-  answer: string;
-  difficulty: string;
-  image_url: string | null;
-  surah: string;
-  target: string;
-  setoranKind: string;
-  minPages: string;
-};
-
-// Setoran kinds for Halaqoh setoran / tilawah items.
-const SETORAN_KINDS: { value: string; id: string; en: string }[] = [
-  { value: "ziyadah", id: "Ziyadah (Hafalan Baru)", en: "Ziyadah (New)" },
-  { value: "murajaah", id: "Muraja'ah (Mengulang)", en: "Muraja'ah (Review)" },
-  { value: "tilawah_harian", id: "Tilawah Harian", en: "Daily Tilawah" },
-];
-const setoranLabel = (v: string | null | undefined, lang: string) => {
-  const f = SETORAN_KINDS.find((s) => s.value === v);
-  return f ? (lang === "id" ? f.id : f.en) : "";
-};
-
-const emptyQ = (type: BType = "multiple_choice"): BQ => ({
-  type,
-  topic: "",
-  question: "",
-  options: ["", "", "", ""],
-  correctIndex: 0,
-  correctIndices: [],
-  answer: "",
-  difficulty: "medium",
-  image_url: null,
-  surah: "",
-  target: "",
-  setoranKind: type === "halaqoh_tilawah" ? "tilawah_harian" : type === "halaqoh_setoran" ? "ziyadah" : "",
-  minPages: type === "halaqoh_tilawah" ? "1" : "",
-});
-
-// Build DB rows from the form, collecting ALL validation errors (never throws).
-// Returns rows only when there are zero errors.
-function buildBankRows(
-  questions: BQ[],
-  subject: string,
-  gradeLevel: string,
-  userId: string,
-  lang: string,
-): { rows: any[]; errors: string[] } {
-  const errors: string[] = [];
-  const rows: any[] = [];
-
-  if (questions.length === 0) {
-    errors.push(lang === "id" ? "Tambahkan minimal 1 soal." : "Add at least 1 question.");
-  }
-  if (questions.length > MAX_QUESTIONS) {
-    errors.push(lang === "id" ? `Maksimal ${MAX_QUESTIONS} soal (sekarang ${questions.length}).` : `Max ${MAX_QUESTIONS} (now ${questions.length}).`);
-  }
-
-  questions.forEach((q, i) => {
-    const at = (lang === "id" ? "Soal " : "Q ") + (i + 1);
-    const prompt = q.question.trim();
-
-    if (isHalaqohType(q.type)) {
-      if (!q.surah.trim() && !prompt) {
-        errors.push(`${at}: ${lang === "id" ? "isi Surah atau instruksi." : "fill surah or instruction."}`);
-      }
-      const isSetoranLike = q.type === "halaqoh_setoran" || q.type === "halaqoh_tilawah";
-      if (isSetoranLike && !q.setoranKind) {
-        errors.push(`${at}: ${lang === "id" ? "pilih Jenis Setoran." : "choose setoran type."}`);
-      }
-      if (q.minPages.trim() && (isNaN(Number(q.minPages)) || Number(q.minPages) < 0)) {
-        errors.push(`${at}: ${lang === "id" ? "Min. Halaman harus angka ≥ 0." : "Min pages must be a number ≥ 0."}`);
-      }
-      const kind = q.type.replace("halaqoh_", "");
-      const setoranTxt = isSetoranLike && q.setoranKind ? ` · ${setoranLabel(q.setoranKind, lang)}` : "";
-      const pagesTxt = q.minPages.trim() ? ` · min ${q.minPages.trim()} hlm` : "";
-      const defaultPrompt = `${TYPE_LABEL(q.type, lang)}${q.surah.trim() ? ` — ${q.surah.trim()}` : ""}${q.target.trim() ? ` (${q.target.trim()})` : ""}${setoranTxt}${pagesTxt}`;
-      rows.push({
-        teacher_id: userId, subject: subject || null, grade_level: gradeLevel || null,
-        topic: q.surah.trim() || null, question: prompt || defaultPrompt, type: "voice" as const,
-        halaqoh_kind: kind, options: null, answer: q.target.trim() || null,
-        difficulty: q.difficulty as any, image_url: q.image_url || null,
-        setoran_kind: isSetoranLike ? (q.setoranKind || null) : null,
-        min_pages: q.minPages.trim() ? Number(q.minPages.trim()) : null,
-      });
-      return;
-    }
-
-    if (!prompt) {
-      errors.push(`${at}: ${lang === "id" ? "pertanyaan masih kosong." : "question is empty."}`);
-    }
-    let opts: string[] | null = null;
-    let answer: string | null = q.answer.trim() || null;
-    if (q.type === "multiple_choice") {
-      opts = q.options.map((o) => o.trim()).filter(Boolean);
-      if (opts.length < 2) errors.push(`${at}: ${lang === "id" ? "minimal 2 pilihan jawaban." : "min 2 options."}`);
-      const chosen = q.options[q.correctIndex]?.trim();
-      if (!chosen) errors.push(`${at}: ${lang === "id" ? "tandai jawaban yang benar." : "mark the correct answer."}`);
-      answer = chosen || null;
-    } else if (q.type === "complex_multiple_choice") {
-      opts = q.options.map((o) => o.trim()).filter(Boolean);
-      if (opts.length < 2) errors.push(`${at}: ${lang === "id" ? "minimal 2 pilihan jawaban." : "min 2 options."}`);
-      const chosen = q.correctIndices.map((idx) => q.options[idx]?.trim()).filter(Boolean);
-      if (chosen.length < 1) errors.push(`${at}: ${lang === "id" ? "tandai minimal 1 jawaban benar." : "mark at least 1 correct answer."}`);
-      answer = chosen.join(", ") || null;
-    } else if (q.type === "true_false") {
-      opts = null;
-      if (!answer) answer = "Benar";
-    } else if (q.type === "short_answer") {
-      if (!answer) errors.push(`${at}: ${lang === "id" ? "isi kunci jawaban." : "fill the answer key."}`);
-    } else if (q.type === "voice") {
-      opts = null; answer = null;
-    }
-    rows.push({
-      teacher_id: userId, subject: subject || null, grade_level: gradeLevel || null,
-      topic: q.topic.trim() || null, question: prompt, type: q.type as any,
-      halaqoh_kind: null, options: opts, answer, difficulty: q.difficulty as any,
-      image_url: q.image_url || null,
-    });
-  });
-
-  return { rows: errors.length ? [] : rows, errors };
-}
 
 function GuruBankSoalPage() {
   const { user, role, loading } = useAuth();
@@ -195,6 +35,7 @@ function GuruBankSoalPage() {
   const { t, lang } = useLang();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
   const [subject, setSubject] = useState("");
   const [gradeLevel, setGradeLevel] = useState("");
   const [questions, setQuestions] = useState<BQ[]>([emptyQ()]);
@@ -238,32 +79,31 @@ function GuruBankSoalPage() {
   });
 
   const resetForm = () => {
+    setEditId(null);
     setSubject(""); setGradeLevel(""); setQuestions([emptyQ()]);
     setDestination("bank"); setATitle(""); setATarget("class");
     setAClassId(""); setAStudentId(""); setADueAt("");
     setAMaxScore(100); setAXp(50); setACoin(10);
   };
 
+  // Open the form pre-filled to edit an existing bank question (single row).
+  const openEdit = (row: any) => {
+    setEditId(row.id);
+    setSubject(row.subject ?? "");
+    setGradeLevel(row.grade_level ?? "");
+    setQuestions([bankRowToBQ(row)]);
+    setDestination("bank");
+    setOpen(true);
+  };
+
   const setQ = (i: number, patch: Partial<BQ>) =>
     setQuestions((qs) => qs.map((q, idx) => (idx === i ? { ...q, ...patch } : q)));
-  const setOpt = (qi: number, oi: number, v: string) =>
-    setQuestions((qs) => qs.map((q, idx) => (idx === qi ? { ...q, options: q.options.map((o, j) => (j === oi ? v : o)) } : q)));
-  const addOpt = (qi: number) =>
-    setQuestions((qs) => qs.map((q, idx) => (idx === qi ? { ...q, options: [...q.options, ""] } : q)));
-  const removeOpt = (qi: number, oi: number) =>
-    setQuestions((qs) => qs.map((q, idx) => {
-      if (idx !== qi) return q;
-      const options = q.options.filter((_, j) => j !== oi);
-      const correctIndex = q.correctIndex >= options.length ? Math.max(0, options.length - 1) : q.correctIndex;
-      return { ...q, options, correctIndex, correctIndices: q.correctIndices.filter((x) => x < options.length) };
-    }));
   const addQuestion = (type: BType = "multiple_choice") =>
     setQuestions((qs) => {
       if (qs.length >= MAX_QUESTIONS) { toast.error(lang === "id" ? `Maksimal ${MAX_QUESTIONS} soal` : `Max ${MAX_QUESTIONS}`); return qs; }
       return [...qs, emptyQ(type)];
     });
-  const removeQuestion = (i: number) =>
-    setQuestions((qs) => (qs.length > 1 ? qs.filter((_, idx) => idx !== i) : qs));
+
 
   async function uploadImage(e: React.ChangeEvent<HTMLInputElement>, qi: number) {
     const file = e.target.files?.[0];
@@ -310,6 +150,13 @@ function GuruBankSoalPage() {
       let savedBank = 0;
       let sentAssignment = 0;
 
+      // Edit mode: update the single existing bank row (never touches assignments/submissions).
+      if (editId) {
+        const { error } = await supabase.from("question_bank").update(rows[0] as any).eq("id", editId);
+        if (error) throw error;
+        return { savedBank: 1, sentAssignment: 0, edited: true };
+      }
+
       if (destination === "bank" || destination === "both") {
         const { error } = await supabase.from("question_bank").insert(rows as any);
         if (error) throw error;
@@ -348,13 +195,17 @@ function GuruBankSoalPage() {
         sentAssignment = questionsPublic.length;
       }
 
-      return { savedBank, sentAssignment };
+      return { savedBank, sentAssignment, edited: false };
     },
-    onSuccess: ({ savedBank, sentAssignment }) => {
-      const parts: string[] = [];
-      if (savedBank) parts.push(lang === "id" ? `${savedBank} soal ke Bank Soal` : `${savedBank} to Bank`);
-      if (sentAssignment) parts.push(lang === "id" ? `${sentAssignment} soal terkirim sebagai Tugas/Kuis` : `${sentAssignment} sent as assignment`);
-      toast.success((parts.join(" · ") || (lang === "id" ? "Tersimpan" : "Saved")) + " ✨");
+    onSuccess: ({ savedBank, sentAssignment, edited }) => {
+      if (edited) {
+        toast.success(lang === "id" ? "Soal diperbarui ✨" : "Question updated ✨");
+      } else {
+        const parts: string[] = [];
+        if (savedBank) parts.push(lang === "id" ? `${savedBank} soal ke Bank Soal` : `${savedBank} to Bank`);
+        if (sentAssignment) parts.push(lang === "id" ? `${sentAssignment} soal terkirim sebagai Tugas/Kuis` : `${sentAssignment} sent as assignment`);
+        toast.success((parts.join(" · ") || (lang === "id" ? "Tersimpan" : "Saved")) + " ✨");
+      }
       setOpen(false); resetForm(); setShowPreview(false);
       qc.invalidateQueries({ queryKey: ["qb"] });
       qc.invalidateQueries({ queryKey: ["quizzes"] });
@@ -362,6 +213,7 @@ function GuruBankSoalPage() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
 
   const deleteMut = useMutation({
     mutationFn: async (id: string) => { const { error } = await supabase.from("question_bank").delete().eq("id", id); if (error) throw error; },
@@ -371,7 +223,7 @@ function GuruBankSoalPage() {
   const diffColor: Record<string, string> = { easy: "bg-xp/20 text-xp", medium: "bg-coin/20 text-coin", hard: "bg-destructive/20 text-destructive" };
   const toggleSel = (id: string) => setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
 
-  const ALL_TYPES: BType[] = ["multiple_choice", "complex_multiple_choice", "true_false", "short_answer", "essay", "voice", "halaqoh_menyimak", "halaqoh_setoran", "halaqoh_tilawah"];
+  // ALL_TYPES imported from question-fields.
 
   // Available grade levels for the filter dropdown.
   const gradeOptions = Array.from(new Set((items as any[]).map((q) => q.grade_level).filter(Boolean))) as string[];
@@ -399,10 +251,11 @@ function GuruBankSoalPage() {
                 <Send className="size-4" /> {lang === "id" ? `Kirim ke Tugas (${selected.length})` : `Send to Tugas (${selected.length})`}
               </Button>
             )}
-            <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o) resetForm(); }}>
-              <DialogTrigger asChild><Button variant="guru"><Plus className="size-4" /> {lang === "id" ? "Buat Soal" : "Create Questions"}</Button></DialogTrigger>
+            <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) resetForm(); }}>
+              <DialogTrigger asChild><Button variant="guru" onClick={() => resetForm()}><Plus className="size-4" /> {lang === "id" ? "Buat Soal" : "Create Questions"}</Button></DialogTrigger>
               <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader><DialogTitle>{lang === "id" ? "Buat Soal (Bank Soal / Tugas / Kuis)" : "Create Questions (Bank / Assignment / Quiz)"}</DialogTitle></DialogHeader>
+                <DialogHeader><DialogTitle>{editId ? (lang === "id" ? "Edit Soal" : "Edit Question") : (lang === "id" ? "Buat Soal (Bank Soal / Tugas / Kuis)" : "Create Questions (Bank / Assignment / Quiz)")}</DialogTitle></DialogHeader>
+
                 <div className="space-y-3">
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div><Label>{t("subject")}</Label><SubjectSelect value={subject} onChange={setSubject} /></div>
@@ -413,7 +266,9 @@ function GuruBankSoalPage() {
                   </div>
 
                   {/* Destination: one form, choose where the questions go */}
+                  {!editId && (
                   <div className="rounded-xl border-2 border-border bg-muted/20 p-3">
+
                     <Label className="text-sm font-bold">{lang === "id" ? "Tujuan Soal" : "Destination"}</Label>
                     <div className="mt-2 grid grid-cols-3 gap-2">
                       {([
@@ -472,136 +327,28 @@ function GuruBankSoalPage() {
                     )}
                   </div>
 
+                  )}
+
                   <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
                     <Label className="text-base font-bold">{lang === "id" ? "Daftar Soal" : "Questions"} <span className="font-normal text-muted-foreground">({questions.length}/{MAX_QUESTIONS})</span></Label>
+                    {!editId && (
                     <Select value="" onValueChange={(v) => addQuestion(v as BType)}>
                       <SelectTrigger className="h-9 w-auto gap-1"><Plus className="size-4" /><span className="text-sm">{lang === "id" ? "Tambah Soal" : "Add"}</span></SelectTrigger>
                       <SelectContent>
                         {ALL_TYPES.map((tp) => <SelectItem key={tp} value={tp}>{TYPE_LABEL(tp, lang)}</SelectItem>)}
                       </SelectContent>
                     </Select>
+                    )}
                   </div>
 
-                  <div className="space-y-3">
-                    {questions.map((q, qi) => (
-                      <div key={qi} className="rounded-xl border-2 border-border bg-muted/20 p-3">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="font-display text-sm font-bold">{lang === "id" ? "Soal" : "Q"} {qi + 1}</span>
-                          <div className="flex items-center gap-2">
-                            <Select value={q.type} onValueChange={(v) => setQ(qi, { type: v as BType })}>
-                              <SelectTrigger className="h-8 w-auto text-xs"><SelectValue /></SelectTrigger>
-                              <SelectContent>{ALL_TYPES.map((tp) => <SelectItem key={tp} value={tp}>{TYPE_LABEL(tp, lang)}</SelectItem>)}</SelectContent>
-                            </Select>
-                            <Select value={q.difficulty} onValueChange={(v) => setQ(qi, { difficulty: v })}>
-                              <SelectTrigger className="h-8 w-auto text-xs"><SelectValue /></SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="easy">{t("easy")}</SelectItem>
-                                <SelectItem value="medium">{t("medium")}</SelectItem>
-                                <SelectItem value="hard">{t("hard")}</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            {questions.length > 1 && <Button type="button" size="icon" variant="ghost" className="size-7" onClick={() => removeQuestion(qi)}><Trash2 className="size-4 text-destructive" /></Button>}
-                          </div>
-                        </div>
 
-                        {isHalaqohType(q.type) ? (
-                          <div className="mt-2 space-y-2">
-                            <div className="rounded-lg bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-700">
-                              <BookOpenCheck className="mr-1 inline size-3.5" />
-                              {lang === "id" ? "Soal Halaqoh — penilaian otomatis masuk ke Mutaba'ah saat dikirim sebagai Tugas mapel Halaqoh." : "Halaqoh item — auto-records to Mutaba'ah."}
-                            </div>
-                            {(q.type === "halaqoh_setoran" || q.type === "halaqoh_tilawah") && (
-                              <div className="grid gap-2 sm:grid-cols-2">
-                                <div>
-                                  <Label className="text-xs">{lang === "id" ? "Jenis Setoran" : "Setoran Type"}</Label>
-                                  <Select value={q.setoranKind || undefined} onValueChange={(v) => setQ(qi, { setoranKind: v })}>
-                                    <SelectTrigger className="h-9"><SelectValue placeholder={lang === "id" ? "Pilih jenis" : "Select"} /></SelectTrigger>
-                                    <SelectContent>
-                                      {SETORAN_KINDS.map((s) => <SelectItem key={s.value} value={s.value}>{lang === "id" ? s.id : s.en}</SelectItem>)}
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                                <div>
-                                  <Label className="text-xs">{lang === "id" ? "Min. Halaman / hari" : "Min. Pages / day"}</Label>
-                                  <Input type="number" min={0} step="0.5" value={q.minPages} onChange={(e) => setQ(qi, { minPages: e.target.value })} placeholder={lang === "id" ? "mis. 1" : "e.g. 1"} />
-                                </div>
-                              </div>
-                            )}
-                            <div className="grid gap-2 sm:grid-cols-2">
-                              <div><Label className="text-xs">{lang === "id" ? "Surah" : "Surah"}</Label><Input value={q.surah} onChange={(e) => setQ(qi, { surah: e.target.value })} placeholder={lang === "id" ? "mis. Al-Baqarah" : "e.g. Al-Baqarah"} /></div>
-                              <div><Label className="text-xs">{lang === "id" ? "Target (ayat / juz)" : "Target"}</Label><Input value={q.target} onChange={(e) => setQ(qi, { target: e.target.value })} placeholder={lang === "id" ? "mis. ayat 1-10 / Juz 1" : "e.g. 1-10"} /></div>
-                            </div>
-                            <Textarea rows={2} value={q.question} onChange={(e) => setQ(qi, { question: e.target.value })} placeholder={lang === "id" ? "Instruksi (opsional)…" : "Instruction (optional)…"} />
-                          </div>
-                        ) : (
-                          <>
-                            <Textarea rows={2} className="mt-2" value={q.question} onChange={(e) => setQ(qi, { question: e.target.value })} placeholder={lang === "id" ? "Tulis pertanyaan…" : "Write the question…"} />
+                  <QuestionEditorList
+                    questions={questions}
+                    setQuestions={setQuestions}
+                    uploadImage={uploadImage}
+                    uploadingIdx={uploadingIdx}
+                  />
 
-                            <div className="mt-2">
-                              <input type="file" accept="image/*" onChange={(e) => uploadImage(e, qi)} disabled={uploadingIdx === qi}
-                                className="block w-full text-xs file:mr-3 file:rounded-lg file:border-0 file:bg-guru file:px-3 file:py-1.5 file:text-white" />
-                              {uploadingIdx === qi && <p className="mt-1 text-xs text-muted-foreground">{lang === "id" ? "Mengunggah…" : "Uploading…"}</p>}
-                              {q.image_url && <p className="mt-1 text-xs text-emerald-600">✅ {lang === "id" ? "Gambar siap" : "Image attached"}</p>}
-                            </div>
-
-                            {(q.type === "multiple_choice" || q.type === "complex_multiple_choice") && (
-                              <div className="mt-2 space-y-1.5">
-                                <p className="text-xs text-muted-foreground">
-                                  {q.type === "complex_multiple_choice"
-                                    ? (lang === "id" ? "Tandai semua jawaban benar." : "Mark all correct answers.")
-                                    : (lang === "id" ? "Tandai lingkaran untuk jawaban benar." : "Tap circle for correct answer.")}
-                                </p>
-                                {q.options.map((opt, oi) => {
-                                  const isComplex = q.type === "complex_multiple_choice";
-                                  const checked = isComplex ? q.correctIndices.includes(oi) : q.correctIndex === oi;
-                                  return (
-                                    <div key={oi} className="flex items-center gap-2">
-                                      <button type="button"
-                                        onClick={() => isComplex
-                                          ? setQ(qi, { correctIndices: q.correctIndices.includes(oi) ? q.correctIndices.filter((x) => x !== oi) : [...q.correctIndices, oi] })
-                                          : setQ(qi, { correctIndex: oi })}
-                                        className={`grid size-6 shrink-0 place-items-center border-2 ${isComplex ? "rounded-md" : "rounded-full"} ${checked ? "border-emerald-500 bg-emerald-500 text-white" : "border-muted-foreground/40"}`}>
-                                        {checked && <Check className="size-3.5" />}
-                                      </button>
-                                      <Input value={opt} onChange={(e) => setOpt(qi, oi, e.target.value)} placeholder={`${lang === "id" ? "Pilihan" : "Option"} ${String.fromCharCode(65 + oi)}`} />
-                                      {q.options.length > 2 && <Button type="button" size="icon" variant="ghost" className="size-7" onClick={() => removeOpt(qi, oi)}><X className="size-4" /></Button>}
-                                    </div>
-                                  );
-                                })}
-                                {q.options.length < 6 && <Button type="button" size="sm" variant="ghost" onClick={() => addOpt(qi)}><Plus className="size-3" /> {lang === "id" ? "Pilihan" : "Option"}</Button>}
-                              </div>
-                            )}
-
-                            {q.type === "true_false" && (
-                              <div className="mt-2 flex gap-2">
-                                {["Benar", "Salah"].map((val) => (
-                                  <button key={val} type="button" onClick={() => setQ(qi, { answer: val })}
-                                    className={`flex-1 rounded-lg border-2 px-3 py-2 text-sm font-semibold ${q.answer === val ? "border-emerald-500 bg-emerald-500/10 text-emerald-700" : "border-border"}`}>
-                                    {val}
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-
-                            {q.type === "short_answer" && (
-                              <div className="mt-2">
-                                <Label className="text-xs">{lang === "id" ? "Kunci jawaban (alternatif pisahkan dengan |)" : "Answer key (separate with |)"}</Label>
-                                <Input value={q.answer} onChange={(e) => setQ(qi, { answer: e.target.value })} placeholder={lang === "id" ? "mis. mad|maddah" : "e.g. mad|maddah"} />
-                              </div>
-                            )}
-
-                            {q.type === "voice" && (
-                              <p className="mt-2 rounded-lg bg-quest/10 px-3 py-1.5 text-xs font-semibold text-quest"><Mic className="mr-1 inline size-3.5" />{lang === "id" ? "Siswa menjawab dengan rekaman suara (dinilai manual)." : "Voice answer (manual)."}</p>
-                            )}
-
-                            {q.type === "essay" && (
-                              <p className="mt-2 rounded-lg bg-amber-500/10 px-3 py-1.5 text-xs font-semibold text-amber-700">{lang === "id" ? "Esai — dinilai manual oleh guru." : "Essay — graded manually."}</p>
-                            )}
-                          </>
-                        )}
-                      </div>
-                    ))}
-                  </div>
 
                   {/* Live validation summary + preview */}
                   <div className={`rounded-xl border-2 p-3 text-sm ${allErrors.length ? "border-destructive/40 bg-destructive/5" : "border-emerald-500/40 bg-emerald-500/5"}`}>
@@ -710,7 +457,11 @@ function GuruBankSoalPage() {
                       <LinkBadges quizLink={q.quiz_link} gameLink={q.game_link} />
                     </div>
                   </div>
-                  <Button size="sm" variant="ghost" onClick={() => { if (confirm(`${t("delete")}?`)) deleteMut.mutate(q.id); }}><Trash2 className="size-4 text-destructive" /></Button>
+                  <div className="flex shrink-0 items-center gap-1">
+                    <Button size="sm" variant="ghost" onClick={() => openEdit(q)} title={lang === "id" ? "Edit" : "Edit"}><Pencil className="size-4 text-guru" /></Button>
+                    <Button size="sm" variant="ghost" onClick={() => { if (confirm(`${t("delete")}?`)) deleteMut.mutate(q.id); }}><Trash2 className="size-4 text-destructive" /></Button>
+                  </div>
+
                 </div>
               </div>
             );
@@ -730,38 +481,7 @@ function GuruBankSoalPage() {
   );
 }
 
-// Map a bank row to a quiz question + answer-key entry for the assignments feature.
-// Halaqoh metadata is preserved on the question so grading can auto-record to Mutaba'ah.
-function mapBankToQuiz(b: any): { question: any; key: any } {
-  const opts: string[] = Array.isArray(b.options) ? b.options : [];
-  if (b.halaqoh_kind || b.type === "voice") {
-    return {
-      question: {
-        type: "voice", q: b.question, image_url: b.image_url ?? null,
-        halaqoh_kind: b.halaqoh_kind ?? null,
-        setoran_kind: b.setoran_kind ?? null,
-        surah: b.topic ?? null,
-        target: b.answer ?? null,
-        min_pages: b.min_pages ?? null,
-      },
-      key: null,
-    };
-  }
-  if (b.type === "multiple_choice") {
-    const idx = Math.max(0, opts.findIndex((o) => o.trim().toLowerCase() === String(b.answer ?? "").split(",")[0].trim().toLowerCase()));
-    return { question: { type: "multiple_choice", q: b.question, options: opts.length ? opts : ["", ""], image_url: b.image_url ?? null }, key: idx };
-  }
-  if (b.type === "true_false") {
-    const a = String(b.answer ?? "").trim().toLowerCase();
-    const truthy = ["true", "benar", "b", "ya", "yes", "1"].includes(a);
-    return { question: { type: "true_false", q: b.question, options: ["Benar", "Salah"], image_url: b.image_url ?? null }, key: truthy ? "true" : "false" };
-  }
-  if (b.type === "short_answer") {
-    return { question: { type: "short_answer", q: b.question, image_url: b.image_url ?? null }, key: String(b.answer ?? "").trim() };
-  }
-  // essay / complex / others -> manual essay
-  return { question: { type: "essay", q: b.question, image_url: b.image_url ?? null }, key: null };
-}
+
 
 function TransferDialog({ open, onOpenChange, items, onDone }: { open: boolean; onOpenChange: (o: boolean) => void; items: any[]; onDone: () => void }) {
   const { user } = useAuth();
