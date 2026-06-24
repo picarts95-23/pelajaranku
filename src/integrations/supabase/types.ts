@@ -747,9 +747,11 @@ export type Database = {
           halaqoh_kind: string | null
           id: string
           image_url: string | null
+          min_pages: number | null
           options: Json | null
           question: string
           quiz_link: string | null
+          setoran_kind: string | null
           subject: string | null
           teacher_id: string
           topic: string | null
@@ -765,9 +767,11 @@ export type Database = {
           halaqoh_kind?: string | null
           id?: string
           image_url?: string | null
+          min_pages?: number | null
           options?: Json | null
           question: string
           quiz_link?: string | null
+          setoran_kind?: string | null
           subject?: string | null
           teacher_id: string
           topic?: string | null
@@ -783,9 +787,11 @@ export type Database = {
           halaqoh_kind?: string | null
           id?: string
           image_url?: string | null
+          min_pages?: number | null
           options?: Json | null
           question?: string
           quiz_link?: string | null
+          setoran_kind?: string | null
           subject?: string | null
           teacher_id?: string
           topic?: string | null
@@ -989,9 +995,11 @@ export type Database = {
           kelancaran_helps: number
           kelancaran_score: number
           notes: string | null
+          pages_count: number | null
           predikat: string | null
           session_date: string
           session_type: string
+          setoran_kind: string | null
           student_id: string
           surah: string | null
           tajwid_errors: number
@@ -1014,9 +1022,11 @@ export type Database = {
           kelancaran_helps?: number
           kelancaran_score?: number
           notes?: string | null
+          pages_count?: number | null
           predikat?: string | null
           session_date?: string
           session_type?: string
+          setoran_kind?: string | null
           student_id: string
           surah?: string | null
           tajwid_errors?: number
@@ -1039,9 +1049,11 @@ export type Database = {
           kelancaran_helps?: number
           kelancaran_score?: number
           notes?: string | null
+          pages_count?: number | null
           predikat?: string | null
           session_date?: string
           session_type?: string
+          setoran_kind?: string | null
           student_id?: string
           surah?: string | null
           tajwid_errors?: number
