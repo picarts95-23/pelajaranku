@@ -151,15 +151,24 @@ function GuruLaporanPage() {
 
   const halaqohActive = subject === "all" || isHalaqoh(subject) || filteredMutabaah.length > 0;
 
-  // CSV export rows for the per-student table
+  // Export columns + rows for the per-student table
+  const exportColumns = [
+    { key: "name", header: lang === "id" ? "Siswa" : "Student" },
+    { key: "avg", header: lang === "id" ? "Rata-rata (%)" : "Average (%)" },
+    { key: "count", header: lang === "id" ? "Jumlah Tugas" : "Tasks" },
+    { key: "xp", header: "XP" },
+    { key: "coins", header: lang === "id" ? "Koin" : "Coins" },
+    { key: "level", header: "Level" },
+  ];
   const exportRows = perStudent.map((s) => ({
-    [lang === "id" ? "Siswa" : "Student"]: s.name,
-    [lang === "id" ? "Rata-rata (%)" : "Average (%)"]: s.avg ?? "-",
-    [lang === "id" ? "Jumlah Tugas" : "Tasks"]: s.count,
-    XP: s.xp,
-    [lang === "id" ? "Koin" : "Coins"]: s.coins,
-    Level: s.level,
+    name: s.name,
+    avg: s.avg ?? "-",
+    count: s.count,
+    xp: s.xp,
+    coins: s.coins,
+    level: s.level,
   }));
+
 
   return (
     <DashboardShell accent="guru">
