@@ -266,7 +266,9 @@ function GuruBankSoalPage() {
                   </div>
 
                   {/* Destination: one form, choose where the questions go */}
+                  {!editId && (
                   <div className="rounded-xl border-2 border-border bg-muted/20 p-3">
+
                     <Label className="text-sm font-bold">{lang === "id" ? "Tujuan Soal" : "Destination"}</Label>
                     <div className="mt-2 grid grid-cols-3 gap-2">
                       {([
