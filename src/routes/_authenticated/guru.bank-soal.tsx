@@ -422,6 +422,8 @@ function GuruBankSoalPage() {
                         {q.grade_level && <span className="rounded-full bg-siswa/15 px-2 py-0.5 text-xs font-display font-bold text-siswa">{q.grade_level}</span>}
                         {q.topic && <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-display">{q.topic}</span>}
                         {q.halaqoh_kind && <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-display font-bold text-emerald-700">{TYPE_LABEL(HALAQOH_KIND[q.halaqoh_kind] ?? "halaqoh_setoran", lang)}</span>}
+                        {q.setoran_kind && <span className="rounded-full bg-teal-500/15 px-2 py-0.5 text-xs font-display font-bold text-teal-700">{setoranLabel(q.setoran_kind, lang)}</span>}
+                        {q.min_pages != null && <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-display font-bold text-amber-700">≥ {q.min_pages} hlm</span>}
                         <span className={`rounded-full px-2 py-0.5 text-xs font-display font-bold ${diffColor[q.difficulty]}`}>{t(q.difficulty as any)}</span>
                       </div>
                       <p className="mt-2 font-display font-semibold">{q.question}</p>
