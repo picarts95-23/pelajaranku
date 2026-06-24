@@ -35,6 +35,7 @@ function GuruBankSoalPage() {
   const { t, lang } = useLang();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
   const [subject, setSubject] = useState("");
   const [gradeLevel, setGradeLevel] = useState("");
   const [questions, setQuestions] = useState<BQ[]>([emptyQ()]);
