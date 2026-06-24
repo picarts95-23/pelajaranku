@@ -299,6 +299,23 @@ function GuruBankSoalPage() {
                               <BookOpenCheck className="mr-1 inline size-3.5" />
                               {lang === "id" ? "Soal Halaqoh — penilaian otomatis masuk ke Mutaba'ah saat dikirim sebagai Tugas mapel Halaqoh." : "Halaqoh item — auto-records to Mutaba'ah."}
                             </div>
+                            {(q.type === "halaqoh_setoran" || q.type === "halaqoh_tilawah") && (
+                              <div className="grid gap-2 sm:grid-cols-2">
+                                <div>
+                                  <Label className="text-xs">{lang === "id" ? "Jenis Setoran" : "Setoran Type"}</Label>
+                                  <Select value={q.setoranKind || undefined} onValueChange={(v) => setQ(qi, { setoranKind: v })}>
+                                    <SelectTrigger className="h-9"><SelectValue placeholder={lang === "id" ? "Pilih jenis" : "Select"} /></SelectTrigger>
+                                    <SelectContent>
+                                      {SETORAN_KINDS.map((s) => <SelectItem key={s.value} value={s.value}>{lang === "id" ? s.id : s.en}</SelectItem>)}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                <div>
+                                  <Label className="text-xs">{lang === "id" ? "Min. Halaman / hari" : "Min. Pages / day"}</Label>
+                                  <Input type="number" min={0} step="0.5" value={q.minPages} onChange={(e) => setQ(qi, { minPages: e.target.value })} placeholder={lang === "id" ? "mis. 1" : "e.g. 1"} />
+                                </div>
+                              </div>
+                            )}
                             <div className="grid gap-2 sm:grid-cols-2">
                               <div><Label className="text-xs">{lang === "id" ? "Surah" : "Surah"}</Label><Input value={q.surah} onChange={(e) => setQ(qi, { surah: e.target.value })} placeholder={lang === "id" ? "mis. Al-Baqarah" : "e.g. Al-Baqarah"} /></div>
                               <div><Label className="text-xs">{lang === "id" ? "Target (ayat / juz)" : "Target"}</Label><Input value={q.target} onChange={(e) => setQ(qi, { target: e.target.value })} placeholder={lang === "id" ? "mis. ayat 1-10 / Juz 1" : "e.g. 1-10"} /></div>
