@@ -14,6 +14,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { SubjectSelect } from "@/components/subject-select";
+import { QuizTabs } from "@/components/quiz-tabs";
 import { LinkBadges } from "@/components/link-fields";
 import { MediaViewer } from "@/components/media-input";
 
