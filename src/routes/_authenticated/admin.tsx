@@ -78,6 +78,26 @@ function AdminPage() {
     onError: (e: any) => { toast.error(e?.message ?? "Gagal menghapus"); setPendingDelete(null); },
   });
 
+  const passwordMut = useMutation({
+    mutationFn: (vars: { userId: string; password: string }) => passwordFn({ data: vars }),
+    onSuccess: () => {
+      toast.success("Password berhasil diganti");
+      setPwUser(null);
+      setNewPw("");
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Gagal mengganti password"),
+  });
+
+  const genPw = () => {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+    let out = "";
+    const arr = new Uint32Array(10);
+    crypto.getRandomValues(arr);
+    for (let i = 0; i < 10; i++) out += chars[arr[i] % chars.length];
+    setNewPw(out);
+    setShowPw(true);
+  };
+
   const users = usersQuery.data ?? [];
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
