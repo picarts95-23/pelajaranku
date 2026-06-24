@@ -53,9 +53,35 @@ function AuthPage() {
   const [subject, setSubject] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [teacherCode, setTeacherCode] = useState("");
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [sendingReset, setSendingReset] = useState(false);
   // Prevents the session listener from redirecting mid-signup, before the
   // teacher role has been granted (which would land teachers on /siswa).
   const submittingRef = useRef(false);
+
+  const openForgot = () => { setResetEmail(email); setForgotOpen(true); };
+
+  const sendReset = async () => {
+    const target = resetEmail.trim();
+    if (!target) { toast.error(lang === "id" ? "Masukkan email" : "Enter your email"); return; }
+    setSendingReset(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(target, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      toast.success(lang === "id"
+        ? "Tautan atur ulang dikirim ke email Anda."
+        : "Reset link sent to your email.");
+      setForgotOpen(false);
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setSendingReset(false);
+    }
+  };
 
   useEffect(() => {
     if (session && !submittingRef.current) navigate({ to: "/loading" });
