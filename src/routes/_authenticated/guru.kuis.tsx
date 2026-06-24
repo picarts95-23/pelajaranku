@@ -139,7 +139,9 @@ function GuruKuisPage() {
           })}
         </div>
       )}
+      {editing && <EditQuizDialog quiz={editing} onClose={() => setEditing(null)} />}
     </DashboardShell>
+
   );
 }
 
