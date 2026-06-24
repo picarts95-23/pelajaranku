@@ -259,6 +259,57 @@ function AdminPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={!!pwUser} onOpenChange={(o) => { if (!o) { setPwUser(null); setNewPw(""); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Ganti password pengguna</DialogTitle>
+            <DialogDescription>
+              Tetapkan password baru untuk <b>{pwUser?.full_name ?? pwUser?.email}</b>.
+              Password asli tidak bisa ditampilkan karena tersimpan terenkripsi — sampaikan password baru ini ke pengguna.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label className="mb-1.5 block">Password baru</Label>
+              <div className="relative">
+                <Input
+                  type={showPw ? "text" : "password"}
+                  value={newPw}
+                  onChange={(e) => setNewPw(e.target.value)}
+                  placeholder="Minimal 6 karakter"
+                  className="h-11 rounded-xl border-2 pr-11"
+                />
+                <button type="button" onClick={() => setShowPw((v) => !v)}
+                  aria-label={showPw ? "Sembunyikan" : "Tampilkan"}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  {showPw ? <EyeOff className="size-5" /> : <Eye className="size-5" />}
+                </button>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button type="button" variant="outline" size="sm" onClick={genPw}>
+                <Wand2 className="size-4" /> Buatkan acak
+              </Button>
+              {newPw && (
+                <Button type="button" variant="outline" size="sm"
+                  onClick={() => { navigator.clipboard?.writeText(newPw); toast.success("Password disalin"); }}>
+                  <Copy className="size-4" /> Salin
+                </Button>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => { setPwUser(null); setNewPw(""); }}>Batal</Button>
+            <Button
+              disabled={passwordMut.isPending || newPw.trim().length < 6}
+              onClick={() => pwUser && passwordMut.mutate({ userId: pwUser.id, password: newPw.trim() })}>
+              {passwordMut.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
+              Simpan password
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
