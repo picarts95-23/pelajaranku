@@ -104,6 +104,91 @@ const emptyQ = (type: BType = "multiple_choice"): BQ => ({
   minPages: type === "halaqoh_tilawah" ? "1" : "",
 });
 
+// Build DB rows from the form, collecting ALL validation errors (never throws).
+// Returns rows only when there are zero errors.
+function buildBankRows(
+  questions: BQ[],
+  subject: string,
+  gradeLevel: string,
+  userId: string,
+  lang: string,
+): { rows: any[]; errors: string[] } {
+  const errors: string[] = [];
+  const rows: any[] = [];
+
+  if (questions.length === 0) {
+    errors.push(lang === "id" ? "Tambahkan minimal 1 soal." : "Add at least 1 question.");
+  }
+  if (questions.length > MAX_QUESTIONS) {
+    errors.push(lang === "id" ? `Maksimal ${MAX_QUESTIONS} soal (sekarang ${questions.length}).` : `Max ${MAX_QUESTIONS} (now ${questions.length}).`);
+  }
+
+  questions.forEach((q, i) => {
+    const at = (lang === "id" ? "Soal " : "Q ") + (i + 1);
+    const prompt = q.question.trim();
+
+    if (isHalaqohType(q.type)) {
+      if (!q.surah.trim() && !prompt) {
+        errors.push(`${at}: ${lang === "id" ? "isi Surah atau instruksi." : "fill surah or instruction."}`);
+      }
+      const isSetoranLike = q.type === "halaqoh_setoran" || q.type === "halaqoh_tilawah";
+      if (isSetoranLike && !q.setoranKind) {
+        errors.push(`${at}: ${lang === "id" ? "pilih Jenis Setoran." : "choose setoran type."}`);
+      }
+      if (q.minPages.trim() && (isNaN(Number(q.minPages)) || Number(q.minPages) < 0)) {
+        errors.push(`${at}: ${lang === "id" ? "Min. Halaman harus angka ≥ 0." : "Min pages must be a number ≥ 0."}`);
+      }
+      const kind = q.type.replace("halaqoh_", "");
+      const setoranTxt = isSetoranLike && q.setoranKind ? ` · ${setoranLabel(q.setoranKind, lang)}` : "";
+      const pagesTxt = q.minPages.trim() ? ` · min ${q.minPages.trim()} hlm` : "";
+      const defaultPrompt = `${TYPE_LABEL(q.type, lang)}${q.surah.trim() ? ` — ${q.surah.trim()}` : ""}${q.target.trim() ? ` (${q.target.trim()})` : ""}${setoranTxt}${pagesTxt}`;
+      rows.push({
+        teacher_id: userId, subject: subject || null, grade_level: gradeLevel || null,
+        topic: q.surah.trim() || null, question: prompt || defaultPrompt, type: "voice" as const,
+        halaqoh_kind: kind, options: null, answer: q.target.trim() || null,
+        difficulty: q.difficulty as any, image_url: q.image_url || null,
+        setoran_kind: isSetoranLike ? (q.setoranKind || null) : null,
+        min_pages: q.minPages.trim() ? Number(q.minPages.trim()) : null,
+      });
+      return;
+    }
+
+    if (!prompt) {
+      errors.push(`${at}: ${lang === "id" ? "pertanyaan masih kosong." : "question is empty."}`);
+    }
+    let opts: string[] | null = null;
+    let answer: string | null = q.answer.trim() || null;
+    if (q.type === "multiple_choice") {
+      opts = q.options.map((o) => o.trim()).filter(Boolean);
+      if (opts.length < 2) errors.push(`${at}: ${lang === "id" ? "minimal 2 pilihan jawaban." : "min 2 options."}`);
+      const chosen = q.options[q.correctIndex]?.trim();
+      if (!chosen) errors.push(`${at}: ${lang === "id" ? "tandai jawaban yang benar." : "mark the correct answer."}`);
+      answer = chosen || null;
+    } else if (q.type === "complex_multiple_choice") {
+      opts = q.options.map((o) => o.trim()).filter(Boolean);
+      if (opts.length < 2) errors.push(`${at}: ${lang === "id" ? "minimal 2 pilihan jawaban." : "min 2 options."}`);
+      const chosen = q.correctIndices.map((idx) => q.options[idx]?.trim()).filter(Boolean);
+      if (chosen.length < 1) errors.push(`${at}: ${lang === "id" ? "tandai minimal 1 jawaban benar." : "mark at least 1 correct answer."}`);
+      answer = chosen.join(", ") || null;
+    } else if (q.type === "true_false") {
+      opts = null;
+      if (!answer) answer = "Benar";
+    } else if (q.type === "short_answer") {
+      if (!answer) errors.push(`${at}: ${lang === "id" ? "isi kunci jawaban." : "fill the answer key."}`);
+    } else if (q.type === "voice") {
+      opts = null; answer = null;
+    }
+    rows.push({
+      teacher_id: userId, subject: subject || null, grade_level: gradeLevel || null,
+      topic: q.topic.trim() || null, question: prompt, type: q.type as any,
+      halaqoh_kind: null, options: opts, answer, difficulty: q.difficulty as any,
+      image_url: q.image_url || null,
+    });
+  });
+
+  return { rows: errors.length ? [] : rows, errors };
+}
+
 function GuruBankSoalPage() {
   const { user, role, loading } = useAuth();
   const navigate = useNavigate();
@@ -116,6 +201,9 @@ function GuruBankSoalPage() {
   const [uploadingIdx, setUploadingIdx] = useState<number | null>(null);
   const [selected, setSelected] = useState<string[]>([]);
   const [transferOpen, setTransferOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [filterGrade, setFilterGrade] = useState("all");
+  const [filterType, setFilterType] = useState("all");
 
   useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
 
@@ -164,66 +252,26 @@ function GuruBankSoalPage() {
     }
   }
 
+  // Live validation result, shared between preview & save.
+  const validation = buildBankRows(questions, subject, gradeLevel, user?.id ?? "", lang);
+  const [showPreview, setShowPreview] = useState(false);
+
   const createMut = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("no user");
-      const rows = questions.map((q, i) => {
-        const prompt = q.question.trim();
-        const at = (lang === "id" ? "Soal " : "Question ") + (i + 1);
-        if (isHalaqohType(q.type)) {
-          if (!q.surah.trim() && !prompt) throw new Error(`${at}: ${lang === "id" ? "isi surah atau instruksi" : "fill surah or instruction"}`);
-          const kind = q.type.replace("halaqoh_", "");
-          const isSetoranLike = q.type === "halaqoh_setoran" || q.type === "halaqoh_tilawah";
-          const setoranTxt = isSetoranLike && q.setoranKind ? ` · ${setoranLabel(q.setoranKind, lang)}` : "";
-          const pagesTxt = q.minPages.trim() ? ` · min ${q.minPages.trim()} hlm` : "";
-          const defaultPrompt = `${TYPE_LABEL(q.type, lang)}${q.surah.trim() ? ` — ${q.surah.trim()}` : ""}${q.target.trim() ? ` (${q.target.trim()})` : ""}${setoranTxt}${pagesTxt}`;
-          return {
-            teacher_id: user.id, subject: subject || null, grade_level: gradeLevel || null,
-            topic: q.surah.trim() || null, question: prompt || defaultPrompt, type: "voice" as const,
-            halaqoh_kind: kind, options: null, answer: q.target.trim() || null,
-            difficulty: q.difficulty as any, image_url: q.image_url || null,
-            setoran_kind: isSetoranLike ? (q.setoranKind || null) : null,
-            min_pages: q.minPages.trim() ? Number(q.minPages.trim()) : null,
-          };
-        }
-        if (!prompt) throw new Error(`${at}: ${lang === "id" ? "pertanyaan kosong" : "empty question"}`);
-        let opts: string[] | null = null;
-        let answer: string | null = q.answer.trim() || null;
-        if (q.type === "multiple_choice") {
-          opts = q.options.map((o) => o.trim()).filter(Boolean);
-          if (opts.length < 2) throw new Error(`${at}: ${lang === "id" ? "minimal 2 pilihan" : "min 2 options"}`);
-          const chosen = q.options[q.correctIndex]?.trim();
-          if (!chosen) throw new Error(`${at}: ${lang === "id" ? "pilih jawaban benar" : "select correct answer"}`);
-          answer = chosen;
-        } else if (q.type === "complex_multiple_choice") {
-          opts = q.options.map((o) => o.trim()).filter(Boolean);
-          if (opts.length < 2) throw new Error(`${at}: ${lang === "id" ? "minimal 2 pilihan" : "min 2 options"}`);
-          const chosen = q.correctIndices.map((idx) => q.options[idx]?.trim()).filter(Boolean);
-          if (chosen.length < 1) throw new Error(`${at}: ${lang === "id" ? "tandai minimal 1 jawaban" : "mark at least 1"}`);
-          answer = chosen.join(", ");
-        } else if (q.type === "true_false") {
-          opts = null;
-          if (!answer) answer = "Benar";
-        } else if (q.type === "short_answer") {
-          if (!answer) throw new Error(`${at}: ${lang === "id" ? "isi kunci jawaban" : "fill answer key"}`);
-        } else if (q.type === "voice") {
-          opts = null; answer = null;
-        }
-        return {
-          teacher_id: user.id, subject: subject || null, grade_level: gradeLevel || null,
-          topic: q.topic.trim() || null, question: prompt, type: q.type as any,
-          halaqoh_kind: null, options: opts, answer, difficulty: q.difficulty as any,
-          image_url: q.image_url || null,
-        };
-      });
-      if (rows.length === 0) throw new Error(lang === "id" ? "Tambahkan minimal 1 soal" : "Add at least 1 question");
+      const { rows, errors } = buildBankRows(questions, subject, gradeLevel, user.id, lang);
+      if (errors.length) {
+        throw new Error(
+          (lang === "id" ? "Periksa kembali soal:\n" : "Please fix:\n") + errors.map((e) => `• ${e}`).join("\n"),
+        );
+      }
       const { error } = await supabase.from("question_bank").insert(rows as any);
       if (error) throw error;
       return rows.length;
     },
     onSuccess: (n) => {
       toast.success(lang === "id" ? `${n} soal ditambahkan ✨` : `${n} questions added ✨`);
-      setOpen(false); resetForm();
+      setOpen(false); resetForm(); setShowPreview(false);
       qc.invalidateQueries({ queryKey: ["qb"] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -238,6 +286,20 @@ function GuruBankSoalPage() {
   const toggleSel = (id: string) => setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
 
   const ALL_TYPES: BType[] = ["multiple_choice", "complex_multiple_choice", "true_false", "short_answer", "essay", "voice", "halaqoh_menyimak", "halaqoh_setoran", "halaqoh_tilawah"];
+
+  // Available grade levels for the filter dropdown.
+  const gradeOptions = Array.from(new Set((items as any[]).map((q) => q.grade_level).filter(Boolean))) as string[];
+  // Map a stored row to its UI BType for filtering.
+  const rowUiType = (q: any): BType => (q.halaqoh_kind ? (HALAQOH_KIND[q.halaqoh_kind] ?? "halaqoh_setoran") : (q.type as BType));
+  const filteredItems = (items as any[]).filter((q) => {
+    if (filterGrade !== "all" && q.grade_level !== filterGrade) return false;
+    if (filterType !== "all" && rowUiType(q) !== filterType) return false;
+    if (search.trim()) {
+      const hay = `${q.question ?? ""} ${q.subject ?? ""} ${q.topic ?? ""} ${q.grade_level ?? ""}`.toLowerCase();
+      if (!hay.includes(search.trim().toLowerCase())) return false;
+    }
+    return true;
+  });
 
   return (
     <DashboardShell accent="guru">
@@ -394,10 +456,42 @@ function GuruBankSoalPage() {
                       </div>
                     ))}
                   </div>
+
+                  {/* Live validation summary + preview */}
+                  <div className={`rounded-xl border-2 p-3 text-sm ${validation.errors.length ? "border-destructive/40 bg-destructive/5" : "border-emerald-500/40 bg-emerald-500/5"}`}>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-display font-bold">
+                        {validation.errors.length
+                          ? (lang === "id" ? `⚠️ ${validation.errors.length} hal perlu diperbaiki` : `⚠️ ${validation.errors.length} issue(s)`)
+                          : (lang === "id" ? `✅ ${questions.length}/${MAX_QUESTIONS} soal siap disimpan` : `✅ ${questions.length}/${MAX_QUESTIONS} ready`)}
+                      </span>
+                      <Button type="button" size="sm" variant="ghost" onClick={() => setShowPreview((v) => !v)}>
+                        {showPreview ? (lang === "id" ? "Tutup Pratinjau" : "Hide Preview") : (lang === "id" ? "Pratinjau" : "Preview")}
+                      </Button>
+                    </div>
+                    {validation.errors.length > 0 && (
+                      <ul className="mt-2 list-disc space-y-0.5 pl-5 text-destructive">
+                        {validation.errors.map((e, i) => <li key={i}>{e}</li>)}
+                      </ul>
+                    )}
+                    {showPreview && validation.errors.length === 0 && (
+                      <ol className="mt-2 list-decimal space-y-1 pl-5 text-muted-foreground">
+                        {questions.map((q, i) => (
+                          <li key={i}>
+                            <span className="font-semibold text-foreground">{TYPE_LABEL(q.type, lang)}</span>
+                            {" · "}
+                            {isHalaqohType(q.type)
+                              ? `${q.surah.trim() || (lang === "id" ? "(tanpa surah)" : "(no surah)")}${q.target.trim() ? ` — ${q.target.trim()}` : ""}${q.setoranKind ? ` · ${setoranLabel(q.setoranKind, lang)}` : ""}`
+                              : (q.question.trim().slice(0, 60) || (lang === "id" ? "(kosong)" : "(empty)"))}
+                          </li>
+                        ))}
+                      </ol>
+                    )}
+                  </div>
                 </div>
                 <DialogFooter>
                   <Button variant="ghost" onClick={() => setOpen(false)}>{t("cancel")}</Button>
-                  <Button variant="guru" disabled={createMut.isPending} onClick={() => createMut.mutate()}>{createMut.isPending ? (lang === "id" ? "Menyimpan…" : "Saving…") : t("save")}</Button>
+                  <Button variant="guru" disabled={createMut.isPending || validation.errors.length > 0} onClick={() => createMut.mutate()}>{createMut.isPending ? (lang === "id" ? "Menyimpan…" : "Saving…") : t("save")}</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -405,8 +499,42 @@ function GuruBankSoalPage() {
         } />
 
       {items.length === 0 ? <EmptyState message={t("empty")} /> : (
-        <div className="space-y-3">
-          {items.map((q: any) => {
+        <>
+          {/* Filter & search */}
+          <div className="mb-3 flex flex-wrap items-center gap-2">
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={lang === "id" ? "Cari soal, topik, surah…" : "Search questions…"}
+              className="h-9 w-full sm:w-64"
+            />
+            <Select value={filterGrade} onValueChange={setFilterGrade}>
+              <SelectTrigger className="h-9 w-auto min-w-[9rem]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{lang === "id" ? "Semua jenjang/kelas" : "All grades"}</SelectItem>
+                {gradeOptions.map((g) => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Select value={filterType} onValueChange={setFilterType}>
+              <SelectTrigger className="h-9 w-auto min-w-[9rem]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{lang === "id" ? "Semua tipe soal" : "All types"}</SelectItem>
+                {ALL_TYPES.map((tp) => <SelectItem key={tp} value={tp}>{TYPE_LABEL(tp, lang)}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            {(search || filterGrade !== "all" || filterType !== "all") && (
+              <Button size="sm" variant="ghost" onClick={() => { setSearch(""); setFilterGrade("all"); setFilterType("all"); }}>
+                <X className="size-4" /> {lang === "id" ? "Reset" : "Reset"}
+              </Button>
+            )}
+            <span className="ml-auto text-xs text-muted-foreground">{filteredItems.length}/{items.length}</span>
+          </div>
+
+          {filteredItems.length === 0 ? (
+            <EmptyState message={lang === "id" ? "Tidak ada soal yang cocok dengan filter." : "No questions match the filters."} />
+          ) : (
+          <div className="space-y-3">
+          {filteredItems.map((q: any) => {
             const isSel = selected.includes(q.id);
             return (
               <div key={q.id} className={`rounded-2xl border-2 bg-card p-4 shadow-card-rpg transition ${isSel ? "border-quest" : "border-border"}`}>
@@ -442,6 +570,8 @@ function GuruBankSoalPage() {
             );
           })}
         </div>
+          )}
+        </>
       )}
 
       <TransferDialog
@@ -455,10 +585,21 @@ function GuruBankSoalPage() {
 }
 
 // Map a bank row to a quiz question + answer-key entry for the assignments feature.
+// Halaqoh metadata is preserved on the question so grading can auto-record to Mutaba'ah.
 function mapBankToQuiz(b: any): { question: any; key: any } {
   const opts: string[] = Array.isArray(b.options) ? b.options : [];
   if (b.halaqoh_kind || b.type === "voice") {
-    return { question: { type: "voice", q: b.question, image_url: b.image_url ?? null }, key: null };
+    return {
+      question: {
+        type: "voice", q: b.question, image_url: b.image_url ?? null,
+        halaqoh_kind: b.halaqoh_kind ?? null,
+        setoran_kind: b.setoran_kind ?? null,
+        surah: b.topic ?? null,
+        target: b.answer ?? null,
+        min_pages: b.min_pages ?? null,
+      },
+      key: null,
+    };
   }
   if (b.type === "multiple_choice") {
     const idx = Math.max(0, opts.findIndex((o) => o.trim().toLowerCase() === String(b.answer ?? "").split(",")[0].trim().toLowerCase()));
@@ -480,16 +621,22 @@ function TransferDialog({ open, onOpenChange, items, onDone }: { open: boolean; 
   const { user } = useAuth();
   const { lang } = useLang();
   const qc = useQueryClient();
+  const [target, setTarget] = useState<"class" | "student">("class");
   const [classId, setClassId] = useState("");
+  const [studentId, setStudentId] = useState("");
   const [title, setTitle] = useState("");
   const [subject, setSubject] = useState("");
+  const [gradeLevel, setGradeLevel] = useState("");
   const [dueAt, setDueAt] = useState("");
 
   useEffect(() => {
     if (open) {
+      setTarget("class");
       setTitle("");
       setClassId("");
+      setStudentId("");
       setSubject(items.find((i) => i.subject)?.subject ?? "");
+      setGradeLevel(items.find((i) => i.grade_level)?.grade_level ?? "");
       setDueAt("");
     }
   }, [open, items]);
@@ -499,11 +646,21 @@ function TransferDialog({ open, onOpenChange, items, onDone }: { open: boolean; 
     queryFn: async () => (await supabase.from("classes").select("id, name").order("name")).data ?? [],
   });
 
+  const { data: students = [] } = useQuery({
+    queryKey: ["students-list-transfer", user?.id], enabled: !!user && open,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("list_students");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
   const mut = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("no user");
       if (!title.trim()) throw new Error(lang === "id" ? "Judul wajib diisi" : "Title required");
-      if (!classId) throw new Error(lang === "id" ? "Pilih kelas tujuan" : "Select a class");
+      if (target === "class" && !classId) throw new Error(lang === "id" ? "Pilih kelas tujuan" : "Select a class");
+      if (target === "student" && !studentId) throw new Error(lang === "id" ? "Pilih siswa tujuan" : "Select a student");
       if (items.length === 0) throw new Error(lang === "id" ? "Tidak ada soal terpilih" : "No questions selected");
       const questionsPublic: any[] = [];
       const answerKey: any[] = [];
@@ -515,8 +672,12 @@ function TransferDialog({ open, onOpenChange, items, onDone }: { open: boolean; 
       const { data: inserted, error } = await supabase
         .from("assignments")
         .insert({
-          teacher_id: user.id, class_id: classId, title: title.trim(),
+          teacher_id: user.id,
+          class_id: target === "class" ? classId : null,
+          assigned_student_id: target === "student" ? studentId : null,
+          title: title.trim(),
           subject: subject || null, exam_type: "harian",
+          description: gradeLevel ? (lang === "id" ? `Jenjang: ${gradeLevel}` : `Grade: ${gradeLevel}`) : null,
           due_at: dueAt ? new Date(dueAt).toISOString() : null,
           max_score: 100, xp_reward: 50, coin_reward: 10,
           answer_format: "quiz", questions: questionsPublic as any,
@@ -532,6 +693,7 @@ function TransferDialog({ open, onOpenChange, items, onDone }: { open: boolean; 
     onSuccess: () => {
       toast.success(lang === "id" ? "Soal dikirim sebagai Tugas 🎉" : "Sent as assignment 🎉");
       qc.invalidateQueries({ queryKey: ["quizzes"] });
+      qc.invalidateQueries({ queryKey: ["assignments"] });
       onDone();
     },
     onError: (e: Error) => toast.error(e.message),
@@ -547,7 +709,31 @@ function TransferDialog({ open, onOpenChange, items, onDone }: { open: boolean; 
             <Label>{lang === "id" ? "Judul Tugas" : "Title"} <span className="text-destructive">*</span></Label>
             <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={lang === "id" ? "mis. Latihan Bab 1" : "e.g. Practice Ch.1"} />
           </div>
+
           <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <Label>{lang === "id" ? "Mata Pelajaran" : "Subject"}</Label>
+              <SubjectSelect value={subject} onChange={setSubject} />
+            </div>
+            <div>
+              <Label>{lang === "id" ? "Jenjang / Kelas" : "Grade"}</Label>
+              <Input value={gradeLevel} onChange={(e) => setGradeLevel(e.target.value)} placeholder={lang === "id" ? "mis. Kelas 7" : "e.g. Grade 7"} />
+            </div>
+          </div>
+
+          <div>
+            <Label>{lang === "id" ? "Tujuan" : "Target"}</Label>
+            <div className="mt-1 flex gap-2">
+              {(["class", "student"] as const).map((tg) => (
+                <button key={tg} type="button" onClick={() => setTarget(tg)}
+                  className={`flex-1 rounded-lg border-2 px-3 py-2 text-sm font-semibold ${target === tg ? "border-quest bg-quest/10 text-quest" : "border-border"}`}>
+                  {tg === "class" ? (lang === "id" ? "Satu Kelas" : "Whole Class") : (lang === "id" ? "Siswa Tertentu" : "Specific Student")}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {target === "class" ? (
             <div>
               <Label>{lang === "id" ? "Kelas" : "Class"} <span className="text-destructive">*</span></Label>
               <select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={classId} onChange={(e) => setClassId(e.target.value)}>
@@ -555,7 +741,19 @@ function TransferDialog({ open, onOpenChange, items, onDone }: { open: boolean; 
                 {(classes as any[]).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
-            <div><Label>{lang === "id" ? "Tenggat (opsional)" : "Due (optional)"}</Label><Input type="datetime-local" value={dueAt} onChange={(e) => setDueAt(e.target.value)} /></div>
+          ) : (
+            <div>
+              <Label>{lang === "id" ? "Siswa" : "Student"} <span className="text-destructive">*</span></Label>
+              <select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={studentId} onChange={(e) => setStudentId(e.target.value)}>
+                <option value="">{lang === "id" ? "— pilih siswa —" : "— select student —"}</option>
+                {(students as any[]).map((s) => <option key={s.id} value={s.id}>{s.full_name ?? s.id}</option>)}
+              </select>
+            </div>
+          )}
+
+          <div>
+            <Label>{lang === "id" ? "Jadwal / Tenggat (opsional)" : "Schedule / Due (optional)"}</Label>
+            <Input type="datetime-local" value={dueAt} onChange={(e) => setDueAt(e.target.value)} />
           </div>
         </div>
         <DialogFooter>

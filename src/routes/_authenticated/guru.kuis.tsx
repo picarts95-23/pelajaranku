@@ -539,6 +539,23 @@ function GradeSubmissionDialog({ quiz, submission, studentName, onClose }: { qui
   const [feedback, setFeedback] = useState<string>(submission.feedback ?? "");
   const [voiceUrls, setVoiceUrls] = useState<Record<number, string>>({});
   const halaqoh = isHalaqoh(quiz.subject);
+  // Halaqoh metadata carried over from the question bank (surah, setoran type, target pages).
+  const halaqohMeta = useMemo(() => {
+    const q = questions.find((x) => x?.halaqoh_kind || x?.surah);
+    if (!q) return null;
+    const kindMap: Record<string, string> = { setoran: "ziyadah", menyimak: "ziyadah", tilawah: "tilawah" };
+    const sessionType = q.setoran_kind === "murajaah"
+      ? "murojaah"
+      : q.setoran_kind === "tilawah_harian"
+        ? "tilawah"
+        : (kindMap[q.halaqoh_kind as string] ?? "ziyadah");
+    return {
+      sessionType,
+      surah: q.surah ?? null,
+      target: q.target ?? null,
+      minPages: q.min_pages != null ? Number(q.min_pages) : null,
+    };
+  }, [questions]);
   const [maba, setMaba] = useState({ tajwid: 80, tajErr: 0, kelancaran: 80, helps: 0, fashohah: 80, aurat: true, focus: true, etika: true, sendMutabaah: halaqoh });
 
   useEffect(() => {
@@ -572,7 +589,10 @@ function GradeSubmissionDialog({ quiz, submission, studentName, onClose }: { qui
           student_id: submission.student_id,
           class_id: quiz.class_id,
           session_date: new Date().toISOString().slice(0, 10),
-          session_type: "ziyadah",
+          session_type: halaqohMeta?.sessionType ?? "ziyadah",
+          setoran_kind: halaqohMeta?.sessionType ?? null,
+          surah: halaqohMeta?.surah ?? null,
+          pages_count: halaqohMeta?.minPages ?? null,
           tajwid_score: maba.tajwid,
           tajwid_errors: maba.tajErr,
           kelancaran_score: maba.kelancaran,
@@ -583,7 +603,7 @@ function GradeSubmissionDialog({ quiz, submission, studentName, onClose }: { qui
           adab_etika: maba.etika,
           total_score: total,
           predikat: predikatOf(total, lang),
-          notes: feedback.trim() || `Dari tugas: ${quiz.title}`,
+          notes: [feedback.trim(), halaqohMeta?.target ? `Target: ${halaqohMeta.target}` : "", `Dari tugas: ${quiz.title}`].filter(Boolean).join(" · "),
         } as any);
         if (mErr) throw mErr;
       }
