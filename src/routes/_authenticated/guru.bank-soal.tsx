@@ -637,7 +637,7 @@ function GuruBankSoalPage() {
                 </div>
                 <DialogFooter>
                   <Button variant="ghost" onClick={() => setOpen(false)}>{t("cancel")}</Button>
-                  <Button variant="guru" disabled={createMut.isPending || validation.errors.length > 0} onClick={() => createMut.mutate()}>{createMut.isPending ? (lang === "id" ? "Menyimpan…" : "Saving…") : t("save")}</Button>
+                  <Button variant="guru" disabled={createMut.isPending || allErrors.length > 0} onClick={() => createMut.mutate()}>{createMut.isPending ? (lang === "id" ? "Menyimpan…" : "Saving…") : (destination === "bank" ? (lang === "id" ? "Simpan ke Bank" : "Save to Bank") : destination === "assignment" ? (lang === "id" ? "Kirim Tugas/Kuis" : "Send Quiz") : (lang === "id" ? "Simpan & Kirim" : "Save & Send"))}</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
