@@ -150,6 +150,13 @@ function GuruBankSoalPage() {
       let savedBank = 0;
       let sentAssignment = 0;
 
+      // Edit mode: update the single existing bank row (never touches assignments/submissions).
+      if (editId) {
+        const { error } = await supabase.from("question_bank").update(rows[0] as any).eq("id", editId);
+        if (error) throw error;
+        return { savedBank: 1, sentAssignment: 0, edited: true };
+      }
+
       if (destination === "bank" || destination === "both") {
         const { error } = await supabase.from("question_bank").insert(rows as any);
         if (error) throw error;
@@ -188,13 +195,17 @@ function GuruBankSoalPage() {
         sentAssignment = questionsPublic.length;
       }
 
-      return { savedBank, sentAssignment };
+      return { savedBank, sentAssignment, edited: false };
     },
-    onSuccess: ({ savedBank, sentAssignment }) => {
-      const parts: string[] = [];
-      if (savedBank) parts.push(lang === "id" ? `${savedBank} soal ke Bank Soal` : `${savedBank} to Bank`);
-      if (sentAssignment) parts.push(lang === "id" ? `${sentAssignment} soal terkirim sebagai Tugas/Kuis` : `${sentAssignment} sent as assignment`);
-      toast.success((parts.join(" · ") || (lang === "id" ? "Tersimpan" : "Saved")) + " ✨");
+    onSuccess: ({ savedBank, sentAssignment, edited }) => {
+      if (edited) {
+        toast.success(lang === "id" ? "Soal diperbarui ✨" : "Question updated ✨");
+      } else {
+        const parts: string[] = [];
+        if (savedBank) parts.push(lang === "id" ? `${savedBank} soal ke Bank Soal` : `${savedBank} to Bank`);
+        if (sentAssignment) parts.push(lang === "id" ? `${sentAssignment} soal terkirim sebagai Tugas/Kuis` : `${sentAssignment} sent as assignment`);
+        toast.success((parts.join(" · ") || (lang === "id" ? "Tersimpan" : "Saved")) + " ✨");
+      }
       setOpen(false); resetForm(); setShowPreview(false);
       qc.invalidateQueries({ queryKey: ["qb"] });
       qc.invalidateQueries({ queryKey: ["quizzes"] });
@@ -202,6 +213,7 @@ function GuruBankSoalPage() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
 
   const deleteMut = useMutation({
     mutationFn: async (id: string) => { const { error } = await supabase.from("question_bank").delete().eq("id", id); if (error) throw error; },
