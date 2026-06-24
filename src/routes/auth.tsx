@@ -2,13 +2,16 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { motion } from "framer-motion";
-import { ArrowLeft, Loader2, Compass, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Loader2, Compass, Eye, EyeOff, KeyRound } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
 import { LangToggle } from "@/components/lang-toggle";
 import { useLang } from "@/lib/i18n";
 import { useAuth, type AppRole } from "@/lib/auth-context";

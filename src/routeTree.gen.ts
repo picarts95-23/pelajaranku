@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VerifyRoleRouteImport } from './routes/verify-role'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as LoadingRouteImport } from './routes/loading'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
@@ -53,6 +54,11 @@ const VerifyRoleRoute = VerifyRoleRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoadingRoute = LoadingRouteImport.update({
@@ -239,6 +245,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/loading': typeof LoadingRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/verify-role': typeof VerifyRoleRoute
   '/admin': typeof AuthenticatedAdminRoute
@@ -275,6 +282,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/loading': typeof LoadingRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/verify-role': typeof VerifyRoleRoute
   '/admin': typeof AuthenticatedAdminRoute
@@ -313,6 +321,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/loading': typeof LoadingRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/verify-role': typeof VerifyRoleRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
@@ -351,6 +360,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/loading'
+    | '/reset-password'
     | '/sitemap.xml'
     | '/verify-role'
     | '/admin'
@@ -387,6 +397,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/loading'
+    | '/reset-password'
     | '/sitemap.xml'
     | '/verify-role'
     | '/admin'
@@ -424,6 +435,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/loading'
+    | '/reset-password'
     | '/sitemap.xml'
     | '/verify-role'
     | '/_authenticated/admin'
@@ -462,6 +474,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   LoadingRoute: typeof LoadingRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   VerifyRoleRoute: typeof VerifyRoleRoute
   ApiPublicHooksSyncSheetsRoute: typeof ApiPublicHooksSyncSheetsRoute
@@ -482,6 +495,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/loading': {
@@ -786,6 +806,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   LoadingRoute: LoadingRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   VerifyRoleRoute: VerifyRoleRoute,
   ApiPublicHooksSyncSheetsRoute: ApiPublicHooksSyncSheetsRoute,
