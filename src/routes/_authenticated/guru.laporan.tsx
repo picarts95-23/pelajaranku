@@ -9,6 +9,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { predikatOf } from "@/lib/mutabaah";
+import { QuizTabs } from "@/components/quiz-tabs";
 
 export const Route = createFileRoute("/_authenticated/guru/laporan")({
   head: () => ({ meta: [{ title: "Laporan Progres · EduQuest Academy" }] }),
