@@ -585,10 +585,21 @@ function GuruBankSoalPage() {
 }
 
 // Map a bank row to a quiz question + answer-key entry for the assignments feature.
+// Halaqoh metadata is preserved on the question so grading can auto-record to Mutaba'ah.
 function mapBankToQuiz(b: any): { question: any; key: any } {
   const opts: string[] = Array.isArray(b.options) ? b.options : [];
   if (b.halaqoh_kind || b.type === "voice") {
-    return { question: { type: "voice", q: b.question, image_url: b.image_url ?? null }, key: null };
+    return {
+      question: {
+        type: "voice", q: b.question, image_url: b.image_url ?? null,
+        halaqoh_kind: b.halaqoh_kind ?? null,
+        setoran_kind: b.setoran_kind ?? null,
+        surah: b.topic ?? null,
+        target: b.answer ?? null,
+        min_pages: b.min_pages ?? null,
+      },
+      key: null,
+    };
   }
   if (b.type === "multiple_choice") {
     const idx = Math.max(0, opts.findIndex((o) => o.trim().toLowerCase() === String(b.answer ?? "").split(",")[0].trim().toLowerCase()));
@@ -610,16 +621,22 @@ function TransferDialog({ open, onOpenChange, items, onDone }: { open: boolean; 
   const { user } = useAuth();
   const { lang } = useLang();
   const qc = useQueryClient();
+  const [target, setTarget] = useState<"class" | "student">("class");
   const [classId, setClassId] = useState("");
+  const [studentId, setStudentId] = useState("");
   const [title, setTitle] = useState("");
   const [subject, setSubject] = useState("");
+  const [gradeLevel, setGradeLevel] = useState("");
   const [dueAt, setDueAt] = useState("");
 
   useEffect(() => {
     if (open) {
+      setTarget("class");
       setTitle("");
       setClassId("");
+      setStudentId("");
       setSubject(items.find((i) => i.subject)?.subject ?? "");
+      setGradeLevel(items.find((i) => i.grade_level)?.grade_level ?? "");
       setDueAt("");
     }
   }, [open, items]);
@@ -629,11 +646,21 @@ function TransferDialog({ open, onOpenChange, items, onDone }: { open: boolean; 
     queryFn: async () => (await supabase.from("classes").select("id, name").order("name")).data ?? [],
   });
 
+  const { data: students = [] } = useQuery({
+    queryKey: ["students-list-transfer", user?.id], enabled: !!user && open,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("list_students");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
   const mut = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("no user");
       if (!title.trim()) throw new Error(lang === "id" ? "Judul wajib diisi" : "Title required");
-      if (!classId) throw new Error(lang === "id" ? "Pilih kelas tujuan" : "Select a class");
+      if (target === "class" && !classId) throw new Error(lang === "id" ? "Pilih kelas tujuan" : "Select a class");
+      if (target === "student" && !studentId) throw new Error(lang === "id" ? "Pilih siswa tujuan" : "Select a student");
       if (items.length === 0) throw new Error(lang === "id" ? "Tidak ada soal terpilih" : "No questions selected");
       const questionsPublic: any[] = [];
       const answerKey: any[] = [];
@@ -645,8 +672,12 @@ function TransferDialog({ open, onOpenChange, items, onDone }: { open: boolean; 
       const { data: inserted, error } = await supabase
         .from("assignments")
         .insert({
-          teacher_id: user.id, class_id: classId, title: title.trim(),
+          teacher_id: user.id,
+          class_id: target === "class" ? classId : null,
+          assigned_student_id: target === "student" ? studentId : null,
+          title: title.trim(),
           subject: subject || null, exam_type: "harian",
+          description: gradeLevel ? (lang === "id" ? `Jenjang: ${gradeLevel}` : `Grade: ${gradeLevel}`) : null,
           due_at: dueAt ? new Date(dueAt).toISOString() : null,
           max_score: 100, xp_reward: 50, coin_reward: 10,
           answer_format: "quiz", questions: questionsPublic as any,
@@ -662,6 +693,7 @@ function TransferDialog({ open, onOpenChange, items, onDone }: { open: boolean; 
     onSuccess: () => {
       toast.success(lang === "id" ? "Soal dikirim sebagai Tugas 🎉" : "Sent as assignment 🎉");
       qc.invalidateQueries({ queryKey: ["quizzes"] });
+      qc.invalidateQueries({ queryKey: ["assignments"] });
       onDone();
     },
     onError: (e: Error) => toast.error(e.message),
@@ -677,7 +709,31 @@ function TransferDialog({ open, onOpenChange, items, onDone }: { open: boolean; 
             <Label>{lang === "id" ? "Judul Tugas" : "Title"} <span className="text-destructive">*</span></Label>
             <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={lang === "id" ? "mis. Latihan Bab 1" : "e.g. Practice Ch.1"} />
           </div>
+
           <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <Label>{lang === "id" ? "Mata Pelajaran" : "Subject"}</Label>
+              <SubjectSelect value={subject} onChange={setSubject} />
+            </div>
+            <div>
+              <Label>{lang === "id" ? "Jenjang / Kelas" : "Grade"}</Label>
+              <Input value={gradeLevel} onChange={(e) => setGradeLevel(e.target.value)} placeholder={lang === "id" ? "mis. Kelas 7" : "e.g. Grade 7"} />
+            </div>
+          </div>
+
+          <div>
+            <Label>{lang === "id" ? "Tujuan" : "Target"}</Label>
+            <div className="mt-1 flex gap-2">
+              {(["class", "student"] as const).map((tg) => (
+                <button key={tg} type="button" onClick={() => setTarget(tg)}
+                  className={`flex-1 rounded-lg border-2 px-3 py-2 text-sm font-semibold ${target === tg ? "border-quest bg-quest/10 text-quest" : "border-border"}`}>
+                  {tg === "class" ? (lang === "id" ? "Satu Kelas" : "Whole Class") : (lang === "id" ? "Siswa Tertentu" : "Specific Student")}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {target === "class" ? (
             <div>
               <Label>{lang === "id" ? "Kelas" : "Class"} <span className="text-destructive">*</span></Label>
               <select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={classId} onChange={(e) => setClassId(e.target.value)}>
@@ -685,7 +741,19 @@ function TransferDialog({ open, onOpenChange, items, onDone }: { open: boolean; 
                 {(classes as any[]).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
-            <div><Label>{lang === "id" ? "Tenggat (opsional)" : "Due (optional)"}</Label><Input type="datetime-local" value={dueAt} onChange={(e) => setDueAt(e.target.value)} /></div>
+          ) : (
+            <div>
+              <Label>{lang === "id" ? "Siswa" : "Student"} <span className="text-destructive">*</span></Label>
+              <select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={studentId} onChange={(e) => setStudentId(e.target.value)}>
+                <option value="">{lang === "id" ? "— pilih siswa —" : "— select student —"}</option>
+                {(students as any[]).map((s) => <option key={s.id} value={s.id}>{s.full_name ?? s.id}</option>)}
+              </select>
+            </div>
+          )}
+
+          <div>
+            <Label>{lang === "id" ? "Jadwal / Tenggat (opsional)" : "Schedule / Due (optional)"}</Label>
+            <Input type="datetime-local" value={dueAt} onChange={(e) => setDueAt(e.target.value)} />
           </div>
         </div>
         <DialogFooter>
