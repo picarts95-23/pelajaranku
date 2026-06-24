@@ -539,6 +539,23 @@ function GradeSubmissionDialog({ quiz, submission, studentName, onClose }: { qui
   const [feedback, setFeedback] = useState<string>(submission.feedback ?? "");
   const [voiceUrls, setVoiceUrls] = useState<Record<number, string>>({});
   const halaqoh = isHalaqoh(quiz.subject);
+  // Halaqoh metadata carried over from the question bank (surah, setoran type, target pages).
+  const halaqohMeta = useMemo(() => {
+    const q = questions.find((x) => x?.halaqoh_kind || x?.surah);
+    if (!q) return null;
+    const kindMap: Record<string, string> = { setoran: "ziyadah", menyimak: "ziyadah", tilawah: "tilawah" };
+    const sessionType = q.setoran_kind === "murajaah"
+      ? "murojaah"
+      : q.setoran_kind === "tilawah_harian"
+        ? "tilawah"
+        : (kindMap[q.halaqoh_kind as string] ?? "ziyadah");
+    return {
+      sessionType,
+      surah: q.surah ?? null,
+      target: q.target ?? null,
+      minPages: q.min_pages != null ? Number(q.min_pages) : null,
+    };
+  }, [questions]);
   const [maba, setMaba] = useState({ tajwid: 80, tajErr: 0, kelancaran: 80, helps: 0, fashohah: 80, aurat: true, focus: true, etika: true, sendMutabaah: halaqoh });
 
   useEffect(() => {
