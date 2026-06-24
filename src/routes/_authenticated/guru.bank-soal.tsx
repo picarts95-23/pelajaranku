@@ -249,66 +249,26 @@ function GuruBankSoalPage() {
     }
   }
 
+  // Live validation result, shared between preview & save.
+  const validation = buildBankRows(questions, subject, gradeLevel, user?.id ?? "", lang);
+  const [showPreview, setShowPreview] = useState(false);
+
   const createMut = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("no user");
-      const rows = questions.map((q, i) => {
-        const prompt = q.question.trim();
-        const at = (lang === "id" ? "Soal " : "Question ") + (i + 1);
-        if (isHalaqohType(q.type)) {
-          if (!q.surah.trim() && !prompt) throw new Error(`${at}: ${lang === "id" ? "isi surah atau instruksi" : "fill surah or instruction"}`);
-          const kind = q.type.replace("halaqoh_", "");
-          const isSetoranLike = q.type === "halaqoh_setoran" || q.type === "halaqoh_tilawah";
-          const setoranTxt = isSetoranLike && q.setoranKind ? ` · ${setoranLabel(q.setoranKind, lang)}` : "";
-          const pagesTxt = q.minPages.trim() ? ` · min ${q.minPages.trim()} hlm` : "";
-          const defaultPrompt = `${TYPE_LABEL(q.type, lang)}${q.surah.trim() ? ` — ${q.surah.trim()}` : ""}${q.target.trim() ? ` (${q.target.trim()})` : ""}${setoranTxt}${pagesTxt}`;
-          return {
-            teacher_id: user.id, subject: subject || null, grade_level: gradeLevel || null,
-            topic: q.surah.trim() || null, question: prompt || defaultPrompt, type: "voice" as const,
-            halaqoh_kind: kind, options: null, answer: q.target.trim() || null,
-            difficulty: q.difficulty as any, image_url: q.image_url || null,
-            setoran_kind: isSetoranLike ? (q.setoranKind || null) : null,
-            min_pages: q.minPages.trim() ? Number(q.minPages.trim()) : null,
-          };
-        }
-        if (!prompt) throw new Error(`${at}: ${lang === "id" ? "pertanyaan kosong" : "empty question"}`);
-        let opts: string[] | null = null;
-        let answer: string | null = q.answer.trim() || null;
-        if (q.type === "multiple_choice") {
-          opts = q.options.map((o) => o.trim()).filter(Boolean);
-          if (opts.length < 2) throw new Error(`${at}: ${lang === "id" ? "minimal 2 pilihan" : "min 2 options"}`);
-          const chosen = q.options[q.correctIndex]?.trim();
-          if (!chosen) throw new Error(`${at}: ${lang === "id" ? "pilih jawaban benar" : "select correct answer"}`);
-          answer = chosen;
-        } else if (q.type === "complex_multiple_choice") {
-          opts = q.options.map((o) => o.trim()).filter(Boolean);
-          if (opts.length < 2) throw new Error(`${at}: ${lang === "id" ? "minimal 2 pilihan" : "min 2 options"}`);
-          const chosen = q.correctIndices.map((idx) => q.options[idx]?.trim()).filter(Boolean);
-          if (chosen.length < 1) throw new Error(`${at}: ${lang === "id" ? "tandai minimal 1 jawaban" : "mark at least 1"}`);
-          answer = chosen.join(", ");
-        } else if (q.type === "true_false") {
-          opts = null;
-          if (!answer) answer = "Benar";
-        } else if (q.type === "short_answer") {
-          if (!answer) throw new Error(`${at}: ${lang === "id" ? "isi kunci jawaban" : "fill answer key"}`);
-        } else if (q.type === "voice") {
-          opts = null; answer = null;
-        }
-        return {
-          teacher_id: user.id, subject: subject || null, grade_level: gradeLevel || null,
-          topic: q.topic.trim() || null, question: prompt, type: q.type as any,
-          halaqoh_kind: null, options: opts, answer, difficulty: q.difficulty as any,
-          image_url: q.image_url || null,
-        };
-      });
-      if (rows.length === 0) throw new Error(lang === "id" ? "Tambahkan minimal 1 soal" : "Add at least 1 question");
+      const { rows, errors } = buildBankRows(questions, subject, gradeLevel, user.id, lang);
+      if (errors.length) {
+        throw new Error(
+          (lang === "id" ? "Periksa kembali soal:\n" : "Please fix:\n") + errors.map((e) => `• ${e}`).join("\n"),
+        );
+      }
       const { error } = await supabase.from("question_bank").insert(rows as any);
       if (error) throw error;
       return rows.length;
     },
     onSuccess: (n) => {
       toast.success(lang === "id" ? `${n} soal ditambahkan ✨` : `${n} questions added ✨`);
-      setOpen(false); resetForm();
+      setOpen(false); resetForm(); setShowPreview(false);
       qc.invalidateQueries({ queryKey: ["qb"] });
     },
     onError: (e: Error) => toast.error(e.message),
