@@ -15,6 +15,10 @@ import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { computeTotal, predikatOf, TAJWID_TOLERANCE, HELP_TOLERANCE } from "@/lib/mutabaah";
 import { QuizTabs } from "@/components/quiz-tabs";
+import {
+  MAX_QUESTIONS, type BQ, TYPE_LABEL,
+  buildBankRows, mapBankToQuiz, quizQuestionToBQ, QuestionEditorList,
+} from "@/components/question-fields";
 
 export const Route = createFileRoute("/_authenticated/guru/kuis")({
   head: () => ({ meta: [{ title: "Tugas & Kuis · EduQuest Academy" }] }),
