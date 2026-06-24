@@ -173,7 +173,7 @@ function GuruLaporanPage() {
 
   return (
     <DashboardShell accent="guru">
-      <QuizTabsLazy />
+      <QuizTabs active="laporan" />
 
       <PageHeader
         title={lang === "id" ? "Laporan Progres Belajar" : "Learning Progress Report"}
