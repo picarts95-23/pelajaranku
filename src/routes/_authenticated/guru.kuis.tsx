@@ -589,7 +589,10 @@ function GradeSubmissionDialog({ quiz, submission, studentName, onClose }: { qui
           student_id: submission.student_id,
           class_id: quiz.class_id,
           session_date: new Date().toISOString().slice(0, 10),
-          session_type: "ziyadah",
+          session_type: halaqohMeta?.sessionType ?? "ziyadah",
+          setoran_kind: halaqohMeta?.sessionType ?? null,
+          surah: halaqohMeta?.surah ?? null,
+          pages_count: halaqohMeta?.minPages ?? null,
           tajwid_score: maba.tajwid,
           tajwid_errors: maba.tajErr,
           kelancaran_score: maba.kelancaran,
@@ -600,7 +603,7 @@ function GradeSubmissionDialog({ quiz, submission, studentName, onClose }: { qui
           adab_etika: maba.etika,
           total_score: total,
           predikat: predikatOf(total, lang),
-          notes: feedback.trim() || `Dari tugas: ${quiz.title}`,
+          notes: [feedback.trim(), halaqohMeta?.target ? `Target: ${halaqohMeta.target}` : "", `Dari tugas: ${quiz.title}`].filter(Boolean).join(" · "),
         } as any);
         if (mErr) throw mErr;
       }
