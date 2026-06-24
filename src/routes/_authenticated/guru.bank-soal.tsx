@@ -223,7 +223,7 @@ function GuruBankSoalPage() {
   const diffColor: Record<string, string> = { easy: "bg-xp/20 text-xp", medium: "bg-coin/20 text-coin", hard: "bg-destructive/20 text-destructive" };
   const toggleSel = (id: string) => setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
 
-  const ALL_TYPES: BType[] = ["multiple_choice", "complex_multiple_choice", "true_false", "short_answer", "essay", "voice", "halaqoh_menyimak", "halaqoh_setoran", "halaqoh_tilawah"];
+  // ALL_TYPES imported from question-fields.
 
   // Available grade levels for the filter dropdown.
   const gradeOptions = Array.from(new Set((items as any[]).map((q) => q.grade_level).filter(Boolean))) as string[];
