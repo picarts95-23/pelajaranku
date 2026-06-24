@@ -1,13 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Database, Mic, Plus, Send, Trash2, X, BookOpenCheck, CheckCircle2 } from "lucide-react";
+import { Database, Mic, Plus, Send, Trash2, X, BookOpenCheck, CheckCircle2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/lib/auth-context";
@@ -17,177 +16,18 @@ import { SubjectSelect } from "@/components/subject-select";
 import { QuizTabs } from "@/components/quiz-tabs";
 import { LinkBadges } from "@/components/link-fields";
 import { MediaViewer } from "@/components/media-input";
+import {
+  MAX_QUESTIONS, ALL_TYPES, type BType, type BQ,
+  TYPE_LABEL, HALAQOH_KIND, SETORAN_KINDS, setoranLabel,
+  isHalaqohType, emptyQ, buildBankRows, mapBankToQuiz, bankRowToBQ,
+  QuestionEditorList,
+} from "@/components/question-fields";
 
 export const Route = createFileRoute("/_authenticated/guru/bank-soal")({
   head: () => ({ meta: [{ title: "Bank Soal · EduQuest Academy" }] }),
   component: GuruBankSoalPage,
 });
 
-const MAX_QUESTIONS = 40;
-
-// UI-level question type. Halaqoh kinds are stored as type='voice' + halaqoh_kind in DB.
-type BType =
-  | "multiple_choice"
-  | "complex_multiple_choice"
-  | "true_false"
-  | "short_answer"
-  | "essay"
-  | "voice"
-  | "halaqoh_menyimak"
-  | "halaqoh_setoran"
-  | "halaqoh_tilawah";
-
-const HALAQOH_TYPES: BType[] = ["halaqoh_menyimak", "halaqoh_setoran", "halaqoh_tilawah"];
-const isHalaqohType = (t: BType) => HALAQOH_TYPES.includes(t);
-
-const TYPE_LABEL = (t: BType, lang: string): string => {
-  const map: Record<BType, [string, string]> = {
-    multiple_choice: ["Pilihan Ganda", "Multiple Choice"],
-    complex_multiple_choice: ["Pilihan Ganda Kompleks", "Complex Multiple Choice"],
-    true_false: ["Benar / Salah", "True / False"],
-    short_answer: ["Isian Singkat", "Short Answer"],
-    essay: ["Esai (manual)", "Essay (manual)"],
-    voice: ["Jawaban Audio", "Audio Answer"],
-    halaqoh_menyimak: ["Halaqoh: Menyimak Surah", "Halaqoh: Listening"],
-    halaqoh_setoran: ["Halaqoh: Setoran Hafalan", "Halaqoh: Memorization"],
-    halaqoh_tilawah: ["Halaqoh: Tilawah Harian", "Halaqoh: Daily Tilawah"],
-  };
-  return lang === "id" ? map[t][0] : map[t][1];
-};
-
-const HALAQOH_KIND: Record<string, BType> = {
-  menyimak: "halaqoh_menyimak",
-  setoran: "halaqoh_setoran",
-  tilawah: "halaqoh_tilawah",
-};
-
-type BQ = {
-  type: BType;
-  topic: string;
-  question: string;
-  options: string[];
-  correctIndex: number;
-  correctIndices: number[];
-  answer: string;
-  difficulty: string;
-  image_url: string | null;
-  surah: string;
-  target: string;
-  setoranKind: string;
-  minPages: string;
-};
-
-// Setoran kinds for Halaqoh setoran / tilawah items.
-const SETORAN_KINDS: { value: string; id: string; en: string }[] = [
-  { value: "ziyadah", id: "Ziyadah (Hafalan Baru)", en: "Ziyadah (New)" },
-  { value: "murajaah", id: "Muraja'ah (Mengulang)", en: "Muraja'ah (Review)" },
-  { value: "tilawah_harian", id: "Tilawah Harian", en: "Daily Tilawah" },
-];
-const setoranLabel = (v: string | null | undefined, lang: string) => {
-  const f = SETORAN_KINDS.find((s) => s.value === v);
-  return f ? (lang === "id" ? f.id : f.en) : "";
-};
-
-const emptyQ = (type: BType = "multiple_choice"): BQ => ({
-  type,
-  topic: "",
-  question: "",
-  options: ["", "", "", ""],
-  correctIndex: 0,
-  correctIndices: [],
-  answer: "",
-  difficulty: "medium",
-  image_url: null,
-  surah: "",
-  target: "",
-  setoranKind: type === "halaqoh_tilawah" ? "tilawah_harian" : type === "halaqoh_setoran" ? "ziyadah" : "",
-  minPages: type === "halaqoh_tilawah" ? "1" : "",
-});
-
-// Build DB rows from the form, collecting ALL validation errors (never throws).
-// Returns rows only when there are zero errors.
-function buildBankRows(
-  questions: BQ[],
-  subject: string,
-  gradeLevel: string,
-  userId: string,
-  lang: string,
-): { rows: any[]; errors: string[] } {
-  const errors: string[] = [];
-  const rows: any[] = [];
-
-  if (questions.length === 0) {
-    errors.push(lang === "id" ? "Tambahkan minimal 1 soal." : "Add at least 1 question.");
-  }
-  if (questions.length > MAX_QUESTIONS) {
-    errors.push(lang === "id" ? `Maksimal ${MAX_QUESTIONS} soal (sekarang ${questions.length}).` : `Max ${MAX_QUESTIONS} (now ${questions.length}).`);
-  }
-
-  questions.forEach((q, i) => {
-    const at = (lang === "id" ? "Soal " : "Q ") + (i + 1);
-    const prompt = q.question.trim();
-
-    if (isHalaqohType(q.type)) {
-      if (!q.surah.trim() && !prompt) {
-        errors.push(`${at}: ${lang === "id" ? "isi Surah atau instruksi." : "fill surah or instruction."}`);
-      }
-      const isSetoranLike = q.type === "halaqoh_setoran" || q.type === "halaqoh_tilawah";
-      if (isSetoranLike && !q.setoranKind) {
-        errors.push(`${at}: ${lang === "id" ? "pilih Jenis Setoran." : "choose setoran type."}`);
-      }
-      if (q.minPages.trim() && (isNaN(Number(q.minPages)) || Number(q.minPages) < 0)) {
-        errors.push(`${at}: ${lang === "id" ? "Min. Halaman harus angka ≥ 0." : "Min pages must be a number ≥ 0."}`);
-      }
-      const kind = q.type.replace("halaqoh_", "");
-      const setoranTxt = isSetoranLike && q.setoranKind ? ` · ${setoranLabel(q.setoranKind, lang)}` : "";
-      const pagesTxt = q.minPages.trim() ? ` · min ${q.minPages.trim()} hlm` : "";
-      const defaultPrompt = `${TYPE_LABEL(q.type, lang)}${q.surah.trim() ? ` — ${q.surah.trim()}` : ""}${q.target.trim() ? ` (${q.target.trim()})` : ""}${setoranTxt}${pagesTxt}`;
-      rows.push({
-        teacher_id: userId, subject: subject || null, grade_level: gradeLevel || null,
-        topic: q.surah.trim() || null, question: prompt || defaultPrompt, type: "voice" as const,
-        halaqoh_kind: kind, options: null, answer: q.target.trim() || null,
-        difficulty: q.difficulty as any, image_url: q.image_url || null,
-        setoran_kind: isSetoranLike ? (q.setoranKind || null) : null,
-        min_pages: q.minPages.trim() ? Number(q.minPages.trim()) : null,
-      });
-      return;
-    }
-
-    if (!prompt) {
-      errors.push(`${at}: ${lang === "id" ? "pertanyaan masih kosong." : "question is empty."}`);
-    }
-    let opts: string[] | null = null;
-    let answer: string | null = q.answer.trim() || null;
-    if (q.type === "multiple_choice") {
-      opts = q.options.map((o) => o.trim()).filter(Boolean);
-      if (opts.length < 2) errors.push(`${at}: ${lang === "id" ? "minimal 2 pilihan jawaban." : "min 2 options."}`);
-      const chosen = q.options[q.correctIndex]?.trim();
-      if (!chosen) errors.push(`${at}: ${lang === "id" ? "tandai jawaban yang benar." : "mark the correct answer."}`);
-      answer = chosen || null;
-    } else if (q.type === "complex_multiple_choice") {
-      opts = q.options.map((o) => o.trim()).filter(Boolean);
-      if (opts.length < 2) errors.push(`${at}: ${lang === "id" ? "minimal 2 pilihan jawaban." : "min 2 options."}`);
-      const chosen = q.correctIndices.map((idx) => q.options[idx]?.trim()).filter(Boolean);
-      if (chosen.length < 1) errors.push(`${at}: ${lang === "id" ? "tandai minimal 1 jawaban benar." : "mark at least 1 correct answer."}`);
-      answer = chosen.join(", ") || null;
-    } else if (q.type === "true_false") {
-      opts = null;
-      if (!answer) answer = "Benar";
-    } else if (q.type === "short_answer") {
-      if (!answer) errors.push(`${at}: ${lang === "id" ? "isi kunci jawaban." : "fill the answer key."}`);
-    } else if (q.type === "voice") {
-      opts = null; answer = null;
-    }
-    rows.push({
-      teacher_id: userId, subject: subject || null, grade_level: gradeLevel || null,
-      topic: q.topic.trim() || null, question: prompt, type: q.type as any,
-      halaqoh_kind: null, options: opts, answer, difficulty: q.difficulty as any,
-      image_url: q.image_url || null,
-    });
-  });
-
-  return { rows: errors.length ? [] : rows, errors };
-}
 
 function GuruBankSoalPage() {
   const { user, role, loading } = useAuth();
