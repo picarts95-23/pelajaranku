@@ -240,6 +240,8 @@ function GuruBankSoalPage() {
 
   return (
     <DashboardShell accent="guru">
+      <QuizTabs active="bank" />
+
       <PageHeader title={t("navQuestionBank")} subtitle={lang === "id" ? `Buat banyak soal sekaligus (maks ${MAX_QUESTIONS}) & kirim ke Tugas` : `Create many questions at once (max ${MAX_QUESTIONS}) & send to assignments`}
         actions={
           <div className="flex flex-wrap gap-2">
