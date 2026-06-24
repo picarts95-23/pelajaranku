@@ -391,7 +391,7 @@ function GuruBankSoalPage() {
     <DashboardShell accent="guru">
       <QuizTabs active="bank" />
 
-      <PageHeader title={t("navQuestionBank")} subtitle={lang === "id" ? `Buat banyak soal sekaligus (maks ${MAX_QUESTIONS}) & kirim ke Tugas` : `Create many questions at once (max ${MAX_QUESTIONS}) & send to assignments`}
+      <PageHeader title={t("navQuestionBank")} subtitle={lang === "id" ? `Buat soal sekali (maks ${MAX_QUESTIONS}, campur tipe), lalu simpan ke Bank atau kirim sebagai Tugas/Kuis` : `Build questions once (max ${MAX_QUESTIONS}, mixed types), then save to Bank or send as a quiz`}
         actions={
           <div className="flex flex-wrap gap-2">
             {selected.length > 0 && (
@@ -400,9 +400,9 @@ function GuruBankSoalPage() {
               </Button>
             )}
             <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o) resetForm(); }}>
-              <DialogTrigger asChild><Button variant="guru"><Plus className="size-4" /> {t("newQuestion")}</Button></DialogTrigger>
+              <DialogTrigger asChild><Button variant="guru"><Plus className="size-4" /> {lang === "id" ? "Buat Soal" : "Create Questions"}</Button></DialogTrigger>
               <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader><DialogTitle>{lang === "id" ? "Tambah Soal (banyak sekaligus)" : "Add Questions (bulk)"}</DialogTitle></DialogHeader>
+                <DialogHeader><DialogTitle>{lang === "id" ? "Buat Soal (Bank Soal / Tugas / Kuis)" : "Create Questions (Bank / Assignment / Quiz)"}</DialogTitle></DialogHeader>
                 <div className="space-y-3">
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div><Label>{t("subject")}</Label><SubjectSelect value={subject} onChange={setSubject} /></div>
@@ -410,6 +410,66 @@ function GuruBankSoalPage() {
                       <Label>{lang === "id" ? "Untuk Kelas / Jenjang" : "Target Class / Grade"}</Label>
                       <Input value={gradeLevel} onChange={(e) => setGradeLevel(e.target.value)} placeholder={lang === "id" ? "mis. Kelas 7, SMP, Halaqoh A" : "e.g. Grade 7"} />
                     </div>
+                  </div>
+
+                  {/* Destination: one form, choose where the questions go */}
+                  <div className="rounded-xl border-2 border-border bg-muted/20 p-3">
+                    <Label className="text-sm font-bold">{lang === "id" ? "Tujuan Soal" : "Destination"}</Label>
+                    <div className="mt-2 grid grid-cols-3 gap-2">
+                      {([
+                        ["bank", lang === "id" ? "Simpan ke Bank Soal" : "Save to Bank"],
+                        ["assignment", lang === "id" ? "Kirim sbg Tugas/Kuis" : "Send as Quiz"],
+                        ["both", lang === "id" ? "Bank + Kirim" : "Bank + Send"],
+                      ] as [typeof destination, string][]).map(([val, label]) => (
+                        <button key={val} type="button" onClick={() => setDestination(val)}
+                          className={`rounded-lg border-2 px-2 py-2 text-xs font-semibold transition ${destination === val ? "border-guru bg-guru/10 text-guru" : "border-border text-muted-foreground hover:text-foreground"}`}>
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+
+                    {sendAssignment && (
+                      <div className="mt-3 space-y-3 border-t border-border pt-3">
+                        <div>
+                          <Label className="text-xs">{lang === "id" ? "Judul Tugas/Kuis" : "Title"} <span className="text-destructive">*</span></Label>
+                          <Input value={aTitle} onChange={(e) => setATitle(e.target.value)} placeholder={lang === "id" ? "mis. Ulangan Tajwid Bab 1" : "e.g. Tajwid Test Ch.1"} />
+                        </div>
+                        <div>
+                          <Label className="text-xs">{lang === "id" ? "Tujuan Pengiriman" : "Send To"}</Label>
+                          <div className="mt-1 flex gap-2">
+                            {(["class", "student"] as const).map((tg) => (
+                              <button key={tg} type="button" onClick={() => setATarget(tg)}
+                                className={`flex-1 rounded-lg border-2 px-3 py-1.5 text-sm font-semibold ${aTarget === tg ? "border-quest bg-quest/10 text-quest" : "border-border"}`}>
+                                {tg === "class" ? (lang === "id" ? "Satu Kelas" : "Whole Class") : (lang === "id" ? "Siswa Tertentu" : "Specific Student")}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        {aTarget === "class" ? (
+                          <div>
+                            <Label className="text-xs">{lang === "id" ? "Kelas" : "Class"} <span className="text-destructive">*</span></Label>
+                            <select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={aClassId} onChange={(e) => setAClassId(e.target.value)}>
+                              <option value="">{lang === "id" ? "— pilih kelas —" : "— select class —"}</option>
+                              {(classes as any[]).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                            </select>
+                          </div>
+                        ) : (
+                          <div>
+                            <Label className="text-xs">{lang === "id" ? "Siswa" : "Student"} <span className="text-destructive">*</span></Label>
+                            <select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={aStudentId} onChange={(e) => setAStudentId(e.target.value)}>
+                              <option value="">{lang === "id" ? "— pilih siswa —" : "— select student —"}</option>
+                              {(students as any[]).map((s) => <option key={s.id} value={s.id}>{s.full_name ?? s.id}</option>)}
+                            </select>
+                          </div>
+                        )}
+                        <div className="grid gap-2 sm:grid-cols-4">
+                          <div className="sm:col-span-1"><Label className="text-xs">{lang === "id" ? "Tenggat" : "Due"}</Label><Input type="datetime-local" value={aDueAt} onChange={(e) => setADueAt(e.target.value)} /></div>
+                          <div><Label className="text-xs">{lang === "id" ? "Nilai" : "Score"}</Label><Input type="number" min={1} value={aMaxScore} onChange={(e) => setAMaxScore(Number(e.target.value))} /></div>
+                          <div><Label className="text-xs">XP</Label><Input type="number" min={0} value={aXp} onChange={(e) => setAXp(Number(e.target.value))} /></div>
+                          <div><Label className="text-xs">{lang === "id" ? "Koin" : "Coins"}</Label><Input type="number" min={0} value={aCoin} onChange={(e) => setACoin(Number(e.target.value))} /></div>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
