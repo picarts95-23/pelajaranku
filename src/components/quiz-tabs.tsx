@@ -1,13 +1,13 @@
 import { Link } from "@tanstack/react-router";
-import { Database, FileQuestion } from "lucide-react";
+import { Database, FileQuestion, BarChart3 } from "lucide-react";
 import { useLang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 /**
- * Shared sub-navigation that presents Bank Soal and Tugas/Kuis as ONE feature.
+ * Shared sub-navigation that presents Bank Soal, Tugas/Kuis and Laporan as ONE feature.
  * `active` highlights the current tab.
  */
-export function QuizTabs({ active }: { active: "bank" | "tugas" }) {
+export function QuizTabs({ active }: { active: "bank" | "tugas" | "laporan" }) {
   const { lang } = useLang();
   const tabs = [
     {
@@ -22,7 +22,14 @@ export function QuizTabs({ active }: { active: "bank" | "tugas" }) {
       icon: FileQuestion,
       label: lang === "id" ? "Hasil & Penilaian" : "Results & Grading",
     },
+    {
+      key: "laporan" as const,
+      to: "/guru/laporan",
+      icon: BarChart3,
+      label: lang === "id" ? "Laporan Progres" : "Progress Report",
+    },
   ];
+
   return (
     <div className="mb-5 inline-flex rounded-2xl border-2 border-border bg-muted/40 p-1">
       {tabs.map((tab) => {
