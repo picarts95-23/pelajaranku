@@ -201,6 +201,9 @@ function GuruBankSoalPage() {
   const [uploadingIdx, setUploadingIdx] = useState<number | null>(null);
   const [selected, setSelected] = useState<string[]>([]);
   const [transferOpen, setTransferOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [filterGrade, setFilterGrade] = useState("all");
+  const [filterType, setFilterType] = useState("all");
 
   useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
 
