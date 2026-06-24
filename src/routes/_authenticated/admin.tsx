@@ -213,6 +213,10 @@ function AdminPage() {
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
+                  <Button variant="secondary" size="sm"
+                    onClick={() => { setPwUser(u); setNewPw(""); setShowPw(true); }}>
+                    <KeyRound className="size-4" /> Password
+                  </Button>
                   <Button variant="outline" size="sm"
                     disabled={archiveMut.isPending || u.role === "admin"}
                     onClick={() => archiveMut.mutate({ userId: u.id, archived: !u.archived_at })}>
