@@ -79,32 +79,31 @@ function GuruBankSoalPage() {
   });
 
   const resetForm = () => {
+    setEditId(null);
     setSubject(""); setGradeLevel(""); setQuestions([emptyQ()]);
     setDestination("bank"); setATitle(""); setATarget("class");
     setAClassId(""); setAStudentId(""); setADueAt("");
     setAMaxScore(100); setAXp(50); setACoin(10);
   };
 
+  // Open the form pre-filled to edit an existing bank question (single row).
+  const openEdit = (row: any) => {
+    setEditId(row.id);
+    setSubject(row.subject ?? "");
+    setGradeLevel(row.grade_level ?? "");
+    setQuestions([bankRowToBQ(row)]);
+    setDestination("bank");
+    setOpen(true);
+  };
+
   const setQ = (i: number, patch: Partial<BQ>) =>
     setQuestions((qs) => qs.map((q, idx) => (idx === i ? { ...q, ...patch } : q)));
-  const setOpt = (qi: number, oi: number, v: string) =>
-    setQuestions((qs) => qs.map((q, idx) => (idx === qi ? { ...q, options: q.options.map((o, j) => (j === oi ? v : o)) } : q)));
-  const addOpt = (qi: number) =>
-    setQuestions((qs) => qs.map((q, idx) => (idx === qi ? { ...q, options: [...q.options, ""] } : q)));
-  const removeOpt = (qi: number, oi: number) =>
-    setQuestions((qs) => qs.map((q, idx) => {
-      if (idx !== qi) return q;
-      const options = q.options.filter((_, j) => j !== oi);
-      const correctIndex = q.correctIndex >= options.length ? Math.max(0, options.length - 1) : q.correctIndex;
-      return { ...q, options, correctIndex, correctIndices: q.correctIndices.filter((x) => x < options.length) };
-    }));
   const addQuestion = (type: BType = "multiple_choice") =>
     setQuestions((qs) => {
       if (qs.length >= MAX_QUESTIONS) { toast.error(lang === "id" ? `Maksimal ${MAX_QUESTIONS} soal` : `Max ${MAX_QUESTIONS}`); return qs; }
       return [...qs, emptyQ(type)];
     });
-  const removeQuestion = (i: number) =>
-    setQuestions((qs) => (qs.length > 1 ? qs.filter((_, idx) => idx !== i) : qs));
+
 
   async function uploadImage(e: React.ChangeEvent<HTMLInputElement>, qi: number) {
     const file = e.target.files?.[0];
