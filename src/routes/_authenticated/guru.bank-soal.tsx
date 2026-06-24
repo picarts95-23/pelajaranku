@@ -251,10 +251,11 @@ function GuruBankSoalPage() {
                 <Send className="size-4" /> {lang === "id" ? `Kirim ke Tugas (${selected.length})` : `Send to Tugas (${selected.length})`}
               </Button>
             )}
-            <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o) resetForm(); }}>
-              <DialogTrigger asChild><Button variant="guru"><Plus className="size-4" /> {lang === "id" ? "Buat Soal" : "Create Questions"}</Button></DialogTrigger>
+            <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) resetForm(); }}>
+              <DialogTrigger asChild><Button variant="guru" onClick={() => resetForm()}><Plus className="size-4" /> {lang === "id" ? "Buat Soal" : "Create Questions"}</Button></DialogTrigger>
               <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader><DialogTitle>{lang === "id" ? "Buat Soal (Bank Soal / Tugas / Kuis)" : "Create Questions (Bank / Assignment / Quiz)"}</DialogTitle></DialogHeader>
+                <DialogHeader><DialogTitle>{editId ? (lang === "id" ? "Edit Soal" : "Edit Question") : (lang === "id" ? "Buat Soal (Bank Soal / Tugas / Kuis)" : "Create Questions (Bank / Assignment / Quiz)")}</DialogTitle></DialogHeader>
+
                 <div className="space-y-3">
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div><Label>{t("subject")}</Label><SubjectSelect value={subject} onChange={setSubject} /></div>
