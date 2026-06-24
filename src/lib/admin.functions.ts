@@ -125,3 +125,26 @@ export const deleteUserAccount = createServerFn({ method: "POST" })
     await supabaseAdmin.from("user_roles").delete().eq("user_id", data.userId);
     return { ok: true };
   });
+
+/**
+ * Admin can reset/replace a user's password. The original password can never be
+ * read (it is stored only as a one-way hash); admin can only set a new value.
+ */
+export const setUserPassword = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { userId: string; password: string }) => {
+    if (!input?.userId) throw new Error("User tidak valid.");
+    const password = (input.password ?? "").trim();
+    if (password.length < 6) throw new Error("Password minimal 6 karakter.");
+    if (password.length > 72) throw new Error("Password maksimal 72 karakter.");
+    return { userId: input.userId, password };
+  })
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.auth.admin.updateUserById(data.userId, {
+      password: data.password,
+    });
+    if (error) throw error;
+    return { ok: true };
+  });
