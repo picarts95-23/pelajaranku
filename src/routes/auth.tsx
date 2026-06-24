@@ -260,6 +260,31 @@ function AuthPage() {
             <Field label={t("email")} type="email" value={email} onChange={setEmail} required placeholder="you@school.edu" />
             <Field label={t("password")} type="password" value={password} onChange={setPassword} required placeholder="••••••••" />
 
+            {mode === "login" && (
+              <div className="flex justify-end">
+                <button type="button" onClick={openForgot}
+                  className="text-sm font-semibold text-muted-foreground underline-offset-2 hover:text-foreground hover:underline">
+                  {lang === "id" ? "Lupa kata sandi?" : "Forgot password?"}
+                </button>
+              </div>
+            )}
+
+            {mode === "login" && failedAttempts >= 3 && (
+              <div className="rounded-2xl border-2 border-dashed border-destructive/40 bg-destructive/5 p-4 text-sm">
+                <p className="font-display font-semibold text-destructive">
+                  {lang === "id" ? "Gagal masuk 3 kali" : "3 failed sign-in attempts"}
+                </p>
+                <p className="mt-1 text-muted-foreground">
+                  {lang === "id"
+                    ? "Lupa kata sandi? Kirim tautan untuk mengatur ulang, atau minta admin menggantinya."
+                    : "Forgot your password? Send a reset link, or ask the admin to change it."}
+                </p>
+                <Button type="button" variant="outline" size="sm" className="mt-3 w-full" onClick={openForgot}>
+                  <KeyRound className="size-4" /> {lang === "id" ? "Atur ulang kata sandi" : "Reset password"}
+                </Button>
+              </div>
+            )}
+
             {mode === "signup" && role === "guru" && (
               <Field
                 label={lang === "id" ? "Kode Akses Guru" : "Teacher Access Code"}
