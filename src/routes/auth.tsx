@@ -125,6 +125,7 @@ function AuthPage() {
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        setFailedAttempts(0);
         await refresh();
         toast.success(lang === "id" ? "Selamat datang kembali!" : "Welcome back!");
         submittingRef.current = false;
@@ -132,6 +133,17 @@ function AuthPage() {
         return;
       }
     } catch (err) {
+      if (mode === "login") {
+        setFailedAttempts((n) => {
+          const next = n + 1;
+          if (next >= 3) {
+            toast.error(lang === "id"
+              ? "Sudah 3 kali gagal. Coba atur ulang kata sandi Anda."
+              : "3 failed attempts. Try resetting your password.");
+          }
+          return next;
+        });
+      }
       toast.error((err as Error).message);
     } finally {
       submittingRef.current = false;
