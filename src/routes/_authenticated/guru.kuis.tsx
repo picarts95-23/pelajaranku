@@ -116,7 +116,10 @@ function GuruKuisPage() {
                       {quiz.due_at ? ` · ${lang === "id" ? "tenggat" : "due"} ${format(new Date(quiz.due_at), "dd MMM")}` : ""}
                     </p>
                   </div>
-                  <Button size="icon" variant="ghost" className="shrink-0" onClick={() => deleteMut.mutate(quiz.id)}><Trash2 className="size-4 text-destructive" /></Button>
+                  <div className="flex shrink-0 items-center gap-1">
+                    <Button size="icon" variant="ghost" onClick={() => setEditing(quiz)} title={lang === "id" ? "Edit soal" : "Edit"}><Pencil className="size-4 text-guru" /></Button>
+                    <Button size="icon" variant="ghost" onClick={() => { if (confirm(lang === "id" ? "Hapus kuis ini? Riwayat pengerjaan ikut terhapus." : "Delete this quiz?")) deleteMut.mutate(quiz.id); }}><Trash2 className="size-4 text-destructive" /></Button>
+                  </div>
                 </div>
                 <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
                   <span className="rounded-full bg-siswa/15 px-3 py-1 font-display font-bold text-siswa"><Users2 className="mr-1 inline size-3" />{subs.length} {lang === "id" ? "mengerjakan" : "done"}</span>
