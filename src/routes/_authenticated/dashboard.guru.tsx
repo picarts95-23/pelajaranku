@@ -205,6 +205,13 @@ function GuruDashboard() {
               tint="bg-accent"
             />
             <FeatureCard
+              to="/guru/laporan"
+              icon={<BarChart3 className="size-6" />}
+              title={lang === "id" ? "Laporan Progres" : "Progress Report"}
+              desc={lang === "id" ? "Progres per kelas & mapel: nilai rata-rata, XP/koin, dan Mutaba'ah." : "Per class & subject: averages, XP/coins, and Mutaba'ah."}
+              tint="bg-gradient-magic"
+            />
+            <FeatureCard
               to="/guru/siswa"
               icon={<TrendingUp className="size-6" />}
               title={lang === "id" ? "Progres Siswa" : "Student Progress"}
