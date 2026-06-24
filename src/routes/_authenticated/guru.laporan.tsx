@@ -310,6 +310,3 @@ function GuruLaporanPage() {
   );
 }
 
-// Tabs are rendered separately to keep imports tidy.
-import { QuizTabs } from "@/components/quiz-tabs";
-function QuizTabsLazy() { return <QuizTabs active="laporan" />; }
