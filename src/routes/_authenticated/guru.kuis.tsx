@@ -275,6 +275,8 @@ function GuruKuisPage() {
 
   return (
     <DashboardShell accent="guru">
+      <QuizTabs active="tugas" />
+
       <PageHeader
         title={lang === "id" ? "Tugas & Kuis" : "Assignments & Quizzes"}
         subtitle={lang === "id" ? `Campur tipe soal (PG, B/S, isian, esai, audio) hingga ${MAX_QUESTIONS} soal` : `Mix question types up to ${MAX_QUESTIONS} questions`}
