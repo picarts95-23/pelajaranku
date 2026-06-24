@@ -327,15 +327,20 @@ function GuruBankSoalPage() {
                     )}
                   </div>
 
+                  )}
+
                   <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
                     <Label className="text-base font-bold">{lang === "id" ? "Daftar Soal" : "Questions"} <span className="font-normal text-muted-foreground">({questions.length}/{MAX_QUESTIONS})</span></Label>
+                    {!editId && (
                     <Select value="" onValueChange={(v) => addQuestion(v as BType)}>
                       <SelectTrigger className="h-9 w-auto gap-1"><Plus className="size-4" /><span className="text-sm">{lang === "id" ? "Tambah Soal" : "Add"}</span></SelectTrigger>
                       <SelectContent>
                         {ALL_TYPES.map((tp) => <SelectItem key={tp} value={tp}>{TYPE_LABEL(tp, lang)}</SelectItem>)}
                       </SelectContent>
                     </Select>
+                    )}
                   </div>
+
 
                   <QuestionEditorList
                     questions={questions}
