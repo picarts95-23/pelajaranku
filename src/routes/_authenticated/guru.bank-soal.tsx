@@ -570,6 +570,8 @@ function GuruBankSoalPage() {
             );
           })}
         </div>
+          )}
+        </>
       )}
 
       <TransferDialog
