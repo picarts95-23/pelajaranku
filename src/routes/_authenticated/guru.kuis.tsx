@@ -16,7 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { computeTotal, predikatOf, TAJWID_TOLERANCE, HELP_TOLERANCE } from "@/lib/mutabaah";
 import { QuizTabs } from "@/components/quiz-tabs";
 import {
-  MAX_QUESTIONS, type BQ, TYPE_LABEL,
+  MAX_QUESTIONS, type BQ,
   buildBankRows, mapBankToQuiz, quizQuestionToBQ, QuestionEditorList,
 } from "@/components/question-fields";
 
