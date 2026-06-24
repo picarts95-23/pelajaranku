@@ -177,7 +177,7 @@ function GuruLaporanPage() {
       <PageHeader
         title={lang === "id" ? "Laporan Progres Belajar" : "Learning Progress Report"}
         subtitle={lang === "id" ? "Ringkasan nilai, XP/koin, dan Mutaba'ah berdasarkan data Tugas/Kuis." : "Scores, XP/coins, and Mutaba'ah from Tugas/Kuis data."}
-        actions={exportRows.length > 0 ? <ExportMenu rows={exportRows} filename={lang === "id" ? "laporan-progres" : "progress-report"} /> : undefined}
+        actions={exportRows.length > 0 ? <ExportMenu rows={exportRows} columns={exportColumns} title={lang === "id" ? "Laporan Progres Belajar" : "Learning Progress Report"} filename={lang === "id" ? "laporan-progres" : "progress-report"} variant="guru" /> : undefined}
       />
 
       <div className="mb-5 flex flex-wrap gap-3">
