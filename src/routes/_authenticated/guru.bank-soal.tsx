@@ -604,23 +604,23 @@ function GuruBankSoalPage() {
                   </div>
 
                   {/* Live validation summary + preview */}
-                  <div className={`rounded-xl border-2 p-3 text-sm ${validation.errors.length ? "border-destructive/40 bg-destructive/5" : "border-emerald-500/40 bg-emerald-500/5"}`}>
+                  <div className={`rounded-xl border-2 p-3 text-sm ${allErrors.length ? "border-destructive/40 bg-destructive/5" : "border-emerald-500/40 bg-emerald-500/5"}`}>
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-display font-bold">
-                        {validation.errors.length
-                          ? (lang === "id" ? `⚠️ ${validation.errors.length} hal perlu diperbaiki` : `⚠️ ${validation.errors.length} issue(s)`)
-                          : (lang === "id" ? `✅ ${questions.length}/${MAX_QUESTIONS} soal siap disimpan` : `✅ ${questions.length}/${MAX_QUESTIONS} ready`)}
+                        {allErrors.length
+                          ? (lang === "id" ? `⚠️ ${allErrors.length} hal perlu diperbaiki` : `⚠️ ${allErrors.length} issue(s)`)
+                          : (lang === "id" ? `✅ ${questions.length}/${MAX_QUESTIONS} soal siap` : `✅ ${questions.length}/${MAX_QUESTIONS} ready`)}
                       </span>
                       <Button type="button" size="sm" variant="ghost" onClick={() => setShowPreview((v) => !v)}>
                         {showPreview ? (lang === "id" ? "Tutup Pratinjau" : "Hide Preview") : (lang === "id" ? "Pratinjau" : "Preview")}
                       </Button>
                     </div>
-                    {validation.errors.length > 0 && (
+                    {allErrors.length > 0 && (
                       <ul className="mt-2 list-disc space-y-0.5 pl-5 text-destructive">
-                        {validation.errors.map((e, i) => <li key={i}>{e}</li>)}
+                        {allErrors.map((e, i) => <li key={i}>{e}</li>)}
                       </ul>
                     )}
-                    {showPreview && validation.errors.length === 0 && (
+                    {showPreview && allErrors.length === 0 && (
                       <ol className="mt-2 list-decimal space-y-1 pl-5 text-muted-foreground">
                         {questions.map((q, i) => (
                           <li key={i}>
