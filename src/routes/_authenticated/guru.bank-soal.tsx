@@ -334,126 +334,13 @@ function GuruBankSoalPage() {
                     </Select>
                   </div>
 
-                  <div className="space-y-3">
-                    {questions.map((q, qi) => (
-                      <div key={qi} className="rounded-xl border-2 border-border bg-muted/20 p-3">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="font-display text-sm font-bold">{lang === "id" ? "Soal" : "Q"} {qi + 1}</span>
-                          <div className="flex items-center gap-2">
-                            <Select value={q.type} onValueChange={(v) => setQ(qi, { type: v as BType })}>
-                              <SelectTrigger className="h-8 w-auto text-xs"><SelectValue /></SelectTrigger>
-                              <SelectContent>{ALL_TYPES.map((tp) => <SelectItem key={tp} value={tp}>{TYPE_LABEL(tp, lang)}</SelectItem>)}</SelectContent>
-                            </Select>
-                            <Select value={q.difficulty} onValueChange={(v) => setQ(qi, { difficulty: v })}>
-                              <SelectTrigger className="h-8 w-auto text-xs"><SelectValue /></SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="easy">{t("easy")}</SelectItem>
-                                <SelectItem value="medium">{t("medium")}</SelectItem>
-                                <SelectItem value="hard">{t("hard")}</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            {questions.length > 1 && <Button type="button" size="icon" variant="ghost" className="size-7" onClick={() => removeQuestion(qi)}><Trash2 className="size-4 text-destructive" /></Button>}
-                          </div>
-                        </div>
+                  <QuestionEditorList
+                    questions={questions}
+                    setQuestions={setQuestions}
+                    uploadImage={uploadImage}
+                    uploadingIdx={uploadingIdx}
+                  />
 
-                        {isHalaqohType(q.type) ? (
-                          <div className="mt-2 space-y-2">
-                            <div className="rounded-lg bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-700">
-                              <BookOpenCheck className="mr-1 inline size-3.5" />
-                              {lang === "id" ? "Soal Halaqoh — penilaian otomatis masuk ke Mutaba'ah saat dikirim sebagai Tugas mapel Halaqoh." : "Halaqoh item — auto-records to Mutaba'ah."}
-                            </div>
-                            {(q.type === "halaqoh_setoran" || q.type === "halaqoh_tilawah") && (
-                              <div className="grid gap-2 sm:grid-cols-2">
-                                <div>
-                                  <Label className="text-xs">{lang === "id" ? "Jenis Setoran" : "Setoran Type"}</Label>
-                                  <Select value={q.setoranKind || undefined} onValueChange={(v) => setQ(qi, { setoranKind: v })}>
-                                    <SelectTrigger className="h-9"><SelectValue placeholder={lang === "id" ? "Pilih jenis" : "Select"} /></SelectTrigger>
-                                    <SelectContent>
-                                      {SETORAN_KINDS.map((s) => <SelectItem key={s.value} value={s.value}>{lang === "id" ? s.id : s.en}</SelectItem>)}
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                                <div>
-                                  <Label className="text-xs">{lang === "id" ? "Min. Halaman / hari" : "Min. Pages / day"}</Label>
-                                  <Input type="number" min={0} step="0.5" value={q.minPages} onChange={(e) => setQ(qi, { minPages: e.target.value })} placeholder={lang === "id" ? "mis. 1" : "e.g. 1"} />
-                                </div>
-                              </div>
-                            )}
-                            <div className="grid gap-2 sm:grid-cols-2">
-                              <div><Label className="text-xs">{lang === "id" ? "Surah" : "Surah"}</Label><Input value={q.surah} onChange={(e) => setQ(qi, { surah: e.target.value })} placeholder={lang === "id" ? "mis. Al-Baqarah" : "e.g. Al-Baqarah"} /></div>
-                              <div><Label className="text-xs">{lang === "id" ? "Target (ayat / juz)" : "Target"}</Label><Input value={q.target} onChange={(e) => setQ(qi, { target: e.target.value })} placeholder={lang === "id" ? "mis. ayat 1-10 / Juz 1" : "e.g. 1-10"} /></div>
-                            </div>
-                            <Textarea rows={2} value={q.question} onChange={(e) => setQ(qi, { question: e.target.value })} placeholder={lang === "id" ? "Instruksi (opsional)…" : "Instruction (optional)…"} />
-                          </div>
-                        ) : (
-                          <>
-                            <Textarea rows={2} className="mt-2" value={q.question} onChange={(e) => setQ(qi, { question: e.target.value })} placeholder={lang === "id" ? "Tulis pertanyaan…" : "Write the question…"} />
-
-                            <div className="mt-2">
-                              <input type="file" accept="image/*" onChange={(e) => uploadImage(e, qi)} disabled={uploadingIdx === qi}
-                                className="block w-full text-xs file:mr-3 file:rounded-lg file:border-0 file:bg-guru file:px-3 file:py-1.5 file:text-white" />
-                              {uploadingIdx === qi && <p className="mt-1 text-xs text-muted-foreground">{lang === "id" ? "Mengunggah…" : "Uploading…"}</p>}
-                              {q.image_url && <p className="mt-1 text-xs text-emerald-600">✅ {lang === "id" ? "Gambar siap" : "Image attached"}</p>}
-                            </div>
-
-                            {(q.type === "multiple_choice" || q.type === "complex_multiple_choice") && (
-                              <div className="mt-2 space-y-1.5">
-                                <p className="text-xs text-muted-foreground">
-                                  {q.type === "complex_multiple_choice"
-                                    ? (lang === "id" ? "Tandai semua jawaban benar." : "Mark all correct answers.")
-                                    : (lang === "id" ? "Tandai lingkaran untuk jawaban benar." : "Tap circle for correct answer.")}
-                                </p>
-                                {q.options.map((opt, oi) => {
-                                  const isComplex = q.type === "complex_multiple_choice";
-                                  const checked = isComplex ? q.correctIndices.includes(oi) : q.correctIndex === oi;
-                                  return (
-                                    <div key={oi} className="flex items-center gap-2">
-                                      <button type="button"
-                                        onClick={() => isComplex
-                                          ? setQ(qi, { correctIndices: q.correctIndices.includes(oi) ? q.correctIndices.filter((x) => x !== oi) : [...q.correctIndices, oi] })
-                                          : setQ(qi, { correctIndex: oi })}
-                                        className={`grid size-6 shrink-0 place-items-center border-2 ${isComplex ? "rounded-md" : "rounded-full"} ${checked ? "border-emerald-500 bg-emerald-500 text-white" : "border-muted-foreground/40"}`}>
-                                        {checked && <Check className="size-3.5" />}
-                                      </button>
-                                      <Input value={opt} onChange={(e) => setOpt(qi, oi, e.target.value)} placeholder={`${lang === "id" ? "Pilihan" : "Option"} ${String.fromCharCode(65 + oi)}`} />
-                                      {q.options.length > 2 && <Button type="button" size="icon" variant="ghost" className="size-7" onClick={() => removeOpt(qi, oi)}><X className="size-4" /></Button>}
-                                    </div>
-                                  );
-                                })}
-                                {q.options.length < 6 && <Button type="button" size="sm" variant="ghost" onClick={() => addOpt(qi)}><Plus className="size-3" /> {lang === "id" ? "Pilihan" : "Option"}</Button>}
-                              </div>
-                            )}
-
-                            {q.type === "true_false" && (
-                              <div className="mt-2 flex gap-2">
-                                {["Benar", "Salah"].map((val) => (
-                                  <button key={val} type="button" onClick={() => setQ(qi, { answer: val })}
-                                    className={`flex-1 rounded-lg border-2 px-3 py-2 text-sm font-semibold ${q.answer === val ? "border-emerald-500 bg-emerald-500/10 text-emerald-700" : "border-border"}`}>
-                                    {val}
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-
-                            {q.type === "short_answer" && (
-                              <div className="mt-2">
-                                <Label className="text-xs">{lang === "id" ? "Kunci jawaban (alternatif pisahkan dengan |)" : "Answer key (separate with |)"}</Label>
-                                <Input value={q.answer} onChange={(e) => setQ(qi, { answer: e.target.value })} placeholder={lang === "id" ? "mis. mad|maddah" : "e.g. mad|maddah"} />
-                              </div>
-                            )}
-
-                            {q.type === "voice" && (
-                              <p className="mt-2 rounded-lg bg-quest/10 px-3 py-1.5 text-xs font-semibold text-quest"><Mic className="mr-1 inline size-3.5" />{lang === "id" ? "Siswa menjawab dengan rekaman suara (dinilai manual)." : "Voice answer (manual)."}</p>
-                            )}
-
-                            {q.type === "essay" && (
-                              <p className="mt-2 rounded-lg bg-amber-500/10 px-3 py-1.5 text-xs font-semibold text-amber-700">{lang === "id" ? "Esai — dinilai manual oleh guru." : "Essay — graded manually."}</p>
-                            )}
-                          </>
-                        )}
-                      </div>
-                    ))}
-                  </div>
 
                   {/* Live validation summary + preview */}
                   <div className={`rounded-xl border-2 p-3 text-sm ${allErrors.length ? "border-destructive/40 bg-destructive/5" : "border-emerald-500/40 bg-emerald-500/5"}`}>
