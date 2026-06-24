@@ -44,10 +44,14 @@ function AdminPage() {
   const [q, setQ] = useState("");
   const [tab, setTab] = useState<"all" | "guru" | "siswa" | "archived">("all");
   const [pendingDelete, setPendingDelete] = useState<AdminUserRow | null>(null);
+  const [pwUser, setPwUser] = useState<AdminUserRow | null>(null);
+  const [newPw, setNewPw] = useState("");
+  const [showPw, setShowPw] = useState(true);
 
   const listFn = useServerFn(listAllUsers);
   const archiveFn = useServerFn(setUserArchived);
   const deleteFn = useServerFn(deleteUserAccount);
+  const passwordFn = useServerFn(setUserPassword);
 
   const usersQuery = useQuery({
     queryKey: ["admin-users"],
