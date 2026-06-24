@@ -2,13 +2,16 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { motion } from "framer-motion";
-import { ArrowLeft, Loader2, Compass, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Loader2, Compass, Eye, EyeOff, KeyRound } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
 import { LangToggle } from "@/components/lang-toggle";
 import { useLang } from "@/lib/i18n";
 import { useAuth, type AppRole } from "@/lib/auth-context";
@@ -50,9 +53,35 @@ function AuthPage() {
   const [subject, setSubject] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [teacherCode, setTeacherCode] = useState("");
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [sendingReset, setSendingReset] = useState(false);
   // Prevents the session listener from redirecting mid-signup, before the
   // teacher role has been granted (which would land teachers on /siswa).
   const submittingRef = useRef(false);
+
+  const openForgot = () => { setResetEmail(email); setForgotOpen(true); };
+
+  const sendReset = async () => {
+    const target = resetEmail.trim();
+    if (!target) { toast.error(lang === "id" ? "Masukkan email" : "Enter your email"); return; }
+    setSendingReset(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(target, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      toast.success(lang === "id"
+        ? "Tautan atur ulang dikirim ke email Anda."
+        : "Reset link sent to your email.");
+      setForgotOpen(false);
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setSendingReset(false);
+    }
+  };
 
   useEffect(() => {
     if (session && !submittingRef.current) navigate({ to: "/loading" });
@@ -96,6 +125,7 @@ function AuthPage() {
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        setFailedAttempts(0);
         await refresh();
         toast.success(lang === "id" ? "Selamat datang kembali!" : "Welcome back!");
         submittingRef.current = false;
@@ -103,6 +133,17 @@ function AuthPage() {
         return;
       }
     } catch (err) {
+      if (mode === "login") {
+        setFailedAttempts((n) => {
+          const next = n + 1;
+          if (next >= 3) {
+            toast.error(lang === "id"
+              ? "Sudah 3 kali gagal. Coba atur ulang kata sandi Anda."
+              : "3 failed attempts. Try resetting your password.");
+          }
+          return next;
+        });
+      }
       toast.error((err as Error).message);
     } finally {
       submittingRef.current = false;
@@ -219,6 +260,31 @@ function AuthPage() {
             <Field label={t("email")} type="email" value={email} onChange={setEmail} required placeholder="you@school.edu" />
             <Field label={t("password")} type="password" value={password} onChange={setPassword} required placeholder="••••••••" />
 
+            {mode === "login" && (
+              <div className="flex justify-end">
+                <button type="button" onClick={openForgot}
+                  className="text-sm font-semibold text-muted-foreground underline-offset-2 hover:text-foreground hover:underline">
+                  {lang === "id" ? "Lupa kata sandi?" : "Forgot password?"}
+                </button>
+              </div>
+            )}
+
+            {mode === "login" && failedAttempts >= 3 && (
+              <div className="rounded-2xl border-2 border-dashed border-destructive/40 bg-destructive/5 p-4 text-sm">
+                <p className="font-display font-semibold text-destructive">
+                  {lang === "id" ? "Gagal masuk 3 kali" : "3 failed sign-in attempts"}
+                </p>
+                <p className="mt-1 text-muted-foreground">
+                  {lang === "id"
+                    ? "Lupa kata sandi? Kirim tautan untuk mengatur ulang, atau minta admin menggantinya."
+                    : "Forgot your password? Send a reset link, or ask the admin to change it."}
+                </p>
+                <Button type="button" variant="outline" size="sm" className="mt-3 w-full" onClick={openForgot}>
+                  <KeyRound className="size-4" /> {lang === "id" ? "Atur ulang kata sandi" : "Reset password"}
+                </Button>
+              </div>
+            )}
+
             {mode === "signup" && role === "guru" && (
               <Field
                 label={lang === "id" ? "Kode Akses Guru" : "Teacher Access Code"}
@@ -243,6 +309,36 @@ function AuthPage() {
         </motion.div>
 
       </div>
+
+      <Dialog open={forgotOpen} onOpenChange={setForgotOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{lang === "id" ? "Atur ulang kata sandi" : "Reset password"}</DialogTitle>
+            <DialogDescription>
+              {lang === "id"
+                ? "Masukkan email akunmu. Kami akan mengirim tautan untuk membuat kata sandi baru."
+                : "Enter your account email. We'll send a link to create a new password."}
+            </DialogDescription>
+          </DialogHeader>
+          <div>
+            <Label className="mb-1.5 block">{t("email")}</Label>
+            <Input
+              type="email"
+              value={resetEmail}
+              onChange={(e) => setResetEmail(e.target.value)}
+              placeholder="you@school.edu"
+              className="h-11 rounded-xl border-2"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setForgotOpen(false)}>{t("cancel")}</Button>
+            <Button onClick={sendReset} disabled={sendingReset}>
+              {sendingReset && <Loader2 className="mr-2 size-4 animate-spin" />}
+              {lang === "id" ? "Kirim tautan" : "Send link"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -200,16 +200,9 @@ function GuruDashboard() {
             <FeatureCard
               to="/guru/bank-soal"
               icon={<FileQuestion className="size-6" />}
-              title={lang === "id" ? "Bank Soal / Kuis" : "Question Bank / Quiz"}
-              desc={lang === "id" ? "Kelola koleksi soal & kuis interaktif." : "Curate questions and interactive quizzes."}
+              title={lang === "id" ? "Bank Soal & Tugas/Kuis" : "Question Bank & Quizzes"}
+              desc={lang === "id" ? "Satu fitur: kelola bank soal lalu kirim sebagai Tugas/Kuis campuran (maks 40)." : "One feature: curate the bank, then send as mixed assignments (max 40)."}
               tint="bg-accent"
-            />
-            <FeatureCard
-              to="/guru/kuis"
-              icon={<FileQuestion className="size-6" />}
-              title={lang === "id" ? "Tugas & Kuis" : "Assignments & Quizzes"}
-              desc={lang === "id" ? "Campur PG, isian, esai & audio — sampai 40 soal." : "Mix MC, short answer, essay & audio — up to 40."}
-              tint="bg-gradient-sunset"
             />
             <FeatureCard
               to="/guru/siswa"

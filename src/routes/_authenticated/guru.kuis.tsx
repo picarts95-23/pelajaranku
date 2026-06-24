@@ -16,6 +16,7 @@ import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { SubjectSelect } from "@/components/subject-select";
 import { computeTotal, predikatOf, TAJWID_TOLERANCE, HELP_TOLERANCE } from "@/lib/mutabaah";
+import { QuizTabs } from "@/components/quiz-tabs";
 
 export const Route = createFileRoute("/_authenticated/guru/kuis")({
   head: () => ({ meta: [{ title: "Tugas & Kuis · EduQuest Academy" }] }),
@@ -275,6 +276,8 @@ function GuruKuisPage() {
 
   return (
     <DashboardShell accent="guru">
+      <QuizTabs active="tugas" />
+
       <PageHeader
         title={lang === "id" ? "Tugas & Kuis" : "Assignments & Quizzes"}
         subtitle={lang === "id" ? `Campur tipe soal (PG, B/S, isian, esai, audio) hingga ${MAX_QUESTIONS} soal` : `Mix question types up to ${MAX_QUESTIONS} questions`}

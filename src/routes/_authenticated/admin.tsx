@@ -5,19 +5,24 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
   ShieldCheck, Search, Trash2, Archive, ArchiveRestore, Loader2, LogOut, Users,
+  KeyRound, Eye, EyeOff, Wand2, Copy,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
 import { useAuth } from "@/lib/auth-context";
 import { LangToggle } from "@/components/lang-toggle";
 import {
-  listAllUsers, setUserArchived, deleteUserAccount, type AdminUserRow,
+  listAllUsers, setUserArchived, deleteUserAccount, setUserPassword, type AdminUserRow,
 } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -39,10 +44,14 @@ function AdminPage() {
   const [q, setQ] = useState("");
   const [tab, setTab] = useState<"all" | "guru" | "siswa" | "archived">("all");
   const [pendingDelete, setPendingDelete] = useState<AdminUserRow | null>(null);
+  const [pwUser, setPwUser] = useState<AdminUserRow | null>(null);
+  const [newPw, setNewPw] = useState("");
+  const [showPw, setShowPw] = useState(true);
 
   const listFn = useServerFn(listAllUsers);
   const archiveFn = useServerFn(setUserArchived);
   const deleteFn = useServerFn(deleteUserAccount);
+  const passwordFn = useServerFn(setUserPassword);
 
   const usersQuery = useQuery({
     queryKey: ["admin-users"],
@@ -68,6 +77,26 @@ function AdminPage() {
     },
     onError: (e: any) => { toast.error(e?.message ?? "Gagal menghapus"); setPendingDelete(null); },
   });
+
+  const passwordMut = useMutation({
+    mutationFn: (vars: { userId: string; password: string }) => passwordFn({ data: vars }),
+    onSuccess: () => {
+      toast.success("Password berhasil diganti");
+      setPwUser(null);
+      setNewPw("");
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Gagal mengganti password"),
+  });
+
+  const genPw = () => {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+    let out = "";
+    const arr = new Uint32Array(10);
+    crypto.getRandomValues(arr);
+    for (let i = 0; i < 10; i++) out += chars[arr[i] % chars.length];
+    setNewPw(out);
+    setShowPw(true);
+  };
 
   const users = usersQuery.data ?? [];
   const filtered = useMemo(() => {
@@ -184,6 +213,10 @@ function AdminPage() {
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
+                  <Button variant="secondary" size="sm"
+                    onClick={() => { setPwUser(u); setNewPw(""); setShowPw(true); }}>
+                    <KeyRound className="size-4" /> Password
+                  </Button>
                   <Button variant="outline" size="sm"
                     disabled={archiveMut.isPending || u.role === "admin"}
                     onClick={() => archiveMut.mutate({ userId: u.id, archived: !u.archived_at })}>
@@ -202,6 +235,7 @@ function AdminPage() {
         </motion.div>
         <p className="mt-4 text-center text-xs text-muted-foreground">
           Arsipkan untuk menyembunyikan pengguna tanpa menghapus data. Hapus permanen akan menghilangkan akun beserta seluruh datanya.
+          Password lama tidak dapat dilihat (tersimpan terenkripsi) — admin hanya dapat menetapkan password baru.
         </p>
       </main>
 
@@ -225,6 +259,57 @@ function AdminPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={!!pwUser} onOpenChange={(o) => { if (!o) { setPwUser(null); setNewPw(""); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Ganti password pengguna</DialogTitle>
+            <DialogDescription>
+              Tetapkan password baru untuk <b>{pwUser?.full_name ?? pwUser?.email}</b>.
+              Password asli tidak bisa ditampilkan karena tersimpan terenkripsi — sampaikan password baru ini ke pengguna.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label className="mb-1.5 block">Password baru</Label>
+              <div className="relative">
+                <Input
+                  type={showPw ? "text" : "password"}
+                  value={newPw}
+                  onChange={(e) => setNewPw(e.target.value)}
+                  placeholder="Minimal 6 karakter"
+                  className="h-11 rounded-xl border-2 pr-11"
+                />
+                <button type="button" onClick={() => setShowPw((v) => !v)}
+                  aria-label={showPw ? "Sembunyikan" : "Tampilkan"}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  {showPw ? <EyeOff className="size-5" /> : <Eye className="size-5" />}
+                </button>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button type="button" variant="outline" size="sm" onClick={genPw}>
+                <Wand2 className="size-4" /> Buatkan acak
+              </Button>
+              {newPw && (
+                <Button type="button" variant="outline" size="sm"
+                  onClick={() => { navigator.clipboard?.writeText(newPw); toast.success("Password disalin"); }}>
+                  <Copy className="size-4" /> Salin
+                </Button>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => { setPwUser(null); setNewPw(""); }}>Batal</Button>
+            <Button
+              disabled={passwordMut.isPending || newPw.trim().length < 6}
+              onClick={() => pwUser && passwordMut.mutate({ userId: pwUser.id, password: newPw.trim() })}>
+              {passwordMut.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
+              Simpan password
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

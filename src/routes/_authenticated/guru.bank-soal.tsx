@@ -14,6 +14,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { SubjectSelect } from "@/components/subject-select";
+import { QuizTabs } from "@/components/quiz-tabs";
 import { LinkBadges } from "@/components/link-fields";
 import { MediaViewer } from "@/components/media-input";
 
@@ -72,6 +73,19 @@ type BQ = {
   image_url: string | null;
   surah: string;
   target: string;
+  setoranKind: string;
+  minPages: string;
+};
+
+// Setoran kinds for Halaqoh setoran / tilawah items.
+const SETORAN_KINDS: { value: string; id: string; en: string }[] = [
+  { value: "ziyadah", id: "Ziyadah (Hafalan Baru)", en: "Ziyadah (New)" },
+  { value: "murajaah", id: "Muraja'ah (Mengulang)", en: "Muraja'ah (Review)" },
+  { value: "tilawah_harian", id: "Tilawah Harian", en: "Daily Tilawah" },
+];
+const setoranLabel = (v: string | null | undefined, lang: string) => {
+  const f = SETORAN_KINDS.find((s) => s.value === v);
+  return f ? (lang === "id" ? f.id : f.en) : "";
 };
 
 const emptyQ = (type: BType = "multiple_choice"): BQ => ({
@@ -86,6 +100,8 @@ const emptyQ = (type: BType = "multiple_choice"): BQ => ({
   image_url: null,
   surah: "",
   target: "",
+  setoranKind: type === "halaqoh_tilawah" ? "tilawah_harian" : type === "halaqoh_setoran" ? "ziyadah" : "",
+  minPages: type === "halaqoh_tilawah" ? "1" : "",
 });
 
 function GuruBankSoalPage() {
@@ -157,12 +173,17 @@ function GuruBankSoalPage() {
         if (isHalaqohType(q.type)) {
           if (!q.surah.trim() && !prompt) throw new Error(`${at}: ${lang === "id" ? "isi surah atau instruksi" : "fill surah or instruction"}`);
           const kind = q.type.replace("halaqoh_", "");
-          const defaultPrompt = `${TYPE_LABEL(q.type, lang)}${q.surah.trim() ? ` — ${q.surah.trim()}` : ""}${q.target.trim() ? ` (${q.target.trim()})` : ""}`;
+          const isSetoranLike = q.type === "halaqoh_setoran" || q.type === "halaqoh_tilawah";
+          const setoranTxt = isSetoranLike && q.setoranKind ? ` · ${setoranLabel(q.setoranKind, lang)}` : "";
+          const pagesTxt = q.minPages.trim() ? ` · min ${q.minPages.trim()} hlm` : "";
+          const defaultPrompt = `${TYPE_LABEL(q.type, lang)}${q.surah.trim() ? ` — ${q.surah.trim()}` : ""}${q.target.trim() ? ` (${q.target.trim()})` : ""}${setoranTxt}${pagesTxt}`;
           return {
             teacher_id: user.id, subject: subject || null, grade_level: gradeLevel || null,
             topic: q.surah.trim() || null, question: prompt || defaultPrompt, type: "voice" as const,
             halaqoh_kind: kind, options: null, answer: q.target.trim() || null,
             difficulty: q.difficulty as any, image_url: q.image_url || null,
+            setoran_kind: isSetoranLike ? (q.setoranKind || null) : null,
+            min_pages: q.minPages.trim() ? Number(q.minPages.trim()) : null,
           };
         }
         if (!prompt) throw new Error(`${at}: ${lang === "id" ? "pertanyaan kosong" : "empty question"}`);
@@ -220,6 +241,8 @@ function GuruBankSoalPage() {
 
   return (
     <DashboardShell accent="guru">
+      <QuizTabs active="bank" />
+
       <PageHeader title={t("navQuestionBank")} subtitle={lang === "id" ? `Buat banyak soal sekaligus (maks ${MAX_QUESTIONS}) & kirim ke Tugas` : `Create many questions at once (max ${MAX_QUESTIONS}) & send to assignments`}
         actions={
           <div className="flex flex-wrap gap-2">
@@ -279,6 +302,23 @@ function GuruBankSoalPage() {
                               <BookOpenCheck className="mr-1 inline size-3.5" />
                               {lang === "id" ? "Soal Halaqoh — penilaian otomatis masuk ke Mutaba'ah saat dikirim sebagai Tugas mapel Halaqoh." : "Halaqoh item — auto-records to Mutaba'ah."}
                             </div>
+                            {(q.type === "halaqoh_setoran" || q.type === "halaqoh_tilawah") && (
+                              <div className="grid gap-2 sm:grid-cols-2">
+                                <div>
+                                  <Label className="text-xs">{lang === "id" ? "Jenis Setoran" : "Setoran Type"}</Label>
+                                  <Select value={q.setoranKind || undefined} onValueChange={(v) => setQ(qi, { setoranKind: v })}>
+                                    <SelectTrigger className="h-9"><SelectValue placeholder={lang === "id" ? "Pilih jenis" : "Select"} /></SelectTrigger>
+                                    <SelectContent>
+                                      {SETORAN_KINDS.map((s) => <SelectItem key={s.value} value={s.value}>{lang === "id" ? s.id : s.en}</SelectItem>)}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                <div>
+                                  <Label className="text-xs">{lang === "id" ? "Min. Halaman / hari" : "Min. Pages / day"}</Label>
+                                  <Input type="number" min={0} step="0.5" value={q.minPages} onChange={(e) => setQ(qi, { minPages: e.target.value })} placeholder={lang === "id" ? "mis. 1" : "e.g. 1"} />
+                                </div>
+                              </div>
+                            )}
                             <div className="grid gap-2 sm:grid-cols-2">
                               <div><Label className="text-xs">{lang === "id" ? "Surah" : "Surah"}</Label><Input value={q.surah} onChange={(e) => setQ(qi, { surah: e.target.value })} placeholder={lang === "id" ? "mis. Al-Baqarah" : "e.g. Al-Baqarah"} /></div>
                               <div><Label className="text-xs">{lang === "id" ? "Target (ayat / juz)" : "Target"}</Label><Input value={q.target} onChange={(e) => setQ(qi, { target: e.target.value })} placeholder={lang === "id" ? "mis. ayat 1-10 / Juz 1" : "e.g. 1-10"} /></div>
@@ -385,6 +425,8 @@ function GuruBankSoalPage() {
                         {q.grade_level && <span className="rounded-full bg-siswa/15 px-2 py-0.5 text-xs font-display font-bold text-siswa">{q.grade_level}</span>}
                         {q.topic && <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-display">{q.topic}</span>}
                         {q.halaqoh_kind && <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-display font-bold text-emerald-700">{TYPE_LABEL(HALAQOH_KIND[q.halaqoh_kind] ?? "halaqoh_setoran", lang)}</span>}
+                        {q.setoran_kind && <span className="rounded-full bg-teal-500/15 px-2 py-0.5 text-xs font-display font-bold text-teal-700">{setoranLabel(q.setoran_kind, lang)}</span>}
+                        {q.min_pages != null && <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-display font-bold text-amber-700">≥ {q.min_pages} hlm</span>}
                         <span className={`rounded-full px-2 py-0.5 text-xs font-display font-bold ${diffColor[q.difficulty]}`}>{t(q.difficulty as any)}</span>
                       </div>
                       <p className="mt-2 font-display font-semibold">{q.question}</p>
