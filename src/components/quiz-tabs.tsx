@@ -14,13 +14,13 @@ export function QuizTabs({ active }: { active: "bank" | "tugas" }) {
       key: "bank" as const,
       to: "/guru/bank-soal",
       icon: Database,
-      label: lang === "id" ? "Bank Soal" : "Question Bank",
+      label: lang === "id" ? "Buat Soal & Kirim" : "Build & Send",
     },
     {
       key: "tugas" as const,
       to: "/guru/kuis",
       icon: FileQuestion,
-      label: lang === "id" ? "Tugas & Kuis" : "Assignments & Quizzes",
+      label: lang === "id" ? "Hasil & Penilaian" : "Results & Grading",
     },
   ];
   return (
