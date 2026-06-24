@@ -235,6 +235,7 @@ function AdminPage() {
         </motion.div>
         <p className="mt-4 text-center text-xs text-muted-foreground">
           Arsipkan untuk menyembunyikan pengguna tanpa menghapus data. Hapus permanen akan menghilangkan akun beserta seluruh datanya.
+          Password lama tidak dapat dilihat (tersimpan terenkripsi) — admin hanya dapat menetapkan password baru.
         </p>
       </main>
 
