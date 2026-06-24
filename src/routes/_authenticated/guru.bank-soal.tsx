@@ -172,12 +172,17 @@ function GuruBankSoalPage() {
         if (isHalaqohType(q.type)) {
           if (!q.surah.trim() && !prompt) throw new Error(`${at}: ${lang === "id" ? "isi surah atau instruksi" : "fill surah or instruction"}`);
           const kind = q.type.replace("halaqoh_", "");
-          const defaultPrompt = `${TYPE_LABEL(q.type, lang)}${q.surah.trim() ? ` — ${q.surah.trim()}` : ""}${q.target.trim() ? ` (${q.target.trim()})` : ""}`;
+          const isSetoranLike = q.type === "halaqoh_setoran" || q.type === "halaqoh_tilawah";
+          const setoranTxt = isSetoranLike && q.setoranKind ? ` · ${setoranLabel(q.setoranKind, lang)}` : "";
+          const pagesTxt = q.minPages.trim() ? ` · min ${q.minPages.trim()} hlm` : "";
+          const defaultPrompt = `${TYPE_LABEL(q.type, lang)}${q.surah.trim() ? ` — ${q.surah.trim()}` : ""}${q.target.trim() ? ` (${q.target.trim()})` : ""}${setoranTxt}${pagesTxt}`;
           return {
             teacher_id: user.id, subject: subject || null, grade_level: gradeLevel || null,
             topic: q.surah.trim() || null, question: prompt || defaultPrompt, type: "voice" as const,
             halaqoh_kind: kind, options: null, answer: q.target.trim() || null,
             difficulty: q.difficulty as any, image_url: q.image_url || null,
+            setoran_kind: isSetoranLike ? (q.setoranKind || null) : null,
+            min_pages: q.minPages.trim() ? Number(q.minPages.trim()) : null,
           };
         }
         if (!prompt) throw new Error(`${at}: ${lang === "id" ? "pertanyaan kosong" : "empty question"}`);
