@@ -499,8 +499,42 @@ function GuruBankSoalPage() {
         } />
 
       {items.length === 0 ? <EmptyState message={t("empty")} /> : (
-        <div className="space-y-3">
-          {items.map((q: any) => {
+        <>
+          {/* Filter & search */}
+          <div className="mb-3 flex flex-wrap items-center gap-2">
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={lang === "id" ? "Cari soal, topik, surah…" : "Search questions…"}
+              className="h-9 w-full sm:w-64"
+            />
+            <Select value={filterGrade} onValueChange={setFilterGrade}>
+              <SelectTrigger className="h-9 w-auto min-w-[9rem]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{lang === "id" ? "Semua jenjang/kelas" : "All grades"}</SelectItem>
+                {gradeOptions.map((g) => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Select value={filterType} onValueChange={setFilterType}>
+              <SelectTrigger className="h-9 w-auto min-w-[9rem]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{lang === "id" ? "Semua tipe soal" : "All types"}</SelectItem>
+                {ALL_TYPES.map((tp) => <SelectItem key={tp} value={tp}>{TYPE_LABEL(tp, lang)}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            {(search || filterGrade !== "all" || filterType !== "all") && (
+              <Button size="sm" variant="ghost" onClick={() => { setSearch(""); setFilterGrade("all"); setFilterType("all"); }}>
+                <X className="size-4" /> {lang === "id" ? "Reset" : "Reset"}
+              </Button>
+            )}
+            <span className="ml-auto text-xs text-muted-foreground">{filteredItems.length}/{items.length}</span>
+          </div>
+
+          {filteredItems.length === 0 ? (
+            <EmptyState message={lang === "id" ? "Tidak ada soal yang cocok dengan filter." : "No questions match the filters."} />
+          ) : (
+          <div className="space-y-3">
+          {filteredItems.map((q: any) => {
             const isSel = selected.includes(q.id);
             return (
               <div key={q.id} className={`rounded-2xl border-2 bg-card p-4 shadow-card-rpg transition ${isSel ? "border-quest" : "border-border"}`}>
