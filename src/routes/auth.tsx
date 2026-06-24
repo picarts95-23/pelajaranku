@@ -309,6 +309,36 @@ function AuthPage() {
         </motion.div>
 
       </div>
+
+      <Dialog open={forgotOpen} onOpenChange={setForgotOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{lang === "id" ? "Atur ulang kata sandi" : "Reset password"}</DialogTitle>
+            <DialogDescription>
+              {lang === "id"
+                ? "Masukkan email akunmu. Kami akan mengirim tautan untuk membuat kata sandi baru."
+                : "Enter your account email. We'll send a link to create a new password."}
+            </DialogDescription>
+          </DialogHeader>
+          <div>
+            <Label className="mb-1.5 block">{t("email")}</Label>
+            <Input
+              type="email"
+              value={resetEmail}
+              onChange={(e) => setResetEmail(e.target.value)}
+              placeholder="you@school.edu"
+              className="h-11 rounded-xl border-2"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setForgotOpen(false)}>{t("cancel")}</Button>
+            <Button onClick={sendReset} disabled={sendingReset}>
+              {sendingReset && <Loader2 className="mr-2 size-4 animate-spin" />}
+              {lang === "id" ? "Kirim tautan" : "Send link"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
