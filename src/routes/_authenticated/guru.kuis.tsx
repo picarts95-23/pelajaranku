@@ -170,8 +170,11 @@ function GuruKuisPage() {
         const truthy = ["true", "benar", "b", "ya", "yes", "1"].includes(a);
         return { type: "true_false", q: b.question, options: [], correctIndex: 0, tf: truthy, shortAnswer: "", image_url: b.image_url };
       }
-      if (b.type === "voice") {
+      if (b.type === "voice" || b.halaqoh_kind) {
         return { type: "voice", q: b.question, options: [], correctIndex: 0, tf: true, shortAnswer: "", image_url: b.image_url };
+      }
+      if (b.type === "short_answer") {
+        return { type: "short_answer", q: b.question, options: [], correctIndex: 0, tf: true, shortAnswer: String(b.answer ?? ""), image_url: b.image_url };
       }
       // essay (and any other) -> essay manual
       return { type: "essay", q: b.question, options: [], correctIndex: 0, tf: true, shortAnswer: "", image_url: b.image_url };

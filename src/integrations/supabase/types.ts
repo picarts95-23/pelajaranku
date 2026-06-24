@@ -743,6 +743,8 @@ export type Database = {
           created_at: string
           difficulty: Database["public"]["Enums"]["question_difficulty"]
           game_link: string | null
+          grade_level: string | null
+          halaqoh_kind: string | null
           id: string
           image_url: string | null
           options: Json | null
@@ -759,6 +761,8 @@ export type Database = {
           created_at?: string
           difficulty?: Database["public"]["Enums"]["question_difficulty"]
           game_link?: string | null
+          grade_level?: string | null
+          halaqoh_kind?: string | null
           id?: string
           image_url?: string | null
           options?: Json | null
@@ -775,6 +779,8 @@ export type Database = {
           created_at?: string
           difficulty?: Database["public"]["Enums"]["question_difficulty"]
           game_link?: string | null
+          grade_level?: string | null
+          halaqoh_kind?: string | null
           id?: string
           image_url?: string | null
           options?: Json | null
@@ -1246,6 +1252,7 @@ export type Database = {
         | "true_false"
         | "voice"
         | "complex_multiple_choice"
+        | "short_answer"
       submission_status: "draft" | "submitted" | "graded" | "returned"
     }
     CompositeTypes: {
@@ -1383,6 +1390,7 @@ export const Constants = {
         "true_false",
         "voice",
         "complex_multiple_choice",
+        "short_answer",
       ],
       submission_status: ["draft", "submitted", "graded", "returned"],
     },
