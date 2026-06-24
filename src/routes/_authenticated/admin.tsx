@@ -5,19 +5,24 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
   ShieldCheck, Search, Trash2, Archive, ArchiveRestore, Loader2, LogOut, Users,
+  KeyRound, Eye, EyeOff, Wand2, Copy,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
 import { useAuth } from "@/lib/auth-context";
 import { LangToggle } from "@/components/lang-toggle";
 import {
-  listAllUsers, setUserArchived, deleteUserAccount, type AdminUserRow,
+  listAllUsers, setUserArchived, deleteUserAccount, setUserPassword, type AdminUserRow,
 } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/_authenticated/admin")({
