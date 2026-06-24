@@ -335,3 +335,122 @@ function GradeSubmissionDialog({ quiz, submission, studentName, onClose }: { qui
     </Dialog>
   );
 }
+
+// Edit an already-sent quiz/assignment (questions, Halaqoh metadata, rewards) without
+// touching the submissions history. Submissions remain linked by assignment_id.
+function EditQuizDialog({ quiz, onClose }: { quiz: any; onClose: () => void }) {
+  const { user } = useAuth();
+  const { lang } = useLang();
+  const qc = useQueryClient();
+  const [title, setTitle] = useState<string>(quiz.title ?? "");
+  const [dueAt, setDueAt] = useState<string>(quiz.due_at ? new Date(quiz.due_at).toISOString().slice(0, 16) : "");
+  const [maxScore, setMaxScore] = useState<number>(quiz.max_score ?? 100);
+  const [xp, setXp] = useState<number>(quiz.xp_reward ?? 50);
+  const [coin, setCoin] = useState<number>(quiz.coin_reward ?? 10);
+  const [questions, setQuestions] = useState<BQ[]>([]);
+  const [uploadingIdx, setUploadingIdx] = useState<number | null>(null);
+  const [ready, setReady] = useState(false);
+
+  const setQ = (i: number, patch: Partial<BQ>) =>
+    setQuestions((qs) => qs.map((q, idx) => (idx === i ? { ...q, ...patch } : q)));
+
+  async function uploadImage(e: React.ChangeEvent<HTMLInputElement>, qi: number) {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    setUploadingIdx(qi);
+    try {
+      const path = `${user.id}/qz-${crypto.randomUUID()}.${file.name.split(".").pop() || "jpg"}`;
+      const { error } = await supabase.storage.from("lesson-media").upload(path, file);
+      if (error) throw error;
+      setQ(qi, { image_url: path });
+      toast.success(lang === "id" ? "Gambar diunggah" : "Image uploaded");
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setUploadingIdx(null);
+    }
+  }
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const { data } = await supabase.from("assignment_answer_keys").select("answer_key").eq("assignment_id", quiz.id).maybeSingle();
+      let keys: any[] = [];
+      try { keys = data?.answer_key ? JSON.parse(data.answer_key as any) : []; } catch { keys = []; }
+      const qList: any[] = Array.isArray(quiz.questions) ? quiz.questions : [];
+      const bqs = qList.map((q, i) => quizQuestionToBQ(q, keys[i]));
+      if (active) { setQuestions(bqs.length ? bqs : []); setReady(true); }
+    })();
+    return () => { active = false; };
+  }, [quiz.id]);
+
+  const saveMut = useMutation({
+    mutationFn: async () => {
+      if (!user) throw new Error("no user");
+      if (!title.trim()) throw new Error(lang === "id" ? "Judul wajib diisi." : "Title is required.");
+      const { rows, errors } = buildBankRows(questions, quiz.subject ?? "", "", user.id, lang);
+      if (errors.length) throw new Error((lang === "id" ? "Periksa soal:\n" : "Fix:\n") + errors.map((e) => `• ${e}`).join("\n"));
+      const questionsPublic: any[] = [];
+      const answerKey: any[] = [];
+      rows.slice(0, MAX_QUESTIONS).forEach((b) => {
+        const { question, key } = mapBankToQuiz(b);
+        questionsPublic.push(question);
+        answerKey.push(key);
+      });
+      const { error: aErr } = await supabase.from("assignments").update({
+        title: title.trim(),
+        due_at: dueAt ? new Date(dueAt).toISOString() : null,
+        max_score: maxScore, xp_reward: xp, coin_reward: coin,
+        questions: questionsPublic as any,
+      } as any).eq("id", quiz.id);
+      if (aErr) throw aErr;
+      // Upsert the answer key (separate table, keyed by assignment).
+      const { error: kErr } = await supabase.from("assignment_answer_keys")
+        .upsert({ assignment_id: quiz.id, teacher_id: user.id, answer_key: JSON.stringify(answerKey) }, { onConflict: "assignment_id" });
+      if (kErr) throw kErr;
+    },
+    onSuccess: () => {
+      toast.success(lang === "id" ? "Kuis diperbarui ✨" : "Quiz updated ✨");
+      qc.invalidateQueries({ queryKey: ["quizzes"] });
+      onClose();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const subCount = (quiz.submissions ?? []).length;
+
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader><DialogTitle>{lang === "id" ? "Edit Tugas/Kuis" : "Edit Quiz"}</DialogTitle></DialogHeader>
+        {!ready ? (
+          <p className="py-6 text-center text-sm text-muted-foreground">{lang === "id" ? "Memuat soal…" : "Loading…"}</p>
+        ) : (
+          <div className="space-y-3">
+            {subCount > 0 && (
+              <div className="rounded-xl border-2 border-amber-500/40 bg-amber-500/5 p-3 text-xs font-semibold text-amber-700">
+                {lang === "id"
+                  ? `${subCount} siswa sudah mengerjakan. Riwayat & nilai mereka tetap aman, tetapi mengubah urutan/soal dapat memengaruhi pencocokan jawaban lama.`
+                  : `${subCount} students already submitted. Their history is kept, but changing question order may affect old answer matching.`}
+              </div>
+            )}
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="sm:col-span-2"><Label>{lang === "id" ? "Judul" : "Title"}</Label><Input value={title} onChange={(e) => setTitle(e.target.value)} /></div>
+              <div><Label className="text-xs">{lang === "id" ? "Tenggat" : "Due"}</Label><Input type="datetime-local" value={dueAt} onChange={(e) => setDueAt(e.target.value)} /></div>
+              <div><Label className="text-xs">{lang === "id" ? "Nilai Maks" : "Max Score"}</Label><Input type="number" min={1} value={maxScore} onChange={(e) => setMaxScore(Number(e.target.value))} /></div>
+              <div><Label className="text-xs">XP</Label><Input type="number" min={0} value={xp} onChange={(e) => setXp(Number(e.target.value))} /></div>
+              <div><Label className="text-xs">{lang === "id" ? "Koin" : "Coins"}</Label><Input type="number" min={0} value={coin} onChange={(e) => setCoin(Number(e.target.value))} /></div>
+            </div>
+            <Label className="text-base font-bold">{lang === "id" ? "Daftar Soal" : "Questions"} <span className="font-normal text-muted-foreground">({questions.length}/{MAX_QUESTIONS})</span></Label>
+            <QuestionEditorList questions={questions} setQuestions={setQuestions} uploadImage={uploadImage} uploadingIdx={uploadingIdx} />
+          </div>
+        )}
+        <DialogFooter>
+          <Button variant="ghost" onClick={onClose}>{lang === "id" ? "Batal" : "Cancel"}</Button>
+          <Button variant="guru" onClick={() => saveMut.mutate()} disabled={saveMut.isPending || !ready}>{saveMut.isPending ? "…" : (lang === "id" ? "Simpan Perubahan" : "Save Changes")}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
