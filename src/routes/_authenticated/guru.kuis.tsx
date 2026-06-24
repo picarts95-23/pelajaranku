@@ -46,6 +46,7 @@ function GuruKuisPage() {
   const { lang } = useLang();
   const qc = useQueryClient();
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [editing, setEditing] = useState<any | null>(null);
 
   useEffect(() => {
     if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" });
