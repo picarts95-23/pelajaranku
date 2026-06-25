@@ -125,94 +125,39 @@ function GuruBankSoalPage() {
   // Live validation result, shared between preview & save.
   const validation = buildBankRows(questions, subject, gradeLevel, user?.id ?? "", lang);
   const [showPreview, setShowPreview] = useState(false);
-
-  // Extra validation when the questions are sent as a Tugas/Kuis.
-  const sendAssignment = destination === "assignment" || destination === "both";
-  const assignmentErrors: string[] = [];
-  if (sendAssignment) {
-    if (!aTitle.trim()) assignmentErrors.push(lang === "id" ? "Judul Tugas/Kuis wajib diisi." : "Title is required.");
-    if (aTarget === "class" && !aClassId) assignmentErrors.push(lang === "id" ? "Pilih kelas tujuan." : "Select a target class.");
-    if (aTarget === "student" && !aStudentId) assignmentErrors.push(lang === "id" ? "Pilih siswa tujuan." : "Select a target student.");
-  }
-  const allErrors = [...validation.errors, ...assignmentErrors];
+  const allErrors = validation.errors;
 
   const createMut = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("no user");
       const { rows, errors } = buildBankRows(questions, subject, gradeLevel, user.id, lang);
-      const combined = [...errors, ...assignmentErrors];
-      if (combined.length) {
+      if (errors.length) {
         throw new Error(
-          (lang === "id" ? "Periksa kembali soal:\n" : "Please fix:\n") + combined.map((e) => `• ${e}`).join("\n"),
+          (lang === "id" ? "Periksa kembali soal:\n" : "Please fix:\n") + errors.map((e) => `• ${e}`).join("\n"),
         );
       }
-
-      let savedBank = 0;
-      let sentAssignment = 0;
 
       // Edit mode: update the single existing bank row (never touches assignments/submissions).
       if (editId) {
         const { error } = await supabase.from("question_bank").update(rows[0] as any).eq("id", editId);
         if (error) throw error;
-        return { savedBank: 1, sentAssignment: 0, edited: true };
+        return { savedBank: 1, edited: true };
       }
 
-      if (destination === "bank" || destination === "both") {
-        const { error } = await supabase.from("question_bank").insert(rows as any);
-        if (error) throw error;
-        savedBank = rows.length;
-      }
-
-      if (sendAssignment) {
-        const questionsPublic: any[] = [];
-        const answerKey: any[] = [];
-        rows.slice(0, MAX_QUESTIONS).forEach((b) => {
-          const { question, key } = mapBankToQuiz(b);
-          questionsPublic.push(question);
-          answerKey.push(key);
-        });
-        const { data: inserted, error } = await supabase
-          .from("assignments")
-          .insert({
-            teacher_id: user.id,
-            class_id: aTarget === "class" ? aClassId : null,
-            assigned_student_id: aTarget === "student" ? aStudentId : null,
-            title: aTitle.trim(),
-            subject: subject || null,
-            exam_type: "harian",
-            description: gradeLevel ? (lang === "id" ? `Jenjang: ${gradeLevel}` : `Grade: ${gradeLevel}`) : null,
-            due_at: aDueAt ? new Date(aDueAt).toISOString() : null,
-            max_score: aMaxScore, xp_reward: aXp, coin_reward: aCoin,
-            answer_format: "quiz", questions: questionsPublic as any,
-          } as any)
-          .select("id")
-          .single();
-        if (error) throw error;
-        const { error: keyErr } = await supabase.from("assignment_answer_keys").insert({
-          assignment_id: inserted!.id, teacher_id: user.id, answer_key: JSON.stringify(answerKey),
-        });
-        if (keyErr) throw keyErr;
-        sentAssignment = questionsPublic.length;
-      }
-
-      return { savedBank, sentAssignment, edited: false };
+      const { error } = await supabase.from("question_bank").insert(rows as any);
+      if (error) throw error;
+      return { savedBank: rows.length, edited: false };
     },
-    onSuccess: ({ savedBank, sentAssignment, edited }) => {
-      if (edited) {
-        toast.success(lang === "id" ? "Soal diperbarui ✨" : "Question updated ✨");
-      } else {
-        const parts: string[] = [];
-        if (savedBank) parts.push(lang === "id" ? `${savedBank} soal ke Bank Soal` : `${savedBank} to Bank`);
-        if (sentAssignment) parts.push(lang === "id" ? `${sentAssignment} soal terkirim sebagai Tugas/Kuis` : `${sentAssignment} sent as assignment`);
-        toast.success((parts.join(" · ") || (lang === "id" ? "Tersimpan" : "Saved")) + " ✨");
-      }
+    onSuccess: ({ savedBank, edited }) => {
+      toast.success(edited
+        ? (lang === "id" ? "Soal diperbarui ✨" : "Question updated ✨")
+        : ((lang === "id" ? `${savedBank} soal disimpan ke Bank Soal` : `${savedBank} questions saved to Bank`) + " ✨"));
       setOpen(false); resetForm(); setShowPreview(false);
       qc.invalidateQueries({ queryKey: ["qb"] });
-      qc.invalidateQueries({ queryKey: ["quizzes"] });
-      qc.invalidateQueries({ queryKey: ["assignments"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
 
 
   const deleteMut = useMutation({
