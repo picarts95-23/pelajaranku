@@ -12,6 +12,7 @@ import { ExportMenu } from "@/components/export-menu";
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
+import { isHalaqohSubject, type HalaqohDaily } from "@/lib/mutabaah";
 
 export const Route = createFileRoute("/_authenticated/guru/rekap")({
   head: () => ({ meta: [{ title: "Rekap Nilai · EduQuest Academy" }] }),
