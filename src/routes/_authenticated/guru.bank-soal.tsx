@@ -183,7 +183,30 @@ function GuruBankSoalPage() {
                     <div>
                       <Label>{lang === "id" ? "Untuk Kelas / Jenjang" : "Target Class / Grade"}</Label>
                       <Input value={gradeLevel} onChange={(e) => setGradeLevel(e.target.value)} placeholder={lang === "id" ? "mis. Kelas 7, SMP, Halaqoh A" : "e.g. Grade 7"} />
-                    </div>
+                  </div>
+
+                  {(() => {
+                    const hasHalaqoh = questions.some((q) => isHalaqohType(q.type));
+                    return (
+                      <div>
+                        <Label>{lang === "id" ? "Kategori Soal" : "Question Category"}</Label>
+                        {hasHalaqoh ? (
+                          <div className="mt-1 rounded-lg border-2 border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-sm font-display font-bold text-emerald-700">
+                            {examCategoryLabel("halaqoh", lang)} {lang === "id" ? "(otomatis untuk soal Halaqoh — masuk ke Mutaba'ah)" : "(auto for Halaqoh items — feeds Mutaba'ah)"}
+                          </div>
+                        ) : (
+                          <Select value={examCategory} onValueChange={setExamCategory}>
+                            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              {EXAM_CATEGORIES.filter((c) => c.value !== "halaqoh").map((c) => (
+                                <SelectItem key={c.value} value={c.value}>{lang === "id" ? c.id : c.en}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </div>
+                    );
+                  })()}
                   </div>
 
                   <div className="rounded-xl border-2 border-dashed border-border bg-muted/20 p-3 text-xs text-muted-foreground">
