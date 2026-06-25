@@ -98,7 +98,7 @@ function GuruBankSoalPage() {
   }
 
   // Live validation result, shared between preview & save.
-  const validation = buildBankRows(questions, subject, gradeLevel, user?.id ?? "", lang);
+  const validation = buildBankRows(questions, subject, gradeLevel, examCategory, user?.id ?? "", lang);
   const [showPreview, setShowPreview] = useState(false);
   const allErrors = validation.errors;
 
