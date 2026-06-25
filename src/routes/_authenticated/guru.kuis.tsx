@@ -214,6 +214,28 @@ function GradeSubmissionDialog({ quiz, submission, studentName, onClose }: { qui
   const [score, setScore] = useState<number>(submission.score ?? 0);
   const [feedback, setFeedback] = useState<string>(submission.feedback ?? "");
   const [voiceUrls, setVoiceUrls] = useState<Record<number, string>>({});
+
+  // Answer key (objective questions) so the panel can auto-correct PG / true-false / short answer.
+  const { data: answerKey = [] } = useQuery({
+    queryKey: ["quiz-answer-key", quiz.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("assignment_answer_keys").select("answer_key").eq("assignment_id", quiz.id).maybeSingle();
+      try { return data?.answer_key ? JSON.parse(data.answer_key as any) : []; } catch { return []; }
+    },
+  });
+
+  // Auto-correction summary: counts objective correct/wrong and a suggested score for the PG part.
+  const auto = useMemo(() => {
+    let correct = 0, objective = 0, manual = 0;
+    questions.forEach((q, i) => {
+      const v = evalAnswer(q, studentAnswers[i], (answerKey as any[])[i]);
+      if (v === "manual") manual++;
+      else { objective++; if (v === "correct") correct++; }
+    });
+    const per = questions.length ? quiz.max_score / questions.length : 0;
+    return { correct, objective, manual, autoScore: Math.round(correct * per) };
+  }, [questions, studentAnswers, answerKey, quiz.max_score]);
+
   const halaqoh = isHalaqoh(quiz.subject);
   // Halaqoh metadata carried over from the question bank (surah, setoran type, target pages).
   const halaqohMeta = useMemo(() => {
