@@ -408,7 +408,7 @@ export function RecordCard({ r, lang, onDelete, showStudent }: { r: any; lang: s
             <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
               {showStudent && r.profiles?.full_name && <span className="font-semibold text-foreground">{r.profiles.full_name} ·</span>}
               <span>{format(new Date(r.session_date), "dd MMM yyyy")}</span>
-              <span className="rounded-full bg-quest/15 px-2 py-0.5 font-display text-quest">{r.session_type === "murojaah" ? "Muroja'ah" : "Ziyadah"}</span>
+              <span className="rounded-full bg-quest/15 px-2 py-0.5 font-display text-quest">{setoranLabel(r.session_type, lang)}</span>
             </div>
           </div>
         </div>
