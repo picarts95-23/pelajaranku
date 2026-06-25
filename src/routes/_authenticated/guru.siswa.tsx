@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
-import { getIslamicAvatar } from "@/lib/islamic-avatar";
+import { resolveAvatar } from "@/lib/character-roster";
 
 export const Route = createFileRoute("/_authenticated/guru/siswa")({
   head: () => ({ meta: [{ title: "Siswa · EduQuest Academy" }] }),
