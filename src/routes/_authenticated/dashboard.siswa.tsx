@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
-import { getIslamicAvatar } from "@/lib/islamic-avatar";
+import { resolveAvatar } from "@/lib/character-roster";
 import { format } from "date-fns";
 
 export const Route = createFileRoute("/_authenticated/dashboard/siswa")({
@@ -95,7 +95,7 @@ function SiswaDashboard() {
             <div className="relative">
               <div className="absolute inset-0 -z-10 rounded-full bg-white/30 blur-2xl" />
               <img
-                src={getIslamicAvatar(user?.id ?? profile?.full_name, "siswa")}
+                src={resolveAvatar(profile as any, "siswa")}
                 alt={lang === "id" ? "Karakter siswi faceless berjilbab panjang" : "Faceless muslim girl student character with long hijab"}
                 width={192}
                 height={192}
