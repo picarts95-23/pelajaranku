@@ -112,6 +112,7 @@ function GuruTugasPage() {
         title: form.title,
         subject: form.subject || null,
         exam_type: form.exam_type,
+        halaqoh_kind: isHalaqohSubject(form.subject) && form.halaqoh_kind ? form.halaqoh_kind : null,
         description: form.description || null, due_at: form.due_at ? new Date(form.due_at).toISOString() : null,
         max_score: form.max_score, xp_reward: form.xp_reward, coin_reward: form.coin_reward,
         quiz_link: form.quiz_link.trim() || null, game_link: form.game_link.trim() || null,
