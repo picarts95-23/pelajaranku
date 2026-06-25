@@ -251,6 +251,13 @@ function GuruRekapPage() {
         <EmptyState message={t("noGradesSubject")} />
       ) : (
         <div className="space-y-3">
+          {halaqoh && (
+            <div className="rounded-2xl border-2 border-guru/30 bg-guru/5 px-4 py-3 text-xs text-muted-foreground">
+              {lang === "id"
+                ? "Mata pelajaran Halaqoh Qur'an: kolom Harian otomatis dari akumulasi Mutaba'ah — Ziyadah 30% + Muroja'ah 40% + Tilawah 30%. Arahkan kursor ke nilai Harian untuk rinciannya."
+                : "Halaqoh Qur'an subject: the Daily column is auto-accumulated from Mutaba'ah — Ziyadah 30% + Muroja'ah 40% + Tilawah 30%. Hover the Daily value for the breakdown."}
+            </div>
+          )}
           <div className="flex items-center justify-end">
             <Button variant="guru" size="sm" disabled={saveAdab.isPending} onClick={() => saveAdab.mutate()}>
               <Save className="size-4" /> {lang === "id" ? "Simpan Nilai Adab" : "Save Adab Scores"}
