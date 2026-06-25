@@ -19,6 +19,8 @@ import { SubjectSelect } from "@/components/subject-select";
 import { ExportMenu } from "@/components/export-menu";
 import { ANSWER_FORMATS, JUZ_LIST, SURAHS, type AnswerFormat } from "@/lib/quran-data";
 import { isHalaqohSubject, SETORAN_TYPES } from "@/lib/mutabaah";
+import { QuizTabs } from "@/components/quiz-tabs";
+import { QuizGradeDialog } from "@/components/quiz-grade-dialog";
 
 export const Route = createFileRoute("/_authenticated/guru/tugas")({
   head: () => ({ meta: [{ title: "Tugas · EduQuest Academy" }] }),
@@ -86,7 +88,6 @@ function GuruTugasPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("assignments").select("*, classes(name), assignee:profiles!assignments_assigned_student_id_fkey(full_name), submissions(id, status, score, student_id)")
-        .neq("answer_format", "quiz")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
@@ -191,9 +192,10 @@ function GuruTugasPage() {
 
   return (
     <DashboardShell accent="guru">
+      <QuizTabs active="tugas" />
       <PageHeader
         title={t("navAssignments")}
-        subtitle={lang === "id" ? "Buat tugas dan beri nilai pengumpulan siswa" : "Create tasks and grade student submissions"}
+        subtitle={lang === "id" ? "Buat tugas, kuis, & nilai pengumpulan siswa (koreksi otomatis + audio)" : "Create tasks, quizzes & grade submissions (auto-scoring + audio)"}
         actions={
           <div className="flex flex-wrap gap-2">
             {assignments.length > 0 && (
@@ -450,6 +452,8 @@ function AssignmentDetail({ assignment, onDelete }: { assignment: any; onDelete:
   const { t, lang } = useLang();
   const qc = useQueryClient();
   const fmtLabel = ANSWER_FORMATS.find((f) => f.value === assignment.answer_format);
+  const isQuiz = assignment.answer_format === "quiz";
+  const [grading, setGrading] = useState<any | null>(null);
 
   const { data: answerKey } = useQuery({
     queryKey: ["answer-key", assignment.id],
@@ -516,10 +520,17 @@ function AssignmentDetail({ assignment, onDelete }: { assignment: any; onDelete:
         <Button size="sm" variant="ghost" onClick={onDelete}><Trash2 className="size-4 text-destructive" /></Button>
       </div>
 
-      {answerKey && (
+      {answerKey && !isQuiz && (
         <div className="mb-3 rounded-xl border border-guru/30 bg-guru/5 p-3 text-sm">
           <div className="flex items-center gap-1.5 font-display font-bold text-guru"><KeyRound className="size-4" /> {lang === "id" ? "Kunci Jawaban" : "Answer Key"} <span className="text-xs font-normal text-muted-foreground">🔒 {lang === "id" ? "rahasia guru" : "teacher only"}</span></div>
           <p className="mt-1 whitespace-pre-wrap text-foreground/80">{answerKey}</p>
+        </div>
+      )}
+
+      {isQuiz && Array.isArray(assignment.questions) && (
+        <div className="mb-3 rounded-xl border border-accent/30 bg-accent/5 p-3 text-sm">
+          <div className="font-display font-bold text-accent">📝 {assignment.questions.length} {lang === "id" ? "soal · koreksi otomatis + audio" : "questions · auto-grade + audio"}</div>
+          <p className="mt-1 text-xs text-muted-foreground">{lang === "id" ? "Soal objektif dinilai otomatis. Buka penilaian untuk mendengar & menyalin jawaban audio." : "Objective questions auto-scored. Open grading to listen & transcribe audio answers."}</p>
         </div>
       )}
 
@@ -527,10 +538,32 @@ function AssignmentDetail({ assignment, onDelete }: { assignment: any; onDelete:
         <h3 className="font-display font-bold text-sm">📋 {t("submissions")} ({subs.length})</h3>
         {subs.length > 0 && <ExportMenu filename={`penilaian-${assignment.title}`} title={`${lang === "id" ? "Penilaian" : "Grades"}: ${assignment.title}`} columns={exportColumns} rows={exportRows} />}
       </div>
-      {subs.length === 0 ? <EmptyState message={t("empty")} /> : (
+      {subs.length === 0 ? <EmptyState message={t("empty")} /> : isQuiz ? (
+        <div className="space-y-1">
+          {subs.map((s: any) => (
+            <div key={s.id} className="flex items-center justify-between gap-2 rounded-lg bg-muted/30 px-3 py-2 text-sm">
+              <span className="truncate font-display font-semibold">👤 {s.profile?.full_name ?? "—"}</span>
+              <div className="flex items-center gap-2">
+                {s.status === "submitted" && <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-bold text-amber-700">{lang === "id" ? "perlu nilai" : "to grade"}</span>}
+                <span className="font-display font-bold text-primary">{s.score ?? 0}<span className="text-xs text-muted-foreground">/{assignment.max_score}</span></span>
+                <Button size="sm" variant="outline" className="h-7" onClick={() => setGrading(s)}>{lang === "id" ? "Nilai" : "Grade"}</Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
         <div className="space-y-2">
           {subs.map((s: any) => <GradeRow key={s.id} sub={s} maxScore={assignment.max_score} isVoice={assignment.answer_format === "voice" || assignment.answer_format === "muroja"} onGrade={(score, fb) => gradeMut.mutate({ id: s.id, score, feedback: fb })} />)}
         </div>
+      )}
+      {grading && (
+        <QuizGradeDialog
+          quiz={assignment}
+          submission={grading}
+          studentName={grading.profile?.full_name ?? "—"}
+          invalidateKey={["assignments"]}
+          onClose={() => { setGrading(null); qc.invalidateQueries({ queryKey: ["submissions", assignment.id] }); }}
+        />
       )}
     </div>
   );
