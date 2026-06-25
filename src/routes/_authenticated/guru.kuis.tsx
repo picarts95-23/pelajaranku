@@ -40,6 +40,35 @@ export const Q_TYPE_LABEL = (type: QType, lang: string): string => {
 
 const isHalaqoh = (subject?: string | null) => !!subject && /halaqoh/i.test(subject);
 
+type Verdict = "correct" | "wrong" | "manual" | "empty";
+
+// Auto-correction for a single question against its answer key.
+// Objective types (PG, true/false, short answer) are graded automatically;
+// essay & audio always require manual review.
+function evalAnswer(q: any, ans: any, key: any): Verdict {
+  if (!q) return "manual";
+  if (q.type === "essay" || q.type === "voice") return "manual";
+  const has = ans !== undefined && ans !== null && String(ans).trim() !== "";
+  if (!has) return "empty";
+  if (key === undefined || key === null || String(key).trim() === "") return "manual";
+  if (q.type === "multiple_choice") return Number(ans) === Number(key) ? "correct" : "wrong";
+  if (q.type === "true_false") return String(ans).toLowerCase() === String(key).toLowerCase() ? "correct" : "wrong";
+  if (q.type === "short_answer") {
+    const accepted = String(key).split("|").map((s) => s.trim().toLowerCase()).filter(Boolean);
+    return accepted.includes(String(ans).trim().toLowerCase()) ? "correct" : "wrong";
+  }
+  return "manual";
+}
+
+// Human-readable correct answer for the grading panel.
+function keyText(q: any, key: any, lang: string): string {
+  if (key === undefined || key === null || String(key).trim() === "") return "—";
+  if (q.type === "multiple_choice") return Array.isArray(q.options) && q.options[Number(key)] != null ? q.options[Number(key)] : `#${key}`;
+  if (q.type === "true_false") return String(key).toLowerCase() === "true" ? (lang === "id" ? "Benar" : "True") : (lang === "id" ? "Salah" : "False");
+  return String(key).split("|").map((s) => s.trim()).filter(Boolean).join(" / ");
+}
+
+
 function GuruKuisPage() {
   const { user, role, loading } = useAuth();
   const navigate = useNavigate();
@@ -185,6 +214,28 @@ function GradeSubmissionDialog({ quiz, submission, studentName, onClose }: { qui
   const [score, setScore] = useState<number>(submission.score ?? 0);
   const [feedback, setFeedback] = useState<string>(submission.feedback ?? "");
   const [voiceUrls, setVoiceUrls] = useState<Record<number, string>>({});
+
+  // Answer key (objective questions) so the panel can auto-correct PG / true-false / short answer.
+  const { data: answerKey = [] } = useQuery({
+    queryKey: ["quiz-answer-key", quiz.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("assignment_answer_keys").select("answer_key").eq("assignment_id", quiz.id).maybeSingle();
+      try { return data?.answer_key ? JSON.parse(data.answer_key as any) : []; } catch { return []; }
+    },
+  });
+
+  // Auto-correction summary: counts objective correct/wrong and a suggested score for the PG part.
+  const auto = useMemo(() => {
+    let correct = 0, objective = 0, manual = 0;
+    questions.forEach((q, i) => {
+      const v = evalAnswer(q, studentAnswers[i], (answerKey as any[])[i]);
+      if (v === "manual") manual++;
+      else { objective++; if (v === "correct") correct++; }
+    });
+    const per = questions.length ? quiz.max_score / questions.length : 0;
+    return { correct, objective, manual, autoScore: Math.round(correct * per) };
+  }, [questions, studentAnswers, answerKey, quiz.max_score]);
+
   const halaqoh = isHalaqoh(quiz.subject);
   // Halaqoh metadata carried over from the question bank (surah, setoran type, target pages).
   const halaqohMeta = useMemo(() => {
@@ -268,11 +319,30 @@ function GradeSubmissionDialog({ quiz, submission, studentName, onClose }: { qui
       <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader><DialogTitle>{lang === "id" ? "Nilai" : "Grade"} · {studentName}</DialogTitle></DialogHeader>
         <div className="space-y-3">
+          {/* Auto-correction summary across all objective questions */}
+          {auto.objective > 0 && (
+            <div className="flex flex-wrap items-center gap-2 rounded-xl border-2 border-primary/30 bg-primary/5 p-3 text-xs font-semibold">
+              <span className="text-primary">{lang === "id" ? "Koreksi otomatis" : "Auto-correction"}:</span>
+              <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-emerald-700">✓ {auto.correct}/{auto.objective} {lang === "id" ? "benar" : "correct"}</span>
+              {auto.manual > 0 && <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-amber-700">✍️ {auto.manual} {lang === "id" ? "perlu koreksi manual" : "need manual review"}</span>}
+              <span className="rounded-full bg-primary/15 px-2 py-0.5 text-primary">{lang === "id" ? "saran nilai PG" : "PG score"}: {auto.autoScore}</span>
+              <Button type="button" size="sm" variant="outline" className="h-6 px-2" onClick={() => setScore(auto.autoScore)}>{lang === "id" ? "Terapkan" : "Apply"}</Button>
+            </div>
+          )}
           {questions.map((q, i) => {
             const ans = studentAnswers[i];
+            const key = (answerKey as any[])[i];
+            const verdict = evalAnswer(q, ans, key);
+            const objective = q.type === "multiple_choice" || q.type === "true_false" || q.type === "short_answer";
             return (
               <div key={i} className="rounded-xl border-2 border-border bg-muted/20 p-3 text-sm">
-                <p className="font-display font-bold">{i + 1}. {q.q} <span className="ml-1 rounded bg-muted px-1.5 py-0.5 text-xs font-normal text-muted-foreground">{Q_TYPE_LABEL(q.type, lang)}</span></p>
+                <div className="flex items-start justify-between gap-2">
+                  <p className="font-display font-bold">{i + 1}. {q.q} <span className="ml-1 rounded bg-muted px-1.5 py-0.5 text-xs font-normal text-muted-foreground">{Q_TYPE_LABEL(q.type, lang)}</span></p>
+                  {verdict === "correct" && <span className="shrink-0 rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-bold text-emerald-700">✓ {lang === "id" ? "Benar" : "Correct"}</span>}
+                  {verdict === "wrong" && <span className="shrink-0 rounded-full bg-destructive/15 px-2 py-0.5 text-xs font-bold text-destructive">✗ {lang === "id" ? "Salah" : "Wrong"}</span>}
+                  {verdict === "manual" && <span className="shrink-0 rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-bold text-amber-700">✍️ {lang === "id" ? "Manual" : "Manual"}</span>}
+                  {verdict === "empty" && <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-bold text-muted-foreground">{lang === "id" ? "Kosong" : "Empty"}</span>}
+                </div>
                 <div className="mt-1.5 text-foreground/80">
                   {q.type === "voice" ? (
                     voiceUrls[i] ? <audio controls src={voiceUrls[i]} className="mt-1 w-full" /> : <span className="text-muted-foreground">{lang === "id" ? "(memuat audio…)" : "(loading audio…)"}</span>
@@ -284,6 +354,9 @@ function GradeSubmissionDialog({ quiz, submission, studentName, onClose }: { qui
                     <span className="whitespace-pre-wrap">{ans || "—"}</span>
                   )}
                 </div>
+                {objective && verdict === "wrong" && (
+                  <p className="mt-1 text-xs text-emerald-700">{lang === "id" ? "Kunci:" : "Key:"} {keyText(q, key, lang)}</p>
+                )}
               </div>
             );
           })}
@@ -292,6 +365,7 @@ function GradeSubmissionDialog({ quiz, submission, studentName, onClose }: { qui
             <div><Label>{lang === "id" ? "Nilai Akhir" : "Final Score"} (/{quiz.max_score})</Label><Input type="number" min={0} max={quiz.max_score} value={score} onChange={(e) => setScore(Number(e.target.value))} /></div>
           </div>
           <div><Label>{lang === "id" ? "Catatan / Koreksi" : "Feedback"}</Label><Textarea rows={2} value={feedback} onChange={(e) => setFeedback(e.target.value)} /></div>
+
 
           {halaqoh && (
             <div className="rounded-xl border-2 border-emerald-500/30 bg-emerald-500/5 p-3">
