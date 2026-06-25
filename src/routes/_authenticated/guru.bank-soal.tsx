@@ -388,7 +388,13 @@ function TransferDialog({ open, onOpenChange, items, onDone }: { open: boolean; 
   const [title, setTitle] = useState("");
   const [subject, setSubject] = useState("");
   const [gradeLevel, setGradeLevel] = useState("");
+  const [category, setCategory] = useState("harian");
   const [dueAt, setDueAt] = useState("");
+
+  // Are any selected items Halaqoh? Then the task must be a Halaqoh task so it
+  // accumulates into Mutaba'ah.
+  const halaqohItem = items.find((i) => i.halaqoh_kind);
+  const hasHalaqoh = !!halaqohItem;
 
   useEffect(() => {
     if (open) {
@@ -398,6 +404,7 @@ function TransferDialog({ open, onOpenChange, items, onDone }: { open: boolean; 
       setStudentId("");
       setSubject(items.find((i) => i.subject)?.subject ?? "");
       setGradeLevel(items.find((i) => i.grade_level)?.grade_level ?? "");
+      setCategory(items.find((i) => i.halaqoh_kind) ? "halaqoh" : (items.find((i) => i.exam_category)?.exam_category ?? "harian"));
       setDueAt("");
     }
   }, [open, items]);
