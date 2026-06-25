@@ -437,6 +437,11 @@ function TransferDialog({ open, onOpenChange, items, onDone }: { open: boolean; 
         questionsPublic.push(question);
         answerKey.push(key);
       });
+      // Halaqoh tasks keep exam_type 'harian' but carry a halaqoh_kind so the
+      // graded result flows into the Mutaba'ah daily accumulation (30/40/30).
+      const effCategory = hasHalaqoh ? "halaqoh" : category;
+      const examType = effCategory === "halaqoh" ? "harian" : effCategory;
+      const halaqohKind = hasHalaqoh ? normalizeHalaqohKind(halaqohItem?.setoran_kind ?? halaqohItem?.halaqoh_kind) : null;
       const { data: inserted, error } = await supabase
         .from("assignments")
         .insert({
@@ -444,7 +449,8 @@ function TransferDialog({ open, onOpenChange, items, onDone }: { open: boolean; 
           class_id: target === "class" ? classId : null,
           assigned_student_id: target === "student" ? studentId : null,
           title: title.trim(),
-          subject: subject || null, exam_type: "harian",
+          subject: subject || null, exam_type: examType,
+          halaqoh_kind: halaqohKind,
           description: gradeLevel ? (lang === "id" ? `Jenjang: ${gradeLevel}` : `Grade: ${gradeLevel}`) : null,
           due_at: dueAt ? new Date(dueAt).toISOString() : null,
           max_score: 100, xp_reward: 50, coin_reward: 10,
