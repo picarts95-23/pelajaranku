@@ -417,6 +417,7 @@ function GuruTugasPage() {
                                 <div className="mt-2 flex flex-wrap gap-2 text-xs">
                                   <span className="rounded-full bg-xp/15 px-2 py-0.5 font-display font-bold text-xp">+{a.xp_reward} XP</span>
                                   {a.exam_type && a.exam_type !== "harian" && <span className="rounded-full bg-guru/15 px-2 py-0.5 font-display font-bold uppercase text-guru">{a.exam_type}</span>}
+                                  {a.halaqoh_kind && <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 font-display font-bold text-emerald-700">🕌 {a.halaqoh_kind}</span>}
                                   {pending > 0 && <span className="rounded-full bg-destructive/15 px-2 py-0.5 font-display font-bold text-destructive">{pending} {lang === "id" ? "perlu nilai" : "to grade"}</span>}
                                 </div>
                               </button>
