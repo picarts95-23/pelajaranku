@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
-import { getIslamicAvatar } from "@/lib/islamic-avatar";
+import { resolveAvatar } from "@/lib/character-roster";
 import { SheetBackupCard } from "@/components/sheet-backup-card";
 import { format } from "date-fns";
 
@@ -113,7 +113,7 @@ function GuruDashboard() {
             <div className="relative">
               <div className="absolute inset-0 -z-10 rounded-full bg-white/30 blur-2xl" />
               <img
-                src={getIslamicAvatar(user?.id ?? profile?.full_name, "guru")}
+                src={resolveAvatar(profile as any, "guru")}
                 alt={lang === "id" ? "Karakter guru/guru" : "Teacher character"}
                 width={192}
                 height={192}

@@ -4,6 +4,7 @@ import {
   muslimah11, muslimah12, muslimah13, muslimah14, muslimah15,
   muslimah16, muslimah17, muslimah18, muslimah19, muslimah20,
   guruMale, guruFemale,
+  getIslamicAvatar,
 } from "@/lib/islamic-avatar";
 
 export interface CharacterOption {
@@ -45,4 +46,23 @@ export const GURU_CHARACTERS: CharacterOption[] = [
 export function getCharacterByKey(key: string | null | undefined): CharacterOption | null {
   if (!key) return null;
   return [...SISWA_CHARACTERS, ...GURU_CHARACTERS].find((c) => c.key === key) ?? null;
+}
+
+/**
+ * Resolve the avatar image for any profile-like object, honouring the user's
+ * chosen RPG character first, then a stored avatar_url, then a deterministic
+ * fallback. Use this everywhere an avatar is shown so the selected character
+ * stays consistent across the whole app.
+ */
+export function resolveAvatar(
+  p:
+    | { character_key?: string | null; avatar_url?: string | null; id?: string | null; full_name?: string | null }
+    | null
+    | undefined,
+  role: "siswa" | "guru" | null | undefined,
+): string {
+  const chosen = getCharacterByKey(p?.character_key);
+  if (chosen) return chosen.src;
+  if (p?.avatar_url) return p.avatar_url;
+  return getIslamicAvatar(p?.id ?? p?.full_name, role ?? "siswa");
 }

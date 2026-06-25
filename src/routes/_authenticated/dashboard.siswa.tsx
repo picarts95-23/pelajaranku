@@ -2,14 +2,14 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { ArrowRight, Award, BookOpen, BookOpenCheck, ClipboardList, Coins, FileQuestion, Flame, GraduationCap, Heart, MessageCircle, ScrollText, Sparkles, Star, Sword, Trophy, UserCircle2 } from "lucide-react";
+import { ArrowRight, Award, BookOpen, BookOpenCheck, ClipboardList, Coins, Flame, GraduationCap, Heart, MessageCircle, ScrollText, Sparkles, Star, Sword, Trophy, UserCircle2 } from "lucide-react";
 import type { ComponentType, ReactNode } from "react";
 import { DashboardShell, StatCard } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
-import { getIslamicAvatar } from "@/lib/islamic-avatar";
+import { resolveAvatar } from "@/lib/character-roster";
 import { format } from "date-fns";
 
 export const Route = createFileRoute("/_authenticated/dashboard/siswa")({
@@ -95,7 +95,7 @@ function SiswaDashboard() {
             <div className="relative">
               <div className="absolute inset-0 -z-10 rounded-full bg-white/30 blur-2xl" />
               <img
-                src={getIslamicAvatar(user?.id ?? profile?.full_name, "siswa")}
+                src={resolveAvatar(profile as any, "siswa")}
                 alt={lang === "id" ? "Karakter siswi faceless berjilbab panjang" : "Faceless muslim girl student character with long hijab"}
                 width={192}
                 height={192}
@@ -168,8 +168,7 @@ function SiswaDashboard() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           <FeatureCard to="/siswa/kelas" icon={BookOpen} title={lang === "id" ? "Kelas" : "Classes"} desc={lang === "id" ? "Lihat & gabung kelas dengan kode dari guru" : "View & join classes with a teacher code"} tint="bg-quest text-white" />
           <FeatureCard to="/siswa/mapel" icon={GraduationCap} title={lang === "id" ? "Mata Pelajaran & Materi" : "Subjects & Materials"} desc={lang === "id" ? "Jelajahi materi tiap mapel" : "Explore subject materials"} tint="bg-gradient-magic text-white" />
-          <FeatureCard to="/siswa/tugas" icon={ClipboardList} title={lang === "id" ? "Tugas Saya" : "My Tasks"} desc={lang === "id" ? "Daftar tugas, kerjakan, tandai selesai & kirim" : "List, work on, mark done & submit tasks"} tint="bg-accent text-accent-foreground" />
-          <FeatureCard to="/siswa/latihan" icon={FileQuestion} title={lang === "id" ? "Latihan & Tugas" : "Practice & Tasks"} desc={lang === "id" ? "Kerjakan kuis campuran soal & dapat XP" : "Take mixed quizzes and earn XP"} tint="bg-gradient-magic text-white" />
+          <FeatureCard to="/siswa/tugas" icon={ClipboardList} title={lang === "id" ? "Tugas & Latihan" : "Tasks & Practice"} desc={lang === "id" ? "Semua misi, tugas & kuis dalam satu tempat — kerjakan, kirim & dapat XP" : "All missions, tasks & quizzes in one place — submit & earn XP"} tint="bg-accent text-accent-foreground" />
           <FeatureCard to="/siswa/mutabaah" icon={BookOpenCheck} title={lang === "id" ? "Mutaba'ah Tahfidz" : "Tahfidz Mutaba'ah"} desc={lang === "id" ? "Riwayat penilaian hafalan: Tajwid, Kelancaran, Adab" : "Hifz assessment history: Tajwid, Fluency, Adab"} tint="bg-gradient-hero text-white" />
           <FeatureCard to="/siswa/status" icon={MessageCircle} title={lang === "id" ? "Status & Interaksi" : "Status & Interaction"} desc={lang === "id" ? "Buat status, komentar, beri emoji & like" : "Post status, comment, emoji & like"} tint="bg-gradient-sunset text-white" />
           <FeatureCard to="/siswa/profil" icon={UserCircle2} title={lang === "id" ? "Pilih Karakter & Biodata" : "Character & Bio"} desc={lang === "id" ? "Atur avatar, nama akun & profil" : "Set avatar, username & profile"} tint="bg-gradient-hero text-white" />

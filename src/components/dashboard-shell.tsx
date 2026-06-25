@@ -12,7 +12,7 @@ import { AiAssistant } from "@/components/ai-assistant";
 import { useAuth } from "@/lib/auth-context";
 import { useLang, type Key } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
-import { getIslamicAvatar } from "@/lib/islamic-avatar";
+import { resolveAvatar } from "@/lib/character-roster";
 import { supabase } from "@/integrations/supabase/client";
 import { useUnseenCount } from "@/lib/notifications";
 
@@ -80,7 +80,7 @@ export function DashboardShell({
     navigate({ to: "/" });
   };
 
-  const avatarSrc = getIslamicAvatar(profile?.id ?? profile?.full_name ?? "anon", role as "guru" | "siswa" | null);
+  const avatarSrc = resolveAvatar(profile as any, role as "guru" | "siswa" | null);
 
   return (
     <div className="min-h-screen">
