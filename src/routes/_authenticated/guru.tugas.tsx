@@ -195,7 +195,7 @@ function GuruTugasPage() {
       <QuizTabs active="tugas" />
       <PageHeader
         title={t("navAssignments")}
-        subtitle={lang === "id" ? "Buat tugas dan beri nilai pengumpulan siswa" : "Create tasks and grade student submissions"}
+        subtitle={lang === "id" ? "Buat tugas, kuis, & nilai pengumpulan siswa (koreksi otomatis + audio)" : "Create tasks, quizzes & grade submissions (auto-scoring + audio)"}
         actions={
           <div className="flex flex-wrap gap-2">
             {assignments.length > 0 && (
