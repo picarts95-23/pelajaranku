@@ -162,18 +162,22 @@ function GuruRekapPage() {
     return (students as any[]).map((stu) => {
       const kehadiran = attendancePct(stu.id);
       const adab = Math.max(0, Math.min(100, adabDraft[stu.id] ?? 0));
-      const harian = avgPct(stu.id, "harian");
+      // For Halaqoh Qur'an, the daily grade is the accumulated Mutaba'ah score.
+      const harian = halaqoh ? (halaqohMap[stu.id]?.daily ?? 0) : avgPct(stu.id, "harian");
       const uts = avgPct(stu.id, "uts");
       const uas = avgPct(stu.id, "uas");
       const final = kehadiran * 0.1 + adab * 0.2 + harian * 0.2 + uts * 0.2 + uas * 0.3;
       return {
         id: stu.id, name: stu.full_name,
         kehadiran: Math.round(kehadiran), adab, harian: Math.round(harian),
+        ziyadah: halaqoh ? (halaqohMap[stu.id]?.ziyadah ?? 0) : null,
+        murojaah: halaqoh ? (halaqohMap[stu.id]?.murojaah ?? 0) : null,
+        tilawah: halaqoh ? (halaqohMap[stu.id]?.tilawah ?? 0) : null,
         uts: Math.round(uts), uas: Math.round(uas), final: Math.round(final),
       };
     }).sort((a, b) => b.final - a.final);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [subject, assignments, students, attendance, adabDraft]);
+  }, [subject, assignments, students, attendance, adabDraft, halaqoh, halaqohMap]);
 
   const exportColumns = [
     { key: "name", header: t("studentName") },
