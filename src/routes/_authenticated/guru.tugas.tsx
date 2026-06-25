@@ -146,17 +146,29 @@ function GuruTugasPage() {
 
   const currentAssignment = useMemo(() => assignments.find((a: any) => a.id === selected), [assignments, selected]);
 
-  // Group assignments by answer format so the teacher can browse by type.
-  const groupedAssignments = useMemo(() => {
-    const groups: Record<string, any[]> = {};
+  // Group submissions by CLASS, then by SUBJECT, so the grading hub is tidy
+  // ("per kelas kemudian per Mapel"). Each class is a collapsible section.
+  const groupedByClass = useMemo(() => {
+    const classMap: Record<string, { className: string; subjects: Record<string, any[]> }> = {};
     (assignments as any[]).forEach((a) => {
-      const key = a.answer_format ?? "descriptive";
-      (groups[key] ??= []).push(a);
+      const className = a.assigned_student_id
+        ? (lang === "id" ? "Tugas Personal" : "Personal Tasks")
+        : (a.classes?.name ?? (lang === "id" ? "Tanpa Kelas" : "No Class"));
+      const subject = a.subject || (lang === "id" ? "Umum" : "General");
+      (classMap[className] ??= { className, subjects: {} });
+      (classMap[className].subjects[subject] ??= []).push(a);
     });
-    return ANSWER_FORMATS
-      .filter((f) => groups[f.value]?.length)
-      .map((f) => ({ format: f, items: groups[f.value] }));
-  }, [assignments]);
+    return Object.values(classMap)
+      .sort((a, b) => a.className.localeCompare(b.className))
+      .map((c) => ({
+        className: c.className,
+        items: Object.values(c.subjects).flat(),
+        subjects: Object.entries(c.subjects)
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([subject, items]) => ({ subject, items })),
+      }));
+  }, [assignments, lang]);
+
 
   const exportColumns = [
     { key: "title", header: lang === "id" ? "Judul" : "Title" },
