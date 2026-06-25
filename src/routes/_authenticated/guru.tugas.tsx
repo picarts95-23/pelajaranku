@@ -245,6 +245,18 @@ function GuruTugasPage() {
                     </Select>
                     <p className="mt-1 text-xs text-muted-foreground">{lang === "id" ? "Menentukan bobot pada rekap nilai (Harian 20%, UTS 20%, UAS 30%)." : "Sets the weight in the grade recap."}</p>
                   </div>
+                  {isHalaqohSubject(form.subject) && (
+                    <div className="rounded-xl border-2 border-guru/30 bg-guru/5 p-3">
+                      <Label>{lang === "id" ? "Jenis Halaqoh (otomatis ke Mutaba'ah)" : "Halaqoh Kind (auto to Mutaba'ah)"}</Label>
+                      <Select value={form.halaqoh_kind} onValueChange={(v) => setForm({ ...form, halaqoh_kind: v })}>
+                        <SelectTrigger className="mt-1"><SelectValue placeholder={lang === "id" ? "Pilih jenis setoran" : "Select setoran kind"} /></SelectTrigger>
+                        <SelectContent>
+                          {SETORAN_TYPES.map((s) => <SelectItem key={s.value} value={s.value}>{lang === "id" ? s.id : s.en}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                      <p className="mt-1 text-xs text-muted-foreground">{lang === "id" ? "Nilai tugas Halaqoh yang sudah dikoreksi otomatis masuk akumulasi Mutaba'ah (Ziyadah 30% · Muroja'ah 40% · Tilawah 30%)." : "Graded Halaqoh task scores auto-feed the Mutaba'ah accumulation."}</p>
+                    </div>
+                  )}
                   <div><Label>{t("description")}</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
 
                   {/* Answer format selector */}
