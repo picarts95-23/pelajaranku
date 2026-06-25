@@ -33,6 +33,10 @@ function GuruMapelPage() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<MForm>(emptyForm());
   const [newSubject, setNewSubject] = useState("");
+  const [openClasses, setOpenClasses] = useState<Record<string, boolean>>({});
+  const [openSubjects, setOpenSubjects] = useState<Record<string, boolean>>({});
+  const toggleClass = (id: string) => setOpenClasses((s) => ({ ...s, [id]: !s[id] }));
+  const toggleSubject = (key: string) => setOpenSubjects((s) => ({ ...s, [key]: !s[key] }));
 
   useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
 
