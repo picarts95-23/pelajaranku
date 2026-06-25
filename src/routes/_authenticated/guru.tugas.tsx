@@ -454,6 +454,8 @@ function AssignmentDetail({ assignment, onDelete }: { assignment: any; onDelete:
   const fmtLabel = ANSWER_FORMATS.find((f) => f.value === assignment.answer_format);
   const isQuiz = assignment.answer_format === "quiz";
   const [grading, setGrading] = useState<any | null>(null);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "submitted" | "graded">("all");
 
   const { data: answerKey } = useQuery({
     queryKey: ["answer-key", assignment.id],
