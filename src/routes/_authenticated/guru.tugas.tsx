@@ -192,6 +192,7 @@ function GuruTugasPage() {
 
   return (
     <DashboardShell accent="guru">
+      <QuizTabs active="tugas" />
       <PageHeader
         title={t("navAssignments")}
         subtitle={lang === "id" ? "Buat tugas dan beri nilai pengumpulan siswa" : "Create tasks and grade student submissions"}
