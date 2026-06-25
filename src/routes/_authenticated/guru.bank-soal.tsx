@@ -38,12 +38,14 @@ function GuruBankSoalPage() {
   const [editId, setEditId] = useState<string | null>(null);
   const [subject, setSubject] = useState("");
   const [gradeLevel, setGradeLevel] = useState("");
+  const [examCategory, setExamCategory] = useState("harian");
   const [questions, setQuestions] = useState<BQ[]>([emptyQ()]);
   const [uploadingIdx, setUploadingIdx] = useState<number | null>(null);
   const [selected, setSelected] = useState<string[]>([]);
   const [transferOpen, setTransferOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [filterGrade, setFilterGrade] = useState("all");
+  const [filterCategory, setFilterCategory] = useState("all");
   const [filterType, setFilterType] = useState("all");
 
   useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
