@@ -151,6 +151,7 @@ function GuruBankSoalPage() {
   const rowUiType = (q: any): BType => (q.halaqoh_kind ? (HALAQOH_KIND[q.halaqoh_kind] ?? "halaqoh_setoran") : (q.type as BType));
   const filteredItems = (items as any[]).filter((q) => {
     if (filterGrade !== "all" && q.grade_level !== filterGrade) return false;
+    if (filterCategory !== "all" && (q.exam_category ?? "harian") !== filterCategory) return false;
     if (filterType !== "all" && rowUiType(q) !== filterType) return false;
     if (search.trim()) {
       const hay = `${q.question ?? ""} ${q.subject ?? ""} ${q.topic ?? ""} ${q.grade_level ?? ""}`.toLowerCase();
