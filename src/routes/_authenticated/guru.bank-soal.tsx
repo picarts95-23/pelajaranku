@@ -295,6 +295,13 @@ function GuruBankSoalPage() {
                 {gradeOptions.map((g) => <SelectItem key={g} value={g}>{g}</SelectItem>)}
               </SelectContent>
             </Select>
+            <Select value={filterCategory} onValueChange={setFilterCategory}>
+              <SelectTrigger className="h-9 w-auto min-w-[9rem]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{lang === "id" ? "Semua kategori" : "All categories"}</SelectItem>
+                {EXAM_CATEGORIES.map((c) => <SelectItem key={c.value} value={c.value}>{lang === "id" ? c.id : c.en}</SelectItem>)}
+              </SelectContent>
+            </Select>
             <Select value={filterType} onValueChange={setFilterType}>
               <SelectTrigger className="h-9 w-auto min-w-[9rem]"><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -302,8 +309,8 @@ function GuruBankSoalPage() {
                 {ALL_TYPES.map((tp) => <SelectItem key={tp} value={tp}>{TYPE_LABEL(tp, lang)}</SelectItem>)}
               </SelectContent>
             </Select>
-            {(search || filterGrade !== "all" || filterType !== "all") && (
-              <Button size="sm" variant="ghost" onClick={() => { setSearch(""); setFilterGrade("all"); setFilterType("all"); }}>
+            {(search || filterGrade !== "all" || filterCategory !== "all" || filterType !== "all") && (
+              <Button size="sm" variant="ghost" onClick={() => { setSearch(""); setFilterGrade("all"); setFilterCategory("all"); setFilterType("all"); }}>
                 <X className="size-4" /> {lang === "id" ? "Reset" : "Reset"}
               </Button>
             )}
