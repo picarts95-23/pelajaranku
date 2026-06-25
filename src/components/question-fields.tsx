@@ -195,6 +195,7 @@ export function buildBankRows(
       topic: q.topic.trim() || null, question: prompt, type: q.type as any,
       halaqoh_kind: null, options: opts, answer, difficulty: q.difficulty as any,
       image_url: q.image_url || null,
+      exam_category: examCategory || "harian",
     });
   });
 
