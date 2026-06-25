@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
-import { getIslamicAvatar } from "@/lib/islamic-avatar";
+import { resolveAvatar } from "@/lib/character-roster";
 
 export const Route = createFileRoute("/_authenticated/siswa/status")({
   head: () => ({ meta: [{ title: "Status & Komentar · EduQuest Academy" }] }),
@@ -22,7 +22,7 @@ export const Route = createFileRoute("/_authenticated/siswa/status")({
 const REACTIONS = ["❤️", "👍", "🎉", "🔥", "😊", "😮", "👏", "🌟"];
 const MOODS = ["😄", "📚", "💪", "😴", "🤔", "🥳", "🤲", "😅"];
 
-type ProfileLite = { id: string; full_name: string | null; avatar_url: string | null };
+type ProfileLite = { id: string; full_name: string | null; avatar_url: string | null; character_key: string | null };
 
 function SiswaStatusPage() {
   const { user, profile, role, loading } = useAuth();
@@ -45,13 +45,13 @@ function SiswaStatusPage() {
       const [{ data: comments }, { data: reactions }, { data: profs }] = await Promise.all([
         supabase.from("status_comments").select("*").in("status_id", ids).order("created_at", { ascending: true }),
         supabase.from("status_reactions").select("*").in("status_id", ids),
-        supabase.from("profiles").select("id, full_name, avatar_url").in("id", authorIds),
+        supabase.from("profiles").select("id, full_name, avatar_url, character_key").in("id", authorIds),
       ]);
       const commentAuthorIds = Array.from(new Set((comments ?? []).map((c) => c.author_id)));
       const missing = commentAuthorIds.filter((id) => !authorIds.includes(id));
       let allProfs = (profs ?? []) as ProfileLite[];
       if (missing.length > 0) {
-        const { data: extra } = await supabase.from("profiles").select("id, full_name, avatar_url").in("id", missing);
+        const { data: extra } = await supabase.from("profiles").select("id, full_name, avatar_url, character_key").in("id", missing);
         allProfs = [...allProfs, ...((extra ?? []) as ProfileLite[])];
       }
       const profMap = new Map(allProfs.map((p) => [p.id, p]));
@@ -84,7 +84,7 @@ function SiswaStatusPage() {
 
       <div className="rounded-3xl border-2 border-border bg-card p-5 shadow-card-rpg">
         <div className="flex gap-3">
-          <img src={getIslamicAvatar(user?.id ?? profile?.full_name, "siswa")} alt="" width={44} height={44} className="size-11 shrink-0 rounded-full border-2 border-border object-cover" />
+          <img src={resolveAvatar(profile as any, "siswa")} alt="" width={44} height={44} className="size-11 shrink-0 rounded-full border-2 border-border object-cover" />
           <div className="flex-1 space-y-3">
             <Textarea rows={3} value={content} onChange={(e) => setContent(e.target.value)} maxLength={500}
               placeholder={lang === "id" ? "Apa yang sedang kamu pelajari hari ini?" : "What are you learning today?"} />
@@ -171,7 +171,7 @@ function StatusCard({ status }: { status: any }) {
   return (
     <div className="rounded-2xl border-2 border-border bg-card p-5 shadow-card-rpg">
       <div className="flex items-start gap-3">
-        <img src={getIslamicAvatar(status.author_id, "siswa")} alt="" width={44} height={44} className="size-11 shrink-0 rounded-full border-2 border-border object-cover" />
+        <img src={resolveAvatar(status.author ?? { id: status.author_id }, "siswa")} alt="" width={44} height={44} className="size-11 shrink-0 rounded-full border-2 border-border object-cover" />
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0">
@@ -208,7 +208,7 @@ function StatusCard({ status }: { status: any }) {
             <div className="mt-3 space-y-3 border-t-2 border-dashed border-border pt-3">
               {status.comments.map((c: any) => (
                 <div key={c.id} className="flex items-start gap-2">
-                  <img src={getIslamicAvatar(c.author_id, "siswa")} alt="" width={32} height={32} className="size-8 shrink-0 rounded-full border-2 border-border object-cover" />
+                  <img src={resolveAvatar(c.author ?? { id: c.author_id }, "siswa")} alt="" width={32} height={32} className="size-8 shrink-0 rounded-full border-2 border-border object-cover" />
                   <div className="min-w-0 flex-1 rounded-2xl bg-muted/40 px-3 py-2">
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-display text-sm font-bold">{c.author?.full_name ?? (lang === "id" ? "Siswa" : "Student")}</span>
