@@ -49,6 +49,28 @@ export const HALAQOH_KIND: Record<string, BType> = {
   tilawah: "halaqoh_tilawah",
 };
 
+// Bank Soal exam categories. 'halaqoh' is auto-applied to Halaqoh-type items.
+export const EXAM_CATEGORIES: { value: string; id: string; en: string }[] = [
+  { value: "harian", id: "Soal Harian", en: "Daily" },
+  { value: "uts", id: "Soal UTS", en: "Midterm (UTS)" },
+  { value: "uas", id: "Soal UAS", en: "Final (UAS)" },
+  { value: "halaqoh", id: "Soal Halaqoh Qur'an", en: "Halaqoh Qur'an" },
+];
+export const examCategoryLabel = (v: string | null | undefined, lang: string) => {
+  const f = EXAM_CATEGORIES.find((c) => c.value === v);
+  return f ? (lang === "id" ? f.id : f.en) : (v ?? "");
+};
+
+// Normalize a stored setoran kind to the canonical Halaqoh kind used by the
+// Mutaba'ah accumulation (assignments.halaqoh_kind ∈ ziyadah|murojaah|tilawah).
+export function normalizeHalaqohKind(v: string | null | undefined): string | null {
+  const s = (v ?? "").toLowerCase();
+  if (s.startsWith("ziyadah")) return "ziyadah";
+  if (s.startsWith("muroj") || s.startsWith("muraj")) return "murojaah";
+  if (s.startsWith("tilawah")) return "tilawah";
+  return null;
+}
+
 export type BQ = {
   type: BType;
   topic: string;
