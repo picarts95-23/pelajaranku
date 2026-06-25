@@ -12,6 +12,7 @@ import { ExportMenu } from "@/components/export-menu";
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
+import { isHalaqohSubject, type HalaqohDaily } from "@/lib/mutabaah";
 
 export const Route = createFileRoute("/_authenticated/guru/rekap")({
   head: () => ({ meta: [{ title: "Rekap Nilai · EduQuest Academy" }] }),
@@ -42,7 +43,7 @@ function GuruRekapPage() {
 
   const { data: classes = [] } = useQuery({
     queryKey: ["classes-list", user?.id], enabled: !!user,
-    queryFn: async () => (await supabase.from("classes").select("id, name").order("name")).data ?? [],
+    queryFn: async () => (await supabase.from("classes").select("id, name, subjects, subject").order("name")).data ?? [],
   });
 
   const { data: students = [] } = useQuery({
@@ -82,6 +83,25 @@ function GuruRekapPage() {
     queryFn: async () => (await supabase.from("adab_scores").select("student_id, score").eq("class_id", classId).eq("subject", subject)).data ?? [],
   });
 
+  const halaqoh = isHalaqohSubject(subject);
+
+  // For a Halaqoh Qur'an subject, the daily grade is the accumulated Mutaba'ah
+  // score (Ziyadah 30% + Muroja'ah 40% + Tilawah 30%) combining manual records
+  // and graded Halaqoh tasks, computed server-side.
+  const { data: halaqohDaily = [] } = useQuery({
+    queryKey: ["rekap-halaqoh", classId, halaqoh], enabled: !!classId && halaqoh,
+    queryFn: async () => {
+      const { data, error } = await (supabase as any).rpc("halaqoh_daily_scores", { _class_id: classId });
+      if (error) throw error;
+      return (data ?? []) as HalaqohDaily[];
+    },
+  });
+  const halaqohMap = useMemo(() => {
+    const m: Record<string, HalaqohDaily> = {};
+    (halaqohDaily as HalaqohDaily[]).forEach((h) => { m[h.student_id] = h; });
+    return m;
+  }, [halaqohDaily]);
+
   // Sync adab draft from DB whenever scores load (depend on the stable query
   // reference, not a freshly-allocated default array — that caused an infinite loop).
   useEffect(() => {
@@ -92,14 +112,19 @@ function GuruRekapPage() {
   }, [adabScores]);
 
   // Subjects available for THIS class only: union of subjects used on its
-  // tagged assignments and its shared materials, deduplicated — so the subject
-  // dropdown adjusts to the selected class instead of repeating unrelated ones.
+  // tagged assignments, its shared materials, and the subjects the class itself
+  // teaches (so Halaqoh Qur'an shows up even before any task is tagged).
   const subjects = useMemo(() => {
     const set = new Set<string>();
     (assignments as any[]).forEach((a) => { if (a.subject) set.add(a.subject); });
     (classMaterials as any[]).forEach((m) => { if (m.subject) set.add(m.subject); });
+    const cls = (classes as any[]).find((c) => c.id === classId);
+    if (cls) {
+      (cls.subjects as string[] | null ?? []).forEach((s) => { if (s) set.add(s); });
+      if (cls.subject) set.add(cls.subject);
+    }
     return Array.from(set).sort();
-  }, [assignments, classMaterials]);
+  }, [assignments, classMaterials, classes, classId]);
 
   const saveAdab = useMutation({
     mutationFn: async () => {
@@ -137,18 +162,22 @@ function GuruRekapPage() {
     return (students as any[]).map((stu) => {
       const kehadiran = attendancePct(stu.id);
       const adab = Math.max(0, Math.min(100, adabDraft[stu.id] ?? 0));
-      const harian = avgPct(stu.id, "harian");
+      // For Halaqoh Qur'an, the daily grade is the accumulated Mutaba'ah score.
+      const harian = halaqoh ? (halaqohMap[stu.id]?.daily ?? 0) : avgPct(stu.id, "harian");
       const uts = avgPct(stu.id, "uts");
       const uas = avgPct(stu.id, "uas");
       const final = kehadiran * 0.1 + adab * 0.2 + harian * 0.2 + uts * 0.2 + uas * 0.3;
       return {
         id: stu.id, name: stu.full_name,
         kehadiran: Math.round(kehadiran), adab, harian: Math.round(harian),
+        ziyadah: halaqoh ? (halaqohMap[stu.id]?.ziyadah ?? 0) : null,
+        murojaah: halaqoh ? (halaqohMap[stu.id]?.murojaah ?? 0) : null,
+        tilawah: halaqoh ? (halaqohMap[stu.id]?.tilawah ?? 0) : null,
         uts: Math.round(uts), uas: Math.round(uas), final: Math.round(final),
       };
     }).sort((a, b) => b.final - a.final);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [subject, assignments, students, attendance, adabDraft]);
+  }, [subject, assignments, students, attendance, adabDraft, halaqoh, halaqohMap]);
 
   const exportColumns = [
     { key: "name", header: t("studentName") },
@@ -222,6 +251,13 @@ function GuruRekapPage() {
         <EmptyState message={t("noGradesSubject")} />
       ) : (
         <div className="space-y-3">
+          {halaqoh && (
+            <div className="rounded-2xl border-2 border-guru/30 bg-guru/5 px-4 py-3 text-xs text-muted-foreground">
+              {lang === "id"
+                ? "Mata pelajaran Halaqoh Qur'an: kolom Harian otomatis dari akumulasi Mutaba'ah — Ziyadah 30% + Muroja'ah 40% + Tilawah 30%. Arahkan kursor ke nilai Harian untuk rinciannya."
+                : "Halaqoh Qur'an subject: the Daily column is auto-accumulated from Mutaba'ah — Ziyadah 30% + Muroja'ah 40% + Tilawah 30%. Hover the Daily value for the breakdown."}
+            </div>
+          )}
           <div className="flex items-center justify-end">
             <Button variant="guru" size="sm" disabled={saveAdab.isPending} onClick={() => saveAdab.mutate()}>
               <Save className="size-4" /> {lang === "id" ? "Simpan Nilai Adab" : "Save Adab Scores"}
@@ -258,7 +294,7 @@ function GuruRekapPage() {
                           className="mx-auto h-8 w-16 text-center"
                         />
                       </td>
-                      <td className="px-3 py-3 text-center">{r.harian}</td>
+                      <td className="px-3 py-3 text-center" title={halaqoh ? `Ziyadah ${r.ziyadah} · Muroja'ah ${r.murojaah} · Tilawah ${r.tilawah}` : undefined}>{r.harian}{halaqoh && <span className="ml-0.5 text-[10px] text-guru align-super">★</span>}</td>
                       <td className="px-3 py-3 text-center">{r.uts}</td>
                       <td className="px-3 py-3 text-center">{r.uas}</td>
                       <td className="px-3 py-3 text-center font-display text-lg font-bold">{r.final}</td>

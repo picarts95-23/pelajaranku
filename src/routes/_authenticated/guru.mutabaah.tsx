@@ -16,7 +16,7 @@ import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { ExportMenu } from "@/components/export-menu";
 import { SURAHS, JUZ_LIST } from "@/lib/quran-data";
-import { TAJWID_TOLERANCE, HELP_TOLERANCE, computeTotal, predikatOf } from "@/lib/mutabaah";
+import { TAJWID_TOLERANCE, HELP_TOLERANCE, computeTotal, predikatOf, setoranLabel, type HalaqohDaily } from "@/lib/mutabaah";
 
 export const Route = createFileRoute("/_authenticated/guru/mutabaah")({
   head: () => ({ meta: [{ title: "Mutaba'ah Tahfidz · EduQuest Academy" }] }),
@@ -70,6 +70,7 @@ function GuruMutabaahPage() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<MForm>(emptyForm());
+  const [viewClass, setViewClass] = useState("");
 
   useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
 
@@ -98,6 +99,28 @@ function GuruMutabaahPage() {
       if (ids.length === 0) return rows;
       const { data: profs } = await supabase.from("profiles").select("id, full_name").in("id", ids);
       return rows.map((r) => ({ ...r, profiles: (profs ?? []).find((p: any) => p.id === r.student_id) ?? null }));
+    },
+  });
+
+  // Accumulated daily Halaqoh grade (Ziyadah 30% + Muroja'ah 40% + Tilawah 30%)
+  // for a selected class — combines manual records and graded Halaqoh tasks, and
+  // is exactly what flows into the Rekap Nilai "Harian" column.
+  const { data: accum = [] } = useQuery({
+    queryKey: ["mutabaah-accum", viewClass], enabled: !!viewClass,
+    queryFn: async () => {
+      const { data, error } = await (supabase as any).rpc("halaqoh_daily_scores", { _class_id: viewClass });
+      if (error) throw error;
+      return (data ?? []) as HalaqohDaily[];
+    },
+  });
+  const { data: accumStudents = [] } = useQuery({
+    queryKey: ["mutabaah-accum-students", viewClass], enabled: !!viewClass,
+    queryFn: async () => {
+      const { data: enr } = await supabase.from("class_enrollments").select("student_id").eq("class_id", viewClass);
+      const ids = (enr ?? []).map((e: any) => e.student_id).filter(Boolean);
+      if (ids.length === 0) return [] as { id: string; full_name: string }[];
+      const { data: profs } = await supabase.from("profiles").select("id, full_name").in("id", ids);
+      return (profs ?? []) as { id: string; full_name: string }[];
     },
   });
 
@@ -157,7 +180,7 @@ function GuruMutabaahPage() {
     date: format(new Date(r.session_date), "dd MMM yyyy"),
     student: r.profiles?.full_name ?? "—",
     surah: `${r.surah ?? "—"}${r.ayat_from ? ` (${r.ayat_from}${r.ayat_to ? `-${r.ayat_to}` : ""})` : ""}`,
-    type: r.session_type === "murojaah" ? "Muroja'ah" : "Ziyadah",
+    type: setoranLabel(r.session_type, "id"),
     tajwid: `${r.tajwid_score} / ${r.tajwid_errors} err`,
     kelancaran: `${r.kelancaran_score} / ${r.kelancaran_helps} bantuan`,
     fashohah: r.fashohah_score,
@@ -201,6 +224,7 @@ function GuruMutabaahPage() {
                         <SelectContent>
                           <SelectItem value="ziyadah">{lang === "id" ? "Ziyadah (Hafalan Baru)" : "Ziyadah (New)"}</SelectItem>
                           <SelectItem value="murojaah">{lang === "id" ? "Muroja'ah (Mengulang)" : "Muroja'ah (Review)"}</SelectItem>
+                          <SelectItem value="tilawah">{lang === "id" ? "Tilawah Harian (min. 1 halaman)" : "Daily Tilawah"}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -271,6 +295,56 @@ function GuruMutabaahPage() {
         }
       />
 
+      {/* Akumulasi Nilai Harian Halaqoh — what syncs to Rekap Nilai */}
+      <div className="mb-6 rounded-3xl border-2 border-guru/30 bg-guru/5 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="font-display text-sm font-bold text-guru">{lang === "id" ? "Akumulasi Nilai Harian Halaqoh" : "Halaqoh Daily Accumulation"}</p>
+            <p className="text-xs text-muted-foreground">{lang === "id" ? "Ziyadah 30% · Muroja'ah 40% · Tilawah 30% → tersinkron otomatis ke Rekap Nilai." : "Ziyadah 30% · Muroja'ah 40% · Tilawah 30% → auto-synced to Rekap Nilai."}</p>
+          </div>
+          <div className="w-56">
+            <Select value={viewClass} onValueChange={setViewClass}>
+              <SelectTrigger><SelectValue placeholder={lang === "id" ? "Pilih kelas" : "Select class"} /></SelectTrigger>
+              <SelectContent>{(classes as any[]).map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
+            </Select>
+          </div>
+        </div>
+        {viewClass && (
+          (accumStudents as any[]).length === 0 ? (
+            <p className="mt-3 text-xs text-muted-foreground">{lang === "id" ? "Belum ada siswa di kelas ini." : "No students in this class."}</p>
+          ) : (
+            <div className="mt-3 overflow-x-auto rounded-2xl border-2 border-border bg-card">
+              <table className="w-full min-w-[480px] text-sm">
+                <thead className="bg-muted/60 text-left text-xs uppercase tracking-wider text-muted-foreground">
+                  <tr>
+                    <th className="px-3 py-2">{lang === "id" ? "Siswa" : "Student"}</th>
+                    <th className="px-3 py-2 text-center">Ziyadah<br /><span className="normal-case">30%</span></th>
+                    <th className="px-3 py-2 text-center">Muroja'ah<br /><span className="normal-case">40%</span></th>
+                    <th className="px-3 py-2 text-center">Tilawah<br /><span className="normal-case">30%</span></th>
+                    <th className="px-3 py-2 text-center font-bold">{lang === "id" ? "Nilai Harian" : "Daily"}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(accumStudents as any[]).map((s) => {
+                    const a = (accum as HalaqohDaily[]).find((x) => x.student_id === s.id);
+                    return (
+                      <tr key={s.id} className="border-t border-border">
+                        <td className="px-3 py-2 font-display font-semibold">{s.full_name}</td>
+                        <td className="px-3 py-2 text-center">{a?.ziyadah ?? "—"}</td>
+                        <td className="px-3 py-2 text-center">{a?.murojaah ?? "—"}</td>
+                        <td className="px-3 py-2 text-center">{a?.tilawah ?? "—"}</td>
+                        <td className="px-3 py-2 text-center font-display text-lg font-bold text-guru">{a?.daily ?? 0}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )
+        )}
+      </div>
+
+
       {(records as any[]).length === 0 ? (
         <EmptyState message={lang === "id" ? "Belum ada penilaian Mutaba'ah. Mulai nilai setoran hafalan siswa!" : "No Mutaba'ah records yet."} />
       ) : (
@@ -334,7 +408,7 @@ export function RecordCard({ r, lang, onDelete, showStudent }: { r: any; lang: s
             <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
               {showStudent && r.profiles?.full_name && <span className="font-semibold text-foreground">{r.profiles.full_name} ·</span>}
               <span>{format(new Date(r.session_date), "dd MMM yyyy")}</span>
-              <span className="rounded-full bg-quest/15 px-2 py-0.5 font-display text-quest">{r.session_type === "murojaah" ? "Muroja'ah" : "Ziyadah"}</span>
+              <span className="rounded-full bg-quest/15 px-2 py-0.5 font-display text-quest">{setoranLabel(r.session_type, lang)}</span>
             </div>
           </div>
         </div>

@@ -98,6 +98,7 @@ export type Database = {
           due_at: string | null
           exam_type: string
           game_link: string | null
+          halaqoh_kind: string | null
           id: string
           max_score: number
           muroja_ayat: string | null
@@ -122,6 +123,7 @@ export type Database = {
           due_at?: string | null
           exam_type?: string
           game_link?: string | null
+          halaqoh_kind?: string | null
           id?: string
           max_score?: number
           muroja_ayat?: string | null
@@ -146,6 +148,7 @@ export type Database = {
           due_at?: string | null
           exam_type?: string
           game_link?: string | null
+          halaqoh_kind?: string | null
           id?: string
           max_score?: number
           muroja_ayat?: string | null
@@ -1184,6 +1187,16 @@ export type Database = {
       grade_quiz_submission: {
         Args: { _answers: Json; _assignment_id: string }
         Returns: Json
+      }
+      halaqoh_daily_scores: {
+        Args: { _class_id: string }
+        Returns: {
+          daily: number
+          murojaah: number
+          student_id: string
+          tilawah: number
+          ziyadah: number
+        }[]
       }
       has_role: {
         Args: {

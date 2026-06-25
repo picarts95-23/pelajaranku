@@ -18,6 +18,7 @@ import { LinkFields, LinkBadges } from "@/components/link-fields";
 import { SubjectSelect } from "@/components/subject-select";
 import { ExportMenu } from "@/components/export-menu";
 import { ANSWER_FORMATS, JUZ_LIST, SURAHS, type AnswerFormat } from "@/lib/quran-data";
+import { isHalaqohSubject, SETORAN_TYPES } from "@/lib/mutabaah";
 
 export const Route = createFileRoute("/_authenticated/guru/tugas")({
   head: () => ({ meta: [{ title: "Tugas · EduQuest Academy" }] }),
@@ -28,7 +29,7 @@ export const Route = createFileRoute("/_authenticated/guru/tugas")({
 
 type TForm = {
   class_id: string; assigned_student_id: string; title: string; description: string;
-  subject: string; exam_type: string;
+  subject: string; exam_type: string; halaqoh_kind: string;
   due_at: string; max_score: number; xp_reward: number; coin_reward: number;
   quiz_link: string; game_link: string;
   answer_format: AnswerFormat; options: string[]; answer_key: string;
@@ -36,7 +37,7 @@ type TForm = {
 };
 
 const emptyForm = (): TForm => ({
-  class_id: "", assigned_student_id: "", title: "", description: "", subject: "", exam_type: "harian", due_at: "",
+  class_id: "", assigned_student_id: "", title: "", description: "", subject: "", exam_type: "harian", halaqoh_kind: "", due_at: "",
   max_score: 100, xp_reward: 50, coin_reward: 10, quiz_link: "", game_link: "",
   answer_format: "descriptive", options: ["", ""], answer_key: "",
   muroja_juz: "", muroja_surah: "", muroja_ayat: "",
@@ -111,6 +112,7 @@ function GuruTugasPage() {
         title: form.title,
         subject: form.subject || null,
         exam_type: form.exam_type,
+        halaqoh_kind: isHalaqohSubject(form.subject) && form.halaqoh_kind ? form.halaqoh_kind : null,
         description: form.description || null, due_at: form.due_at ? new Date(form.due_at).toISOString() : null,
         max_score: form.max_score, xp_reward: form.xp_reward, coin_reward: form.coin_reward,
         quiz_link: form.quiz_link.trim() || null, game_link: form.game_link.trim() || null,
@@ -243,6 +245,18 @@ function GuruTugasPage() {
                     </Select>
                     <p className="mt-1 text-xs text-muted-foreground">{lang === "id" ? "Menentukan bobot pada rekap nilai (Harian 20%, UTS 20%, UAS 30%)." : "Sets the weight in the grade recap."}</p>
                   </div>
+                  {isHalaqohSubject(form.subject) && (
+                    <div className="rounded-xl border-2 border-guru/30 bg-guru/5 p-3">
+                      <Label>{lang === "id" ? "Jenis Halaqoh (otomatis ke Mutaba'ah)" : "Halaqoh Kind (auto to Mutaba'ah)"}</Label>
+                      <Select value={form.halaqoh_kind} onValueChange={(v) => setForm({ ...form, halaqoh_kind: v })}>
+                        <SelectTrigger className="mt-1"><SelectValue placeholder={lang === "id" ? "Pilih jenis setoran" : "Select setoran kind"} /></SelectTrigger>
+                        <SelectContent>
+                          {SETORAN_TYPES.map((s) => <SelectItem key={s.value} value={s.value}>{lang === "id" ? s.id : s.en}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                      <p className="mt-1 text-xs text-muted-foreground">{lang === "id" ? "Nilai tugas Halaqoh yang sudah dikoreksi otomatis masuk akumulasi Mutaba'ah (Ziyadah 30% · Muroja'ah 40% · Tilawah 30%)." : "Graded Halaqoh task scores auto-feed the Mutaba'ah accumulation."}</p>
+                    </div>
+                  )}
                   <div><Label>{t("description")}</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
 
                   {/* Answer format selector */}
@@ -403,6 +417,7 @@ function GuruTugasPage() {
                                 <div className="mt-2 flex flex-wrap gap-2 text-xs">
                                   <span className="rounded-full bg-xp/15 px-2 py-0.5 font-display font-bold text-xp">+{a.xp_reward} XP</span>
                                   {a.exam_type && a.exam_type !== "harian" && <span className="rounded-full bg-guru/15 px-2 py-0.5 font-display font-bold uppercase text-guru">{a.exam_type}</span>}
+                                  {a.halaqoh_kind && <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 font-display font-bold text-emerald-700">🕌 {a.halaqoh_kind}</span>}
                                   {pending > 0 && <span className="rounded-full bg-destructive/15 px-2 py-0.5 font-display font-bold text-destructive">{pending} {lang === "id" ? "perlu nilai" : "to grade"}</span>}
                                 </div>
                               </button>
