@@ -19,6 +19,8 @@ import { SubjectSelect } from "@/components/subject-select";
 import { ExportMenu } from "@/components/export-menu";
 import { ANSWER_FORMATS, JUZ_LIST, SURAHS, type AnswerFormat } from "@/lib/quran-data";
 import { isHalaqohSubject, SETORAN_TYPES } from "@/lib/mutabaah";
+import { QuizTabs } from "@/components/quiz-tabs";
+import { QuizGradeDialog, Q_TYPE_LABEL } from "@/components/quiz-grade-dialog";
 
 export const Route = createFileRoute("/_authenticated/guru/tugas")({
   head: () => ({ meta: [{ title: "Tugas · EduQuest Academy" }] }),
