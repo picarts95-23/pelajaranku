@@ -201,6 +201,7 @@ function GuruMutabaahPage() {
                         <SelectContent>
                           <SelectItem value="ziyadah">{lang === "id" ? "Ziyadah (Hafalan Baru)" : "Ziyadah (New)"}</SelectItem>
                           <SelectItem value="murojaah">{lang === "id" ? "Muroja'ah (Mengulang)" : "Muroja'ah (Review)"}</SelectItem>
+                          <SelectItem value="tilawah">{lang === "id" ? "Tilawah Harian (min. 1 halaman)" : "Daily Tilawah"}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
