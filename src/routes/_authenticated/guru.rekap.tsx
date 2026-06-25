@@ -83,6 +83,25 @@ function GuruRekapPage() {
     queryFn: async () => (await supabase.from("adab_scores").select("student_id, score").eq("class_id", classId).eq("subject", subject)).data ?? [],
   });
 
+  const halaqoh = isHalaqohSubject(subject);
+
+  // For a Halaqoh Qur'an subject, the daily grade is the accumulated Mutaba'ah
+  // score (Ziyadah 30% + Muroja'ah 40% + Tilawah 30%) combining manual records
+  // and graded Halaqoh tasks, computed server-side.
+  const { data: halaqohDaily = [] } = useQuery({
+    queryKey: ["rekap-halaqoh", classId, halaqoh], enabled: !!classId && halaqoh,
+    queryFn: async () => {
+      const { data, error } = await (supabase as any).rpc("halaqoh_daily_scores", { _class_id: classId });
+      if (error) throw error;
+      return (data ?? []) as HalaqohDaily[];
+    },
+  });
+  const halaqohMap = useMemo(() => {
+    const m: Record<string, HalaqohDaily> = {};
+    (halaqohDaily as HalaqohDaily[]).forEach((h) => { m[h.student_id] = h; });
+    return m;
+  }, [halaqohDaily]);
+
   // Sync adab draft from DB whenever scores load (depend on the stable query
   // reference, not a freshly-allocated default array — that caused an infinite loop).
   useEffect(() => {
@@ -93,14 +112,19 @@ function GuruRekapPage() {
   }, [adabScores]);
 
   // Subjects available for THIS class only: union of subjects used on its
-  // tagged assignments and its shared materials, deduplicated — so the subject
-  // dropdown adjusts to the selected class instead of repeating unrelated ones.
+  // tagged assignments, its shared materials, and the subjects the class itself
+  // teaches (so Halaqoh Qur'an shows up even before any task is tagged).
   const subjects = useMemo(() => {
     const set = new Set<string>();
     (assignments as any[]).forEach((a) => { if (a.subject) set.add(a.subject); });
     (classMaterials as any[]).forEach((m) => { if (m.subject) set.add(m.subject); });
+    const cls = (classes as any[]).find((c) => c.id === classId);
+    if (cls) {
+      (cls.subjects as string[] | null ?? []).forEach((s) => { if (s) set.add(s); });
+      if (cls.subject) set.add(cls.subject);
+    }
     return Array.from(set).sort();
-  }, [assignments, classMaterials]);
+  }, [assignments, classMaterials, classes, classId]);
 
   const saveAdab = useMutation({
     mutationFn: async () => {
