@@ -70,6 +70,7 @@ function GuruMutabaahPage() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<MForm>(emptyForm());
+  const [viewClass, setViewClass] = useState("");
 
   useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
 
