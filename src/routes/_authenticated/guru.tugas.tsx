@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ScrollText, Plus, Trash2, ChevronRight, X, Play, KeyRound, Send } from "lucide-react";
+import { ScrollText, Plus, Trash2, ChevronRight, X, Play, KeyRound, Send, Search } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
@@ -454,6 +454,8 @@ function AssignmentDetail({ assignment, onDelete }: { assignment: any; onDelete:
   const fmtLabel = ANSWER_FORMATS.find((f) => f.value === assignment.answer_format);
   const isQuiz = assignment.answer_format === "quiz";
   const [grading, setGrading] = useState<any | null>(null);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "submitted" | "graded">("all");
 
   const { data: answerKey } = useQuery({
     queryKey: ["answer-key", assignment.id],
@@ -473,6 +475,18 @@ function AssignmentDetail({ assignment, onDelete }: { assignment: any; onDelete:
       return (data ?? []).map((s: any) => ({ ...s, profile: (profs ?? []).find((p: any) => p.id === s.student_id) }));
     },
   });
+
+  // Filter submissions for the grading toolbar (by student name + status).
+  const filteredSubs = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return (subs as any[]).filter((s) => {
+      if (statusFilter !== "all" && s.status !== statusFilter) return false;
+      if (q && !(s.profile?.full_name ?? "").toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }, [subs, search, statusFilter]);
+  const pendingCount = (subs as any[]).filter((s) => s.status === "submitted").length;
+  const gradedCount = (subs as any[]).filter((s) => s.status === "graded").length;
 
   const gradeMut = useMutation({
     mutationFn: async ({ id, score, feedback }: { id: string; score: number; feedback: string }) => {
@@ -498,6 +512,14 @@ function AssignmentDetail({ assignment, onDelete }: { assignment: any; onDelete:
 
   return (
     <div className="rounded-2xl border-2 border-border bg-card p-5 shadow-card-rpg">
+      {/* Breadcrumb toolbar: Kelas › Mata Pelajaran › Tugas */}
+      <div className="mb-3 flex flex-wrap items-center gap-1.5 text-xs font-display font-semibold text-muted-foreground">
+        <span className="rounded-full bg-muted px-2 py-0.5">🏫 {assignment.assigned_student_id ? (assignment.assignee?.full_name ?? (lang === "id" ? "Personal" : "Personal")) : (assignment.classes?.name ?? (lang === "id" ? "Tanpa Kelas" : "No Class"))}</span>
+        <ChevronRight className="size-3" />
+        <span className="rounded-full bg-muted px-2 py-0.5">📚 {assignment.subject || (lang === "id" ? "Umum" : "General")}</span>
+        <ChevronRight className="size-3" />
+        <span className="rounded-full bg-guru/15 px-2 py-0.5 text-guru">📝 {assignment.title}</span>
+      </div>
       <div className="mb-3 flex items-start justify-between gap-2">
         <div>
           <h2 className="font-display text-xl font-bold flex items-center gap-2"><ScrollText className="size-5 text-guru" />{assignment.title}</h2>
@@ -538,23 +560,49 @@ function AssignmentDetail({ assignment, onDelete }: { assignment: any; onDelete:
         <h3 className="font-display font-bold text-sm">📋 {t("submissions")} ({subs.length})</h3>
         {subs.length > 0 && <ExportMenu filename={`penilaian-${assignment.title}`} title={`${lang === "id" ? "Penilaian" : "Grades"}: ${assignment.title}`} columns={exportColumns} rows={exportRows} />}
       </div>
-      {subs.length === 0 ? <EmptyState message={t("empty")} /> : isQuiz ? (
-        <div className="space-y-1">
-          {subs.map((s: any) => (
-            <div key={s.id} className="flex items-center justify-between gap-2 rounded-lg bg-muted/30 px-3 py-2 text-sm">
-              <span className="truncate font-display font-semibold">👤 {s.profile?.full_name ?? "—"}</span>
-              <div className="flex items-center gap-2">
-                {s.status === "submitted" && <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-bold text-amber-700">{lang === "id" ? "perlu nilai" : "to grade"}</span>}
-                <span className="font-display font-bold text-primary">{s.score ?? 0}<span className="text-xs text-muted-foreground">/{assignment.max_score}</span></span>
-                <Button size="sm" variant="outline" className="h-7" onClick={() => setGrading(s)}>{lang === "id" ? "Nilai" : "Grade"}</Button>
-              </div>
+      {subs.length === 0 ? <EmptyState message={t("empty")} /> : (
+        <>
+          {/* Mini toolbar: cari nama siswa + filter status */}
+          <div className="mb-3 flex flex-wrap items-center gap-2">
+            <div className="relative min-w-[160px] flex-1">
+              <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+              <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={lang === "id" ? "Cari nama siswa…" : "Search student…"} className="h-8 pl-8 text-sm" />
             </div>
-          ))}
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {subs.map((s: any) => <GradeRow key={s.id} sub={s} maxScore={assignment.max_score} isVoice={assignment.answer_format === "voice" || assignment.answer_format === "muroja"} onGrade={(score, fb) => gradeMut.mutate({ id: s.id, score, feedback: fb })} />)}
-        </div>
+            {([
+              { v: "all", label: lang === "id" ? "Semua" : "All", n: subs.length },
+              { v: "submitted", label: lang === "id" ? "Perlu nilai" : "To grade", n: pendingCount },
+              { v: "graded", label: lang === "id" ? "Dinilai" : "Graded", n: gradedCount },
+            ] as const).map((f) => (
+              <button
+                key={f.v}
+                onClick={() => setStatusFilter(f.v)}
+                className={`rounded-full border-2 px-2.5 py-1 text-xs font-display font-bold transition ${statusFilter === f.v ? "border-guru bg-guru/10 text-guru" : "border-border text-muted-foreground hover:border-guru/40"}`}
+              >
+                {f.label} ({f.n})
+              </button>
+            ))}
+          </div>
+          {filteredSubs.length === 0 ? (
+            <p className="py-6 text-center text-sm text-muted-foreground">{lang === "id" ? "Tidak ada siswa yang cocok." : "No matching students."}</p>
+          ) : isQuiz ? (
+            <div className="space-y-1">
+              {filteredSubs.map((s: any) => (
+                <div key={s.id} className="flex items-center justify-between gap-2 rounded-lg bg-muted/30 px-3 py-2 text-sm">
+                  <span className="truncate font-display font-semibold">👤 {s.profile?.full_name ?? "—"}</span>
+                  <div className="flex items-center gap-2">
+                    {s.status === "submitted" && <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-bold text-amber-700">{lang === "id" ? "perlu nilai" : "to grade"}</span>}
+                    <span className="font-display font-bold text-primary">{s.score ?? 0}<span className="text-xs text-muted-foreground">/{assignment.max_score}</span></span>
+                    <Button size="sm" variant="outline" className="h-7" onClick={() => setGrading(s)}>{lang === "id" ? "Nilai" : "Grade"}</Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {filteredSubs.map((s: any) => <GradeRow key={s.id} sub={s} maxScore={assignment.max_score} isVoice={assignment.answer_format === "voice" || assignment.answer_format === "muroja"} onGrade={(score, fb) => gradeMut.mutate({ id: s.id, score, feedback: fb })} />)}
+            </div>
+          )}
+        </>
       )}
       {grading && (
         <QuizGradeDialog
