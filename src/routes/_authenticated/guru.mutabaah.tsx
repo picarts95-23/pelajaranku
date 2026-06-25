@@ -295,6 +295,56 @@ function GuruMutabaahPage() {
         }
       />
 
+      {/* Akumulasi Nilai Harian Halaqoh — what syncs to Rekap Nilai */}
+      <div className="mb-6 rounded-3xl border-2 border-guru/30 bg-guru/5 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="font-display text-sm font-bold text-guru">{lang === "id" ? "Akumulasi Nilai Harian Halaqoh" : "Halaqoh Daily Accumulation"}</p>
+            <p className="text-xs text-muted-foreground">{lang === "id" ? "Ziyadah 30% · Muroja'ah 40% · Tilawah 30% → tersinkron otomatis ke Rekap Nilai." : "Ziyadah 30% · Muroja'ah 40% · Tilawah 30% → auto-synced to Rekap Nilai."}</p>
+          </div>
+          <div className="w-56">
+            <Select value={viewClass} onValueChange={setViewClass}>
+              <SelectTrigger><SelectValue placeholder={lang === "id" ? "Pilih kelas" : "Select class"} /></SelectTrigger>
+              <SelectContent>{(classes as any[]).map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
+            </Select>
+          </div>
+        </div>
+        {viewClass && (
+          (accumStudents as any[]).length === 0 ? (
+            <p className="mt-3 text-xs text-muted-foreground">{lang === "id" ? "Belum ada siswa di kelas ini." : "No students in this class."}</p>
+          ) : (
+            <div className="mt-3 overflow-x-auto rounded-2xl border-2 border-border bg-card">
+              <table className="w-full min-w-[480px] text-sm">
+                <thead className="bg-muted/60 text-left text-xs uppercase tracking-wider text-muted-foreground">
+                  <tr>
+                    <th className="px-3 py-2">{lang === "id" ? "Siswa" : "Student"}</th>
+                    <th className="px-3 py-2 text-center">Ziyadah<br /><span className="normal-case">30%</span></th>
+                    <th className="px-3 py-2 text-center">Muroja'ah<br /><span className="normal-case">40%</span></th>
+                    <th className="px-3 py-2 text-center">Tilawah<br /><span className="normal-case">30%</span></th>
+                    <th className="px-3 py-2 text-center font-bold">{lang === "id" ? "Nilai Harian" : "Daily"}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(accumStudents as any[]).map((s) => {
+                    const a = (accum as HalaqohDaily[]).find((x) => x.student_id === s.id);
+                    return (
+                      <tr key={s.id} className="border-t border-border">
+                        <td className="px-3 py-2 font-display font-semibold">{s.full_name}</td>
+                        <td className="px-3 py-2 text-center">{a?.ziyadah ?? "—"}</td>
+                        <td className="px-3 py-2 text-center">{a?.murojaah ?? "—"}</td>
+                        <td className="px-3 py-2 text-center">{a?.tilawah ?? "—"}</td>
+                        <td className="px-3 py-2 text-center font-display text-lg font-bold text-guru">{a?.daily ?? 0}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )
+        )}
+      </div>
+
+
       {(records as any[]).length === 0 ? (
         <EmptyState message={lang === "id" ? "Belum ada penilaian Mutaba'ah. Mulai nilai setoran hafalan siswa!" : "No Mutaba'ah records yet."} />
       ) : (
