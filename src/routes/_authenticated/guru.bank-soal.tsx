@@ -243,18 +243,18 @@ function GuruBankSoalPage() {
     <DashboardShell accent="guru">
       <QuizTabs active="bank" />
 
-      <PageHeader title={t("navQuestionBank")} subtitle={lang === "id" ? `Buat soal sekali (maks ${MAX_QUESTIONS}, campur tipe), lalu simpan ke Bank atau kirim sebagai Tugas/Kuis` : `Build questions once (max ${MAX_QUESTIONS}, mixed types), then save to Bank or send as a quiz`}
+      <PageHeader title={t("navQuestionBank")} subtitle={lang === "id" ? `Perpustakaan soal (maks ${MAX_QUESTIONS}, campur tipe). Simpan di sini, lalu impor ke Tugas saat akan dikirim ke siswa.` : `Question library (max ${MAX_QUESTIONS}, mixed types). Store here, then import into a Task when ready to send.`}
         actions={
           <div className="flex flex-wrap gap-2">
             {selected.length > 0 && (
               <Button variant="quest" onClick={() => setTransferOpen(true)}>
-                <Send className="size-4" /> {lang === "id" ? `Kirim ke Tugas (${selected.length})` : `Send to Tugas (${selected.length})`}
+                <Send className="size-4" /> {lang === "id" ? `Impor ke Tugas Baru (${selected.length})` : `Import into New Task (${selected.length})`}
               </Button>
             )}
             <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) resetForm(); }}>
               <DialogTrigger asChild><Button variant="guru" onClick={() => resetForm()}><Plus className="size-4" /> {lang === "id" ? "Buat Soal" : "Create Questions"}</Button></DialogTrigger>
               <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader><DialogTitle>{editId ? (lang === "id" ? "Edit Soal" : "Edit Question") : (lang === "id" ? "Buat Soal (Bank Soal / Tugas / Kuis)" : "Create Questions (Bank / Assignment / Quiz)")}</DialogTitle></DialogHeader>
+                <DialogHeader><DialogTitle>{editId ? (lang === "id" ? "Edit Soal" : "Edit Question") : (lang === "id" ? "Buat Soal untuk Bank Soal" : "Create Bank Questions")}</DialogTitle></DialogHeader>
 
                 <div className="space-y-3">
                   <div className="grid gap-3 sm:grid-cols-2">
