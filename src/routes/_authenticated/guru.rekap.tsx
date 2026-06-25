@@ -169,10 +169,29 @@ function GuruRekapPage() {
         subtitle={lang === "id"
           ? "Kehadiran 10% · Adab 20% · Tugas Harian 20% · UTS 20% · UAS 30%"
           : "Attendance 10% · Adab 20% · Daily 20% · Midterm 20% · Final 30%"}
-        actions={subject && rows.length > 0 ? (
+        actions={view === "rekap" && subject && rows.length > 0 ? (
           <ExportMenu filename={`rekap-${subject}`} title={`${t("recapTitle")} · ${subject}`} columns={exportColumns} rows={exportRows} />
         ) : undefined}
       />
+
+      <div className="mb-5 flex flex-wrap gap-2">
+        <button
+          onClick={() => setView("rekap")}
+          className={`inline-flex items-center gap-2 rounded-xl border-2 px-4 py-2 font-display text-sm font-bold transition-colors ${view === "rekap" ? "border-guru bg-guru/10 text-guru" : "border-border bg-card text-muted-foreground hover:border-guru/40"}`}
+        >
+          <ListChecks className="size-4" /> {lang === "id" ? "Rekap Nilai" : "Grade Recap"}
+        </button>
+        <button
+          onClick={() => setView("laporan")}
+          className={`inline-flex items-center gap-2 rounded-xl border-2 px-4 py-2 font-display text-sm font-bold transition-colors ${view === "laporan" ? "border-guru bg-guru/10 text-guru" : "border-border bg-card text-muted-foreground hover:border-guru/40"}`}
+        >
+          <LineChart className="size-4" /> {lang === "id" ? "Laporan Progres" : "Progress Report"}
+        </button>
+      </div>
+
+      {view === "laporan" ? <LaporanProgres /> : (
+      <>
+
 
       <div className="mb-6 grid gap-3 sm:grid-cols-2">
         <div>
