@@ -43,7 +43,7 @@ function GuruRekapPage() {
 
   const { data: classes = [] } = useQuery({
     queryKey: ["classes-list", user?.id], enabled: !!user,
-    queryFn: async () => (await supabase.from("classes").select("id, name").order("name")).data ?? [],
+    queryFn: async () => (await supabase.from("classes").select("id, name, subjects, subject").order("name")).data ?? [],
   });
 
   const { data: students = [] } = useQuery({
