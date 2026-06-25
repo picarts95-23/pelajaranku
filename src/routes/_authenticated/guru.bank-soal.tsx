@@ -336,6 +336,7 @@ function GuruBankSoalPage() {
                     </div>
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-1.5">
+                        <span className={`rounded-full px-2 py-0.5 text-xs font-display font-bold ${(q.exam_category ?? "harian") === "halaqoh" ? "bg-emerald-500/15 text-emerald-700" : (q.exam_category ?? "harian") === "uas" ? "bg-destructive/15 text-destructive" : (q.exam_category ?? "harian") === "uts" ? "bg-coin/20 text-coin" : "bg-quest/15 text-quest"}`}>{examCategoryLabel(q.exam_category ?? "harian", lang)}</span>
                         {q.subject && <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-display">{q.subject}</span>}
                         {q.grade_level && <span className="rounded-full bg-siswa/15 px-2 py-0.5 text-xs font-display font-bold text-siswa">{q.grade_level}</span>}
                         {q.topic && <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-display">{q.topic}</span>}
