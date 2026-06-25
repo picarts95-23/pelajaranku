@@ -146,17 +146,29 @@ function GuruTugasPage() {
 
   const currentAssignment = useMemo(() => assignments.find((a: any) => a.id === selected), [assignments, selected]);
 
-  // Group assignments by answer format so the teacher can browse by type.
-  const groupedAssignments = useMemo(() => {
-    const groups: Record<string, any[]> = {};
+  // Group submissions by CLASS, then by SUBJECT, so the grading hub is tidy
+  // ("per kelas kemudian per Mapel"). Each class is a collapsible section.
+  const groupedByClass = useMemo(() => {
+    const classMap: Record<string, { className: string; subjects: Record<string, any[]> }> = {};
     (assignments as any[]).forEach((a) => {
-      const key = a.answer_format ?? "descriptive";
-      (groups[key] ??= []).push(a);
+      const className = a.assigned_student_id
+        ? (lang === "id" ? "Tugas Personal" : "Personal Tasks")
+        : (a.classes?.name ?? (lang === "id" ? "Tanpa Kelas" : "No Class"));
+      const subject = a.subject || (lang === "id" ? "Umum" : "General");
+      (classMap[className] ??= { className, subjects: {} });
+      (classMap[className].subjects[subject] ??= []).push(a);
     });
-    return ANSWER_FORMATS
-      .filter((f) => groups[f.value]?.length)
-      .map((f) => ({ format: f, items: groups[f.value] }));
-  }, [assignments]);
+    return Object.values(classMap)
+      .sort((a, b) => a.className.localeCompare(b.className))
+      .map((c) => ({
+        className: c.className,
+        items: Object.values(c.subjects).flat(),
+        subjects: Object.entries(c.subjects)
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([subject, items]) => ({ subject, items })),
+      }));
+  }, [assignments, lang]);
+
 
   const exportColumns = [
     { key: "title", header: lang === "id" ? "Judul" : "Title" },
@@ -354,16 +366,16 @@ function GuruTugasPage() {
       ) : (
         <div className="grid gap-4 lg:grid-cols-3">
           <div className="lg:col-span-1 space-y-3">
-            {groupedAssignments.map(({ format: f, items }) => {
-              const groupPending = items.reduce((n, a) => n + (a.submissions ?? []).filter((s: any) => s.status === "submitted").length, 0);
-              const isOpen = openGroups[f.value] ?? false;
+            {groupedByClass.map(({ className, items, subjects }) => {
+              const groupPending = items.reduce((n: number, a: any) => n + (a.submissions ?? []).filter((s: any) => s.status === "submitted").length, 0);
+              const isOpen = openGroups[className] ?? true;
               return (
-                <div key={f.value} className="rounded-2xl border-2 border-border bg-card shadow-soft">
+                <div key={className} className="rounded-2xl border-2 border-border bg-card shadow-soft">
                   <button
-                    onClick={() => setOpenGroups((g) => ({ ...g, [f.value]: !isOpen }))}
+                    onClick={() => setOpenGroups((g) => ({ ...g, [className]: !isOpen }))}
                     className="flex w-full items-center justify-between gap-2 rounded-2xl px-4 py-3 text-left hover:bg-muted/40"
                   >
-                    <span className="font-display font-bold">{f.emoji} {lang === "id" ? f.labelId : f.labelEn}</span>
+                    <span className="font-display font-bold">🏫 {className}</span>
                     <span className="flex items-center gap-2">
                       <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-display font-bold">{items.length}</span>
                       {groupPending > 0 && <span className="rounded-full bg-destructive/15 px-2 py-0.5 text-xs font-display font-bold text-destructive">{groupPending}</span>}
@@ -371,33 +383,39 @@ function GuruTugasPage() {
                     </span>
                   </button>
                   {isOpen && (
-                    <div className="space-y-2 border-t-2 border-border p-2">
-                      {items.map((a: any) => {
-                        const pending = (a.submissions ?? []).filter((s: any) => s.status === "submitted").length;
-                        return (
-                          <button key={a.id} onClick={() => setSelected(a.id)} className={`w-full text-left rounded-xl border-2 p-3 transition ${selected === a.id ? "border-guru bg-guru/10" : "border-border bg-card hover:border-guru/50"}`}>
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="min-w-0">
-                                <div className="font-display font-bold truncate">{a.title}</div>
-                                <div className="text-xs text-muted-foreground">
-                                  {a.assigned_student_id ? (a.assignee?.full_name ?? t("personalTask")) : a.classes?.name} · {a.due_at ? format(new Date(a.due_at), "dd MMM") : "—"}
+                    <div className="space-y-3 border-t-2 border-border p-2">
+                      {subjects.map(({ subject, items: subItems }) => (
+                        <div key={subject} className="space-y-2">
+                          <div className="px-1 text-xs font-display font-bold uppercase tracking-wide text-muted-foreground">📚 {subject}</div>
+                          {subItems.map((a: any) => {
+                            const pending = (a.submissions ?? []).filter((s: any) => s.status === "submitted").length;
+                            return (
+                              <button key={a.id} onClick={() => setSelected(a.id)} className={`w-full text-left rounded-xl border-2 p-3 transition ${selected === a.id ? "border-guru bg-guru/10" : "border-border bg-card hover:border-guru/50"}`}>
+                                <div className="flex items-start justify-between gap-2">
+                                  <div className="min-w-0">
+                                    <div className="font-display font-bold truncate">{a.title}</div>
+                                    <div className="text-xs text-muted-foreground">
+                                      {a.assigned_student_id ? (a.assignee?.full_name ?? t("personalTask")) : a.classes?.name} · {a.due_at ? format(new Date(a.due_at), "dd MMM") : "—"}
+                                    </div>
+                                  </div>
+                                  <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
                                 </div>
-                              </div>
-                              <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
-                            </div>
-                            <div className="mt-2 flex flex-wrap gap-2 text-xs">
-                              <span className="rounded-full bg-xp/15 px-2 py-0.5 font-display font-bold text-xp">+{a.xp_reward} XP</span>
-                              {a.exam_type && a.exam_type !== "harian" && <span className="rounded-full bg-guru/15 px-2 py-0.5 font-display font-bold uppercase text-guru">{a.exam_type}</span>}
-                              {pending > 0 && <span className="rounded-full bg-destructive/15 px-2 py-0.5 font-display font-bold text-destructive">{pending} {lang === "id" ? "perlu nilai" : "to grade"}</span>}
-                            </div>
-                          </button>
-                        );
-                      })}
+                                <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                                  <span className="rounded-full bg-xp/15 px-2 py-0.5 font-display font-bold text-xp">+{a.xp_reward} XP</span>
+                                  {a.exam_type && a.exam_type !== "harian" && <span className="rounded-full bg-guru/15 px-2 py-0.5 font-display font-bold uppercase text-guru">{a.exam_type}</span>}
+                                  {pending > 0 && <span className="rounded-full bg-destructive/15 px-2 py-0.5 font-display font-bold text-destructive">{pending} {lang === "id" ? "perlu nilai" : "to grade"}</span>}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>
               );
             })}
+
           </div>
 
           <div className="lg:col-span-2">

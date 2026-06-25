@@ -1,20 +1,13 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { BarChart3, GraduationCap, Trophy, Coins, BookOpenCheck, Users2 } from "lucide-react";
-import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
+import { EmptyState } from "@/components/dashboard-shell";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ExportMenu } from "@/components/export-menu";
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { predikatOf } from "@/lib/mutabaah";
-import { QuizTabs } from "@/components/quiz-tabs";
-
-export const Route = createFileRoute("/_authenticated/guru/laporan")({
-  head: () => ({ meta: [{ title: "Laporan Progres · EduQuest Academy" }] }),
-  component: GuruLaporanPage,
-});
 
 const isHalaqoh = (subject?: string | null) => !!subject && /halaqoh|tahfidz|qur'?an/i.test(subject);
 
@@ -25,23 +18,22 @@ function predicate(score: number, lang: string) {
   return { label: lang === "id" ? "Perlu Perbaikan" : "Needs work", tone: "text-destructive" };
 }
 
-function GuruLaporanPage() {
-  const { user, role, loading } = useAuth();
-  const navigate = useNavigate();
+/**
+ * Learning-progress report. Shares the same Tugas/Kuis + submissions data as the
+ * grade recap, so the two stay in sync. Rendered inside the Rekap Nilai page.
+ */
+export function LaporanProgres() {
+  const { user } = useAuth();
   const { lang } = useLang();
   const [classId, setClassId] = useState<string>("all");
   const [subject, setSubject] = useState<string>("all");
 
-  useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
-
-  // Teacher classes
   const { data: classes = [] } = useQuery({
     queryKey: ["laporan-classes", user?.id],
     enabled: !!user,
     queryFn: async () => (await supabase.from("classes").select("id, name, subjects, subject").eq("teacher_id", user!.id).order("name")).data ?? [],
   });
 
-  // Assignments with their submissions (the basis of scores)
   const { data: assignments = [] } = useQuery({
     queryKey: ["laporan-assignments", user?.id],
     enabled: !!user,
@@ -51,7 +43,6 @@ function GuruLaporanPage() {
       .eq("teacher_id", user!.id)).data ?? [],
   });
 
-  // Enrollments -> student ids per class
   const { data: enrollments = [] } = useQuery({
     queryKey: ["laporan-enrollments", user?.id],
     enabled: !!user,
@@ -63,14 +54,12 @@ function GuruLaporanPage() {
 
   const studentIds = useMemo(() => Array.from(new Set((enrollments as any[]).map((e) => e.student_id))), [enrollments]);
 
-  // Student profiles (XP/coins/names)
   const { data: profiles = [] } = useQuery({
     queryKey: ["laporan-profiles", studentIds.join(",")],
     enabled: studentIds.length > 0,
     queryFn: async () => (await supabase.from("profiles").select("id, full_name, xp, coins, level").in("id", studentIds)).data ?? [],
   });
 
-  // Mutaba'ah records for Halaqoh detail
   const { data: mutabaah = [] } = useQuery({
     queryKey: ["laporan-mutabaah", user?.id],
     enabled: !!user,
@@ -83,7 +72,6 @@ function GuruLaporanPage() {
 
   const profName = (id: string) => (profiles as any[]).find((p) => p.id === id)?.full_name ?? "—";
 
-  // Subjects available across teacher's classes & assignments
   const subjectOptions = useMemo(() => {
     const set = new Set<string>();
     (classes as any[]).forEach((c) => { (c.subjects ?? []).forEach((s: string) => s && set.add(s)); if (c.subject) set.add(c.subject); });
@@ -91,14 +79,12 @@ function GuruLaporanPage() {
     return Array.from(set).sort();
   }, [classes, assignments]);
 
-  // Filter assignments by selected class & subject
   const filteredAssignments = useMemo(() => (assignments as any[]).filter((a) => {
     if (classId !== "all" && a.class_id !== classId) return false;
     if (subject !== "all" && a.subject !== subject) return false;
     return true;
   }), [assignments, classId, subject]);
 
-  // Per-student aggregation (avg score from graded/auto-graded submissions + XP/coins)
   const perStudent = useMemo(() => {
     const scopeStudents = classId === "all"
       ? studentIds
@@ -126,7 +112,6 @@ function GuruLaporanPage() {
     }).sort((a, b) => (b.avg ?? -1) - (a.avg ?? -1));
   }, [filteredAssignments, studentIds, enrollments, classId, profiles]);
 
-  // Per-subject aggregation
   const perSubject = useMemo(() => {
     const map: Record<string, { scores: number[]; halaqoh: boolean }> = {};
     filteredAssignments.forEach((a) => {
@@ -144,7 +129,6 @@ function GuruLaporanPage() {
     })).sort((a, b) => a.subject.localeCompare(b.subject));
   }, [filteredAssignments, lang]);
 
-  // Mutaba'ah detail scoped to filter
   const filteredMutabaah = useMemo(() => (mutabaah as any[]).filter((m) => {
     if (classId !== "all" && m.class_id !== classId) return false;
     return true;
@@ -152,7 +136,6 @@ function GuruLaporanPage() {
 
   const halaqohActive = subject === "all" || isHalaqoh(subject) || filteredMutabaah.length > 0;
 
-  // Export columns + rows for the per-student table
   const exportColumns = [
     { key: "name", header: lang === "id" ? "Siswa" : "Student" },
     { key: "avg", header: lang === "id" ? "Rata-rata (%)" : "Average (%)" },
@@ -162,26 +145,12 @@ function GuruLaporanPage() {
     { key: "level", header: "Level" },
   ];
   const exportRows = perStudent.map((s) => ({
-    name: s.name,
-    avg: s.avg ?? "-",
-    count: s.count,
-    xp: s.xp,
-    coins: s.coins,
-    level: s.level,
+    name: s.name, avg: s.avg ?? "-", count: s.count, xp: s.xp, coins: s.coins, level: s.level,
   }));
 
-
   return (
-    <DashboardShell accent="guru">
-      <QuizTabs active="laporan" />
-
-      <PageHeader
-        title={lang === "id" ? "Laporan Progres Belajar" : "Learning Progress Report"}
-        subtitle={lang === "id" ? "Ringkasan nilai, XP/koin, dan Mutaba'ah berdasarkan data Tugas/Kuis." : "Scores, XP/coins, and Mutaba'ah from Tugas/Kuis data."}
-        actions={exportRows.length > 0 ? <ExportMenu rows={exportRows} columns={exportColumns} title={lang === "id" ? "Laporan Progres Belajar" : "Learning Progress Report"} filename={lang === "id" ? "laporan-progres" : "progress-report"} variant="guru" /> : undefined}
-      />
-
-      <div className="mb-5 flex flex-wrap gap-3">
+    <div>
+      <div className="mb-5 flex flex-wrap items-center gap-3">
         <div className="min-w-[180px]">
           <Select value={classId} onValueChange={setClassId}>
             <SelectTrigger><GraduationCap className="size-4" /><SelectValue /></SelectTrigger>
@@ -200,9 +169,13 @@ function GuruLaporanPage() {
             </SelectContent>
           </Select>
         </div>
+        {exportRows.length > 0 && (
+          <div className="ml-auto">
+            <ExportMenu rows={exportRows} columns={exportColumns} title={lang === "id" ? "Laporan Progres Belajar" : "Learning Progress Report"} filename={lang === "id" ? "laporan-progres" : "progress-report"} variant="guru" />
+          </div>
+        )}
       </div>
 
-      {/* Per-subject summary cards */}
       {perSubject.length > 0 && (
         <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {perSubject.map((s) => {
@@ -226,7 +199,6 @@ function GuruLaporanPage() {
         </div>
       )}
 
-      {/* Per-student table */}
       <div className="rounded-2xl border-2 border-border bg-card shadow-card-rpg">
         <div className="flex items-center gap-2 border-b border-border px-4 py-3">
           <Users2 className="size-5 text-guru" />
@@ -267,7 +239,6 @@ function GuruLaporanPage() {
         )}
       </div>
 
-      {/* Mutaba'ah Halaqoh detail */}
       {halaqohActive && filteredMutabaah.length > 0 && (
         <div className="mt-6 rounded-2xl border-2 border-emerald-500/30 bg-emerald-500/5 shadow-card-rpg">
           <div className="flex items-center gap-2 border-b border-emerald-500/20 px-4 py-3">
@@ -306,7 +277,6 @@ function GuruLaporanPage() {
           </div>
         </div>
       )}
-    </DashboardShell>
+    </div>
   );
 }
-

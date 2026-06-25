@@ -1,9 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BarChart3, GraduationCap, Trophy, Save, HeartHandshake } from "lucide-react";
+import { BarChart3, GraduationCap, Trophy, Save, HeartHandshake, ListChecks, LineChart } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
+import { LaporanProgres } from "@/components/laporan-progres";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,7 @@ function GuruRekapPage() {
   const [classId, setClassId] = useState("");
   const [subject, setSubject] = useState("");
   const [adabDraft, setAdabDraft] = useState<Record<string, number>>({});
+  const [view, setView] = useState<"rekap" | "laporan">("rekap");
 
   useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
 
@@ -167,10 +169,29 @@ function GuruRekapPage() {
         subtitle={lang === "id"
           ? "Kehadiran 10% · Adab 20% · Tugas Harian 20% · UTS 20% · UAS 30%"
           : "Attendance 10% · Adab 20% · Daily 20% · Midterm 20% · Final 30%"}
-        actions={subject && rows.length > 0 ? (
+        actions={view === "rekap" && subject && rows.length > 0 ? (
           <ExportMenu filename={`rekap-${subject}`} title={`${t("recapTitle")} · ${subject}`} columns={exportColumns} rows={exportRows} />
         ) : undefined}
       />
+
+      <div className="mb-5 flex flex-wrap gap-2">
+        <button
+          onClick={() => setView("rekap")}
+          className={`inline-flex items-center gap-2 rounded-xl border-2 px-4 py-2 font-display text-sm font-bold transition-colors ${view === "rekap" ? "border-guru bg-guru/10 text-guru" : "border-border bg-card text-muted-foreground hover:border-guru/40"}`}
+        >
+          <ListChecks className="size-4" /> {lang === "id" ? "Rekap Nilai" : "Grade Recap"}
+        </button>
+        <button
+          onClick={() => setView("laporan")}
+          className={`inline-flex items-center gap-2 rounded-xl border-2 px-4 py-2 font-display text-sm font-bold transition-colors ${view === "laporan" ? "border-guru bg-guru/10 text-guru" : "border-border bg-card text-muted-foreground hover:border-guru/40"}`}
+        >
+          <LineChart className="size-4" /> {lang === "id" ? "Laporan Progres" : "Progress Report"}
+        </button>
+      </div>
+
+      {view === "laporan" ? <LaporanProgres /> : (
+      <>
+
 
       <div className="mb-6 grid gap-3 sm:grid-cols-2">
         <div>
@@ -254,6 +275,8 @@ function GuruRekapPage() {
             </div>
           </div>
         </div>
+      )}
+      </>
       )}
     </DashboardShell>
   );
