@@ -157,7 +157,7 @@ function GuruSiswaPage() {
                   <td className="px-4 py-3 font-display font-semibold">
                     <div className="flex items-center gap-3">
                       <img
-                        src={getIslamicAvatar(s.id ?? s.full_name, "siswa")}
+                        src={resolveAvatar(s, "siswa")}
                         alt={s.full_name ?? "Siswa"}
                         width={32}
                         height={32}
@@ -213,7 +213,7 @@ function GuruSiswaPage() {
             <div className="space-y-5">
               <div className="flex items-center gap-4">
                 <img
-                  src={getIslamicAvatar(selected.id ?? selected.full_name, "siswa")}
+                  src={resolveAvatar(selected, "siswa")}
                   alt={selected.full_name ?? "Siswa"}
                   width={72}
                   height={72}
