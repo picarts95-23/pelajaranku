@@ -512,6 +512,14 @@ function AssignmentDetail({ assignment, onDelete }: { assignment: any; onDelete:
 
   return (
     <div className="rounded-2xl border-2 border-border bg-card p-5 shadow-card-rpg">
+      {/* Breadcrumb toolbar: Kelas › Mata Pelajaran › Tugas */}
+      <div className="mb-3 flex flex-wrap items-center gap-1.5 text-xs font-display font-semibold text-muted-foreground">
+        <span className="rounded-full bg-muted px-2 py-0.5">🏫 {assignment.assigned_student_id ? (assignment.assignee?.full_name ?? (lang === "id" ? "Personal" : "Personal")) : (assignment.classes?.name ?? (lang === "id" ? "Tanpa Kelas" : "No Class"))}</span>
+        <ChevronRight className="size-3" />
+        <span className="rounded-full bg-muted px-2 py-0.5">📚 {assignment.subject || (lang === "id" ? "Umum" : "General")}</span>
+        <ChevronRight className="size-3" />
+        <span className="rounded-full bg-guru/15 px-2 py-0.5 text-guru">📝 {assignment.title}</span>
+      </div>
       <div className="mb-3 flex items-start justify-between gap-2">
         <div>
           <h2 className="font-display text-xl font-bold flex items-center gap-2"><ScrollText className="size-5 text-guru" />{assignment.title}</h2>
