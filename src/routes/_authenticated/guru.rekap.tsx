@@ -36,6 +36,7 @@ function GuruRekapPage() {
   const [classId, setClassId] = useState("");
   const [subject, setSubject] = useState("");
   const [adabDraft, setAdabDraft] = useState<Record<string, number>>({});
+  const [view, setView] = useState<"rekap" | "laporan">("rekap");
 
   useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
 
