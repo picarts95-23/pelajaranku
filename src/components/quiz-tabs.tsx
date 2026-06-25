@@ -19,7 +19,7 @@ export function QuizTabs({ active }: { active: "bank" | "tugas" }) {
     },
     {
       key: "tugas" as const,
-      to: "/guru/kuis",
+      to: "/guru/tugas",
       icon: FileQuestion,
       label: lang === "id" ? "Tugas & Penilaian" : "Tasks & Grading",
     },
