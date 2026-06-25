@@ -57,7 +57,7 @@ function GuruBankSoalPage() {
 
   const resetForm = () => {
     setEditId(null);
-    setSubject(""); setGradeLevel(""); setQuestions([emptyQ()]);
+    setSubject(""); setGradeLevel(""); setExamCategory("harian"); setQuestions([emptyQ()]);
   };
 
   // Open the form pre-filled to edit an existing bank question (single row).
@@ -65,6 +65,7 @@ function GuruBankSoalPage() {
     setEditId(row.id);
     setSubject(row.subject ?? "");
     setGradeLevel(row.grade_level ?? "");
+    setExamCategory(row.exam_category ?? "harian");
     setQuestions([bankRowToBQ(row)]);
     setOpen(true);
   };
