@@ -384,7 +384,7 @@ function GuruBankSoalPage() {
                 </div>
                 <DialogFooter>
                   <Button variant="ghost" onClick={() => setOpen(false)}>{t("cancel")}</Button>
-                  <Button variant="guru" disabled={createMut.isPending || allErrors.length > 0} onClick={() => createMut.mutate()}>{createMut.isPending ? (lang === "id" ? "Menyimpan…" : "Saving…") : (destination === "bank" ? (lang === "id" ? "Simpan ke Bank" : "Save to Bank") : destination === "assignment" ? (lang === "id" ? "Kirim Tugas/Kuis" : "Send Quiz") : (lang === "id" ? "Simpan & Kirim" : "Save & Send"))}</Button>
+                  <Button variant="guru" disabled={createMut.isPending || allErrors.length > 0} onClick={() => createMut.mutate()}>{createMut.isPending ? (lang === "id" ? "Menyimpan…" : "Saving…") : editId ? (lang === "id" ? "Simpan Perubahan" : "Save Changes") : (lang === "id" ? "Simpan ke Bank Soal" : "Save to Bank")}</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -568,7 +568,7 @@ function TransferDialog({ open, onOpenChange, items, onDone }: { open: boolean; 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
-        <DialogHeader><DialogTitle>{lang === "id" ? "Kirim ke Tugas / Kelas" : "Send to Assignment"}</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>{lang === "id" ? "Impor ke Tugas Baru" : "Import into New Task"}</DialogTitle></DialogHeader>
         <div className="space-y-3">
           <p className="text-sm text-muted-foreground">{lang === "id" ? `${items.length} soal akan dikirim sebagai satu tugas/kuis.` : `${items.length} questions will be sent as one assignment.`}</p>
           <div>
