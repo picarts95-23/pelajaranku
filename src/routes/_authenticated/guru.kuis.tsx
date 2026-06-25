@@ -388,7 +388,7 @@ function EditQuizDialog({ quiz, onClose }: { quiz: any; onClose: () => void }) {
     mutationFn: async () => {
       if (!user) throw new Error("no user");
       if (!title.trim()) throw new Error(lang === "id" ? "Judul wajib diisi." : "Title is required.");
-      const { rows, errors } = buildBankRows(questions, quiz.subject ?? "", "", user.id, lang);
+      const { rows, errors } = buildBankRows(questions, quiz.subject ?? "", "", "harian", user.id, lang);
       if (errors.length) throw new Error((lang === "id" ? "Periksa soal:\n" : "Fix:\n") + errors.map((e) => `• ${e}`).join("\n"));
       const questionsPublic: any[] = [];
       const answerKey: any[] = [];

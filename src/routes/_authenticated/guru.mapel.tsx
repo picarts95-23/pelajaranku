@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BookMarked, GraduationCap, Plus, Trash2, ExternalLink, Library, Loader2, CheckCircle2 } from "lucide-react";
+import { BookMarked, GraduationCap, Plus, Trash2, ExternalLink, Library, Loader2, CheckCircle2, ChevronDown, ChevronRight, Folder, FolderOpen, BookOpen } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
@@ -33,6 +33,10 @@ function GuruMapelPage() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<MForm>(emptyForm());
   const [newSubject, setNewSubject] = useState("");
+  const [openClasses, setOpenClasses] = useState<Record<string, boolean>>({});
+  const [openSubjects, setOpenSubjects] = useState<Record<string, boolean>>({});
+  const toggleClass = (id: string) => setOpenClasses((s) => ({ ...s, [id]: !s[id] }));
+  const toggleSubject = (key: string) => setOpenSubjects((s) => ({ ...s, [key]: !s[key] }));
 
   useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
 
@@ -194,18 +198,19 @@ function GuruMapelPage() {
         </div>
       </div>
 
-      {/* Materials list */}
+      {/* Materials — structured Class › Subject › Material */}
       <h2 className="mb-3 font-display text-lg font-bold flex items-center gap-2"><Library className="size-5 text-quest" /> {t("materials")}</h2>
-      {materials.length === 0 ? <EmptyState message={lang === "id" ? "Belum ada materi dibagikan." : "No materials shared yet."} /> : (
-        <div className="space-y-3">
-          {materials.map((m: any) => (
+      {materials.length === 0 ? <EmptyState message={lang === "id" ? "Belum ada materi dibagikan." : "No materials shared yet."} /> : (() => {
+        const renderMaterial = (m: any) => {
+          const readers = (reads as any[]).filter((r) => r.material_id === m.id);
+          const total = enrollCounts[m.class_id] ?? 0;
+          return (
             <div key={m.id} className="rounded-2xl border-2 border-border bg-card p-4 shadow-card-rpg">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-1.5">
-                    {m.subject && <span className="rounded-full bg-guru/15 px-2 py-0.5 text-xs font-display font-bold text-guru">{m.subject}</span>}
-                    {m.classes?.name && <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-display">{m.classes.name}</span>}
                     <span className="text-xs text-muted-foreground">{format(new Date(m.created_at), "dd MMM yyyy")}</span>
+                    {m.media_type && <span className="rounded-full bg-quest/15 px-2 py-0.5 text-xs font-display font-bold text-quest capitalize">{m.media_type}</span>}
                   </div>
                   <div className="mt-1.5 font-display font-bold">{m.title}</div>
                   {m.description && <p className="text-sm text-muted-foreground">{m.description}</p>}
@@ -216,34 +221,81 @@ function GuruMapelPage() {
                       <ExternalLink className="size-3.5" /> {t("openLink")}
                     </a>
                   )}
-                  {(() => {
-                    const readers = (reads as any[]).filter((r) => r.material_id === m.id);
-                    const total = enrollCounts[m.class_id] ?? 0;
-                    return (
-                      <div className="mt-3 rounded-xl border border-border bg-muted/30 p-2.5">
-                        <div className="flex items-center gap-1.5 text-xs font-display font-bold text-emerald-600">
-                          <CheckCircle2 className="size-3.5" />
-                          {lang === "id" ? "Sudah membaca" : "Read"}: {readers.length}{total ? `/${total}` : ""} {lang === "id" ? "siswa" : "students"}
-                        </div>
-                        {readers.length > 0 && (
-                          <div className="mt-1.5 flex flex-wrap gap-1">
-                            {readers.map((r) => (
-                              <span key={r.user_id} className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
-                                <CheckCircle2 className="size-3" /> {r.full_name}
-                              </span>
-                            ))}
-                          </div>
-                        )}
+                  <div className="mt-3 rounded-xl border border-border bg-muted/30 p-2.5">
+                    <div className="flex items-center gap-1.5 text-xs font-display font-bold text-emerald-600">
+                      <CheckCircle2 className="size-3.5" />
+                      {lang === "id" ? "Sudah membaca" : "Read"}: {readers.length}{total ? `/${total}` : ""} {lang === "id" ? "siswa" : "students"}
+                    </div>
+                    {readers.length > 0 && (
+                      <div className="mt-1.5 flex flex-wrap gap-1">
+                        {readers.map((r) => (
+                          <span key={r.user_id} className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
+                            <CheckCircle2 className="size-3" /> {r.full_name}
+                          </span>
+                        ))}
                       </div>
-                    );
-                  })()}
+                    )}
+                  </div>
                 </div>
                 <Button size="sm" variant="ghost" onClick={() => { if (confirm(`${t("delete")}?`)) delMat.mutate(m.id); }}><Trash2 className="size-4 text-destructive" /></Button>
               </div>
             </div>
-          ))}
-        </div>
-      )}
+          );
+        };
+
+        // Group materials by class, then by subject.
+        const groups = (classes as any[]).map((c) => {
+          const mats = (materials as any[]).filter((m) => m.class_id === c.id);
+          const subjMap: Record<string, any[]> = {};
+          mats.forEach((m) => { const s = m.subject || (lang === "id" ? "Umum" : "General"); (subjMap[s] ||= []).push(m); });
+          return { cls: c, mats, subjects: Object.entries(subjMap) };
+        }).filter((g) => g.mats.length > 0);
+        // Orphan materials whose class was deleted.
+        const orphan = (materials as any[]).filter((m) => !(classes as any[]).some((c) => c.id === m.class_id));
+
+        return (
+          <div className="space-y-3">
+            {groups.map(({ cls, mats, subjects }) => {
+              const classOpen = openClasses[cls.id] ?? false;
+              return (
+                <div key={cls.id} className="overflow-hidden rounded-2xl border-2 border-border bg-card shadow-card-rpg">
+                  <button type="button" onClick={() => toggleClass(cls.id)} className="flex w-full items-center gap-2 p-4 text-left hover:bg-muted/40">
+                    {classOpen ? <FolderOpen className="size-5 text-guru" /> : <Folder className="size-5 text-guru" />}
+                    <span className="font-display text-base font-bold">{cls.name}</span>
+                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-display">{subjects.length} {lang === "id" ? "mapel" : "subjects"} · {mats.length} {lang === "id" ? "materi" : "materials"}</span>
+                    {classOpen ? <ChevronDown className="ml-auto size-4 text-muted-foreground" /> : <ChevronRight className="ml-auto size-4 text-muted-foreground" />}
+                  </button>
+                  {classOpen && (
+                    <div className="space-y-2 border-t-2 border-border bg-muted/20 p-3">
+                      {subjects.map(([subj, subjMats]) => {
+                        const sKey = `${cls.id}::${subj}`;
+                        const subjOpen = openSubjects[sKey] ?? false;
+                        return (
+                          <div key={sKey} className="overflow-hidden rounded-xl border border-border bg-card">
+                            <button type="button" onClick={() => toggleSubject(sKey)} className="flex w-full items-center gap-2 p-3 text-left hover:bg-muted/40">
+                              <BookOpen className="size-4 text-guru" />
+                              <span className="font-display text-sm font-bold text-guru">{subj}</span>
+                              <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-display">{(subjMats as any[]).length}</span>
+                              {subjOpen ? <ChevronDown className="ml-auto size-4 text-muted-foreground" /> : <ChevronRight className="ml-auto size-4 text-muted-foreground" />}
+                            </button>
+                            {subjOpen && <div className="space-y-2 border-t border-border p-3">{(subjMats as any[]).map(renderMaterial)}</div>}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+            {orphan.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs font-display font-bold text-muted-foreground">{lang === "id" ? "Materi tanpa kelas" : "Unassigned materials"}</p>
+                {orphan.map(renderMaterial)}
+              </div>
+            )}
+          </div>
+        );
+      })()}
     </DashboardShell>
   );
 }

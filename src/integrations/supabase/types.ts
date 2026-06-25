@@ -745,6 +745,7 @@ export type Database = {
           answer: string | null
           created_at: string
           difficulty: Database["public"]["Enums"]["question_difficulty"]
+          exam_category: string
           game_link: string | null
           grade_level: string | null
           halaqoh_kind: string | null
@@ -765,6 +766,7 @@ export type Database = {
           answer?: string | null
           created_at?: string
           difficulty?: Database["public"]["Enums"]["question_difficulty"]
+          exam_category?: string
           game_link?: string | null
           grade_level?: string | null
           halaqoh_kind?: string | null
@@ -785,6 +787,7 @@ export type Database = {
           answer?: string | null
           created_at?: string
           difficulty?: Database["public"]["Enums"]["question_difficulty"]
+          exam_category?: string
           game_link?: string | null
           grade_level?: string | null
           halaqoh_kind?: string | null

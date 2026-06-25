@@ -20,7 +20,7 @@ import {
   MAX_QUESTIONS, ALL_TYPES, type BType, type BQ,
   TYPE_LABEL, HALAQOH_KIND, SETORAN_KINDS, setoranLabel,
   isHalaqohType, emptyQ, buildBankRows, mapBankToQuiz, bankRowToBQ,
-  QuestionEditorList,
+  QuestionEditorList, EXAM_CATEGORIES, examCategoryLabel, normalizeHalaqohKind,
 } from "@/components/question-fields";
 
 export const Route = createFileRoute("/_authenticated/guru/bank-soal")({
@@ -38,12 +38,14 @@ function GuruBankSoalPage() {
   const [editId, setEditId] = useState<string | null>(null);
   const [subject, setSubject] = useState("");
   const [gradeLevel, setGradeLevel] = useState("");
+  const [examCategory, setExamCategory] = useState("harian");
   const [questions, setQuestions] = useState<BQ[]>([emptyQ()]);
   const [uploadingIdx, setUploadingIdx] = useState<number | null>(null);
   const [selected, setSelected] = useState<string[]>([]);
   const [transferOpen, setTransferOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [filterGrade, setFilterGrade] = useState("all");
+  const [filterCategory, setFilterCategory] = useState("all");
   const [filterType, setFilterType] = useState("all");
 
   useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
@@ -55,7 +57,7 @@ function GuruBankSoalPage() {
 
   const resetForm = () => {
     setEditId(null);
-    setSubject(""); setGradeLevel(""); setQuestions([emptyQ()]);
+    setSubject(""); setGradeLevel(""); setExamCategory("harian"); setQuestions([emptyQ()]);
   };
 
   // Open the form pre-filled to edit an existing bank question (single row).
@@ -63,6 +65,7 @@ function GuruBankSoalPage() {
     setEditId(row.id);
     setSubject(row.subject ?? "");
     setGradeLevel(row.grade_level ?? "");
+    setExamCategory(row.exam_category ?? "harian");
     setQuestions([bankRowToBQ(row)]);
     setOpen(true);
   };
@@ -95,14 +98,14 @@ function GuruBankSoalPage() {
   }
 
   // Live validation result, shared between preview & save.
-  const validation = buildBankRows(questions, subject, gradeLevel, user?.id ?? "", lang);
+  const validation = buildBankRows(questions, subject, gradeLevel, examCategory, user?.id ?? "", lang);
   const [showPreview, setShowPreview] = useState(false);
   const allErrors = validation.errors;
 
   const createMut = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("no user");
-      const { rows, errors } = buildBankRows(questions, subject, gradeLevel, user.id, lang);
+      const { rows, errors } = buildBankRows(questions, subject, gradeLevel, examCategory, user.id, lang);
       if (errors.length) {
         throw new Error(
           (lang === "id" ? "Periksa kembali soal:\n" : "Please fix:\n") + errors.map((e) => `• ${e}`).join("\n"),
@@ -148,6 +151,7 @@ function GuruBankSoalPage() {
   const rowUiType = (q: any): BType => (q.halaqoh_kind ? (HALAQOH_KIND[q.halaqoh_kind] ?? "halaqoh_setoran") : (q.type as BType));
   const filteredItems = (items as any[]).filter((q) => {
     if (filterGrade !== "all" && q.grade_level !== filterGrade) return false;
+    if (filterCategory !== "all" && (q.exam_category ?? "harian") !== filterCategory) return false;
     if (filterType !== "all" && rowUiType(q) !== filterType) return false;
     if (search.trim()) {
       const hay = `${q.question ?? ""} ${q.subject ?? ""} ${q.topic ?? ""} ${q.grade_level ?? ""}`.toLowerCase();
@@ -179,7 +183,30 @@ function GuruBankSoalPage() {
                     <div>
                       <Label>{lang === "id" ? "Untuk Kelas / Jenjang" : "Target Class / Grade"}</Label>
                       <Input value={gradeLevel} onChange={(e) => setGradeLevel(e.target.value)} placeholder={lang === "id" ? "mis. Kelas 7, SMP, Halaqoh A" : "e.g. Grade 7"} />
-                    </div>
+                  </div>
+
+                  {(() => {
+                    const hasHalaqoh = questions.some((q) => isHalaqohType(q.type));
+                    return (
+                      <div>
+                        <Label>{lang === "id" ? "Kategori Soal" : "Question Category"}</Label>
+                        {hasHalaqoh ? (
+                          <div className="mt-1 rounded-lg border-2 border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-sm font-display font-bold text-emerald-700">
+                            {examCategoryLabel("halaqoh", lang)} {lang === "id" ? "(otomatis untuk soal Halaqoh — masuk ke Mutaba'ah)" : "(auto for Halaqoh items — feeds Mutaba'ah)"}
+                          </div>
+                        ) : (
+                          <Select value={examCategory} onValueChange={setExamCategory}>
+                            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              {EXAM_CATEGORIES.filter((c) => c.value !== "halaqoh").map((c) => (
+                                <SelectItem key={c.value} value={c.value}>{lang === "id" ? c.id : c.en}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </div>
+                    );
+                  })()}
                   </div>
 
                   <div className="rounded-xl border-2 border-dashed border-border bg-muted/20 p-3 text-xs text-muted-foreground">
@@ -268,6 +295,13 @@ function GuruBankSoalPage() {
                 {gradeOptions.map((g) => <SelectItem key={g} value={g}>{g}</SelectItem>)}
               </SelectContent>
             </Select>
+            <Select value={filterCategory} onValueChange={setFilterCategory}>
+              <SelectTrigger className="h-9 w-auto min-w-[9rem]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{lang === "id" ? "Semua kategori" : "All categories"}</SelectItem>
+                {EXAM_CATEGORIES.map((c) => <SelectItem key={c.value} value={c.value}>{lang === "id" ? c.id : c.en}</SelectItem>)}
+              </SelectContent>
+            </Select>
             <Select value={filterType} onValueChange={setFilterType}>
               <SelectTrigger className="h-9 w-auto min-w-[9rem]"><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -275,8 +309,8 @@ function GuruBankSoalPage() {
                 {ALL_TYPES.map((tp) => <SelectItem key={tp} value={tp}>{TYPE_LABEL(tp, lang)}</SelectItem>)}
               </SelectContent>
             </Select>
-            {(search || filterGrade !== "all" || filterType !== "all") && (
-              <Button size="sm" variant="ghost" onClick={() => { setSearch(""); setFilterGrade("all"); setFilterType("all"); }}>
+            {(search || filterGrade !== "all" || filterCategory !== "all" || filterType !== "all") && (
+              <Button size="sm" variant="ghost" onClick={() => { setSearch(""); setFilterGrade("all"); setFilterCategory("all"); setFilterType("all"); }}>
                 <X className="size-4" /> {lang === "id" ? "Reset" : "Reset"}
               </Button>
             )}
@@ -302,6 +336,7 @@ function GuruBankSoalPage() {
                     </div>
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-1.5">
+                        <span className={`rounded-full px-2 py-0.5 text-xs font-display font-bold ${(q.exam_category ?? "harian") === "halaqoh" ? "bg-emerald-500/15 text-emerald-700" : (q.exam_category ?? "harian") === "uas" ? "bg-destructive/15 text-destructive" : (q.exam_category ?? "harian") === "uts" ? "bg-coin/20 text-coin" : "bg-quest/15 text-quest"}`}>{examCategoryLabel(q.exam_category ?? "harian", lang)}</span>
                         {q.subject && <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-display">{q.subject}</span>}
                         {q.grade_level && <span className="rounded-full bg-siswa/15 px-2 py-0.5 text-xs font-display font-bold text-siswa">{q.grade_level}</span>}
                         {q.topic && <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-display">{q.topic}</span>}
@@ -353,7 +388,13 @@ function TransferDialog({ open, onOpenChange, items, onDone }: { open: boolean; 
   const [title, setTitle] = useState("");
   const [subject, setSubject] = useState("");
   const [gradeLevel, setGradeLevel] = useState("");
+  const [category, setCategory] = useState("harian");
   const [dueAt, setDueAt] = useState("");
+
+  // Are any selected items Halaqoh? Then the task must be a Halaqoh task so it
+  // accumulates into Mutaba'ah.
+  const halaqohItem = items.find((i) => i.halaqoh_kind);
+  const hasHalaqoh = !!halaqohItem;
 
   useEffect(() => {
     if (open) {
@@ -363,6 +404,7 @@ function TransferDialog({ open, onOpenChange, items, onDone }: { open: boolean; 
       setStudentId("");
       setSubject(items.find((i) => i.subject)?.subject ?? "");
       setGradeLevel(items.find((i) => i.grade_level)?.grade_level ?? "");
+      setCategory(items.find((i) => i.halaqoh_kind) ? "halaqoh" : (items.find((i) => i.exam_category)?.exam_category ?? "harian"));
       setDueAt("");
     }
   }, [open, items]);
@@ -395,6 +437,11 @@ function TransferDialog({ open, onOpenChange, items, onDone }: { open: boolean; 
         questionsPublic.push(question);
         answerKey.push(key);
       });
+      // Halaqoh tasks keep exam_type 'harian' but carry a halaqoh_kind so the
+      // graded result flows into the Mutaba'ah daily accumulation (30/40/30).
+      const effCategory = hasHalaqoh ? "halaqoh" : category;
+      const examType = effCategory === "halaqoh" ? "harian" : effCategory;
+      const halaqohKind = hasHalaqoh ? normalizeHalaqohKind(halaqohItem?.setoran_kind ?? halaqohItem?.halaqoh_kind) : null;
       const { data: inserted, error } = await supabase
         .from("assignments")
         .insert({
@@ -402,7 +449,8 @@ function TransferDialog({ open, onOpenChange, items, onDone }: { open: boolean; 
           class_id: target === "class" ? classId : null,
           assigned_student_id: target === "student" ? studentId : null,
           title: title.trim(),
-          subject: subject || null, exam_type: "harian",
+          subject: subject || null, exam_type: examType,
+          halaqoh_kind: halaqohKind,
           description: gradeLevel ? (lang === "id" ? `Jenjang: ${gradeLevel}` : `Grade: ${gradeLevel}`) : null,
           due_at: dueAt ? new Date(dueAt).toISOString() : null,
           max_score: 100, xp_reward: 50, coin_reward: 10,
@@ -445,6 +493,24 @@ function TransferDialog({ open, onOpenChange, items, onDone }: { open: boolean; 
               <Label>{lang === "id" ? "Jenjang / Kelas" : "Grade"}</Label>
               <Input value={gradeLevel} onChange={(e) => setGradeLevel(e.target.value)} placeholder={lang === "id" ? "mis. Kelas 7" : "e.g. Grade 7"} />
             </div>
+          </div>
+
+          <div>
+            <Label>{lang === "id" ? "Kategori Penilaian" : "Assessment Category"}</Label>
+            {hasHalaqoh ? (
+              <div className="mt-1 rounded-lg border-2 border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-sm font-display font-bold text-emerald-700">
+                {examCategoryLabel("halaqoh", lang)} {lang === "id" ? "— nilai otomatis masuk ke Mutaba'ah" : "— grade auto-feeds Mutaba'ah"}
+              </div>
+            ) : (
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {EXAM_CATEGORIES.filter((c) => c.value !== "halaqoh").map((c) => (
+                    <SelectItem key={c.value} value={c.value}>{lang === "id" ? c.id : c.en}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
 
           <div>
