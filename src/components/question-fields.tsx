@@ -120,6 +120,7 @@ export function buildBankRows(
   questions: BQ[],
   subject: string,
   gradeLevel: string,
+  examCategory: string,
   userId: string,
   lang: string,
 ): { rows: any[]; errors: string[] } {
