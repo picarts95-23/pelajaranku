@@ -157,7 +157,7 @@ function GuruMutabaahPage() {
     date: format(new Date(r.session_date), "dd MMM yyyy"),
     student: r.profiles?.full_name ?? "—",
     surah: `${r.surah ?? "—"}${r.ayat_from ? ` (${r.ayat_from}${r.ayat_to ? `-${r.ayat_to}` : ""})` : ""}`,
-    type: r.session_type === "murojaah" ? "Muroja'ah" : "Ziyadah",
+    type: setoranLabel(r.session_type, "id"),
     tajwid: `${r.tajwid_score} / ${r.tajwid_errors} err`,
     kelancaran: `${r.kelancaran_score} / ${r.kelancaran_helps} bantuan`,
     fashohah: r.fashohah_score,
