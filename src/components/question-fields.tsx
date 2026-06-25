@@ -158,6 +158,7 @@ export function buildBankRows(
         topic: q.surah.trim() || null, question: prompt || defaultPrompt, type: "voice" as const,
         halaqoh_kind: kind, options: null, answer: q.target.trim() || null,
         difficulty: q.difficulty as any, image_url: q.image_url || null,
+        exam_category: "halaqoh",
         setoran_kind: isSetoranLike ? (q.setoranKind || null) : null,
         min_pages: q.minPages.trim() ? Number(q.minPages.trim()) : null,
       });
