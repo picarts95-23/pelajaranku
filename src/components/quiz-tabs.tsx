@@ -1,32 +1,27 @@
 import { Link } from "@tanstack/react-router";
-import { Database, FileQuestion, BarChart3 } from "lucide-react";
+import { Database, FileQuestion } from "lucide-react";
 import { useLang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 /**
- * Shared sub-navigation that presents Bank Soal, Tugas/Kuis and Laporan as ONE feature.
- * `active` highlights the current tab.
+ * Shared sub-navigation linking the question library (Bank Soal) and the
+ * Tugas/Kuis grading hub (Results & Grading). The progress report now lives
+ * inside Rekap Nilai, so it is no longer a tab here.
  */
-export function QuizTabs({ active }: { active: "bank" | "tugas" | "laporan" }) {
+export function QuizTabs({ active }: { active: "bank" | "tugas" }) {
   const { lang } = useLang();
   const tabs = [
     {
       key: "bank" as const,
       to: "/guru/bank-soal",
       icon: Database,
-      label: lang === "id" ? "Buat Soal & Kirim" : "Build & Send",
+      label: lang === "id" ? "Bank Soal (Perpustakaan)" : "Question Bank",
     },
     {
       key: "tugas" as const,
       to: "/guru/kuis",
       icon: FileQuestion,
-      label: lang === "id" ? "Hasil & Penilaian" : "Results & Grading",
-    },
-    {
-      key: "laporan" as const,
-      to: "/guru/laporan",
-      icon: BarChart3,
-      label: lang === "id" ? "Laporan Progres" : "Progress Report",
+      label: lang === "id" ? "Tugas & Penilaian" : "Tasks & Grading",
     },
   ];
 
