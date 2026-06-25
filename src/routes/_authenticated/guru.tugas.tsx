@@ -476,6 +476,18 @@ function AssignmentDetail({ assignment, onDelete }: { assignment: any; onDelete:
     },
   });
 
+  // Filter submissions for the grading toolbar (by student name + status).
+  const filteredSubs = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return (subs as any[]).filter((s) => {
+      if (statusFilter !== "all" && s.status !== statusFilter) return false;
+      if (q && !(s.profile?.full_name ?? "").toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }, [subs, search, statusFilter]);
+  const pendingCount = (subs as any[]).filter((s) => s.status === "submitted").length;
+  const gradedCount = (subs as any[]).filter((s) => s.status === "graded").length;
+
   const gradeMut = useMutation({
     mutationFn: async ({ id, score, feedback }: { id: string; score: number; feedback: string }) => {
       const { error } = await supabase.from("submissions").update({ status: "graded", score, feedback }).eq("id", id);
