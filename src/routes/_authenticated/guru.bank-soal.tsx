@@ -20,7 +20,7 @@ import {
   MAX_QUESTIONS, ALL_TYPES, type BType, type BQ,
   TYPE_LABEL, HALAQOH_KIND, SETORAN_KINDS, setoranLabel,
   isHalaqohType, emptyQ, buildBankRows, mapBankToQuiz, bankRowToBQ,
-  QuestionEditorList,
+  QuestionEditorList, EXAM_CATEGORIES, examCategoryLabel, normalizeHalaqohKind,
 } from "@/components/question-fields";
 
 export const Route = createFileRoute("/_authenticated/guru/bank-soal")({
