@@ -294,7 +294,7 @@ function GuruRekapPage() {
                           className="mx-auto h-8 w-16 text-center"
                         />
                       </td>
-                      <td className="px-3 py-3 text-center">{r.harian}</td>
+                      <td className="px-3 py-3 text-center" title={halaqoh ? `Ziyadah ${r.ziyadah} · Muroja'ah ${r.murojaah} · Tilawah ${r.tilawah}` : undefined}>{r.harian}{halaqoh && <span className="ml-0.5 text-[10px] text-guru align-super">★</span>}</td>
                       <td className="px-3 py-3 text-center">{r.uts}</td>
                       <td className="px-3 py-3 text-center">{r.uas}</td>
                       <td className="px-3 py-3 text-center font-display text-lg font-bold">{r.final}</td>
