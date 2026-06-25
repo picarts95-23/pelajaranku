@@ -276,6 +276,8 @@ function GuruRekapPage() {
           </div>
         </div>
       )}
+      </>
+      )}
     </DashboardShell>
   );
 }
