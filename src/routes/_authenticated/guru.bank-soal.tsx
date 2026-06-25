@@ -496,6 +496,24 @@ function TransferDialog({ open, onOpenChange, items, onDone }: { open: boolean; 
           </div>
 
           <div>
+            <Label>{lang === "id" ? "Kategori Penilaian" : "Assessment Category"}</Label>
+            {hasHalaqoh ? (
+              <div className="mt-1 rounded-lg border-2 border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-sm font-display font-bold text-emerald-700">
+                {examCategoryLabel("halaqoh", lang)} {lang === "id" ? "— nilai otomatis masuk ke Mutaba'ah" : "— grade auto-feeds Mutaba'ah"}
+              </div>
+            ) : (
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {EXAM_CATEGORIES.filter((c) => c.value !== "halaqoh").map((c) => (
+                    <SelectItem key={c.value} value={c.value}>{lang === "id" ? c.id : c.en}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+
+          <div>
             <Label>{lang === "id" ? "Tujuan" : "Target"}</Label>
             <div className="mt-1 flex gap-2">
               {(["class", "student"] as const).map((tg) => (
