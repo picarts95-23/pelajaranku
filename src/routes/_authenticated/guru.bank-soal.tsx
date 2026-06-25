@@ -105,7 +105,7 @@ function GuruBankSoalPage() {
   const createMut = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("no user");
-      const { rows, errors } = buildBankRows(questions, subject, gradeLevel, user.id, lang);
+      const { rows, errors } = buildBankRows(questions, subject, gradeLevel, examCategory, user.id, lang);
       if (errors.length) {
         throw new Error(
           (lang === "id" ? "Periksa kembali soal:\n" : "Please fix:\n") + errors.map((e) => `• ${e}`).join("\n"),
