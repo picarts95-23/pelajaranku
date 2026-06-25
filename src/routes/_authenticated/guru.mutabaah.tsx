@@ -16,7 +16,7 @@ import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { ExportMenu } from "@/components/export-menu";
 import { SURAHS, JUZ_LIST } from "@/lib/quran-data";
-import { TAJWID_TOLERANCE, HELP_TOLERANCE, computeTotal, predikatOf } from "@/lib/mutabaah";
+import { TAJWID_TOLERANCE, HELP_TOLERANCE, computeTotal, predikatOf, setoranLabel, type HalaqohDaily } from "@/lib/mutabaah";
 
 export const Route = createFileRoute("/_authenticated/guru/mutabaah")({
   head: () => ({ meta: [{ title: "Mutaba'ah Tahfidz · EduQuest Academy" }] }),
