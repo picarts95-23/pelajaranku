@@ -46,17 +46,6 @@ function GuruBankSoalPage() {
   const [filterGrade, setFilterGrade] = useState("all");
   const [filterType, setFilterType] = useState("all");
 
-  // Unified creation flow: build questions once, then choose where they go.
-  const [destination, setDestination] = useState<"bank" | "assignment" | "both">("bank");
-  const [aTitle, setATitle] = useState("");
-  const [aTarget, setATarget] = useState<"class" | "student">("class");
-  const [aClassId, setAClassId] = useState("");
-  const [aStudentId, setAStudentId] = useState("");
-  const [aDueAt, setADueAt] = useState("");
-  const [aMaxScore, setAMaxScore] = useState(100);
-  const [aXp, setAXp] = useState(50);
-  const [aCoin, setACoin] = useState(10);
-
   useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
 
   const { data: items = [] } = useQuery({
@@ -64,26 +53,9 @@ function GuruBankSoalPage() {
     queryFn: async () => (await supabase.from("question_bank").select("*").order("created_at", { ascending: false })).data ?? [],
   });
 
-  const { data: classes = [] } = useQuery({
-    queryKey: ["classes-list", user?.id], enabled: !!user,
-    queryFn: async () => (await supabase.from("classes").select("id, name").order("name")).data ?? [],
-  });
-
-  const { data: students = [] } = useQuery({
-    queryKey: ["students-list-banksoal", user?.id], enabled: !!user,
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("list_students");
-      if (error) throw error;
-      return data ?? [];
-    },
-  });
-
   const resetForm = () => {
     setEditId(null);
     setSubject(""); setGradeLevel(""); setQuestions([emptyQ()]);
-    setDestination("bank"); setATitle(""); setATarget("class");
-    setAClassId(""); setAStudentId(""); setADueAt("");
-    setAMaxScore(100); setAXp(50); setACoin(10);
   };
 
   // Open the form pre-filled to edit an existing bank question (single row).
@@ -92,9 +64,9 @@ function GuruBankSoalPage() {
     setSubject(row.subject ?? "");
     setGradeLevel(row.grade_level ?? "");
     setQuestions([bankRowToBQ(row)]);
-    setDestination("bank");
     setOpen(true);
   };
+
 
   const setQ = (i: number, patch: Partial<BQ>) =>
     setQuestions((qs) => qs.map((q, idx) => (idx === i ? { ...q, ...patch } : q)));
