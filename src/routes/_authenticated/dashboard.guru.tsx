@@ -193,23 +193,16 @@ function GuruDashboard() {
             <FeatureCard
               to="/guru/rekap"
               icon={<BarChart3 className="size-6" />}
-              title={lang === "id" ? "Rekap Nilai" : "Grade Recap"}
-              desc={lang === "id" ? "Arsip nilai per kelas & mata pelajaran." : "Grade archives per class & subject."}
+              title={lang === "id" ? "Rekap Nilai & Laporan" : "Grade Recap & Report"}
+              desc={lang === "id" ? "Arsip nilai per kelas/mapel + Laporan Progres (rata-rata, XP/koin, Mutaba'ah)." : "Grade archives + Progress Report (averages, XP/coins, Mutaba'ah)."}
               tint="bg-siswa"
             />
             <FeatureCard
               to="/guru/bank-soal"
               icon={<FileQuestion className="size-6" />}
-              title={lang === "id" ? "Bank Soal & Tugas/Kuis" : "Question Bank & Quizzes"}
-              desc={lang === "id" ? "Satu fitur: kelola bank soal lalu kirim sebagai Tugas/Kuis campuran (maks 40)." : "One feature: curate the bank, then send as mixed assignments (max 40)."}
+              title={lang === "id" ? "Bank Soal (Perpustakaan)" : "Question Bank (Library)"}
+              desc={lang === "id" ? "Simpan koleksi soal (maks 40 campuran), lalu impor ke Tugas saat akan dikirim." : "Store question sets (max 40 mixed), then import into a Task when ready to send."}
               tint="bg-accent"
-            />
-            <FeatureCard
-              to="/guru/laporan"
-              icon={<BarChart3 className="size-6" />}
-              title={lang === "id" ? "Laporan Progres" : "Progress Report"}
-              desc={lang === "id" ? "Progres per kelas & mapel: nilai rata-rata, XP/koin, dan Mutaba'ah." : "Per class & subject: averages, XP/coins, and Mutaba'ah."}
-              tint="bg-gradient-magic"
             />
             <FeatureCard
               to="/guru/siswa"
