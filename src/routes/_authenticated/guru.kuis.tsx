@@ -40,6 +40,35 @@ export const Q_TYPE_LABEL = (type: QType, lang: string): string => {
 
 const isHalaqoh = (subject?: string | null) => !!subject && /halaqoh/i.test(subject);
 
+type Verdict = "correct" | "wrong" | "manual" | "empty";
+
+// Auto-correction for a single question against its answer key.
+// Objective types (PG, true/false, short answer) are graded automatically;
+// essay & audio always require manual review.
+function evalAnswer(q: any, ans: any, key: any): Verdict {
+  if (!q) return "manual";
+  if (q.type === "essay" || q.type === "voice") return "manual";
+  const has = ans !== undefined && ans !== null && String(ans).trim() !== "";
+  if (!has) return "empty";
+  if (key === undefined || key === null || String(key).trim() === "") return "manual";
+  if (q.type === "multiple_choice") return Number(ans) === Number(key) ? "correct" : "wrong";
+  if (q.type === "true_false") return String(ans).toLowerCase() === String(key).toLowerCase() ? "correct" : "wrong";
+  if (q.type === "short_answer") {
+    const accepted = String(key).split("|").map((s) => s.trim().toLowerCase()).filter(Boolean);
+    return accepted.includes(String(ans).trim().toLowerCase()) ? "correct" : "wrong";
+  }
+  return "manual";
+}
+
+// Human-readable correct answer for the grading panel.
+function keyText(q: any, key: any, lang: string): string {
+  if (key === undefined || key === null || String(key).trim() === "") return "—";
+  if (q.type === "multiple_choice") return Array.isArray(q.options) && q.options[Number(key)] != null ? q.options[Number(key)] : `#${key}`;
+  if (q.type === "true_false") return String(key).toLowerCase() === "true" ? (lang === "id" ? "Benar" : "True") : (lang === "id" ? "Salah" : "False");
+  return String(key).split("|").map((s) => s.trim()).filter(Boolean).join(" / ");
+}
+
+
 function GuruKuisPage() {
   const { user, role, loading } = useAuth();
   const navigate = useNavigate();
