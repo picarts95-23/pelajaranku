@@ -102,6 +102,28 @@ function GuruMutabaahPage() {
     },
   });
 
+  // Accumulated daily Halaqoh grade (Ziyadah 30% + Muroja'ah 40% + Tilawah 30%)
+  // for a selected class — combines manual records and graded Halaqoh tasks, and
+  // is exactly what flows into the Rekap Nilai "Harian" column.
+  const { data: accum = [] } = useQuery({
+    queryKey: ["mutabaah-accum", viewClass], enabled: !!viewClass,
+    queryFn: async () => {
+      const { data, error } = await (supabase as any).rpc("halaqoh_daily_scores", { _class_id: viewClass });
+      if (error) throw error;
+      return (data ?? []) as HalaqohDaily[];
+    },
+  });
+  const { data: accumStudents = [] } = useQuery({
+    queryKey: ["mutabaah-accum-students", viewClass], enabled: !!viewClass,
+    queryFn: async () => {
+      const { data: enr } = await supabase.from("class_enrollments").select("student_id").eq("class_id", viewClass);
+      const ids = (enr ?? []).map((e: any) => e.student_id).filter(Boolean);
+      if (ids.length === 0) return [] as { id: string; full_name: string }[];
+      const { data: profs } = await supabase.from("profiles").select("id, full_name").in("id", ids);
+      return (profs ?? []) as { id: string; full_name: string }[];
+    },
+  });
+
   const total = computeTotal(form.tajwid_score, form.kelancaran_score, form.fashohah_score);
   const predikat = predikatOf(total, lang);
 
