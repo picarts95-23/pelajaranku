@@ -147,19 +147,13 @@ export function QuizGradeDialog({
     return () => { active = false; };
   }, [questions, studentAnswers, signFile]);
 
-  async function runTranscribe(i: number) {
-    const path = studentAnswers[i];
-    if (!path) return;
-    setTranscribing(i);
-    try {
-      const res = await transcribe({ data: { path } });
-      setTranscripts((t) => ({ ...t, [i]: res.text || (lang === "id" ? "(tidak ada teks terdeteksi)" : "(no text detected)") }));
-    } catch (e) {
-      toast.error((e as Error).message);
-    } finally {
-      setTranscribing(null);
-    }
-  }
+  // Round-per-question point value (each question is an equal share of max_score).
+  const perQuestion = questions.length ? Math.round(quiz.max_score / questions.length) : 0;
+  const manualTotal = useMemo(
+    () => Object.values(manualScores).reduce((sum, v) => sum + (Number.isFinite(v) ? v : 0), 0),
+    [manualScores],
+  );
+
 
   const total = computeTotal(maba.tajwid, maba.kelancaran, maba.fashohah);
 
