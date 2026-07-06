@@ -78,6 +78,7 @@ export function QuizGradeDialog({
   const [transcripts, setTranscripts] = useState<Record<number, string>>({});
   const [transcribing, setTranscribing] = useState<number | null>(null);
   const transcribe = useServerFn(transcribeVoiceAnswer);
+  const signFile = useServerFn(signAnswerFile);
 
   // Answer key (objective questions) so the panel can auto-correct.
   const { data: answerKey = [] } = useQuery({
