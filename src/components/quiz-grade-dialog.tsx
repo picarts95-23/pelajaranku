@@ -11,9 +11,9 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
 import { computeTotal, predikatOf, TAJWID_TOLERANCE, HELP_TOLERANCE } from "@/lib/mutabaah";
-import { transcribeVoiceAnswer } from "@/lib/transcribe.functions";
+import { transcribeVoiceAnswer, signAnswerFile } from "@/lib/transcribe.functions";
 
-export type QType = "multiple_choice" | "true_false" | "short_answer" | "essay" | "voice";
+export type QType = "multiple_choice" | "true_false" | "short_answer" | "essay" | "voice" | "image";
 
 export const Q_TYPE_LABEL = (type: QType, lang: string): string => {
   const map: Record<QType, [string, string]> = {
