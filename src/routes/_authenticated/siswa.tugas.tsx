@@ -110,7 +110,9 @@ function QuestCard({ a }: { a: any }) {
   const [choices, setChoices] = useState<string[]>(() => (a.mySubmission?.content ? String(a.mySubmission.content).split(", ").filter(Boolean) : []));
   const [fileUrl, setFileUrl] = useState(a.mySubmission?.file_url ?? "");
   const [voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const isVoiceFmt = fmt === "voice" || fmt === "muroja";
+  const isPhotoFmt = fmt === "photo";
 
   const submitMut = useMutation({
     mutationFn: async () => {
@@ -129,6 +131,16 @@ function QuestCard({ a }: { a: any }) {
         } else {
           storedFileUrl = a.mySubmission.file_url;
         }
+      }
+
+      if (imageFile) {
+        const ext = (imageFile.name.split(".").pop() || "jpg").toLowerCase();
+        const path = `${user.id}/${a.id}-${Date.now()}.${ext}`;
+        const { error: upErr } = await supabase.storage.from("answer-images").upload(path, imageFile, { upsert: true, contentType: imageFile.type });
+        if (upErr) throw upErr;
+        storedFileUrl = path;
+      } else if (isPhotoFmt && !a.mySubmission?.file_url) {
+        throw new Error(lang === "id" ? "Unggah foto jawabanmu dulu." : "Upload your photo answer first.");
       }
 
       let finalContent: string | null = content || null;
