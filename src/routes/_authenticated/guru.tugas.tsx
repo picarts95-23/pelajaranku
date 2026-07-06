@@ -554,7 +554,7 @@ function AssignmentDetail({ assignment, onDelete }: { assignment: any; onDelete:
       {isQuiz && Array.isArray(assignment.questions) && (
         <div className="mb-3 rounded-xl border border-accent/30 bg-accent/5 p-3 text-sm">
           <div className="font-display font-bold text-accent">📝 {assignment.questions.length} {lang === "id" ? "soal · koreksi otomatis + audio" : "questions · auto-grade + audio"}</div>
-          <p className="mt-1 text-xs text-muted-foreground">{lang === "id" ? "Soal objektif dinilai otomatis. Buka penilaian untuk mendengar & menyalin jawaban audio." : "Objective questions auto-scored. Open grading to listen & transcribe audio answers."}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{lang === "id" ? "Soal objektif dinilai otomatis. Buka penilaian untuk mendengar & meninjau jawaban audio/gambar, lalu beri nilai tiap jawaban." : "Objective questions auto-scored. Open grading to listen to & review audio/image answers, then score each one."}</p>
         </div>
       )}
 
