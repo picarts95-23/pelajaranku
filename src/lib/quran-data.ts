@@ -126,6 +126,7 @@ export const ANSWER_FORMATS = [
   { value: "multiple_choice", labelId: "Pilihan Ganda", labelEn: "Multiple Choice", emoji: "🔘" },
   { value: "complex_mc", labelId: "Pilihan Ganda Kompleks", labelEn: "Complex Multiple Choice", emoji: "🔢" },
   { value: "voice", labelId: "Rekaman Suara", labelEn: "Voice Recording", emoji: "🎙️" },
+  { value: "photo", labelId: "Foto / Gambar Jawaban", labelEn: "Photo / Image Answer", emoji: "🖼️" },
   { value: "muroja", labelId: "Muroja'ah Hafalan Al-Qur'an", labelEn: "Qur'an Memorization", emoji: "📖" },
 ] as const;
 

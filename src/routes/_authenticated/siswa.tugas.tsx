@@ -110,7 +110,9 @@ function QuestCard({ a }: { a: any }) {
   const [choices, setChoices] = useState<string[]>(() => (a.mySubmission?.content ? String(a.mySubmission.content).split(", ").filter(Boolean) : []));
   const [fileUrl, setFileUrl] = useState(a.mySubmission?.file_url ?? "");
   const [voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const isVoiceFmt = fmt === "voice" || fmt === "muroja";
+  const isPhotoFmt = fmt === "photo";
 
   const submitMut = useMutation({
     mutationFn: async () => {
@@ -129,6 +131,16 @@ function QuestCard({ a }: { a: any }) {
         } else {
           storedFileUrl = a.mySubmission.file_url;
         }
+      }
+
+      if (imageFile) {
+        const ext = (imageFile.name.split(".").pop() || "jpg").toLowerCase();
+        const path = `${user.id}/${a.id}-${Date.now()}.${ext}`;
+        const { error: upErr } = await supabase.storage.from("answer-images").upload(path, imageFile, { upsert: true, contentType: imageFile.type });
+        if (upErr) throw upErr;
+        storedFileUrl = path;
+      } else if (isPhotoFmt && !a.mySubmission?.file_url) {
+        throw new Error(lang === "id" ? "Unggah foto jawabanmu dulu." : "Upload your photo answer first.");
       }
 
       let finalContent: string | null = content || null;
@@ -151,6 +163,7 @@ function QuestCard({ a }: { a: any }) {
       toast.success(lang === "id" ? "Misi terkirim! ✨" : "Mission submitted! ✨");
       setOpen(false);
       setVoiceBlob(null);
+      setImageFile(null);
       qc.invalidateQueries({ queryKey: ["siswa-quests"] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -234,9 +247,23 @@ function QuestCard({ a }: { a: any }) {
                       <div className="mt-2"><VoiceRecorder onChange={({ blob }) => setVoiceBlob(blob)} /></div>
                       {a.mySubmission?.file_url && !voiceBlob && <p className="mt-1 text-xs text-muted-foreground">✅ {lang === "id" ? "Rekaman sebelumnya tersimpan. Rekam ulang untuk mengganti." : "Previous recording saved. Re-record to replace."}</p>}
                     </div>
+                  ) : isPhotoFmt ? (
+                    <div>
+                      <Label>{lang === "id" ? "Unggah foto/gambar jawabanmu" : "Upload your photo/image answer"}</Label>
+                      <input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+                        className="mt-2 block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-siswa file:px-3 file:py-1.5 file:text-white" />
+                      {imageFile && <p className="mt-1 text-xs text-emerald-600">✅ {imageFile.name}</p>}
+                      {!imageFile && a.mySubmission?.file_url && <p className="mt-1 text-xs text-muted-foreground">✅ {lang === "id" ? "Foto sebelumnya tersimpan. Pilih file baru untuk mengganti." : "Previous photo saved. Choose a new file to replace."}</p>}
+                    </div>
                   ) : (
                     <>
                       <div><Label>{t("yourAnswer")}</Label><Textarea rows={6} value={content} onChange={(e) => setContent(e.target.value)} /></div>
+                      <div>
+                        <Label>{lang === "id" ? "Lampiran foto (opsional)" : "Photo attachment (optional)"}</Label>
+                        <input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+                          className="mt-1 block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-siswa file:px-3 file:py-1.5 file:text-white" />
+                        {imageFile && <p className="mt-1 text-xs text-emerald-600">✅ {imageFile.name}</p>}
+                      </div>
                       <div><Label>{t("fileUrl")}</Label><Input value={fileUrl} onChange={(e) => setFileUrl(e.target.value)} placeholder="https://..." /></div>
                     </>
                   )}
@@ -264,6 +291,7 @@ function QuizCard({ quiz }: { quiz: any }) {
   const questions: any[] = Array.isArray(quiz.questions) ? quiz.questions : [];
   const [answers, setAnswers] = useState<any[]>(() => questions.map(() => null));
   const [voiceBlobs, setVoiceBlobs] = useState<Record<number, Blob | null>>({});
+  const [imageFiles, setImageFiles] = useState<Record<number, File | null>>({});
   const [result, setResult] = useState<QResult | null>(null);
   const done = !!quiz.mySubmission;
 
@@ -279,6 +307,14 @@ function QuizCard({ quiz }: { quiz: any }) {
           if (!blob) throw new Error(lang === "id" ? `Rekam jawaban soal ${i + 1}` : `Record answer for Q${i + 1}`);
           const path = `${user!.id}/${quiz.id}-${i}-${crypto.randomUUID()}.webm`;
           const { error: upErr } = await supabase.storage.from("voice-answers").upload(path, blob);
+          if (upErr) throw upErr;
+          finalAnswers[i] = path;
+        } else if (type === "image") {
+          const file = imageFiles[i];
+          if (!file) throw new Error(lang === "id" ? `Unggah foto jawaban soal ${i + 1}` : `Upload photo for Q${i + 1}`);
+          const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+          const path = `${user!.id}/${quiz.id}-${i}-${crypto.randomUUID()}.${ext}`;
+          const { error: upErr } = await supabase.storage.from("answer-images").upload(path, file, { contentType: file.type });
           if (upErr) throw upErr;
           finalAnswers[i] = path;
         } else if (finalAnswers[i] === null || finalAnswers[i] === undefined || String(finalAnswers[i]).trim() === "") {
@@ -409,7 +445,15 @@ function QuizCard({ quiz }: { quiz: any }) {
                         </div>
                       )}
 
-                      {(type === "essay" || type === "voice") && (
+                      {type === "image" && (
+                        <div className="mt-2">
+                          <input type="file" accept="image/*" onChange={(e) => setImageFiles((v) => ({ ...v, [qi]: e.target.files?.[0] ?? null }))}
+                            className="block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-siswa file:px-3 file:py-1.5 file:text-white" />
+                          {imageFiles[qi] && <p className="mt-1 text-xs text-emerald-600">✅ {imageFiles[qi]!.name}</p>}
+                        </div>
+                      )}
+
+                      {(type === "essay" || type === "voice" || type === "image") && (
                         <p className="mt-1.5 text-xs text-muted-foreground">{lang === "id" ? "Dinilai oleh guru." : "Graded by teacher."}</p>
                       )}
                     </div>

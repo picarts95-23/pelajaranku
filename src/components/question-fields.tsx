@@ -16,6 +16,7 @@ export type BType =
   | "short_answer"
   | "essay"
   | "voice"
+  | "image"
   | "halaqoh_menyimak"
   | "halaqoh_setoran"
   | "halaqoh_tilawah";
@@ -25,7 +26,7 @@ export const isHalaqohType = (t: BType) => HALAQOH_TYPES.includes(t);
 
 export const ALL_TYPES: BType[] = [
   "multiple_choice", "complex_multiple_choice", "true_false", "short_answer",
-  "essay", "voice", "halaqoh_menyimak", "halaqoh_setoran", "halaqoh_tilawah",
+  "essay", "voice", "image", "halaqoh_menyimak", "halaqoh_setoran", "halaqoh_tilawah",
 ];
 
 export const TYPE_LABEL = (t: BType, lang: string): string => {
@@ -36,6 +37,7 @@ export const TYPE_LABEL = (t: BType, lang: string): string => {
     short_answer: ["Isian Singkat", "Short Answer"],
     essay: ["Esai (manual)", "Essay (manual)"],
     voice: ["Jawaban Audio", "Audio Answer"],
+    image: ["Jawaban Foto/Gambar", "Photo/Image Answer"],
     halaqoh_menyimak: ["Halaqoh: Menyimak Surah", "Halaqoh: Listening"],
     halaqoh_setoran: ["Halaqoh: Setoran Hafalan", "Halaqoh: Memorization"],
     halaqoh_tilawah: ["Halaqoh: Tilawah Harian", "Halaqoh: Daily Tilawah"],
@@ -187,7 +189,7 @@ export function buildBankRows(
       if (!answer) answer = "Benar";
     } else if (q.type === "short_answer") {
       if (!answer) errors.push(`${at}: ${lang === "id" ? "isi kunci jawaban." : "fill the answer key."}`);
-    } else if (q.type === "voice") {
+    } else if (q.type === "voice" || q.type === "image") {
       opts = null; answer = null;
     }
     rows.push({
@@ -230,6 +232,9 @@ export function mapBankToQuiz(b: any): { question: any; key: any } {
   }
   if (b.type === "short_answer") {
     return { question: { type: "short_answer", q: b.question, image_url: b.image_url ?? null }, key: String(b.answer ?? "").trim() };
+  }
+  if (b.type === "image") {
+    return { question: { type: "image", q: b.question, image_url: b.image_url ?? null }, key: null };
   }
   // essay / complex / others -> manual essay
   return { question: { type: "essay", q: b.question, image_url: b.image_url ?? null }, key: null };
@@ -289,6 +294,9 @@ export function quizQuestionToBQ(q: any, key: any): BQ {
   }
   if (q?.type === "voice") {
     return { ...base, type: "voice", question: q.q ?? "", image_url: q.image_url ?? null };
+  }
+  if (q?.type === "image") {
+    return { ...base, type: "image", question: q.q ?? "", image_url: q.image_url ?? null };
   }
   return { ...base, type: "essay", question: q?.q ?? "", image_url: q?.image_url ?? null };
 }
@@ -437,6 +445,10 @@ export function QuestionEditorList({
 
               {q.type === "essay" && (
                 <p className="mt-2 rounded-lg bg-amber-500/10 px-3 py-1.5 text-xs font-semibold text-amber-700">{lang === "id" ? "Esai — dinilai manual oleh guru." : "Essay — graded manually."}</p>
+              )}
+
+              {q.type === "image" && (
+                <p className="mt-2 rounded-lg bg-sky-500/10 px-3 py-1.5 text-xs font-semibold text-sky-700">🖼️ {lang === "id" ? "Siswa menjawab dengan mengunggah foto/gambar (dinilai manual)." : "Photo/image answer (manual)."}</p>
               )}
             </>
           )}

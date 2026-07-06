@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { ScrollText, Plus, Trash2, ChevronRight, X, Play, KeyRound, Send, Search } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -21,6 +22,7 @@ import { ANSWER_FORMATS, JUZ_LIST, SURAHS, type AnswerFormat } from "@/lib/quran
 import { isHalaqohSubject, SETORAN_TYPES } from "@/lib/mutabaah";
 import { QuizTabs } from "@/components/quiz-tabs";
 import { QuizGradeDialog } from "@/components/quiz-grade-dialog";
+import { signAnswerFile } from "@/lib/transcribe.functions";
 
 export const Route = createFileRoute("/_authenticated/guru/tugas")({
   head: () => ({ meta: [{ title: "Tugas · EduQuest Academy" }] }),
@@ -623,6 +625,12 @@ function GradeRow({ sub, maxScore, isVoice, onGrade }: { sub: any; maxScore: num
   const [fb, setFb] = useState(sub.feedback ?? "");
   const [voiceUrl, setVoiceUrl] = useState<string | null>(null);
   const [voiceError, setVoiceError] = useState(false);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const signFile = useServerFn(signAnswerFile);
+
+  // A non-http file_url on a non-voice task is a private path in the answer-images
+  // bucket (photo answer / attachment) — resolve it via the teacher-only signer.
+  const isPrivatePhoto = !isVoice && !!sub.file_url && !/^https?:\/\//i.test(sub.file_url);
 
   // Automatically resolve a signed URL for the student's recording so the teacher
   // can play it straight away in the grading panel.
@@ -638,6 +646,20 @@ function GradeRow({ sub, maxScore, isVoice, onGrade }: { sub: any; maxScore: num
     load();
     return () => { active = false; };
   }, [isVoice, sub.file_url]);
+
+  // Resolve a signed URL for a private uploaded photo answer.
+  useEffect(() => {
+    let active = true;
+    async function load() {
+      if (!isPrivatePhoto) return;
+      try {
+        const r = await signFile({ data: { bucket: "answer-images", path: sub.file_url } });
+        if (active && r?.url) setPhotoUrl(r.url);
+      } catch { /* ignore missing file */ }
+    }
+    load();
+    return () => { active = false; };
+  }, [isPrivatePhoto, sub.file_url, signFile]);
 
   return (
     <div className="rounded-xl border border-border bg-muted/30 p-3">
@@ -661,6 +683,15 @@ function GradeRow({ sub, maxScore, isVoice, onGrade }: { sub: any; maxScore: num
         ) : (
           <p className="mt-2 text-xs text-muted-foreground">{lang === "id" ? "Belum ada rekaman dikirim." : "No recording submitted yet."}</p>
         )
+      ) : isPrivatePhoto ? (
+        <div className="mt-2">
+          <div className="mb-1 flex items-center gap-1.5 text-xs font-display font-bold text-primary">🖼️ {lang === "id" ? "Foto jawaban siswa" : "Student photo answer"}</div>
+          {photoUrl ? (
+            <a href={photoUrl} target="_blank" rel="noreferrer" className="block"><img src={photoUrl} alt="jawaban siswa" className="max-h-64 rounded-xl border-2 border-border object-contain" /></a>
+          ) : (
+            <p className="text-xs text-muted-foreground">{lang === "id" ? "Memuat foto…" : "Loading photo…"}</p>
+          )}
+        </div>
       ) : (!isVoice && sub.file_url && (
         /\.(jpg|jpeg|png|gif|webp|avif)(\?|$)/i.test(sub.file_url) ? (
           <a href={sub.file_url} target="_blank" rel="noreferrer" className="mt-2 block"><img src={sub.file_url} alt="jawaban siswa" className="max-h-64 rounded-xl border-2 border-border object-contain" /></a>

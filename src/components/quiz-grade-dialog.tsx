@@ -11,9 +11,9 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
 import { computeTotal, predikatOf, TAJWID_TOLERANCE, HELP_TOLERANCE } from "@/lib/mutabaah";
-import { transcribeVoiceAnswer } from "@/lib/transcribe.functions";
+import { transcribeVoiceAnswer, signAnswerFile } from "@/lib/transcribe.functions";
 
-export type QType = "multiple_choice" | "true_false" | "short_answer" | "essay" | "voice";
+export type QType = "multiple_choice" | "true_false" | "short_answer" | "essay" | "voice" | "image";
 
 export const Q_TYPE_LABEL = (type: QType, lang: string): string => {
   const map: Record<QType, [string, string]> = {
@@ -22,6 +22,7 @@ export const Q_TYPE_LABEL = (type: QType, lang: string): string => {
     short_answer: ["Isian Singkat", "Short Answer"],
     essay: ["Esai (manual)", "Essay (manual)"],
     voice: ["Jawaban Audio (manual)", "Audio Answer (manual)"],
+    image: ["Jawaban Foto/Gambar (manual)", "Photo/Image Answer (manual)"],
   };
   return lang === "id" ? map[type][0] : map[type][1];
 };
@@ -35,7 +36,7 @@ type Verdict = "correct" | "wrong" | "manual" | "empty";
 // essay & audio always require manual review by the teacher.
 export function evalAnswer(q: any, ans: any, key: any): Verdict {
   if (!q) return "manual";
-  if (q.type === "essay" || q.type === "voice") return "manual";
+  if (q.type === "essay" || q.type === "voice" || q.type === "image") return "manual";
   const has = ans !== undefined && ans !== null && String(ans).trim() !== "";
   if (!has) return "empty";
   if (key === undefined || key === null || String(key).trim() === "") return "manual";
@@ -77,6 +78,7 @@ export function QuizGradeDialog({
   const [transcripts, setTranscripts] = useState<Record<number, string>>({});
   const [transcribing, setTranscribing] = useState<number | null>(null);
   const transcribe = useServerFn(transcribeVoiceAnswer);
+  const signFile = useServerFn(signAnswerFile);
 
   // Answer key (objective questions) so the panel can auto-correct.
   const { data: answerKey = [] } = useQuery({
@@ -132,15 +134,20 @@ export function QuizGradeDialog({
     (async () => {
       const next: Record<number, string> = {};
       for (let i = 0; i < questions.length; i++) {
-        if (questions[i]?.type === "voice" && studentAnswers[i]) {
-          const { data } = await supabase.storage.from("voice-answers").createSignedUrl(studentAnswers[i], 3600);
-          if (data?.signedUrl) next[i] = data.signedUrl;
-        }
+        const type = questions[i]?.type;
+        const path = studentAnswers[i];
+        if (!path) continue;
+        const bucket = type === "voice" ? "voice-answers" : type === "image" ? "answer-images" : null;
+        if (!bucket) continue;
+        try {
+          const r = await signFile({ data: { bucket, path } });
+          if (r?.url) next[i] = r.url;
+        } catch { /* ignore missing file */ }
       }
       if (active) setVoiceUrls(next);
     })();
     return () => { active = false; };
-  }, [questions, studentAnswers]);
+  }, [questions, studentAnswers, signFile]);
 
   async function runTranscribe(i: number) {
     const path = studentAnswers[i];
@@ -242,6 +249,16 @@ export function QuizGradeDialog({
                       )}
                       {transcripts[i] && (
                         <p className="rounded-lg border border-primary/30 bg-primary/5 p-2 text-xs italic text-foreground/80">“{transcripts[i]}”</p>
+                      )}
+                    </div>
+                  ) : q.type === "image" ? (
+                    <div className="space-y-1">
+                      {voiceUrls[i] ? (
+                        <a href={voiceUrls[i]} target="_blank" rel="noreferrer" className="block">
+                          <img src={voiceUrls[i]} alt="jawaban siswa" className="mt-1 max-h-72 rounded-lg border-2 border-border object-contain" />
+                        </a>
+                      ) : (
+                        <span className="text-muted-foreground">{ans ? (lang === "id" ? "(memuat gambar…)" : "(loading image…)") : (lang === "id" ? "(tidak ada gambar)" : "(no image)")}</span>
                       )}
                     </div>
                   ) : q.type === "multiple_choice" ? (
