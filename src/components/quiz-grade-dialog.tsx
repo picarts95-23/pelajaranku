@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { BookOpenCheck, Loader2, Sparkles } from "lucide-react";
+import { BookOpenCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
 import { computeTotal, predikatOf, TAJWID_TOLERANCE, HELP_TOLERANCE } from "@/lib/mutabaah";
-import { transcribeVoiceAnswer, signAnswerFile } from "@/lib/transcribe.functions";
+import { signAnswerFile } from "@/lib/transcribe.functions";
 
 export type QType = "multiple_choice" | "true_false" | "short_answer" | "essay" | "voice" | "image";
 
