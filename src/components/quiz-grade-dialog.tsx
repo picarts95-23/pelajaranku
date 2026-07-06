@@ -59,8 +59,9 @@ export function keyText(q: any, key: any, lang: string): string {
 
 /**
  * Unified grading dialog for quiz-format assignments. Auto-corrects objective
- * questions, lets the teacher listen to AND transcribe audio answers, and
- * (for Halaqoh subjects) records the result into Mutaba'ah automatically.
+ * questions, lets the teacher listen to / review each audio & image answer and
+ * score every manual answer separately, and (for Halaqoh subjects) records the
+ * result into Mutaba'ah automatically.
  */
 export function QuizGradeDialog({
   quiz, submission, studentName, onClose, invalidateKey = ["quizzes"],
