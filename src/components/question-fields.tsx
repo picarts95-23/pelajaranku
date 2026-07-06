@@ -295,6 +295,9 @@ export function quizQuestionToBQ(q: any, key: any): BQ {
   if (q?.type === "voice") {
     return { ...base, type: "voice", question: q.q ?? "", image_url: q.image_url ?? null };
   }
+  if (q?.type === "image") {
+    return { ...base, type: "image", question: q.q ?? "", image_url: q.image_url ?? null };
+  }
   return { ...base, type: "essay", question: q?.q ?? "", image_url: q?.image_url ?? null };
 }
 
