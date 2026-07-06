@@ -99,6 +99,15 @@ export function QuizGradeDialog({
     return { correct, objective, manual, per, autoScore: Math.round(correct * per) };
   }, [questions, studentAnswers, answerKey, quiz.max_score]);
 
+  // Round per-question point value (each question is an equal share of max_score)
+  // and the running total of manually-scored answers (essay/voice/image).
+  const perQuestion = questions.length ? Math.round(quiz.max_score / questions.length) : 0;
+  const manualTotal = useMemo(
+    () => Object.values(manualScores).reduce((sum, v) => sum + (Number.isFinite(v) ? v : 0), 0),
+    [manualScores],
+  );
+
+
   // Pre-fill the final score from the automatic rule when not yet graded.
   const [score, setScore] = useState<number>(
     submission.status === "graded" && submission.score != null ? submission.score : auto.autoScore,
