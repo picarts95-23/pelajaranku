@@ -445,7 +445,15 @@ function QuizCard({ quiz }: { quiz: any }) {
                         </div>
                       )}
 
-                      {(type === "essay" || type === "voice") && (
+                      {type === "image" && (
+                        <div className="mt-2">
+                          <input type="file" accept="image/*" onChange={(e) => setImageFiles((v) => ({ ...v, [qi]: e.target.files?.[0] ?? null }))}
+                            className="block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-siswa file:px-3 file:py-1.5 file:text-white" />
+                          {imageFiles[qi] && <p className="mt-1 text-xs text-emerald-600">✅ {imageFiles[qi]!.name}</p>}
+                        </div>
+                      )}
+
+                      {(type === "essay" || type === "voice" || type === "image") && (
                         <p className="mt-1.5 text-xs text-muted-foreground">{lang === "id" ? "Dinilai oleh guru." : "Graded by teacher."}</p>
                       )}
                     </div>
