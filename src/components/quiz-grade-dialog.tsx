@@ -36,7 +36,7 @@ type Verdict = "correct" | "wrong" | "manual" | "empty";
 // essay & audio always require manual review by the teacher.
 export function evalAnswer(q: any, ans: any, key: any): Verdict {
   if (!q) return "manual";
-  if (q.type === "essay" || q.type === "voice") return "manual";
+  if (q.type === "essay" || q.type === "voice" || q.type === "image") return "manual";
   const has = ans !== undefined && ans !== null && String(ans).trim() !== "";
   if (!has) return "empty";
   if (key === undefined || key === null || String(key).trim() === "") return "manual";
