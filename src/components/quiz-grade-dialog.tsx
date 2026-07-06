@@ -242,15 +242,6 @@ export function QuizGradeDialog({
                   {q.type === "voice" ? (
                     <div className="space-y-2">
                       {voiceUrls[i] ? <audio controls src={voiceUrls[i]} className="mt-1 w-full" /> : <span className="text-muted-foreground">{ans ? (lang === "id" ? "(memuat audio…)" : "(loading audio…)") : (lang === "id" ? "(tidak ada rekaman)" : "(no recording)")}</span>}
-                      {ans && (
-                        <Button type="button" size="sm" variant="outline" className="h-7" disabled={transcribing === i} onClick={() => runTranscribe(i)}>
-                          {transcribing === i ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />}
-                          {lang === "id" ? "Ubah audio ke teks" : "Transcribe audio"}
-                        </Button>
-                      )}
-                      {transcripts[i] && (
-                        <p className="rounded-lg border border-primary/30 bg-primary/5 p-2 text-xs italic text-foreground/80">“{transcripts[i]}”</p>
-                      )}
                     </div>
                   ) : q.type === "image" ? (
                     <div className="space-y-1">
