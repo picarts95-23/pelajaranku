@@ -625,6 +625,12 @@ function GradeRow({ sub, maxScore, isVoice, onGrade }: { sub: any; maxScore: num
   const [fb, setFb] = useState(sub.feedback ?? "");
   const [voiceUrl, setVoiceUrl] = useState<string | null>(null);
   const [voiceError, setVoiceError] = useState(false);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const signFile = useServerFn(signAnswerFile);
+
+  // A non-http file_url on a non-voice task is a private path in the answer-images
+  // bucket (photo answer / attachment) — resolve it via the teacher-only signer.
+  const isPrivatePhoto = !isVoice && !!sub.file_url && !/^https?:\/\//i.test(sub.file_url);
 
   // Automatically resolve a signed URL for the student's recording so the teacher
   // can play it straight away in the grading panel.
@@ -640,6 +646,20 @@ function GradeRow({ sub, maxScore, isVoice, onGrade }: { sub: any; maxScore: num
     load();
     return () => { active = false; };
   }, [isVoice, sub.file_url]);
+
+  // Resolve a signed URL for a private uploaded photo answer.
+  useEffect(() => {
+    let active = true;
+    async function load() {
+      if (!isPrivatePhoto) return;
+      try {
+        const r = await signFile({ data: { bucket: "answer-images", path: sub.file_url } });
+        if (active && r?.url) setPhotoUrl(r.url);
+      } catch { /* ignore missing file */ }
+    }
+    load();
+    return () => { active = false; };
+  }, [isPrivatePhoto, sub.file_url, signFile]);
 
   return (
     <div className="rounded-xl border border-border bg-muted/30 p-3">
