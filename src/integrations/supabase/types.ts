@@ -1281,6 +1281,7 @@ export type Database = {
         | "voice"
         | "complex_multiple_choice"
         | "short_answer"
+        | "image"
       submission_status: "draft" | "submitted" | "graded" | "returned"
     }
     CompositeTypes: {
@@ -1419,6 +1420,7 @@ export const Constants = {
         "voice",
         "complex_multiple_choice",
         "short_answer",
+        "image",
       ],
       submission_status: ["draft", "submitted", "graded", "returned"],
     },
