@@ -683,6 +683,15 @@ function GradeRow({ sub, maxScore, isVoice, onGrade }: { sub: any; maxScore: num
         ) : (
           <p className="mt-2 text-xs text-muted-foreground">{lang === "id" ? "Belum ada rekaman dikirim." : "No recording submitted yet."}</p>
         )
+      ) : isPrivatePhoto ? (
+        <div className="mt-2">
+          <div className="mb-1 flex items-center gap-1.5 text-xs font-display font-bold text-primary">🖼️ {lang === "id" ? "Foto jawaban siswa" : "Student photo answer"}</div>
+          {photoUrl ? (
+            <a href={photoUrl} target="_blank" rel="noreferrer" className="block"><img src={photoUrl} alt="jawaban siswa" className="max-h-64 rounded-xl border-2 border-border object-contain" /></a>
+          ) : (
+            <p className="text-xs text-muted-foreground">{lang === "id" ? "Memuat foto…" : "Loading photo…"}</p>
+          )}
+        </div>
       ) : (!isVoice && sub.file_url && (
         /\.(jpg|jpeg|png|gif|webp|avif)(\?|$)/i.test(sub.file_url) ? (
           <a href={sub.file_url} target="_blank" rel="noreferrer" className="mt-2 block"><img src={sub.file_url} alt="jawaban siswa" className="max-h-64 rounded-xl border-2 border-border object-contain" /></a>
