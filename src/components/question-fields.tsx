@@ -189,7 +189,7 @@ export function buildBankRows(
       if (!answer) answer = "Benar";
     } else if (q.type === "short_answer") {
       if (!answer) errors.push(`${at}: ${lang === "id" ? "isi kunci jawaban." : "fill the answer key."}`);
-    } else if (q.type === "voice") {
+    } else if (q.type === "voice" || q.type === "image") {
       opts = null; answer = null;
     }
     rows.push({
