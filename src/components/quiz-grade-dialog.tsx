@@ -75,9 +75,7 @@ export function QuizGradeDialog({
   }, [submission.content]);
   const [feedback, setFeedback] = useState<string>(submission.feedback ?? "");
   const [voiceUrls, setVoiceUrls] = useState<Record<number, string>>({});
-  const [transcripts, setTranscripts] = useState<Record<number, string>>({});
-  const [transcribing, setTranscribing] = useState<number | null>(null);
-  const transcribe = useServerFn(transcribeVoiceAnswer);
+  const [manualScores, setManualScores] = useState<Record<number, number>>({});
   const signFile = useServerFn(signAnswerFile);
 
   // Answer key (objective questions) so the panel can auto-correct.
