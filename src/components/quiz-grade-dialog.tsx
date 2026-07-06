@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { BookOpenCheck, Loader2, Sparkles } from "lucide-react";
+import { BookOpenCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
 import { computeTotal, predikatOf, TAJWID_TOLERANCE, HELP_TOLERANCE } from "@/lib/mutabaah";
-import { transcribeVoiceAnswer, signAnswerFile } from "@/lib/transcribe.functions";
+import { signAnswerFile } from "@/lib/transcribe.functions";
 
 export type QType = "multiple_choice" | "true_false" | "short_answer" | "essay" | "voice" | "image";
 
@@ -59,8 +59,9 @@ export function keyText(q: any, key: any, lang: string): string {
 
 /**
  * Unified grading dialog for quiz-format assignments. Auto-corrects objective
- * questions, lets the teacher listen to AND transcribe audio answers, and
- * (for Halaqoh subjects) records the result into Mutaba'ah automatically.
+ * questions, lets the teacher listen to / review each audio & image answer and
+ * score every manual answer separately, and (for Halaqoh subjects) records the
+ * result into Mutaba'ah automatically.
  */
 export function QuizGradeDialog({
   quiz, submission, studentName, onClose, invalidateKey = ["quizzes"],
@@ -75,9 +76,7 @@ export function QuizGradeDialog({
   }, [submission.content]);
   const [feedback, setFeedback] = useState<string>(submission.feedback ?? "");
   const [voiceUrls, setVoiceUrls] = useState<Record<number, string>>({});
-  const [transcripts, setTranscripts] = useState<Record<number, string>>({});
-  const [transcribing, setTranscribing] = useState<number | null>(null);
-  const transcribe = useServerFn(transcribeVoiceAnswer);
+  const [manualScores, setManualScores] = useState<Record<number, number>>({});
   const signFile = useServerFn(signAnswerFile);
 
   // Answer key (objective questions) so the panel can auto-correct.
@@ -101,14 +100,27 @@ export function QuizGradeDialog({
     return { correct, objective, manual, per, autoScore: Math.round(correct * per) };
   }, [questions, studentAnswers, answerKey, quiz.max_score]);
 
+  // Round per-question point value (each question is an equal share of max_score)
+  // and the running total of manually-scored answers (essay/voice/image).
+  const perQuestion = questions.length ? Math.round(quiz.max_score / questions.length) : 0;
+  const manualTotal = useMemo(
+    () => Object.values(manualScores).reduce((sum, v) => sum + (Number.isFinite(v) ? v : 0), 0),
+    [manualScores],
+  );
+
+
   // Pre-fill the final score from the automatic rule when not yet graded.
   const [score, setScore] = useState<number>(
     submission.status === "graded" && submission.score != null ? submission.score : auto.autoScore,
   );
   const [scoreTouched, setScoreTouched] = useState(false);
+  // Final score defaults to auto (objective) + manual per-question points, until
+  // the teacher overrides the final value directly.
   useEffect(() => {
-    if (!scoreTouched && submission.status !== "graded") setScore(auto.autoScore);
-  }, [auto.autoScore, scoreTouched, submission.status]);
+    if (!scoreTouched && submission.status !== "graded") {
+      setScore(Math.min(quiz.max_score, auto.autoScore + manualTotal));
+    }
+  }, [auto.autoScore, manualTotal, scoreTouched, submission.status, quiz.max_score]);
 
   const halaqoh = isHalaqoh(quiz.subject);
   const halaqohMeta = useMemo(() => {
@@ -149,19 +161,9 @@ export function QuizGradeDialog({
     return () => { active = false; };
   }, [questions, studentAnswers, signFile]);
 
-  async function runTranscribe(i: number) {
-    const path = studentAnswers[i];
-    if (!path) return;
-    setTranscribing(i);
-    try {
-      const res = await transcribe({ data: { path } });
-      setTranscripts((t) => ({ ...t, [i]: res.text || (lang === "id" ? "(tidak ada teks terdeteksi)" : "(no text detected)") }));
-    } catch (e) {
-      toast.error((e as Error).message);
-    } finally {
-      setTranscribing(null);
-    }
-  }
+
+
+
 
   const total = computeTotal(maba.tajwid, maba.kelancaran, maba.fashohah);
 
@@ -213,14 +215,14 @@ export function QuizGradeDialog({
         <DialogHeader><DialogTitle>{lang === "id" ? "Nilai" : "Grade"} · {studentName}</DialogTitle></DialogHeader>
         <div className="space-y-3">
           {/* Automatic scoring rule summary */}
-          {auto.objective > 0 && (
+          {(auto.objective > 0 || auto.manual > 0) && (
             <div className="flex flex-wrap items-center gap-2 rounded-xl border-2 border-primary/30 bg-primary/5 p-3 text-xs font-semibold">
-              <span className="text-primary">{lang === "id" ? "Skor otomatis" : "Auto-scoring"}:</span>
-              <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-emerald-700">✓ {auto.correct}/{auto.objective} {lang === "id" ? "benar" : "correct"}</span>
-              {auto.manual > 0 && <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-amber-700">✍️ {auto.manual} {lang === "id" ? "perlu koreksi manual" : "need manual review"}</span>}
-              <span className="rounded-full bg-primary/15 px-2 py-0.5 text-primary">{lang === "id" ? "saran nilai" : "suggested"}: {auto.autoScore}</span>
-              <span className="w-full text-[11px] font-normal text-muted-foreground">{lang === "id" ? `Aturan: tiap soal bernilai ${Math.round(auto.per)} poin. Soal esai/audio ditambahkan manual.` : `Rule: each question = ${Math.round(auto.per)} pts. Add essay/audio points manually.`}</span>
-              <Button type="button" size="sm" variant="outline" className="h-6 px-2" onClick={() => { setScore(auto.autoScore); setScoreTouched(true); }}>{lang === "id" ? "Terapkan" : "Apply"}</Button>
+              <span className="text-primary">{lang === "id" ? "Skor" : "Scoring"}:</span>
+              {auto.objective > 0 && <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-emerald-700">✓ {auto.correct}/{auto.objective} {lang === "id" ? "benar (otomatis)" : "correct (auto)"} · {auto.autoScore} {lang === "id" ? "poin" : "pts"}</span>}
+              {auto.manual > 0 && <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-amber-700">✍️ {Object.keys(manualScores).length}/{auto.manual} {lang === "id" ? "jawaban dinilai" : "answers scored"} · {manualTotal} {lang === "id" ? "poin" : "pts"}</span>}
+              <span className="rounded-full bg-primary/15 px-2 py-0.5 text-primary">{lang === "id" ? "total" : "total"}: {Math.min(quiz.max_score, auto.autoScore + manualTotal)}/{quiz.max_score}</span>
+              <span className="w-full text-[11px] font-normal text-muted-foreground">{lang === "id" ? `Aturan: tiap soal bernilai ${perQuestion} poin. Nilai tiap jawaban audio/gambar/esai secara terpisah di bawah.` : `Rule: each question = ${perQuestion} pts. Score each audio/image/essay answer separately below.`}</span>
+              <Button type="button" size="sm" variant="outline" className="h-6 px-2" onClick={() => { setScore(Math.min(quiz.max_score, auto.autoScore + manualTotal)); setScoreTouched(true); }}>{lang === "id" ? "Terapkan total" : "Apply total"}</Button>
             </div>
           )}
           {questions.map((q, i) => {
@@ -241,15 +243,6 @@ export function QuizGradeDialog({
                   {q.type === "voice" ? (
                     <div className="space-y-2">
                       {voiceUrls[i] ? <audio controls src={voiceUrls[i]} className="mt-1 w-full" /> : <span className="text-muted-foreground">{ans ? (lang === "id" ? "(memuat audio…)" : "(loading audio…)") : (lang === "id" ? "(tidak ada rekaman)" : "(no recording)")}</span>}
-                      {ans && (
-                        <Button type="button" size="sm" variant="outline" className="h-7" disabled={transcribing === i} onClick={() => runTranscribe(i)}>
-                          {transcribing === i ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />}
-                          {lang === "id" ? "Ubah audio ke teks" : "Transcribe audio"}
-                        </Button>
-                      )}
-                      {transcripts[i] && (
-                        <p className="rounded-lg border border-primary/30 bg-primary/5 p-2 text-xs italic text-foreground/80">“{transcripts[i]}”</p>
-                      )}
                     </div>
                   ) : q.type === "image" ? (
                     <div className="space-y-1">
@@ -272,6 +265,26 @@ export function QuizGradeDialog({
                 {objective && verdict === "wrong" && (
                   <p className="mt-1 text-xs text-emerald-700">{lang === "id" ? "Kunci:" : "Key:"} {keyText(q, key, lang)}</p>
                 )}
+                {verdict === "manual" && (
+                  <div className="mt-2 flex items-center gap-2 border-t border-dashed border-border pt-2">
+                    <Label className="text-xs font-bold text-amber-700">⭐ {lang === "id" ? "Nilai soal ini" : "Score this answer"}</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={perQuestion}
+                      value={manualScores[i] ?? ""}
+                      placeholder="0"
+                      className="h-8 w-24"
+                      onChange={(e) => {
+                        const raw = e.target.value === "" ? 0 : Math.min(perQuestion, Math.max(0, Number(e.target.value)));
+                        setManualScores((m) => ({ ...m, [i]: raw }));
+                        setScoreTouched(false);
+                      }}
+                    />
+                    <span className="text-xs text-muted-foreground">/ {perQuestion} {lang === "id" ? "poin" : "pts"}</span>
+                  </div>
+                )}
+
               </div>
             );
           })}
