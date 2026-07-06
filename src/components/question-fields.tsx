@@ -26,7 +26,7 @@ export const isHalaqohType = (t: BType) => HALAQOH_TYPES.includes(t);
 
 export const ALL_TYPES: BType[] = [
   "multiple_choice", "complex_multiple_choice", "true_false", "short_answer",
-  "essay", "voice", "halaqoh_menyimak", "halaqoh_setoran", "halaqoh_tilawah",
+  "essay", "voice", "image", "halaqoh_menyimak", "halaqoh_setoran", "halaqoh_tilawah",
 ];
 
 export const TYPE_LABEL = (t: BType, lang: string): string => {
@@ -37,6 +37,7 @@ export const TYPE_LABEL = (t: BType, lang: string): string => {
     short_answer: ["Isian Singkat", "Short Answer"],
     essay: ["Esai (manual)", "Essay (manual)"],
     voice: ["Jawaban Audio", "Audio Answer"],
+    image: ["Jawaban Foto/Gambar", "Photo/Image Answer"],
     halaqoh_menyimak: ["Halaqoh: Menyimak Surah", "Halaqoh: Listening"],
     halaqoh_setoran: ["Halaqoh: Setoran Hafalan", "Halaqoh: Memorization"],
     halaqoh_tilawah: ["Halaqoh: Tilawah Harian", "Halaqoh: Daily Tilawah"],
