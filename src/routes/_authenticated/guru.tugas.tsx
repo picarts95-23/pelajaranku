@@ -22,6 +22,7 @@ import { ANSWER_FORMATS, JUZ_LIST, SURAHS, type AnswerFormat } from "@/lib/quran
 import { isHalaqohSubject, SETORAN_TYPES } from "@/lib/mutabaah";
 import { QuizTabs } from "@/components/quiz-tabs";
 import { QuizGradeDialog } from "@/components/quiz-grade-dialog";
+import { signAnswerFile } from "@/lib/transcribe.functions";
 
 export const Route = createFileRoute("/_authenticated/guru/tugas")({
   head: () => ({ meta: [{ title: "Tugas · EduQuest Academy" }] }),
