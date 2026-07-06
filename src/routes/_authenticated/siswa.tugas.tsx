@@ -309,6 +309,14 @@ function QuizCard({ quiz }: { quiz: any }) {
           const { error: upErr } = await supabase.storage.from("voice-answers").upload(path, blob);
           if (upErr) throw upErr;
           finalAnswers[i] = path;
+        } else if (type === "image") {
+          const file = imageFiles[i];
+          if (!file) throw new Error(lang === "id" ? `Unggah foto jawaban soal ${i + 1}` : `Upload photo for Q${i + 1}`);
+          const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+          const path = `${user!.id}/${quiz.id}-${i}-${crypto.randomUUID()}.${ext}`;
+          const { error: upErr } = await supabase.storage.from("answer-images").upload(path, file, { contentType: file.type });
+          if (upErr) throw upErr;
+          finalAnswers[i] = path;
         } else if (finalAnswers[i] === null || finalAnswers[i] === undefined || String(finalAnswers[i]).trim() === "") {
           throw new Error(lang === "id" ? `Jawab soal ${i + 1} dulu ya!` : `Answer Q${i + 1} first!`);
         }
