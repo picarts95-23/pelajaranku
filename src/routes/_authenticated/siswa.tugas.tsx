@@ -247,9 +247,23 @@ function QuestCard({ a }: { a: any }) {
                       <div className="mt-2"><VoiceRecorder onChange={({ blob }) => setVoiceBlob(blob)} /></div>
                       {a.mySubmission?.file_url && !voiceBlob && <p className="mt-1 text-xs text-muted-foreground">✅ {lang === "id" ? "Rekaman sebelumnya tersimpan. Rekam ulang untuk mengganti." : "Previous recording saved. Re-record to replace."}</p>}
                     </div>
+                  ) : isPhotoFmt ? (
+                    <div>
+                      <Label>{lang === "id" ? "Unggah foto/gambar jawabanmu" : "Upload your photo/image answer"}</Label>
+                      <input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+                        className="mt-2 block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-siswa file:px-3 file:py-1.5 file:text-white" />
+                      {imageFile && <p className="mt-1 text-xs text-emerald-600">✅ {imageFile.name}</p>}
+                      {!imageFile && a.mySubmission?.file_url && <p className="mt-1 text-xs text-muted-foreground">✅ {lang === "id" ? "Foto sebelumnya tersimpan. Pilih file baru untuk mengganti." : "Previous photo saved. Choose a new file to replace."}</p>}
+                    </div>
                   ) : (
                     <>
                       <div><Label>{t("yourAnswer")}</Label><Textarea rows={6} value={content} onChange={(e) => setContent(e.target.value)} /></div>
+                      <div>
+                        <Label>{lang === "id" ? "Lampiran foto (opsional)" : "Photo attachment (optional)"}</Label>
+                        <input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+                          className="mt-1 block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-siswa file:px-3 file:py-1.5 file:text-white" />
+                        {imageFile && <p className="mt-1 text-xs text-emerald-600">✅ {imageFile.name}</p>}
+                      </div>
                       <div><Label>{t("fileUrl")}</Label><Input value={fileUrl} onChange={(e) => setFileUrl(e.target.value)} placeholder="https://..." /></div>
                     </>
                   )}
