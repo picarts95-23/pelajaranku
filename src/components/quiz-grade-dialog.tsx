@@ -104,9 +104,13 @@ export function QuizGradeDialog({
     submission.status === "graded" && submission.score != null ? submission.score : auto.autoScore,
   );
   const [scoreTouched, setScoreTouched] = useState(false);
+  // Final score defaults to auto (objective) + manual per-question points, until
+  // the teacher overrides the final value directly.
   useEffect(() => {
-    if (!scoreTouched && submission.status !== "graded") setScore(auto.autoScore);
-  }, [auto.autoScore, scoreTouched, submission.status]);
+    if (!scoreTouched && submission.status !== "graded") {
+      setScore(Math.min(quiz.max_score, auto.autoScore + manualTotal));
+    }
+  }, [auto.autoScore, manualTotal, scoreTouched, submission.status, quiz.max_score]);
 
   const halaqoh = isHalaqoh(quiz.subject);
   const halaqohMeta = useMemo(() => {
