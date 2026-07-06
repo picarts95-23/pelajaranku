@@ -16,6 +16,7 @@ export type BType =
   | "short_answer"
   | "essay"
   | "voice"
+  | "image"
   | "halaqoh_menyimak"
   | "halaqoh_setoran"
   | "halaqoh_tilawah";
