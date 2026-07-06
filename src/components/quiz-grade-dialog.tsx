@@ -22,6 +22,7 @@ export const Q_TYPE_LABEL = (type: QType, lang: string): string => {
     short_answer: ["Isian Singkat", "Short Answer"],
     essay: ["Esai (manual)", "Essay (manual)"],
     voice: ["Jawaban Audio (manual)", "Audio Answer (manual)"],
+    image: ["Jawaban Foto/Gambar (manual)", "Photo/Image Answer (manual)"],
   };
   return lang === "id" ? map[type][0] : map[type][1];
 };
