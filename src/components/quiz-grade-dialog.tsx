@@ -134,15 +134,20 @@ export function QuizGradeDialog({
     (async () => {
       const next: Record<number, string> = {};
       for (let i = 0; i < questions.length; i++) {
-        if (questions[i]?.type === "voice" && studentAnswers[i]) {
-          const { data } = await supabase.storage.from("voice-answers").createSignedUrl(studentAnswers[i], 3600);
-          if (data?.signedUrl) next[i] = data.signedUrl;
-        }
+        const type = questions[i]?.type;
+        const path = studentAnswers[i];
+        if (!path) continue;
+        const bucket = type === "voice" ? "voice-answers" : type === "image" ? "answer-images" : null;
+        if (!bucket) continue;
+        try {
+          const r = await signFile({ data: { bucket, path } });
+          if (r?.url) next[i] = r.url;
+        } catch { /* ignore missing file */ }
       }
       if (active) setVoiceUrls(next);
     })();
     return () => { active = false; };
-  }, [questions, studentAnswers]);
+  }, [questions, studentAnswers, signFile]);
 
   async function runTranscribe(i: number) {
     const path = studentAnswers[i];
