@@ -264,6 +264,26 @@ export function QuizGradeDialog({
                 {objective && verdict === "wrong" && (
                   <p className="mt-1 text-xs text-emerald-700">{lang === "id" ? "Kunci:" : "Key:"} {keyText(q, key, lang)}</p>
                 )}
+                {verdict === "manual" && (
+                  <div className="mt-2 flex items-center gap-2 border-t border-dashed border-border pt-2">
+                    <Label className="text-xs font-bold text-amber-700">⭐ {lang === "id" ? "Nilai soal ini" : "Score this answer"}</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={perQuestion}
+                      value={manualScores[i] ?? ""}
+                      placeholder="0"
+                      className="h-8 w-24"
+                      onChange={(e) => {
+                        const raw = e.target.value === "" ? 0 : Math.min(perQuestion, Math.max(0, Number(e.target.value)));
+                        setManualScores((m) => ({ ...m, [i]: raw }));
+                        setScoreTouched(false);
+                      }}
+                    />
+                    <span className="text-xs text-muted-foreground">/ {perQuestion} {lang === "id" ? "poin" : "pts"}</span>
+                  </div>
+                )}
+
               </div>
             );
           })}
