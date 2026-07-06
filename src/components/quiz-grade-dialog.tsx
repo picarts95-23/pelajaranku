@@ -251,6 +251,16 @@ export function QuizGradeDialog({
                         <p className="rounded-lg border border-primary/30 bg-primary/5 p-2 text-xs italic text-foreground/80">“{transcripts[i]}”</p>
                       )}
                     </div>
+                  ) : q.type === "image" ? (
+                    <div className="space-y-1">
+                      {voiceUrls[i] ? (
+                        <a href={voiceUrls[i]} target="_blank" rel="noreferrer" className="block">
+                          <img src={voiceUrls[i]} alt="jawaban siswa" className="mt-1 max-h-72 rounded-lg border-2 border-border object-contain" />
+                        </a>
+                      ) : (
+                        <span className="text-muted-foreground">{ans ? (lang === "id" ? "(memuat gambar…)" : "(loading image…)") : (lang === "id" ? "(tidak ada gambar)" : "(no image)")}</span>
+                      )}
+                    </div>
                   ) : q.type === "multiple_choice" ? (
                     <span>{lang === "id" ? "Jawaban:" : "Answer:"} {Array.isArray(q.options) && q.options[Number(ans)] != null ? q.options[Number(ans)] : "—"}</span>
                   ) : q.type === "true_false" ? (
