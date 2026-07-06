@@ -291,6 +291,7 @@ function QuizCard({ quiz }: { quiz: any }) {
   const questions: any[] = Array.isArray(quiz.questions) ? quiz.questions : [];
   const [answers, setAnswers] = useState<any[]>(() => questions.map(() => null));
   const [voiceBlobs, setVoiceBlobs] = useState<Record<number, Blob | null>>({});
+  const [imageFiles, setImageFiles] = useState<Record<number, File | null>>({});
   const [result, setResult] = useState<QResult | null>(null);
   const done = !!quiz.mySubmission;
 
