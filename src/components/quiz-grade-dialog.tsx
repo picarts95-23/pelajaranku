@@ -151,12 +151,8 @@ export function QuizGradeDialog({
     return () => { active = false; };
   }, [questions, studentAnswers, signFile]);
 
-  // Round-per-question point value (each question is an equal share of max_score).
-  const perQuestion = questions.length ? Math.round(quiz.max_score / questions.length) : 0;
-  const manualTotal = useMemo(
-    () => Object.values(manualScores).reduce((sum, v) => sum + (Number.isFinite(v) ? v : 0), 0),
-    [manualScores],
-  );
+
+
 
 
   const total = computeTotal(maba.tajwid, maba.kelancaran, maba.fashohah);
