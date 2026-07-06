@@ -446,6 +446,10 @@ export function QuestionEditorList({
               {q.type === "essay" && (
                 <p className="mt-2 rounded-lg bg-amber-500/10 px-3 py-1.5 text-xs font-semibold text-amber-700">{lang === "id" ? "Esai — dinilai manual oleh guru." : "Essay — graded manually."}</p>
               )}
+
+              {q.type === "image" && (
+                <p className="mt-2 rounded-lg bg-sky-500/10 px-3 py-1.5 text-xs font-semibold text-sky-700">🖼️ {lang === "id" ? "Siswa menjawab dengan mengunggah foto/gambar (dinilai manual)." : "Photo/image answer (manual)."}</p>
+              )}
             </>
           )}
         </div>
