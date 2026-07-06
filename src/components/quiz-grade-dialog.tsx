@@ -214,14 +214,14 @@ export function QuizGradeDialog({
         <DialogHeader><DialogTitle>{lang === "id" ? "Nilai" : "Grade"} · {studentName}</DialogTitle></DialogHeader>
         <div className="space-y-3">
           {/* Automatic scoring rule summary */}
-          {auto.objective > 0 && (
+          {(auto.objective > 0 || auto.manual > 0) && (
             <div className="flex flex-wrap items-center gap-2 rounded-xl border-2 border-primary/30 bg-primary/5 p-3 text-xs font-semibold">
-              <span className="text-primary">{lang === "id" ? "Skor otomatis" : "Auto-scoring"}:</span>
-              <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-emerald-700">✓ {auto.correct}/{auto.objective} {lang === "id" ? "benar" : "correct"}</span>
-              {auto.manual > 0 && <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-amber-700">✍️ {auto.manual} {lang === "id" ? "perlu koreksi manual" : "need manual review"}</span>}
-              <span className="rounded-full bg-primary/15 px-2 py-0.5 text-primary">{lang === "id" ? "saran nilai" : "suggested"}: {auto.autoScore}</span>
-              <span className="w-full text-[11px] font-normal text-muted-foreground">{lang === "id" ? `Aturan: tiap soal bernilai ${Math.round(auto.per)} poin. Soal esai/audio ditambahkan manual.` : `Rule: each question = ${Math.round(auto.per)} pts. Add essay/audio points manually.`}</span>
-              <Button type="button" size="sm" variant="outline" className="h-6 px-2" onClick={() => { setScore(auto.autoScore); setScoreTouched(true); }}>{lang === "id" ? "Terapkan" : "Apply"}</Button>
+              <span className="text-primary">{lang === "id" ? "Skor" : "Scoring"}:</span>
+              {auto.objective > 0 && <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-emerald-700">✓ {auto.correct}/{auto.objective} {lang === "id" ? "benar (otomatis)" : "correct (auto)"} · {auto.autoScore} {lang === "id" ? "poin" : "pts"}</span>}
+              {auto.manual > 0 && <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-amber-700">✍️ {Object.keys(manualScores).length}/{auto.manual} {lang === "id" ? "jawaban dinilai" : "answers scored"} · {manualTotal} {lang === "id" ? "poin" : "pts"}</span>}
+              <span className="rounded-full bg-primary/15 px-2 py-0.5 text-primary">{lang === "id" ? "total" : "total"}: {Math.min(quiz.max_score, auto.autoScore + manualTotal)}/{quiz.max_score}</span>
+              <span className="w-full text-[11px] font-normal text-muted-foreground">{lang === "id" ? `Aturan: tiap soal bernilai ${perQuestion} poin. Nilai tiap jawaban audio/gambar/esai secara terpisah di bawah.` : `Rule: each question = ${perQuestion} pts. Score each audio/image/essay answer separately below.`}</span>
+              <Button type="button" size="sm" variant="outline" className="h-6 px-2" onClick={() => { setScore(Math.min(quiz.max_score, auto.autoScore + manualTotal)); setScoreTouched(true); }}>{lang === "id" ? "Terapkan total" : "Apply total"}</Button>
             </div>
           )}
           {questions.map((q, i) => {
