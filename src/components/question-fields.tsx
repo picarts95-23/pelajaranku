@@ -233,6 +233,9 @@ export function mapBankToQuiz(b: any): { question: any; key: any } {
   if (b.type === "short_answer") {
     return { question: { type: "short_answer", q: b.question, image_url: b.image_url ?? null }, key: String(b.answer ?? "").trim() };
   }
+  if (b.type === "image") {
+    return { question: { type: "image", q: b.question, image_url: b.image_url ?? null }, key: null };
+  }
   // essay / complex / others -> manual essay
   return { question: { type: "essay", q: b.question, image_url: b.image_url ?? null }, key: null };
 }
