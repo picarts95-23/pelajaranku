@@ -227,11 +227,19 @@ function GuruMapelPage() {
                       {lang === "id" ? "Sudah membaca" : "Read"}: {readers.length}{total ? `/${total}` : ""} {lang === "id" ? "siswa" : "students"}
                     </div>
                     {readers.length > 0 && (
-                      <div className="mt-1.5 flex flex-wrap gap-1">
+                      <div className="mt-1.5 space-y-1.5">
                         {readers.map((r) => (
-                          <span key={r.user_id} className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
-                            <CheckCircle2 className="size-3" /> {r.full_name}
-                          </span>
+                          <div key={r.user_id} className="rounded-lg bg-emerald-500/5 px-2 py-1.5">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
+                              <CheckCircle2 className="size-3" /> {r.full_name}
+                            </span>
+                            {r.note && (
+                              <p className="mt-1 whitespace-pre-wrap text-xs text-foreground/80">
+                                <span className="font-display font-semibold text-muted-foreground">{lang === "id" ? "Catatan: " : "Note: "}</span>
+                                {r.note}
+                              </p>
+                            )}
+                          </div>
                         ))}
                       </div>
                     )}
