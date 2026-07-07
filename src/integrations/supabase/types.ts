@@ -1187,6 +1187,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_view_status: {
+        Args: { _status_id: string; _uid: string }
+        Returns: boolean
+      }
       grade_quiz_submission: {
         Args: { _answers: Json; _assignment_id: string }
         Returns: Json
@@ -1268,6 +1272,10 @@ export type Database = {
           id: string
           school_id_number: string
         }[]
+      }
+      shares_class_with: {
+        Args: { _other: string; _uid: string }
+        Returns: boolean
       }
     }
     Enums: {
