@@ -66,7 +66,7 @@ function GuruMapelPage() {
     queryFn: async () => {
       const ids = materialIds.split(",").filter(Boolean);
       const { data } = await supabase
-        .from("material_reads").select("material_id, user_id, updated_at").in("material_id", ids);
+        .from("material_reads").select("material_id, user_id, updated_at, note").in("material_id", ids);
       const readerIds = [...new Set((data ?? []).map((r: any) => r.user_id))];
       const names: Record<string, string> = {};
       if (readerIds.length) {
