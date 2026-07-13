@@ -87,8 +87,8 @@ export const syncDatabaseToSheet = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { data: isGuru } = await supabase.rpc("has_role", { _user_id: userId, _role: "guru" });
     if (!isGuru) throw new Error("Hanya guru yang dapat menyalin database ke Google Spreadsheet.");
-    const { runSheetSync } = await import("@/lib/sheets-sync.server");
-    return runSheetSync();
+    const { runSheetSyncForTeacher } = await import("@/lib/sheets-sync.server");
+    return runSheetSyncForTeacher(userId);
   });
 
 /** Read the current backup status (spreadsheet link + last sync time). */
@@ -98,10 +98,10 @@ export const getSheetSyncStatus = createServerFn({ method: "GET" })
     const { supabase, userId } = context;
     const { data: isGuru } = await supabase.rpc("has_role", { _user_id: userId, _role: "guru" });
     if (!isGuru) throw new Error("Hanya guru yang dapat melihat status backup.");
-    const { data } = await supabase
-      .from("sheet_sync_state")
+    const { data } = await (supabase as any)
+      .from("teacher_sheet_sync")
       .select("spreadsheet_url, last_synced_at, last_status")
-      .eq("id", 1)
+      .eq("teacher_id", userId)
       .maybeSingle();
     return {
       url: (data as { spreadsheet_url?: string } | null)?.spreadsheet_url ?? null,
