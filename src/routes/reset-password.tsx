@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Loader2, KeyRound, Eye, EyeOff, Compass } from "lucide-react";
 import { toast } from "sonner";
+import { z } from "zod";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -11,8 +12,15 @@ import { Label } from "@/components/ui/label";
 import { LangToggle } from "@/components/lang-toggle";
 import { useLang } from "@/lib/i18n";
 
+const searchSchema = z.object({
+  code: z.string().optional(),
+  token_hash: z.string().optional(),
+  type: z.string().optional(),
+});
+
 export const Route = createFileRoute("/reset-password")({
   ssr: false,
+  validateSearch: searchSchema,
   head: () => ({
     meta: [
       { title: "Atur Ulang Kata Sandi · EduQuest Academy" },
@@ -24,29 +32,94 @@ export const Route = createFileRoute("/reset-password")({
 
 function ResetPasswordPage() {
   const navigate = useNavigate();
+  const search = Route.useSearch();
   const { lang } = useLang();
   const [ready, setReady] = useState(false);
   const [hasSession, setHasSession] = useState(false);
+  const [accountEmail, setAccountEmail] = useState<string | null>(null);
+  const [linkError, setLinkError] = useState<string | null>(null);
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [show, setShow] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // Supabase sets a temporary recovery session when the user opens the email
-  // link (type=recovery in the URL hash). We confirm a session exists before
-  // allowing the password change.
+  const beginRecovery = async () => {
+    setLinkError(null);
+
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    const queryParams = new URLSearchParams(window.location.search);
+    const accessToken = hashParams.get("access_token");
+    const refreshToken = hashParams.get("refresh_token");
+    const hashType = hashParams.get("type");
+    const errorDescription = hashParams.get("error_description") || queryParams.get("error_description");
+
+    if (errorDescription) {
+      setLinkError(decodeURIComponent(errorDescription.replace(/\+/g, " ")));
+      setReady(true);
+      return;
+    }
+
+    try {
+      if (accessToken && refreshToken && hashType === "recovery") {
+        const { data, error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+        if (error) throw error;
+        setHasSession(!!data.session);
+        setAccountEmail(data.session?.user.email ?? null);
+        window.history.replaceState({}, document.title, "/reset-password");
+        setReady(true);
+        return;
+      }
+
+      if (search.code) {
+        const { data, error } = await supabase.auth.exchangeCodeForSession(search.code);
+        if (error) throw error;
+        setHasSession(!!data.session);
+        setAccountEmail(data.session?.user.email ?? null);
+        window.history.replaceState({}, document.title, "/reset-password");
+        setReady(true);
+        return;
+      }
+
+      if (search.token_hash && search.type === "recovery") {
+        const { data, error } = await supabase.auth.verifyOtp({
+          token_hash: search.token_hash,
+          type: "recovery",
+        });
+        if (error) throw error;
+        setHasSession(!!data.session);
+        setAccountEmail(data.session?.user.email ?? null);
+        window.history.replaceState({}, document.title, "/reset-password");
+        setReady(true);
+        return;
+      }
+
+      const { data } = await supabase.auth.getSession();
+      setHasSession(!!data.session);
+      setAccountEmail(data.session?.user.email ?? null);
+      setReady(true);
+    } catch (err) {
+      setLinkError((err as Error).message);
+      setHasSession(false);
+      setReady(true);
+    }
+  };
+
   useEffect(() => {
     let active = true;
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (!active) return;
-      if (event === "PASSWORD_RECOVERY" || session) setHasSession(true);
+      if (event === "PASSWORD_RECOVERY" || session) {
+        setHasSession(true);
+        setAccountEmail(session?.user.email ?? null);
+      }
     });
-    supabase.auth.getSession().then(({ data }) => {
-      if (!active) return;
-      if (data.session) setHasSession(true);
-      setReady(true);
-    });
+    beginRecovery();
     return () => { active = false; sub.subscription.unsubscribe(); };
+    // Recovery is handled once when the email link opens.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -64,8 +137,9 @@ function ResetPasswordPage() {
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
       toast.success(lang === "id" ? "Password berhasil diganti!" : "Password updated!");
+      const email = accountEmail ?? undefined;
       await supabase.auth.signOut();
-      navigate({ to: "/auth" });
+      navigate({ to: "/auth", search: { mode: "login", email, reset: "success" } });
     } catch (err) {
       toast.error((err as Error).message);
     } finally {
@@ -114,14 +188,21 @@ function ResetPasswordPage() {
                 {lang === "id" ? "Tautan tidak valid atau kedaluwarsa" : "Invalid or expired link"}
               </p>
               <p className="mt-1 text-muted-foreground">
-                {lang === "id"
+                {linkError || (lang === "id"
                   ? "Silakan minta tautan atur ulang baru dari halaman masuk."
-                  : "Please request a new reset link from the sign-in page."}
+                  : "Please request a new reset link from the sign-in page.")}
               </p>
-              <Button asChild className="mt-4 w-full"><Link to="/auth">{lang === "id" ? "Ke halaman masuk" : "Go to sign in"}</Link></Button>
+              <Button asChild className="mt-4 w-full">
+                <Link to="/auth" search={{ mode: "login" }}>{lang === "id" ? "Ke halaman masuk" : "Go to sign in"}</Link>
+              </Button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
+              {accountEmail && (
+                <div className="rounded-2xl border border-primary/25 bg-primary/10 px-4 py-3 text-sm text-muted-foreground">
+                  {lang === "id" ? "Akun" : "Account"}: <span className="font-semibold text-foreground">{accountEmail}</span>
+                </div>
+              )}
               <div>
                 <Label className="mb-1.5 block">{lang === "id" ? "Password baru" : "New password"}</Label>
                 <div className="relative">
