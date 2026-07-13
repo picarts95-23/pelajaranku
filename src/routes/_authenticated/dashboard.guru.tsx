@@ -264,6 +264,14 @@ function GuruDashboard() {
               tint="bg-accent"
             />
             <FeatureCard
+              to="/guru/pengumuman"
+              icon={<Megaphone className="size-6" />}
+              title={lang === "id" ? "Papan Pengumuman" : "Announcements"}
+              desc={lang === "id" ? "Kirim pengumuman ke siswa & lihat reaksi serta masukan mereka." : "Post announcements & see student reactions and feedback."}
+              tint="bg-gradient-sunset"
+            />
+
+            <FeatureCard
               to="/guru/mutabaah"
               icon={<BookOpenCheck className="size-6" />}
               title={lang === "id" ? "Mutaba'ah Tahfidz" : "Tahfidz Mutaba'ah"}
