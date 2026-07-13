@@ -195,6 +195,17 @@ async function buildTeacherTabs(teacherId: string): Promise<Tabs> {
     .select("student_id, class_id, session_date, session_type, setoran_kind, surah, juz, pages_count, tajwid_score, kelancaran_score, fashohah_score, total_score, predikat")
     .eq("teacher_id", teacherId).order("session_date", { ascending: true });
 
+  // Teaching journals & weekly lesson plans (RPP).
+  const { data: journals } = await supabaseAdmin
+    .from("journals")
+    .select("date, class_id, subject, topic, notes, created_at")
+    .eq("teacher_id", teacherId).order("date", { ascending: true });
+  const { data: lessonPlans } = await supabaseAdmin
+    .from("lesson_plans")
+    .select("week_label, class_id, subject, start_date, end_date, objectives, materials, methods, media, assessment, notes, created_at")
+    .eq("teacher_id", teacherId).order("start_date", { ascending: true });
+
+
   const sName = (id: unknown) => studentNameById.get(id as string) || cell(id);
   const cName = (id: unknown) => classNameById.get(id as string) || cell(id);
 
