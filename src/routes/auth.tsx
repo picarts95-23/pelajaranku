@@ -20,6 +20,8 @@ import { claimTeacherRole } from "@/lib/roles.functions";
 const searchSchema = z.object({
   mode: z.enum(["login", "signup"]).optional().default("login"),
   role: z.enum(["guru", "siswa"]).optional().default("siswa"),
+  email: z.string().optional(),
+  reset: z.enum(["success"]).optional(),
 });
 
 export const Route = createFileRoute("/auth")({
@@ -38,14 +40,14 @@ export const Route = createFileRoute("/auth")({
 });
 
 function AuthPage() {
-  const { mode: initialMode, role: initialRole } = Route.useSearch();
+  const { mode: initialMode, role: initialRole, email: initialEmail, reset } = Route.useSearch();
   const navigate = useNavigate();
   const { session, refresh } = useAuth();
   const { t, lang } = useLang();
 
   const [mode, setMode] = useState<"login" | "signup">(initialMode);
   const [role, setRole] = useState<AppRole>(initialRole);
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(initialEmail ?? "");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [className, setClassName] = useState("");
@@ -134,15 +136,15 @@ function AuthPage() {
       }
     } catch (err) {
       if (mode === "login") {
-        setFailedAttempts((n) => {
-          const next = n + 1;
-          if (next >= 3) {
-            toast.error(lang === "id"
-              ? "Sudah 3 kali gagal. Coba atur ulang kata sandi Anda."
-              : "3 failed attempts. Try resetting your password.");
-          }
-          return next;
-        });
+        const next = failedAttempts + 1;
+        setFailedAttempts(next);
+        if (next >= 3) {
+          setResetEmail(email);
+          setForgotOpen(true);
+          toast.error(lang === "id"
+            ? "Sudah 3 kali gagal. Silakan atur ulang kata sandi Anda."
+            : "3 failed attempts. Please reset your password.");
+        }
       }
       toast.error((err as Error).message);
     } finally {
@@ -203,6 +205,20 @@ function AuthPage() {
           initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
           className="rounded-3xl border-2 border-border bg-card p-6 shadow-magic sm:p-8"
         >
+          {/* Mode switch */}
+          {reset === "success" && (
+            <div className="mb-5 rounded-2xl border-2 border-primary/30 bg-primary/10 p-4 text-sm text-foreground">
+              <p className="font-display font-semibold">
+                {lang === "id" ? "Password baru sudah tersimpan" : "New password saved"}
+              </p>
+              <p className="mt-1 text-muted-foreground">
+                {lang === "id"
+                  ? "Silakan masuk dengan password baru. Sistem akan membuka dashboard sesuai peran akun Anda."
+                  : "Sign in with your new password. The app will open the dashboard for your account role."}
+              </p>
+            </div>
+          )}
+
           {/* Mode switch */}
           <div className="mb-6 inline-flex rounded-full border-2 border-border bg-muted p-1">
             {(["login", "signup"] as const).map((m) => (
@@ -312,31 +328,34 @@ function AuthPage() {
 
       <Dialog open={forgotOpen} onOpenChange={setForgotOpen}>
         <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{lang === "id" ? "Atur ulang kata sandi" : "Reset password"}</DialogTitle>
-            <DialogDescription>
-              {lang === "id"
-                ? "Masukkan email akunmu. Kami akan mengirim tautan untuk membuat kata sandi baru."
-                : "Enter your account email. We'll send a link to create a new password."}
-            </DialogDescription>
-          </DialogHeader>
-          <div>
-            <Label className="mb-1.5 block">{t("email")}</Label>
-            <Input
-              type="email"
-              value={resetEmail}
-              onChange={(e) => setResetEmail(e.target.value)}
-              placeholder="you@school.edu"
-              className="h-11 rounded-xl border-2"
-            />
-          </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setForgotOpen(false)}>{t("cancel")}</Button>
-            <Button onClick={sendReset} disabled={sendingReset}>
-              {sendingReset && <Loader2 className="mr-2 size-4 animate-spin" />}
-              {lang === "id" ? "Kirim tautan" : "Send link"}
-            </Button>
-          </DialogFooter>
+          <form onSubmit={(e) => { e.preventDefault(); sendReset(); }}>
+            <DialogHeader>
+              <DialogTitle>{lang === "id" ? "Atur ulang kata sandi" : "Reset password"}</DialogTitle>
+              <DialogDescription>
+                {lang === "id"
+                  ? "Masukkan email akunmu. Tautan untuk membuat password baru akan dikirim ke inbox."
+                  : "Enter your account email. A link to create a new password will be sent to your inbox."}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <Label className="mb-1.5 block">{t("email")}</Label>
+              <Input
+                type="email"
+                value={resetEmail}
+                onChange={(e) => setResetEmail(e.target.value)}
+                placeholder="you@school.edu"
+                required
+                className="h-11 rounded-xl border-2"
+              />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="ghost" onClick={() => setForgotOpen(false)}>{t("cancel")}</Button>
+              <Button type="submit" disabled={sendingReset}>
+                {sendingReset && <Loader2 className="mr-2 size-4 animate-spin" />}
+                {lang === "id" ? "Kirim tautan" : "Send link"}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>
