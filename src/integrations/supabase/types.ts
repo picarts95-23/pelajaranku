@@ -533,6 +533,68 @@ export type Database = {
           },
         ]
       }
+      lesson_plans: {
+        Row: {
+          assessment: string | null
+          class_id: string | null
+          created_at: string
+          end_date: string | null
+          id: string
+          materials: string | null
+          media: string | null
+          methods: string | null
+          notes: string | null
+          objectives: string | null
+          start_date: string
+          subject: string | null
+          teacher_id: string
+          updated_at: string
+          week_label: string | null
+        }
+        Insert: {
+          assessment?: string | null
+          class_id?: string | null
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          materials?: string | null
+          media?: string | null
+          methods?: string | null
+          notes?: string | null
+          objectives?: string | null
+          start_date?: string
+          subject?: string | null
+          teacher_id: string
+          updated_at?: string
+          week_label?: string | null
+        }
+        Update: {
+          assessment?: string | null
+          class_id?: string | null
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          materials?: string | null
+          media?: string | null
+          methods?: string | null
+          notes?: string | null
+          objectives?: string | null
+          start_date?: string
+          subject?: string | null
+          teacher_id?: string
+          updated_at?: string
+          week_label?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_plans_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       material_reads: {
         Row: {
           created_at: string
