@@ -282,6 +282,19 @@ async function buildTeacherTabs(teacherId: string): Promise<Tabs> {
     ...((materials ?? []) as any[]).map((m) => [cell(m.title), cName(m.class_id), cell(m.subject), cell(m.description), cell(m.created_at)]),
   ];
 
+  tabs["Jurnal"] = [
+    ["Tanggal", "Kelas", "Mata Pelajaran", "Topik/Kegiatan", "Catatan", "Dibuat"],
+    ...((journals ?? []) as any[]).map((j) => [cell(j.date), cName(j.class_id), cell(j.subject), cell(j.topic), cell(j.notes), cell(j.created_at)]),
+  ];
+
+  tabs["RPP Pekanan"] = [
+    ["Pekan", "Kelas", "Mata Pelajaran", "Mulai", "Selesai", "Tujuan", "Materi Pokok", "Metode", "Media & Sumber", "Penilaian", "Catatan"],
+    ...((lessonPlans ?? []) as any[]).map((r) => [
+      cell(r.week_label), cName(r.class_id), cell(r.subject), cell(r.start_date), cell(r.end_date),
+      cell(r.objectives), cell(r.materials), cell(r.methods), cell(r.media), cell(r.assessment), cell(r.notes),
+    ]),
+  ];
+
   return tabs;
 }
 
