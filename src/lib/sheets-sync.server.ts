@@ -22,6 +22,8 @@ const TAB_TITLES = [
   "Nilai Adab",
   "Mutaba'ah",
   "Materi",
+  "Jurnal",
+  "RPP Pekanan",
 ] as const;
 
 function gatewayHeaders() {
