@@ -41,6 +41,7 @@ const SISWA_NAV: NavItem[] = [
   { to: "/siswa/mapel", key: "navSubjects", icon: Library },
   { to: "/siswa/tugas", key: "navMyQuests", icon: Sword },
   { to: "/siswa/mutabaah", key: "navMutabaah", icon: BookOpenCheck },
+  { to: "/siswa/pengumuman", key: "navAnnouncements", icon: Megaphone },
   { to: "/siswa/nilai", key: "navGrades", icon: GraduationCap },
   { to: "/siswa/badge", key: "navBadges", icon: Award },
   { to: "/siswa/riwayat", key: "navHistory", icon: History },
