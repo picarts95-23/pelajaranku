@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { BookOpen, GraduationCap, ScrollText, TrendingUp, Users, ClipboardCheck, FileQuestion, CalendarCheck, NotebookPen, Trophy, CalendarDays, ArrowRight, Library, BarChart3, BookOpenCheck } from "lucide-react";
+import { BookOpen, GraduationCap, ScrollText, TrendingUp, Users, ClipboardCheck, FileQuestion, CalendarCheck, NotebookPen, Trophy, CalendarDays, ArrowRight, Library, BarChart3, BookOpenCheck, Megaphone } from "lucide-react";
 import { DashboardShell, StatCard } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
@@ -49,16 +49,33 @@ function GuruDashboard() {
     },
   });
 
-  const { data: topStudents = [] } = useQuery({
-    queryKey: ["guru-top", user?.id], enabled: !!user,
+  // Top students grouped per class (3 per class).
+  const { data: topByClass = [] } = useQuery({
+    queryKey: ["guru-top-by-class", user?.id], enabled: !!user,
     queryFn: async () => {
-      const { data: enrolls } = await supabase.from("class_enrollments").select("student_id, classes!inner(teacher_id)").eq("classes.teacher_id", user!.id);
-      const ids = Array.from(new Set((enrolls ?? []).map((e: any) => e.student_id)));
-      if (ids.length === 0) return [];
-      const { data: profs } = await supabase.from("profiles").select("id, full_name, xp, class_name").in("id", ids).order("xp", { ascending: false }).limit(5);
-      return profs ?? [];
+      const { data: classes } = await supabase.from("classes").select("id, name").eq("teacher_id", user!.id).order("name");
+      const clsList = (classes ?? []) as any[];
+      if (clsList.length === 0) return [];
+      const classIds = clsList.map((c) => c.id);
+      const { data: enrolls } = await supabase.from("class_enrollments").select("class_id, student_id").in("class_id", classIds);
+      const idSet = Array.from(new Set((enrolls ?? []).map((e: any) => e.student_id)));
+      const { data: profs } = idSet.length
+        ? await supabase.from("profiles").select("id, full_name, xp, level").in("id", idSet)
+        : { data: [] as any[] };
+      const profById = new Map((profs ?? []).map((p: any) => [p.id, p]));
+      return clsList.map((c) => ({
+        id: c.id as string,
+        name: c.name as string,
+        students: (enrolls ?? [])
+          .filter((e: any) => e.class_id === c.id)
+          .map((e: any) => profById.get(e.student_id))
+          .filter(Boolean)
+          .sort((a: any, b: any) => (b.xp ?? 0) - (a.xp ?? 0))
+          .slice(0, 3),
+      }));
     },
   });
+
 
   // Students who recently submitted a task (awaiting grading)
   const { data: recentSubs = [] } = useQuery({
@@ -247,6 +264,14 @@ function GuruDashboard() {
               tint="bg-accent"
             />
             <FeatureCard
+              to="/guru/pengumuman"
+              icon={<Megaphone className="size-6" />}
+              title={lang === "id" ? "Papan Pengumuman" : "Announcements"}
+              desc={lang === "id" ? "Kirim pengumuman ke siswa & lihat reaksi serta masukan mereka." : "Post announcements & see student reactions and feedback."}
+              tint="bg-gradient-sunset"
+            />
+
+            <FeatureCard
               to="/guru/mutabaah"
               icon={<BookOpenCheck className="size-6" />}
               title={lang === "id" ? "Mutaba'ah Tahfidz" : "Tahfidz Mutaba'ah"}
@@ -284,22 +309,33 @@ function GuruDashboard() {
         </div>
 
         <div className="rounded-3xl border-2 border-border bg-card p-6 shadow-card-rpg">
-          <h2 className="mb-4 font-display text-xl font-bold flex items-center gap-2"><GraduationCap className="size-5 text-accent" /> {lang === "id" ? "Murid Terbaik" : "Top Students"}</h2>
-          {topStudents.length === 0 ? <div className="text-center py-8 text-sm text-muted-foreground">{t("empty")}</div> : (
-            <ul className="space-y-2">
-              {topStudents.map((s: any, i: number) => (
-                <li key={s.id} className="flex items-center gap-3 rounded-xl bg-muted/30 p-3">
-                  <div className="grid size-9 place-items-center rounded-lg bg-siswa font-display text-sm font-bold text-white">{i + 1}</div>
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate font-display font-semibold">{s.full_name}</div>
-                    <div className="text-xs text-muted-foreground">{s.class_name ?? "—"}</div>
+          <h2 className="mb-4 font-display text-xl font-bold flex items-center gap-2"><GraduationCap className="size-5 text-accent" /> {lang === "id" ? "Murid Terbaik per Kelas" : "Top Students per Class"}</h2>
+          {topByClass.length === 0 ? <div className="text-center py-8 text-sm text-muted-foreground">{t("empty")}</div> : (
+            <div className="max-h-[420px] space-y-4 overflow-y-auto pr-1">
+              {topByClass.map((c: any) => (
+                <div key={c.id}>
+                  <div className="mb-2 flex items-center gap-2 text-sm font-display font-bold text-guru">
+                    <BookOpen className="size-4" /> {c.name}
                   </div>
-                  <div className="text-sm font-display font-bold text-primary">{s.xp.toLocaleString()}</div>
-                </li>
+                  {c.students.length === 0 ? (
+                    <div className="rounded-xl bg-muted/30 px-3 py-2 text-xs text-muted-foreground">{lang === "id" ? "Belum ada siswa" : "No students yet"}</div>
+                  ) : (
+                    <ul className="space-y-2">
+                      {c.students.map((s: any, i: number) => (
+                        <li key={s.id} className="flex items-center gap-3 rounded-xl bg-muted/30 p-3">
+                          <div className={`grid size-8 place-items-center rounded-lg font-display text-sm font-bold text-white ${i === 0 ? "bg-coin text-quest-foreground" : i === 1 ? "bg-siswa" : "bg-muted-foreground/50"}`}>{i + 1}</div>
+                          <div className="min-w-0 flex-1 truncate font-display font-semibold">{s.full_name}</div>
+                          <div className="text-sm font-display font-bold text-primary">{(s.xp ?? 0).toLocaleString()} XP</div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               ))}
-            </ul>
+            </div>
           )}
         </div>
+
       </section>
     </DashboardShell>
   );

@@ -89,6 +89,7 @@ export const translations = {
   navRPP: { id: "RPP Pekanan", en: "Weekly Plan", ar: "الخطة الأسبوعية" },
   navMutabaah: { id: "Mutaba'ah", en: "Mutaba'ah", ar: "المتابعة" },
   navEvents: { id: "Kegiatan", en: "Events", ar: "الفعاليات" },
+  navAnnouncements: { id: "Papan Pengumuman", en: "Announcements", ar: "لوحة الإعلانات" },
   navQuestionBank: { id: "Bank Soal", en: "Question Bank", ar: "بنك الأسئلة" },
   navGamification: { id: "Gamifikasi", en: "Gamification", ar: "التحفيز" },
   navMyQuests: { id: "Misi Saya", en: "My Quests", ar: "مهامي" },

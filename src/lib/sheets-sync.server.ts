@@ -22,6 +22,8 @@ const TAB_TITLES = [
   "Nilai Adab",
   "Mutaba'ah",
   "Materi",
+  "Jurnal",
+  "RPP Pekanan",
 ] as const;
 
 function gatewayHeaders() {
@@ -193,6 +195,17 @@ async function buildTeacherTabs(teacherId: string): Promise<Tabs> {
     .select("student_id, class_id, session_date, session_type, setoran_kind, surah, juz, pages_count, tajwid_score, kelancaran_score, fashohah_score, total_score, predikat")
     .eq("teacher_id", teacherId).order("session_date", { ascending: true });
 
+  // Teaching journals & weekly lesson plans (RPP).
+  const { data: journals } = await supabaseAdmin
+    .from("journals")
+    .select("date, class_id, subject, topic, notes, created_at")
+    .eq("teacher_id", teacherId).order("date", { ascending: true });
+  const { data: lessonPlans } = await supabaseAdmin
+    .from("lesson_plans")
+    .select("week_label, class_id, subject, start_date, end_date, objectives, materials, methods, media, assessment, notes, created_at")
+    .eq("teacher_id", teacherId).order("start_date", { ascending: true });
+
+
   const sName = (id: unknown) => studentNameById.get(id as string) || cell(id);
   const cName = (id: unknown) => classNameById.get(id as string) || cell(id);
 
@@ -267,6 +280,19 @@ async function buildTeacherTabs(teacherId: string): Promise<Tabs> {
   tabs["Materi"] = [
     ["Judul", "Kelas", "Mata Pelajaran", "Deskripsi", "Dibuat"],
     ...((materials ?? []) as any[]).map((m) => [cell(m.title), cName(m.class_id), cell(m.subject), cell(m.description), cell(m.created_at)]),
+  ];
+
+  tabs["Jurnal"] = [
+    ["Tanggal", "Kelas", "Mata Pelajaran", "Topik/Kegiatan", "Catatan", "Dibuat"],
+    ...((journals ?? []) as any[]).map((j) => [cell(j.date), cName(j.class_id), cell(j.subject), cell(j.topic), cell(j.notes), cell(j.created_at)]),
+  ];
+
+  tabs["RPP Pekanan"] = [
+    ["Pekan", "Kelas", "Mata Pelajaran", "Mulai", "Selesai", "Tujuan", "Materi Pokok", "Metode", "Media & Sumber", "Penilaian", "Catatan"],
+    ...((lessonPlans ?? []) as any[]).map((r) => [
+      cell(r.week_label), cName(r.class_id), cell(r.subject), cell(r.start_date), cell(r.end_date),
+      cell(r.objectives), cell(r.materials), cell(r.methods), cell(r.media), cell(r.assessment), cell(r.notes),
+    ]),
   ];
 
   return tabs;
