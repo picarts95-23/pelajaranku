@@ -1078,6 +1078,36 @@ export type Database = {
           },
         ]
       }
+      teacher_sheet_sync: {
+        Row: {
+          created_at: string
+          last_status: string | null
+          last_synced_at: string | null
+          spreadsheet_id: string | null
+          spreadsheet_url: string | null
+          teacher_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          last_status?: string | null
+          last_synced_at?: string | null
+          spreadsheet_id?: string | null
+          spreadsheet_url?: string | null
+          teacher_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          last_status?: string | null
+          last_synced_at?: string | null
+          spreadsheet_id?: string | null
+          spreadsheet_url?: string | null
+          teacher_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       teacher_subjects: {
         Row: {
           created_at: string
