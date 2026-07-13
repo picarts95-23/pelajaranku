@@ -30,6 +30,7 @@ const GURU_NAV: NavItem[] = [
   { to: "/guru/jurnal", key: "navJournal", icon: NotebookPen },
   { to: "/guru/mutabaah", key: "navMutabaah", icon: BookOpenCheck },
   { to: "/guru/event", key: "navEvents", icon: CalendarDays },
+  { to: "/guru/pengumuman", key: "navAnnouncements", icon: Megaphone },
   { to: "/guru/bank-soal", key: "navQuestionBank", icon: Database },
   { to: "/guru/gamifikasi", key: "navGamification", icon: Trophy },
 ];
