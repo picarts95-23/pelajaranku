@@ -49,16 +49,33 @@ function GuruDashboard() {
     },
   });
 
-  const { data: topStudents = [] } = useQuery({
-    queryKey: ["guru-top", user?.id], enabled: !!user,
+  // Top students grouped per class (3 per class).
+  const { data: topByClass = [] } = useQuery({
+    queryKey: ["guru-top-by-class", user?.id], enabled: !!user,
     queryFn: async () => {
-      const { data: enrolls } = await supabase.from("class_enrollments").select("student_id, classes!inner(teacher_id)").eq("classes.teacher_id", user!.id);
-      const ids = Array.from(new Set((enrolls ?? []).map((e: any) => e.student_id)));
-      if (ids.length === 0) return [];
-      const { data: profs } = await supabase.from("profiles").select("id, full_name, xp, class_name").in("id", ids).order("xp", { ascending: false }).limit(5);
-      return profs ?? [];
+      const { data: classes } = await supabase.from("classes").select("id, name").eq("teacher_id", user!.id).order("name");
+      const clsList = (classes ?? []) as any[];
+      if (clsList.length === 0) return [];
+      const classIds = clsList.map((c) => c.id);
+      const { data: enrolls } = await supabase.from("class_enrollments").select("class_id, student_id").in("class_id", classIds);
+      const idSet = Array.from(new Set((enrolls ?? []).map((e: any) => e.student_id)));
+      const { data: profs } = idSet.length
+        ? await supabase.from("profiles").select("id, full_name, xp, level").in("id", idSet)
+        : { data: [] as any[] };
+      const profById = new Map((profs ?? []).map((p: any) => [p.id, p]));
+      return clsList.map((c) => ({
+        id: c.id as string,
+        name: c.name as string,
+        students: (enrolls ?? [])
+          .filter((e: any) => e.class_id === c.id)
+          .map((e: any) => profById.get(e.student_id))
+          .filter(Boolean)
+          .sort((a: any, b: any) => (b.xp ?? 0) - (a.xp ?? 0))
+          .slice(0, 3),
+      }));
     },
   });
+
 
   // Students who recently submitted a task (awaiting grading)
   const { data: recentSubs = [] } = useQuery({
