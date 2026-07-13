@@ -86,6 +86,8 @@ export const translations = {
   navAssignments: { id: "Tugas", en: "Assignments", ar: "الواجبات" },
   navAttendance: { id: "Presensi", en: "Attendance", ar: "الحضور" },
   navJournal: { id: "Jurnal", en: "Journal", ar: "اليوميات" },
+  navRPP: { id: "RPP Pekanan", en: "Weekly Plan", ar: "الخطة الأسبوعية" },
+  navMutabaah: { id: "Mutaba'ah", en: "Mutaba'ah", ar: "المتابعة" },
   navEvents: { id: "Kegiatan", en: "Events", ar: "الفعاليات" },
   navQuestionBank: { id: "Bank Soal", en: "Question Bank", ar: "بنك الأسئلة" },
   navGamification: { id: "Gamifikasi", en: "Gamification", ar: "التحفيز" },

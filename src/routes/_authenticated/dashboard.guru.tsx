@@ -191,6 +191,13 @@ function GuruDashboard() {
               tint="bg-quest"
             />
             <FeatureCard
+              to="/guru/rpp"
+              icon={<NotebookPen className="size-6" />}
+              title={lang === "id" ? "RPP Pekanan" : "Weekly Lesson Plan"}
+              desc={lang === "id" ? "Susun rencana pembelajaran pekanan per kelas & mata pelajaran." : "Plan weekly lessons per class & subject."}
+              tint="bg-primary"
+            />
+            <FeatureCard
               to="/guru/rekap"
               icon={<BarChart3 className="size-6" />}
               title={lang === "id" ? "Rekap Nilai & Laporan" : "Grade Recap & Report"}
