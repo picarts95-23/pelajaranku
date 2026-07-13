@@ -21,6 +21,7 @@ import { Route as AuthenticatedSiswaTugasRouteImport } from './routes/_authentic
 import { Route as AuthenticatedSiswaStatusRouteImport } from './routes/_authenticated/siswa.status'
 import { Route as AuthenticatedSiswaRiwayatRouteImport } from './routes/_authenticated/siswa.riwayat'
 import { Route as AuthenticatedSiswaProfilRouteImport } from './routes/_authenticated/siswa.profil'
+import { Route as AuthenticatedSiswaPengumumanRouteImport } from './routes/_authenticated/siswa.pengumuman'
 import { Route as AuthenticatedSiswaNilaiRouteImport } from './routes/_authenticated/siswa.nilai'
 import { Route as AuthenticatedSiswaMutabaahRouteImport } from './routes/_authenticated/siswa.mutabaah'
 import { Route as AuthenticatedSiswaMapelRouteImport } from './routes/_authenticated/siswa.mapel'
@@ -107,6 +108,12 @@ const AuthenticatedSiswaProfilRoute =
   AuthenticatedSiswaProfilRouteImport.update({
     id: '/siswa/profil',
     path: '/siswa/profil',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSiswaPengumumanRoute =
+  AuthenticatedSiswaPengumumanRouteImport.update({
+    id: '/siswa/pengumuman',
+    path: '/siswa/pengumuman',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedSiswaNilaiRoute = AuthenticatedSiswaNilaiRouteImport.update({
@@ -277,6 +284,7 @@ export interface FileRoutesByFullPath {
   '/siswa/mapel': typeof AuthenticatedSiswaMapelRoute
   '/siswa/mutabaah': typeof AuthenticatedSiswaMutabaahRoute
   '/siswa/nilai': typeof AuthenticatedSiswaNilaiRoute
+  '/siswa/pengumuman': typeof AuthenticatedSiswaPengumumanRoute
   '/siswa/profil': typeof AuthenticatedSiswaProfilRoute
   '/siswa/riwayat': typeof AuthenticatedSiswaRiwayatRoute
   '/siswa/status': typeof AuthenticatedSiswaStatusRoute
@@ -315,6 +323,7 @@ export interface FileRoutesByTo {
   '/siswa/mapel': typeof AuthenticatedSiswaMapelRoute
   '/siswa/mutabaah': typeof AuthenticatedSiswaMutabaahRoute
   '/siswa/nilai': typeof AuthenticatedSiswaNilaiRoute
+  '/siswa/pengumuman': typeof AuthenticatedSiswaPengumumanRoute
   '/siswa/profil': typeof AuthenticatedSiswaProfilRoute
   '/siswa/riwayat': typeof AuthenticatedSiswaRiwayatRoute
   '/siswa/status': typeof AuthenticatedSiswaStatusRoute
@@ -355,6 +364,7 @@ export interface FileRoutesById {
   '/_authenticated/siswa/mapel': typeof AuthenticatedSiswaMapelRoute
   '/_authenticated/siswa/mutabaah': typeof AuthenticatedSiswaMutabaahRoute
   '/_authenticated/siswa/nilai': typeof AuthenticatedSiswaNilaiRoute
+  '/_authenticated/siswa/pengumuman': typeof AuthenticatedSiswaPengumumanRoute
   '/_authenticated/siswa/profil': typeof AuthenticatedSiswaProfilRoute
   '/_authenticated/siswa/riwayat': typeof AuthenticatedSiswaRiwayatRoute
   '/_authenticated/siswa/status': typeof AuthenticatedSiswaStatusRoute
@@ -395,6 +405,7 @@ export interface FileRouteTypes {
     | '/siswa/mapel'
     | '/siswa/mutabaah'
     | '/siswa/nilai'
+    | '/siswa/pengumuman'
     | '/siswa/profil'
     | '/siswa/riwayat'
     | '/siswa/status'
@@ -433,6 +444,7 @@ export interface FileRouteTypes {
     | '/siswa/mapel'
     | '/siswa/mutabaah'
     | '/siswa/nilai'
+    | '/siswa/pengumuman'
     | '/siswa/profil'
     | '/siswa/riwayat'
     | '/siswa/status'
@@ -472,6 +484,7 @@ export interface FileRouteTypes {
     | '/_authenticated/siswa/mapel'
     | '/_authenticated/siswa/mutabaah'
     | '/_authenticated/siswa/nilai'
+    | '/_authenticated/siswa/pengumuman'
     | '/_authenticated/siswa/profil'
     | '/_authenticated/siswa/riwayat'
     | '/_authenticated/siswa/status'
@@ -577,6 +590,13 @@ declare module '@tanstack/react-router' {
       path: '/siswa/profil'
       fullPath: '/siswa/profil'
       preLoaderRoute: typeof AuthenticatedSiswaProfilRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/siswa/pengumuman': {
+      id: '/_authenticated/siswa/pengumuman'
+      path: '/siswa/pengumuman'
+      fullPath: '/siswa/pengumuman'
+      preLoaderRoute: typeof AuthenticatedSiswaPengumumanRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/siswa/nilai': {
@@ -781,6 +801,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSiswaMapelRoute: typeof AuthenticatedSiswaMapelRoute
   AuthenticatedSiswaMutabaahRoute: typeof AuthenticatedSiswaMutabaahRoute
   AuthenticatedSiswaNilaiRoute: typeof AuthenticatedSiswaNilaiRoute
+  AuthenticatedSiswaPengumumanRoute: typeof AuthenticatedSiswaPengumumanRoute
   AuthenticatedSiswaProfilRoute: typeof AuthenticatedSiswaProfilRoute
   AuthenticatedSiswaRiwayatRoute: typeof AuthenticatedSiswaRiwayatRoute
   AuthenticatedSiswaStatusRoute: typeof AuthenticatedSiswaStatusRoute
@@ -812,6 +833,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSiswaMapelRoute: AuthenticatedSiswaMapelRoute,
   AuthenticatedSiswaMutabaahRoute: AuthenticatedSiswaMutabaahRoute,
   AuthenticatedSiswaNilaiRoute: AuthenticatedSiswaNilaiRoute,
+  AuthenticatedSiswaPengumumanRoute: AuthenticatedSiswaPengumumanRoute,
   AuthenticatedSiswaProfilRoute: AuthenticatedSiswaProfilRoute,
   AuthenticatedSiswaRiwayatRoute: AuthenticatedSiswaRiwayatRoute,
   AuthenticatedSiswaStatusRoute: AuthenticatedSiswaStatusRoute,
