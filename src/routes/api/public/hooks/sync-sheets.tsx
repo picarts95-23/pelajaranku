@@ -19,23 +19,14 @@ export const Route = createFileRoute("/api/public/hooks/sync-sheets")({
         }
 
         try {
-          const { runSheetSync } = await import("@/lib/sheets-sync.server");
-          const result = await runSheetSync();
+          const { runAllTeacherSheetSync } = await import("@/lib/sheets-sync.server");
+          const result = await runAllTeacherSheetSync();
           return new Response(JSON.stringify({ success: true, ...result }), {
             headers: { "Content-Type": "application/json" },
           });
         } catch (e) {
           const message = e instanceof Error ? e.message : "Sync failed";
           console.error("[sync-sheets]", message);
-          // Record the failure so teachers can see it in the UI.
-          try {
-            const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-            await supabaseAdmin.from("sheet_sync_state").upsert({
-              id: 1,
-              last_synced_at: new Date().toISOString(),
-              last_status: `error: ${message.slice(0, 200)}`,
-            });
-          } catch { /* ignore secondary failures */ }
           return new Response(JSON.stringify({ success: false, error: message }), {
             status: 500,
             headers: { "Content-Type": "application/json" },
