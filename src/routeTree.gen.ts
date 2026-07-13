@@ -32,6 +32,7 @@ import { Route as AuthenticatedGuruSiswaRouteImport } from './routes/_authentica
 import { Route as AuthenticatedGuruRppRouteImport } from './routes/_authenticated/guru.rpp'
 import { Route as AuthenticatedGuruRekapRouteImport } from './routes/_authenticated/guru.rekap'
 import { Route as AuthenticatedGuruPresensiRouteImport } from './routes/_authenticated/guru.presensi'
+import { Route as AuthenticatedGuruPengumumanRouteImport } from './routes/_authenticated/guru.pengumuman'
 import { Route as AuthenticatedGuruMutabaahRouteImport } from './routes/_authenticated/guru.mutabaah'
 import { Route as AuthenticatedGuruMapelRouteImport } from './routes/_authenticated/guru.mapel'
 import { Route as AuthenticatedGuruKuisRouteImport } from './routes/_authenticated/guru.kuis'
@@ -166,6 +167,12 @@ const AuthenticatedGuruPresensiRoute =
     path: '/guru/presensi',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedGuruPengumumanRoute =
+  AuthenticatedGuruPengumumanRouteImport.update({
+    id: '/guru/pengumuman',
+    path: '/guru/pengumuman',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedGuruMutabaahRoute =
   AuthenticatedGuruMutabaahRouteImport.update({
     id: '/guru/mutabaah',
@@ -258,6 +265,7 @@ export interface FileRoutesByFullPath {
   '/guru/kuis': typeof AuthenticatedGuruKuisRoute
   '/guru/mapel': typeof AuthenticatedGuruMapelRoute
   '/guru/mutabaah': typeof AuthenticatedGuruMutabaahRoute
+  '/guru/pengumuman': typeof AuthenticatedGuruPengumumanRoute
   '/guru/presensi': typeof AuthenticatedGuruPresensiRoute
   '/guru/rekap': typeof AuthenticatedGuruRekapRoute
   '/guru/rpp': typeof AuthenticatedGuruRppRoute
@@ -295,6 +303,7 @@ export interface FileRoutesByTo {
   '/guru/kuis': typeof AuthenticatedGuruKuisRoute
   '/guru/mapel': typeof AuthenticatedGuruMapelRoute
   '/guru/mutabaah': typeof AuthenticatedGuruMutabaahRoute
+  '/guru/pengumuman': typeof AuthenticatedGuruPengumumanRoute
   '/guru/presensi': typeof AuthenticatedGuruPresensiRoute
   '/guru/rekap': typeof AuthenticatedGuruRekapRoute
   '/guru/rpp': typeof AuthenticatedGuruRppRoute
@@ -334,6 +343,7 @@ export interface FileRoutesById {
   '/_authenticated/guru/kuis': typeof AuthenticatedGuruKuisRoute
   '/_authenticated/guru/mapel': typeof AuthenticatedGuruMapelRoute
   '/_authenticated/guru/mutabaah': typeof AuthenticatedGuruMutabaahRoute
+  '/_authenticated/guru/pengumuman': typeof AuthenticatedGuruPengumumanRoute
   '/_authenticated/guru/presensi': typeof AuthenticatedGuruPresensiRoute
   '/_authenticated/guru/rekap': typeof AuthenticatedGuruRekapRoute
   '/_authenticated/guru/rpp': typeof AuthenticatedGuruRppRoute
@@ -373,6 +383,7 @@ export interface FileRouteTypes {
     | '/guru/kuis'
     | '/guru/mapel'
     | '/guru/mutabaah'
+    | '/guru/pengumuman'
     | '/guru/presensi'
     | '/guru/rekap'
     | '/guru/rpp'
@@ -410,6 +421,7 @@ export interface FileRouteTypes {
     | '/guru/kuis'
     | '/guru/mapel'
     | '/guru/mutabaah'
+    | '/guru/pengumuman'
     | '/guru/presensi'
     | '/guru/rekap'
     | '/guru/rpp'
@@ -448,6 +460,7 @@ export interface FileRouteTypes {
     | '/_authenticated/guru/kuis'
     | '/_authenticated/guru/mapel'
     | '/_authenticated/guru/mutabaah'
+    | '/_authenticated/guru/pengumuman'
     | '/_authenticated/guru/presensi'
     | '/_authenticated/guru/rekap'
     | '/_authenticated/guru/rpp'
@@ -643,6 +656,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedGuruPresensiRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/guru/pengumuman': {
+      id: '/_authenticated/guru/pengumuman'
+      path: '/guru/pengumuman'
+      fullPath: '/guru/pengumuman'
+      preLoaderRoute: typeof AuthenticatedGuruPengumumanRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/guru/mutabaah': {
       id: '/_authenticated/guru/mutabaah'
       path: '/guru/mutabaah'
@@ -749,6 +769,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedGuruKuisRoute: typeof AuthenticatedGuruKuisRoute
   AuthenticatedGuruMapelRoute: typeof AuthenticatedGuruMapelRoute
   AuthenticatedGuruMutabaahRoute: typeof AuthenticatedGuruMutabaahRoute
+  AuthenticatedGuruPengumumanRoute: typeof AuthenticatedGuruPengumumanRoute
   AuthenticatedGuruPresensiRoute: typeof AuthenticatedGuruPresensiRoute
   AuthenticatedGuruRekapRoute: typeof AuthenticatedGuruRekapRoute
   AuthenticatedGuruRppRoute: typeof AuthenticatedGuruRppRoute
@@ -779,6 +800,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedGuruKuisRoute: AuthenticatedGuruKuisRoute,
   AuthenticatedGuruMapelRoute: AuthenticatedGuruMapelRoute,
   AuthenticatedGuruMutabaahRoute: AuthenticatedGuruMutabaahRoute,
+  AuthenticatedGuruPengumumanRoute: AuthenticatedGuruPengumumanRoute,
   AuthenticatedGuruPresensiRoute: AuthenticatedGuruPresensiRoute,
   AuthenticatedGuruRekapRoute: AuthenticatedGuruRekapRoute,
   AuthenticatedGuruRppRoute: AuthenticatedGuruRppRoute,
