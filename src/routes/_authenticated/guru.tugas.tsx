@@ -487,11 +487,11 @@ function AssignmentDetail({ assignment, onDelete }: { assignment: any; onDelete:
         return data ?? [];
       }
       if (!assignment.class_id) return [];
-      const { data } = await supabase
-        .from("class_enrollments")
-        .select("student_id, profiles:profiles!class_enrollments_student_id_fkey(id, full_name)")
-        .eq("class_id", assignment.class_id);
-      return (data ?? []).map((r: any) => r.profiles).filter(Boolean);
+      const { data: en } = await supabase.from("class_enrollments").select("student_id").eq("class_id", assignment.class_id);
+      const ids = (en ?? []).map((r: any) => r.student_id);
+      if (ids.length === 0) return [];
+      const { data: profs } = await supabase.from("profiles").select("id, full_name").in("id", ids);
+      return profs ?? [];
     },
   });
 
