@@ -346,12 +346,15 @@ function QuizCard({ quiz }: { quiz: any }) {
     onError: (e: Error) => {
       const msg = e.message.includes("ALREADY_SUBMITTED")
         ? (lang === "id" ? "Kamu sudah mengerjakan kuis ini." : "You already took this quiz.")
+        : e.message.includes("DEADLINE_PASSED")
+        ? (lang === "id" ? "Tenggat kuis sudah lewat." : "Quiz deadline has passed.")
         : e.message;
       toast.error(msg);
     },
   });
 
   const pendingGrade = done && quiz.mySubmission.status === "submitted";
+  const overdue = !!quiz.due_at && new Date(quiz.due_at) < new Date() && !done;
 
   return (
     <div className="rounded-2xl border-2 border-border bg-card p-5 shadow-card-rpg">
