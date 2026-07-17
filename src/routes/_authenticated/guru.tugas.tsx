@@ -478,6 +478,29 @@ function AssignmentDetail({ assignment, onDelete }: { assignment: any; onDelete:
     },
   });
 
+  // Roster of students expected to submit, so we can flag who missed the deadline.
+  const { data: roster = [] } = useQuery({
+    queryKey: ["assignment-roster", assignment.id, assignment.class_id, assignment.assigned_student_id],
+    queryFn: async () => {
+      if (assignment.assigned_student_id) {
+        const { data } = await supabase.from("profiles").select("id, full_name").eq("id", assignment.assigned_student_id);
+        return data ?? [];
+      }
+      if (!assignment.class_id) return [];
+      const { data } = await supabase
+        .from("class_enrollments")
+        .select("student_id, profiles:profiles!class_enrollments_student_id_fkey(id, full_name)")
+        .eq("class_id", assignment.class_id);
+      return (data ?? []).map((r: any) => r.profiles).filter(Boolean);
+    },
+  });
+
+  const pastDue = !!assignment.due_at && new Date(assignment.due_at) < new Date();
+  const submittedIds = new Set((subs as any[]).map((s) => s.student_id));
+  const missed = pastDue
+    ? (roster as any[]).filter((r) => !submittedIds.has(r.id)).sort((a, b) => (a.full_name ?? "").localeCompare(b.full_name ?? ""))
+    : [];
+
   // Filter submissions for the grading toolbar (by student name + status).
   const filteredSubs = useMemo(() => {
     const q = search.trim().toLowerCase();
