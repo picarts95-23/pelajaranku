@@ -166,11 +166,17 @@ function QuestCard({ a }: { a: any }) {
       setImageFile(null);
       qc.invalidateQueries({ queryKey: ["siswa-quests"] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => {
+      const msg = /row-level security|violates|policy/i.test(e.message)
+        ? (lang === "id" ? "Tenggat tugas sudah lewat." : "Task deadline has passed.")
+        : e.message;
+      toast.error(msg);
+    },
   });
 
   const status = a.mySubmission?.status;
-  const overdue = a.due_at && new Date(a.due_at) < new Date() && !status;
+  const pastDue = !!a.due_at && new Date(a.due_at) < new Date();
+  const overdue = pastDue && !status;
 
   return (
     <div className="rounded-2xl border-2 border-border bg-card p-5 shadow-card-rpg">
@@ -201,7 +207,12 @@ function QuestCard({ a }: { a: any }) {
             <span className="inline-flex items-center gap-1 rounded-full bg-coin/15 px-2 py-1 font-display text-xs font-bold text-coin"><Coins className="size-3" /> +{a.coin_reward}</span>
             {a.mySubmission?.feedback && <span className="text-xs text-muted-foreground italic">💬 "{a.mySubmission.feedback}"</span>}
           </div>
-          {status !== "graded" && (
+          {overdue && (
+            <p className="mt-3 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs font-display font-bold text-destructive">
+              ⛔ {lang === "id" ? "Tenggat sudah lewat — tugas ini tidak dikerjakan." : "Deadline passed — this task was not completed."}
+            </p>
+          )}
+          {status !== "graded" && !overdue && !(status === "submitted" && pastDue) && (
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
                 <Button size="sm" variant="quest" className="mt-3"><Send className="size-4" /> {status === "submitted" ? (lang === "id" ? "Edit Pengumpulan" : "Edit Submission") : t("submit")}</Button>
@@ -340,12 +351,15 @@ function QuizCard({ quiz }: { quiz: any }) {
     onError: (e: Error) => {
       const msg = e.message.includes("ALREADY_SUBMITTED")
         ? (lang === "id" ? "Kamu sudah mengerjakan kuis ini." : "You already took this quiz.")
+        : e.message.includes("DEADLINE_PASSED")
+        ? (lang === "id" ? "Tenggat kuis sudah lewat." : "Quiz deadline has passed.")
         : e.message;
       toast.error(msg);
     },
   });
 
   const pendingGrade = done && quiz.mySubmission.status === "submitted";
+  const overdue = !!quiz.due_at && new Date(quiz.due_at) < new Date() && !done;
 
   return (
     <div className="rounded-2xl border-2 border-border bg-card p-5 shadow-card-rpg">
@@ -372,6 +386,10 @@ function QuizCard({ quiz }: { quiz: any }) {
             <Trophy className="size-5" /> {lang === "id" ? "Selesai" : "Done"} · {quiz.mySubmission.score ?? 0}/{quiz.max_score}
           </div>
         )
+      ) : overdue ? (
+        <div className="mt-4 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm font-display font-bold text-destructive">
+          ⛔ {lang === "id" ? "Tenggat sudah lewat — kuis ini tidak dikerjakan." : "Deadline passed — this quiz was not completed."}
+        </div>
       ) : (
         <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o) { setAnswers(questions.map(() => null)); setVoiceBlobs({}); setResult(null); } }}>
           <DialogTrigger asChild>

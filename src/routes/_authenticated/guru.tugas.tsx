@@ -478,6 +478,29 @@ function AssignmentDetail({ assignment, onDelete }: { assignment: any; onDelete:
     },
   });
 
+  // Roster of students expected to submit, so we can flag who missed the deadline.
+  const { data: roster = [] } = useQuery({
+    queryKey: ["assignment-roster", assignment.id, assignment.class_id, assignment.assigned_student_id],
+    queryFn: async () => {
+      if (assignment.assigned_student_id) {
+        const { data } = await supabase.from("profiles").select("id, full_name").eq("id", assignment.assigned_student_id);
+        return data ?? [];
+      }
+      if (!assignment.class_id) return [];
+      const { data: en } = await supabase.from("class_enrollments").select("student_id").eq("class_id", assignment.class_id);
+      const ids = (en ?? []).map((r: any) => r.student_id);
+      if (ids.length === 0) return [];
+      const { data: profs } = await supabase.from("profiles").select("id, full_name").in("id", ids);
+      return profs ?? [];
+    },
+  });
+
+  const pastDue = !!assignment.due_at && new Date(assignment.due_at) < new Date();
+  const submittedIds = new Set((subs as any[]).map((s) => s.student_id));
+  const missed = pastDue
+    ? (roster as any[]).filter((r) => !submittedIds.has(r.id)).sort((a, b) => (a.full_name ?? "").localeCompare(b.full_name ?? ""))
+    : [];
+
   // Filter submissions for the grading toolbar (by student name + status).
   const filteredSubs = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -605,6 +628,22 @@ function AssignmentDetail({ assignment, onDelete }: { assignment: any; onDelete:
             </div>
           )}
         </>
+      )}
+
+      {missed.length > 0 && (
+        <div className="mt-5 rounded-xl border-2 border-destructive/30 bg-destructive/5 p-3">
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <h3 className="font-display text-sm font-bold text-destructive">⛔ {lang === "id" ? "Tidak Mengerjakan (tenggat lewat)" : "Missed the Deadline"} ({missed.length})</h3>
+            <span className="text-xs text-muted-foreground">{lang === "id" ? "Sudah tidak bisa mengumpulkan lagi." : "Can no longer submit."}</span>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {missed.map((m: any) => (
+              <span key={m.id} className="rounded-full bg-destructive/10 px-2.5 py-1 text-xs font-display font-semibold text-destructive">
+                👤 {m.full_name ?? "—"}
+              </span>
+            ))}
+          </div>
+        </div>
       )}
       {grading && (
         <QuizGradeDialog
