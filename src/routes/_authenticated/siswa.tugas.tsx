@@ -170,7 +170,8 @@ function QuestCard({ a }: { a: any }) {
   });
 
   const status = a.mySubmission?.status;
-  const overdue = a.due_at && new Date(a.due_at) < new Date() && !status;
+  const pastDue = !!a.due_at && new Date(a.due_at) < new Date();
+  const overdue = pastDue && !status;
 
   return (
     <div className="rounded-2xl border-2 border-border bg-card p-5 shadow-card-rpg">
