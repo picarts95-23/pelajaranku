@@ -629,6 +629,22 @@ function AssignmentDetail({ assignment, onDelete }: { assignment: any; onDelete:
           )}
         </>
       )}
+
+      {missed.length > 0 && (
+        <div className="mt-5 rounded-xl border-2 border-destructive/30 bg-destructive/5 p-3">
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <h3 className="font-display text-sm font-bold text-destructive">⛔ {lang === "id" ? "Tidak Mengerjakan (tenggat lewat)" : "Missed the Deadline"} ({missed.length})</h3>
+            <span className="text-xs text-muted-foreground">{lang === "id" ? "Sudah tidak bisa mengumpulkan lagi." : "Can no longer submit."}</span>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {missed.map((m: any) => (
+              <span key={m.id} className="rounded-full bg-destructive/10 px-2.5 py-1 text-xs font-display font-semibold text-destructive">
+                👤 {m.full_name ?? "—"}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
       {grading && (
         <QuizGradeDialog
           quiz={assignment}
