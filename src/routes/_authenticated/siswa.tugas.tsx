@@ -166,7 +166,12 @@ function QuestCard({ a }: { a: any }) {
       setImageFile(null);
       qc.invalidateQueries({ queryKey: ["siswa-quests"] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => {
+      const msg = /row-level security|violates|policy/i.test(e.message)
+        ? (lang === "id" ? "Tenggat tugas sudah lewat." : "Task deadline has passed.")
+        : e.message;
+      toast.error(msg);
+    },
   });
 
   const status = a.mySubmission?.status;
