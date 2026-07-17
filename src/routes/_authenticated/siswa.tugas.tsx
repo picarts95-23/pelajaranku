@@ -207,7 +207,7 @@ function QuestCard({ a }: { a: any }) {
               ⛔ {lang === "id" ? "Tenggat sudah lewat — tugas ini tidak dikerjakan." : "Deadline passed — this task was not completed."}
             </p>
           )}
-          {status !== "graded" && !overdue && (
+          {status !== "graded" && !overdue && !(status === "submitted" && pastDue) && (
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
                 <Button size="sm" variant="quest" className="mt-3"><Send className="size-4" /> {status === "submitted" ? (lang === "id" ? "Edit Pengumpulan" : "Edit Submission") : t("submit")}</Button>
