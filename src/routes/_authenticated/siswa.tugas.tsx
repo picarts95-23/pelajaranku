@@ -201,7 +201,12 @@ function QuestCard({ a }: { a: any }) {
             <span className="inline-flex items-center gap-1 rounded-full bg-coin/15 px-2 py-1 font-display text-xs font-bold text-coin"><Coins className="size-3" /> +{a.coin_reward}</span>
             {a.mySubmission?.feedback && <span className="text-xs text-muted-foreground italic">💬 "{a.mySubmission.feedback}"</span>}
           </div>
-          {status !== "graded" && (
+          {overdue && (
+            <p className="mt-3 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs font-display font-bold text-destructive">
+              ⛔ {lang === "id" ? "Tenggat sudah lewat — tugas ini tidak dikerjakan." : "Deadline passed — this task was not completed."}
+            </p>
+          )}
+          {status !== "graded" && !overdue && (
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
                 <Button size="sm" variant="quest" className="mt-3"><Send className="size-4" /> {status === "submitted" ? (lang === "id" ? "Edit Pengumpulan" : "Edit Submission") : t("submit")}</Button>
