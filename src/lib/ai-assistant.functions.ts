@@ -60,7 +60,11 @@ async function chatGeminiNative(key: string, model: string, messages: ChatMessag
 export const askAssistant = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(parseInput)
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: isGuru } = await supabase.rpc("has_role", { _user_id: userId, _role: "guru" });
+    if (!isGuru) throw new Error("FORBIDDEN");
+
     const openaiKey = process.env.OPENAI_API_KEY;
     const geminiKey = process.env.GEMINI_API_KEY;
     const lovableKey = process.env.LOVABLE_API_KEY;
