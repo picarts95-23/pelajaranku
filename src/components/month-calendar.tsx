@@ -16,7 +16,7 @@ export type CalendarEvent = {
 type Props = {
   events: CalendarEvent[];
   onSelectEvent?: (id: string) => void;
-  lang?: "id" | "en";
+  lang?: string;
 };
 
 const DOW_ID = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
@@ -29,7 +29,7 @@ function toISODate(d: Date) {
   return `${y}-${m}-${day}`;
 }
 
-export function MonthCalendar({ events, onSelectEvent, lang = "id" }: Props) {
+export function MonthCalendar({ events, onSelectEvent, lang = "id" as string }: Props) {
   const [cursor, setCursor] = useState(() => startOfMonth(new Date()));
   const [selected, setSelected] = useState<Date | null>(new Date());
 

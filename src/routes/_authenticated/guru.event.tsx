@@ -224,7 +224,7 @@ function GuruEventPage() {
 }
 
 function SyncBadge({ lang, state, count, checkedAt, onRefresh }: {
-  lang: "id" | "en";
+  lang: string;
   state: "idle" | "checking" | "ok" | "fail";
   count?: number;
   checkedAt?: string;
