@@ -766,3 +766,108 @@ function GradeRow({ sub, maxScore, isVoice, onGrade }: { sub: any; maxScore: num
     </div>
   );
 }
+
+function AssignmentEditDialog({ assignment, initialAnswerKey, onClose, onSaved }: {
+  assignment: any;
+  initialAnswerKey: string;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const { lang, t } = useLang();
+  const { user } = useAuth();
+  const toLocal = (iso: string | null) => {
+    if (!iso) return "";
+    const d = new Date(iso);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+  const [title, setTitle] = useState<string>(assignment.title ?? "");
+  const [description, setDescription] = useState<string>(assignment.description ?? "");
+  const [subject, setSubject] = useState<string>(assignment.subject ?? "");
+  const [dueAt, setDueAt] = useState<string>(toLocal(assignment.due_at));
+  const [maxScore, setMaxScore] = useState<number>(assignment.max_score ?? 100);
+  const [xpReward, setXpReward] = useState<number>(assignment.xp_reward ?? 50);
+  const [coinReward, setCoinReward] = useState<number>(assignment.coin_reward ?? 10);
+  const [quizLink, setQuizLink] = useState<string>(assignment.quiz_link ?? "");
+  const [gameLink, setGameLink] = useState<string>(assignment.game_link ?? "");
+  const [answerKey, setAnswerKey] = useState<string>(initialAnswerKey);
+  const [examType, setExamType] = useState<string>(assignment.exam_type ?? "harian");
+
+  const saveMut = useMutation({
+    mutationFn: async () => {
+      if (!user) throw new Error("no user");
+      if (!title.trim()) throw new Error(t("required"));
+      const { error } = await supabase.from("assignments").update({
+        title: title.trim(),
+        description: description.trim() || null,
+        subject: subject || null,
+        exam_type: examType,
+        due_at: dueAt ? new Date(dueAt).toISOString() : null,
+        max_score: maxScore,
+        xp_reward: xpReward,
+        coin_reward: coinReward,
+        quiz_link: quizLink.trim() || null,
+        game_link: gameLink.trim() || null,
+      }).eq("id", assignment.id);
+      if (error) throw error;
+      // Upsert answer key (delete + insert if provided, otherwise delete)
+      await supabase.from("assignment_answer_keys").delete().eq("assignment_id", assignment.id);
+      if (answerKey.trim()) {
+        const { error: kErr } = await supabase.from("assignment_answer_keys").insert({
+          assignment_id: assignment.id, teacher_id: user.id, answer_key: answerKey.trim(),
+        });
+        if (kErr) throw kErr;
+      }
+    },
+    onSuccess: () => { toast.success(lang === "id" ? "Perubahan disimpan ✅" : "Saved ✅"); onSaved(); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <Dialog open onOpenChange={(o) => { if (!o) onClose(); }}>
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogHeader><DialogTitle>{lang === "id" ? "Edit Tugas" : "Edit Assignment"}</DialogTitle></DialogHeader>
+        <div className="space-y-3">
+          <div><Label>{t("title")} <span className="text-destructive">*</span></Label>
+            <Input value={title} onChange={(e) => setTitle(e.target.value)} /></div>
+          <div><Label>{t("subject")}</Label>
+            <SubjectSelect value={subject} onChange={setSubject} /></div>
+          <div>
+            <Label>{lang === "id" ? "Jenis Penilaian" : "Assessment Type"}</Label>
+            <Select value={examType} onValueChange={setExamType}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {EXAM_TYPES.map((e) => <SelectItem key={e.value} value={e.value}>{e.emoji} {lang === "id" ? e.labelId : e.labelEn}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div><Label>{t("description")}</Label>
+            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} /></div>
+          <div>
+            <Label className="flex items-center gap-1.5"><KeyRound className="size-3.5 text-guru" /> {lang === "id" ? "Kunci Jawaban (rahasia)" : "Answer Key (secret)"}</Label>
+            <Textarea value={answerKey} onChange={(e) => setAnswerKey(e.target.value)} placeholder={lang === "id" ? "Hanya guru yang dapat melihat ini" : "Only teachers can see this"} />
+            <p className="mt-1 text-xs text-muted-foreground">🔒 {lang === "id" ? "Kunci jawaban tidak terlihat oleh siswa." : "Never visible to students."}</p>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div><Label>{t("deadline")}</Label><Input type="datetime-local" value={dueAt} onChange={(e) => setDueAt(e.target.value)} /></div>
+            <div><Label>{t("maxScore")}</Label><Input type="number" value={maxScore} onChange={(e) => setMaxScore(+e.target.value)} /></div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div><Label>{t("xpReward")}</Label><Input type="number" value={xpReward} onChange={(e) => setXpReward(+e.target.value)} /></div>
+            <div><Label>{t("coinReward")}</Label><Input type="number" value={coinReward} onChange={(e) => setCoinReward(+e.target.value)} /></div>
+          </div>
+          <LinkFields quizLink={quizLink} gameLink={gameLink} onQuiz={setQuizLink} onGame={setGameLink} />
+          <p className="text-xs text-muted-foreground">
+            {lang === "id"
+              ? "Catatan: format jawaban, pilihan ganda, dan sasaran (kelas/siswa) tidak bisa diubah setelah dibuat. Hapus & buat baru bila perlu."
+              : "Note: answer format, options, and target cannot be changed after creation."}
+          </p>
+        </div>
+        <DialogFooter>
+          <Button variant="ghost" onClick={onClose}>{t("cancel")}</Button>
+          <Button variant="guru" disabled={saveMut.isPending} onClick={() => saveMut.mutate()}>{t("save")}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
