@@ -250,6 +250,5 @@ function SyncBadge({ lang, state, count, checkedAt, onRefresh }: {
       <Icon className={`size-3.5 ${state === "checking" ? "animate-spin" : ""}`} /> {label}
     </button>
   );
-    </DashboardShell>
-  );
 }
+
