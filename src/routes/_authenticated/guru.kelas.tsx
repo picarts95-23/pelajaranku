@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BookOpen, Copy, Plus, Trash2, Users, Search, UserPlus, X, Loader2, History, Sparkles, UserMinus, LogIn, Send } from "lucide-react";
+import { BookOpen, Copy, Plus, Trash2, Users, Search, UserPlus, X, Loader2, History, Sparkles, UserMinus, LogIn, Send, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
@@ -42,6 +42,7 @@ function GuruKelasPage() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ name: "", subjects: [] as string[], academic_year: "", description: "" });
   const [manageClass, setManageClass] = useState<ClassRow | null>(null);
+  const [editSubjectsClass, setEditSubjectsClass] = useState<ClassRow | null>(null);
   const [historyClass, setHistoryClass] = useState<ClassRow | null>(null);
 
   useEffect(() => {
@@ -169,6 +170,9 @@ function GuruKelasPage() {
                   <Button size="sm" variant="outline" onClick={() => setManageClass(c)}>
                     <Users className="size-4" /> {lang === "id" ? "Anggota" : "Members"}
                   </Button>
+                  <Button size="sm" variant="ghost" title={lang === "id" ? "Ubah mata pelajaran" : "Edit subjects"} onClick={() => setEditSubjectsClass(c)}>
+                    <Pencil className="size-4" />
+                  </Button>
                   <Button size="sm" variant="ghost" title={lang === "id" ? "Riwayat" : "History"} onClick={() => setHistoryClass(c)}>
                     <History className="size-4" />
                   </Button>
@@ -186,11 +190,72 @@ function GuruKelasPage() {
         klass={manageClass}
         onClose={() => setManageClass(null)}
       />
+      <EditSubjectsDialog
+        klass={editSubjectsClass}
+        onClose={() => setEditSubjectsClass(null)}
+      />
       <ActivityHistoryDialog
         klass={historyClass}
         onClose={() => setHistoryClass(null)}
       />
     </DashboardShell>
+  );
+}
+
+function EditSubjectsDialog({ klass, onClose }: { klass: ClassRow | null; onClose: () => void }) {
+  const { lang } = useLang();
+  const qc = useQueryClient();
+  const [value, setValue] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (klass) setValue(Array.isArray(klass.subjects) ? klass.subjects : (klass.subject ? [klass.subject] : []));
+  }, [klass]);
+
+  const saveMut = useMutation({
+    mutationFn: async () => {
+      if (!klass) throw new Error("no class");
+      const { error } = await supabase
+        .from("classes")
+        .update({ subjects: value, subject: value[0] ?? null })
+        .eq("id", klass.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success(lang === "id" ? "Mata pelajaran diperbarui" : "Subjects updated");
+      qc.invalidateQueries({ queryKey: ["classes"] });
+      onClose();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <Dialog open={!!klass} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>
+            {lang === "id" ? "Ubah Mata Pelajaran" : "Edit Subjects"} · {klass?.name}
+          </DialogTitle>
+        </DialogHeader>
+        <div>
+          <Label className="mb-1.5 block">
+            {lang === "id" ? "Pilih atau tambah mapel yang diampu di kelas ini" : "Select or add subjects taught in this class"}
+          </Label>
+          <MultiSubjectSelect value={value} onChange={setValue} />
+          <p className="mt-2 text-xs text-muted-foreground">
+            {lang === "id"
+              ? "Hilangkan tanda untuk menghapus mapel dari kelas ini. Mapel baru akan otomatis masuk daftar mata pelajaran yang Anda ampu."
+              : "Untick to remove a subject from this class. New subjects are added to your teaching list automatically."}
+          </p>
+        </div>
+        <DialogFooter>
+          <Button variant="ghost" onClick={onClose}>{lang === "id" ? "Batal" : "Cancel"}</Button>
+          <Button variant="guru" disabled={saveMut.isPending} onClick={() => saveMut.mutate()}>
+            {saveMut.isPending ? <Loader2 className="size-4 animate-spin" /> : null}
+            {lang === "id" ? "Simpan" : "Save"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
