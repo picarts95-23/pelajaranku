@@ -19,11 +19,16 @@ const TAB_TITLES = [
   "Nilai Kehadiran",
   "Tugas",
   "Pengumpulan",
+  "Tidak Mengerjakan",
   "Nilai Adab",
   "Mutaba'ah",
   "Materi",
   "Jurnal",
   "RPP Pekanan",
+  "Pengumuman",
+  "Event Kelas",
+  "Bank Soal",
+  "Badge Siswa",
 ] as const;
 
 function gatewayHeaders() {
