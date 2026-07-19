@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarDays, Plus, Trash2, MapPin, RefreshCw, Link as LinkIcon, Unlink, Loader2 } from "lucide-react";
+import { CalendarDays, Plus, Trash2, MapPin, Copy, Check, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
@@ -17,7 +17,7 @@ import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { LinkFields, LinkBadges } from "@/components/link-fields";
 import { gcalTemplateUrl } from "@/lib/google-calendar";
-import { getGcalStatus, getGcalAuthUrl, disconnectGcal, syncEventToGcal } from "@/lib/google-calendar.functions";
+import { getCalendarFeedUrl } from "@/lib/google-calendar.functions";
 
 export const Route = createFileRoute("/_authenticated/guru/event")({
   head: () => ({ meta: [{ title: "Kegiatan · EduQuest Academy" }] }),
