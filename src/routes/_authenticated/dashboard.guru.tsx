@@ -228,6 +228,51 @@ function GuruDashboard() {
         </section>
       )}
 
+      <section className="mt-6 rounded-3xl border-2 border-destructive/40 bg-destructive/5 p-5 shadow-card-rpg">
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <h2 className="font-display text-lg font-bold flex items-center gap-2">
+            <AlertTriangle className="size-5 text-destructive" />
+            {lang === "id" ? "Rekap Siswa Tidak Mengerjakan Tugas" : "Missed Assignments Recap"}
+            <span className="grid min-w-6 place-items-center rounded-full bg-destructive px-1.5 text-xs font-bold text-white">{missed.length}</span>
+          </h2>
+          <Link to="/guru/tugas"><Button size="sm" variant="ghost">{lang === "id" ? "Buka tugas" : "Open tasks"} →</Button></Link>
+        </div>
+        {missed.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            {lang === "id"
+              ? "Alhamdulillah, tidak ada siswa yang melewatkan tugas."
+              : "No students have missed a deadline."}
+          </p>
+        ) : (
+          <div className="max-h-[360px] overflow-y-auto rounded-2xl border-2 border-border bg-card">
+            <table className="w-full text-sm">
+              <thead className="sticky top-0 bg-muted/80 text-left text-xs uppercase tracking-wider text-muted-foreground">
+                <tr>
+                  <th className="px-3 py-2">{lang === "id" ? "Siswa" : "Student"}</th>
+                  <th className="px-3 py-2">NIS</th>
+                  <th className="px-3 py-2">{lang === "id" ? "Kelas" : "Class"}</th>
+                  <th className="px-3 py-2">{lang === "id" ? "Tugas" : "Assignment"}</th>
+                  <th className="px-3 py-2">{lang === "id" ? "Tenggat" : "Deadline"}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {missed.map((r) => (
+                  <tr key={r.key} className="border-t border-border">
+                    <td className="px-3 py-2 font-display font-semibold">{r.studentName}</td>
+                    <td className="px-3 py-2 text-muted-foreground">{r.nis ?? "—"}</td>
+                    <td className="px-3 py-2">{r.className}</td>
+                    <td className="px-3 py-2">{r.title}</td>
+                    <td className="px-3 py-2 text-destructive">{format(new Date(r.dueAt), "dd MMM yyyy HH:mm")}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
+
+
       <section className="mt-6">
         <div className="mb-3 flex items-end justify-between">
           <h2 className="font-display text-xl font-bold flex items-center gap-2">
