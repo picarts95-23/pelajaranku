@@ -69,46 +69,21 @@ function GuruEventPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["events"] }),
   });
 
-  // Google Calendar full account sync
-  const statusFn = useServerFn(getGcalStatus);
-  const authUrlFn = useServerFn(getGcalAuthUrl);
-  const disconnectFn = useServerFn(disconnectGcal);
-  const syncFn = useServerFn(syncEventToGcal);
-
-  const gcalQ = useQuery({
-    queryKey: ["gcal-status", user?.id],
+  // Langganan kalender (satu URL, tempel ke Google Kalender — tanpa OAuth)
+  const feedFn = useServerFn(getCalendarFeedUrl);
+  const feedQ = useQuery({
+    queryKey: ["gcal-feed", user?.id],
     enabled: !!user,
-    queryFn: () => statusFn(),
+    queryFn: () => feedFn(),
   });
-
-  useEffect(() => {
-    const p = new URLSearchParams(window.location.search);
-    const g = p.get("gcal");
-    if (g === "success") {
-      toast.success(lang === "id" ? "Google Kalender terhubung" : "Google Calendar connected");
-      qc.invalidateQueries({ queryKey: ["gcal-status"] });
-    } else if (g === "error") {
-      toast.error(lang === "id" ? "Gagal menghubungkan Google Kalender" : "Failed to connect Google Calendar");
-    }
-    if (g) window.history.replaceState({}, "", window.location.pathname);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const connectMut = useMutation({
-    mutationFn: async () => { const { url } = await authUrlFn(); window.location.href = url; },
-    onError: (e: Error) => toast.error(e.message),
-  });
-  const disconnectMut = useMutation({
-    mutationFn: () => disconnectFn(),
-    onSuccess: () => { toast.success(lang === "id" ? "Terputus" : "Disconnected"); qc.invalidateQueries({ queryKey: ["gcal-status"] }); },
-    onError: (e: Error) => toast.error(e.message),
-  });
-  const syncMut = useMutation({
-    mutationFn: (eventId: string) => syncFn({ data: { eventId } }),
-    onSuccess: () => { toast.success(lang === "id" ? "Tersinkron ke Google Kalender" : "Synced to Google Calendar"); qc.invalidateQueries({ queryKey: ["events"] }); },
-    onError: (e: Error) => toast.error(e.message),
-  });
-  const connected = gcalQ.data?.connected;
+  const [copied, setCopied] = useState(false);
+  const copyUrl = async () => {
+    if (!feedQ.data?.httpsUrl) return;
+    await navigator.clipboard.writeText(feedQ.data.httpsUrl);
+    setCopied(true);
+    toast.success(lang === "id" ? "URL disalin" : "URL copied");
+    setTimeout(() => setCopied(false), 1800);
+  };
 
   return (
     <DashboardShell accent="guru">
