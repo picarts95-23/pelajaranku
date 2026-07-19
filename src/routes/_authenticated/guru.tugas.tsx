@@ -565,7 +565,10 @@ function AssignmentDetail({ assignment, onDelete, onEdited }: { assignment: any;
           )}
           <LinkBadges quizLink={assignment.quiz_link} gameLink={assignment.game_link} />
         </div>
-        <Button size="sm" variant="ghost" onClick={onDelete}><Trash2 className="size-4 text-destructive" /></Button>
+        <div className="flex shrink-0 items-center gap-1">
+          <Button size="sm" variant="ghost" onClick={() => setEditOpen(true)} title={lang === "id" ? "Edit" : "Edit"}><Pencil className="size-4 text-guru" /></Button>
+          <Button size="sm" variant="ghost" onClick={onDelete}><Trash2 className="size-4 text-destructive" /></Button>
+        </div>
       </div>
 
       {answerKey && !isQuiz && (
