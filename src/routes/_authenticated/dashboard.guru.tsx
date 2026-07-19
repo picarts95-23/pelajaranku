@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { BookOpen, GraduationCap, ScrollText, TrendingUp, Users, ClipboardCheck, FileQuestion, CalendarCheck, NotebookPen, Trophy, CalendarDays, ArrowRight, Library, BarChart3, BookOpenCheck, Megaphone } from "lucide-react";
+import { BookOpen, GraduationCap, ScrollText, TrendingUp, Users, ClipboardCheck, FileQuestion, CalendarCheck, NotebookPen, Trophy, CalendarDays, ArrowRight, Library, BarChart3, BookOpenCheck, Megaphone, AlertTriangle } from "lucide-react";
 import { DashboardShell, StatCard } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
