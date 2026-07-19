@@ -15,7 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { MultiSubjectSelect } from "@/components/subject-select";
 
 export const Route = createFileRoute("/_authenticated/guru/kelas")({
-  head: () => ({ meta: [{ title: "Kelas · EduQuest Academy" }] }),
+  head: () => ({ meta: [{ title: "Kelas · Pelajaranku" }] }),
   component: GuruKelasPage,
 });
 
@@ -359,8 +359,8 @@ function ManageMembersDialog({ klass, onClose }: { klass: ClassRow | null; onClo
   const copyJoinInfo = async () => {
     if (!klass) return;
     const text = lang === "id"
-      ? `Gabung kelas "${klass.name}" di EduQuest Academy dengan kode: ${klass.code}`
-      : `Join class "${klass.name}" on EduQuest Academy with code: ${klass.code}`;
+      ? `Gabung kelas "${klass.name}" di Pelajaranku dengan kode: ${klass.code}`
+      : `Join class "${klass.name}" on Pelajaranku with code: ${klass.code}`;
     navigator.clipboard.writeText(text);
     toast.success(lang === "id" ? "Undangan disalin" : "Invite copied");
     if (user) {

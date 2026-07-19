@@ -19,7 +19,7 @@ import { SISWA_CHARACTERS, GURU_CHARACTERS, getCharacterByKey } from "@/lib/char
 import { getIslamicAvatar } from "@/lib/islamic-avatar";
 
 export const Route = createFileRoute("/_authenticated/siswa/profil_/edit")({
-  head: () => ({ meta: [{ title: "Atur Profil & Karakter · EduQuest" }] }),
+  head: () => ({ meta: [{ title: "Atur Profil & Karakter · Pelajaranku" }] }),
   component: EditProfil,
 });
 

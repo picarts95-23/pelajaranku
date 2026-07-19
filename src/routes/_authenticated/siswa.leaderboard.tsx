@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/siswa/leaderboard")({
-  head: () => ({ meta: [{ title: "Papan Peringkat · EduQuest Academy" }] }),
+  head: () => ({ meta: [{ title: "Papan Peringkat · Pelajaranku" }] }),
   component: SiswaLeaderboardPage,
 });
 

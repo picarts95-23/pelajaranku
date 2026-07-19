@@ -9,7 +9,7 @@ export const LANG_OPTIONS: { code: Lang; label: string; native: string; dir: "lt
 ];
 
 export const translations = {
-  appName: { id: "EduQuest Academy", en: "EduQuest Academy", ar: "أكاديمية إديوكويست" },
+  appName: { id: "Pelajaranku", en: "Pelajaranku", ar: "بيلاجارانكو" },
   tagline: {
     id: "Petualangan menuntut ilmu untuk guru & siswi",
     en: "A learning quest for teachers & students",
@@ -70,7 +70,7 @@ export const translations = {
   seedDemo: { id: "Buat 2 akun demo (guru & siswi)", en: "Create 2 demo accounts (teacher & student)", ar: "إنشاء حسابين تجريبيين (معلم وطالبة)" },
   seedDone: { id: "Akun demo siap! Gunakan kredensial di bawah.", en: "Demo accounts ready! Use the credentials below.", ar: "الحسابات التجريبية جاهزة! استخدم بيانات الدخول أدناه." },
   demoCreds: { id: "Akun Demo", en: "Demo Accounts", ar: "حسابات تجريبية" },
-  loadingPortal: { id: "Membuka Gerbang Akademi EduQuest…", en: "Opening the EduQuest Academy Gate…", ar: "يتم فتح بوابة أكاديمية إديوكويست…" },
+  loadingPortal: { id: "Membuka Gerbang Pelajaranku…", en: "Opening the Pelajaranku Gate…", ar: "يتم فتح بوابة بيلاجارانكو…" },
   myQuests: { id: "Misi Saya", en: "My Quests", ar: "مهامي" },
   classRoster: { id: "Daftar Siswi", en: "Class Roster", ar: "قائمة الطالبات" },
   assignments: { id: "Tugas", en: "Assignments", ar: "الواجبات" },

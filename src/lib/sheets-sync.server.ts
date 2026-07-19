@@ -457,7 +457,7 @@ export async function runSheetSyncForTeacher(teacherId: string): Promise<SyncRes
     getTeacherEmail(teacherId),
   ]);
   const teacherName = (profile as { full_name?: string } | null)?.full_name || "Guru";
-  const title = `Data EduQuest · ${teacherName}${email ? ` (${email})` : ""}`;
+  const title = `Data Pelajaranku · ${teacherName}${email ? ` (${email})` : ""}`;
 
   // Resolve (or create) this teacher's persistent spreadsheet.
   const { data: state } = await supabaseAdmin

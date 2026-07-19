@@ -67,7 +67,7 @@ export function exportToWord(filename: string, title: string, columns: ExportCol
   const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
     <head><meta charset="utf-8" /><title>${escapeHtml(title)}</title></head>
     <body style="font-family:Arial,sans-serif;">${buildHtmlTable(title, columns, rows)}
-      <p style="font-size:11px;color:#666;margin-top:16px;">Diekspor dari EduQuest Academy · ${new Date().toLocaleString()}</p>
+      <p style="font-size:11px;color:#666;margin-top:16px;">Diekspor dari Pelajaranku · ${new Date().toLocaleString()}</p>
     </body></html>`;
   const blob = new Blob(["\ufeff" + html], { type: "application/msword;charset=utf-8;" });
   triggerDownload(blob, `${filename}.doc`);
@@ -87,7 +87,7 @@ export function exportToPDF(title: string, columns: ExportColumn[], rows: Export
       .meta{font-size:11px;color:#666;margin-top:16px;}
     </style></head>
     <body>${buildHtmlTable(title, columns, rows)}
-      <p class="meta">Diekspor dari EduQuest Academy · ${new Date().toLocaleString()}</p>
+      <p class="meta">Diekspor dari Pelajaranku · ${new Date().toLocaleString()}</p>
       <script>window.onload=function(){window.print();}</script>
     </body></html>`);
   win.document.close();

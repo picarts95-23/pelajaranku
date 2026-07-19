@@ -27,6 +27,7 @@ import { Route as AuthenticatedSiswaMutabaahRouteImport } from './routes/_authen
 import { Route as AuthenticatedSiswaMapelRouteImport } from './routes/_authenticated/siswa.mapel'
 import { Route as AuthenticatedSiswaLeaderboardRouteImport } from './routes/_authenticated/siswa.leaderboard'
 import { Route as AuthenticatedSiswaKelasRouteImport } from './routes/_authenticated/siswa.kelas'
+import { Route as AuthenticatedSiswaEventRouteImport } from './routes/_authenticated/siswa.event'
 import { Route as AuthenticatedSiswaBadgeRouteImport } from './routes/_authenticated/siswa.badge'
 import { Route as AuthenticatedGuruTugasRouteImport } from './routes/_authenticated/guru.tugas'
 import { Route as AuthenticatedGuruSiswaRouteImport } from './routes/_authenticated/guru.siswa'
@@ -142,6 +143,11 @@ const AuthenticatedSiswaLeaderboardRoute =
 const AuthenticatedSiswaKelasRoute = AuthenticatedSiswaKelasRouteImport.update({
   id: '/siswa/kelas',
   path: '/siswa/kelas',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSiswaEventRoute = AuthenticatedSiswaEventRouteImport.update({
+  id: '/siswa/event',
+  path: '/siswa/event',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSiswaBadgeRoute = AuthenticatedSiswaBadgeRouteImport.update({
@@ -286,6 +292,7 @@ export interface FileRoutesByFullPath {
   '/guru/siswa': typeof AuthenticatedGuruSiswaRoute
   '/guru/tugas': typeof AuthenticatedGuruTugasRoute
   '/siswa/badge': typeof AuthenticatedSiswaBadgeRoute
+  '/siswa/event': typeof AuthenticatedSiswaEventRoute
   '/siswa/kelas': typeof AuthenticatedSiswaKelasRoute
   '/siswa/leaderboard': typeof AuthenticatedSiswaLeaderboardRoute
   '/siswa/mapel': typeof AuthenticatedSiswaMapelRoute
@@ -326,6 +333,7 @@ export interface FileRoutesByTo {
   '/guru/siswa': typeof AuthenticatedGuruSiswaRoute
   '/guru/tugas': typeof AuthenticatedGuruTugasRoute
   '/siswa/badge': typeof AuthenticatedSiswaBadgeRoute
+  '/siswa/event': typeof AuthenticatedSiswaEventRoute
   '/siswa/kelas': typeof AuthenticatedSiswaKelasRoute
   '/siswa/leaderboard': typeof AuthenticatedSiswaLeaderboardRoute
   '/siswa/mapel': typeof AuthenticatedSiswaMapelRoute
@@ -368,6 +376,7 @@ export interface FileRoutesById {
   '/_authenticated/guru/siswa': typeof AuthenticatedGuruSiswaRoute
   '/_authenticated/guru/tugas': typeof AuthenticatedGuruTugasRoute
   '/_authenticated/siswa/badge': typeof AuthenticatedSiswaBadgeRoute
+  '/_authenticated/siswa/event': typeof AuthenticatedSiswaEventRoute
   '/_authenticated/siswa/kelas': typeof AuthenticatedSiswaKelasRoute
   '/_authenticated/siswa/leaderboard': typeof AuthenticatedSiswaLeaderboardRoute
   '/_authenticated/siswa/mapel': typeof AuthenticatedSiswaMapelRoute
@@ -410,6 +419,7 @@ export interface FileRouteTypes {
     | '/guru/siswa'
     | '/guru/tugas'
     | '/siswa/badge'
+    | '/siswa/event'
     | '/siswa/kelas'
     | '/siswa/leaderboard'
     | '/siswa/mapel'
@@ -450,6 +460,7 @@ export interface FileRouteTypes {
     | '/guru/siswa'
     | '/guru/tugas'
     | '/siswa/badge'
+    | '/siswa/event'
     | '/siswa/kelas'
     | '/siswa/leaderboard'
     | '/siswa/mapel'
@@ -491,6 +502,7 @@ export interface FileRouteTypes {
     | '/_authenticated/guru/siswa'
     | '/_authenticated/guru/tugas'
     | '/_authenticated/siswa/badge'
+    | '/_authenticated/siswa/event'
     | '/_authenticated/siswa/kelas'
     | '/_authenticated/siswa/leaderboard'
     | '/_authenticated/siswa/mapel'
@@ -646,6 +658,13 @@ declare module '@tanstack/react-router' {
       path: '/siswa/kelas'
       fullPath: '/siswa/kelas'
       preLoaderRoute: typeof AuthenticatedSiswaKelasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/siswa/event': {
+      id: '/_authenticated/siswa/event'
+      path: '/siswa/event'
+      fullPath: '/siswa/event'
+      preLoaderRoute: typeof AuthenticatedSiswaEventRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/siswa/badge': {
@@ -817,6 +836,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedGuruSiswaRoute: typeof AuthenticatedGuruSiswaRoute
   AuthenticatedGuruTugasRoute: typeof AuthenticatedGuruTugasRoute
   AuthenticatedSiswaBadgeRoute: typeof AuthenticatedSiswaBadgeRoute
+  AuthenticatedSiswaEventRoute: typeof AuthenticatedSiswaEventRoute
   AuthenticatedSiswaKelasRoute: typeof AuthenticatedSiswaKelasRoute
   AuthenticatedSiswaLeaderboardRoute: typeof AuthenticatedSiswaLeaderboardRoute
   AuthenticatedSiswaMapelRoute: typeof AuthenticatedSiswaMapelRoute
@@ -849,6 +869,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedGuruSiswaRoute: AuthenticatedGuruSiswaRoute,
   AuthenticatedGuruTugasRoute: AuthenticatedGuruTugasRoute,
   AuthenticatedSiswaBadgeRoute: AuthenticatedSiswaBadgeRoute,
+  AuthenticatedSiswaEventRoute: AuthenticatedSiswaEventRoute,
   AuthenticatedSiswaKelasRoute: AuthenticatedSiswaKelasRoute,
   AuthenticatedSiswaLeaderboardRoute: AuthenticatedSiswaLeaderboardRoute,
   AuthenticatedSiswaMapelRoute: AuthenticatedSiswaMapelRoute,

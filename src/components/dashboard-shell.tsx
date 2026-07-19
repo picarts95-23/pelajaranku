@@ -41,6 +41,7 @@ const SISWA_NAV: NavItem[] = [
   { to: "/siswa/mapel", key: "navSubjects", icon: Library },
   { to: "/siswa/tugas", key: "navMyQuests", icon: Sword },
   { to: "/siswa/mutabaah", key: "navMutabaah", icon: BookOpenCheck },
+  { to: "/siswa/event", key: "navEvents", icon: CalendarDays },
   { to: "/siswa/pengumuman", key: "navAnnouncements", icon: Megaphone },
   { to: "/siswa/nilai", key: "navGrades", icon: GraduationCap },
   { to: "/siswa/badge", key: "navBadges", icon: Award },
@@ -101,7 +102,7 @@ export function DashboardShell({
                 <Compass className="size-4 text-primary-foreground" />
               </div>
               <span className="hidden font-display text-lg font-bold sm:inline">
-                EduQuest <span className="text-gradient-magic">Academy</span>
+                <span className="text-gradient-magic">Pelajaranku</span>
               </span>
             </Link>
           </div>

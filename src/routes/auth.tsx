@@ -28,9 +28,9 @@ export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Masuk atau Daftar · EduQuest Academy" },
-      { name: "description", content: "Masuk atau daftar sebagai guru atau siswi untuk memulai perjalanan menuntut ilmu di EduQuest Academy." },
-      { property: "og:title", content: "Masuk atau Daftar · EduQuest Academy" },
+      { title: "Masuk atau Daftar · Pelajaranku" },
+      { name: "description", content: "Masuk atau daftar sebagai guru atau siswi untuk memulai perjalanan menuntut ilmu di Pelajaranku." },
+      { property: "og:title", content: "Masuk atau Daftar · Pelajaranku" },
       { property: "og:description", content: "Masuk atau daftar sebagai guru atau siswi untuk memulai perjalanan menuntut ilmu." },
       { property: "og:url", content: "https://pelajaranku.lovable.app/auth" },
     ],
@@ -176,7 +176,7 @@ function AuthPage() {
             <div className="grid size-12 place-items-center rounded-2xl bg-gradient-magic shadow-magic">
               <Compass className="size-6 text-primary-foreground" />
             </div>
-            <span className="font-display text-2xl font-bold">EduQuest <span className="text-gradient-magic">Academy</span></span>
+            <span className="font-display text-2xl font-bold"><span className="text-gradient-magic">Pelajaranku</span></span>
           </div>
           <h1 className="mt-8 font-display text-5xl font-bold leading-tight">
             <span className="text-gradient-hero">{mode === "login" ? t("enterGuild") : t("startQuest")}</span>

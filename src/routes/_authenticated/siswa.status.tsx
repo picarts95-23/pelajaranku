@@ -15,7 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { resolveAvatar } from "@/lib/character-roster";
 
 export const Route = createFileRoute("/_authenticated/siswa/status")({
-  head: () => ({ meta: [{ title: "Status & Komentar · EduQuest Academy" }] }),
+  head: () => ({ meta: [{ title: "Status & Komentar · Pelajaranku" }] }),
   component: SiswaStatusPage,
 });
 

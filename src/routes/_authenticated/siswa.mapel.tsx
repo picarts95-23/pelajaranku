@@ -16,7 +16,7 @@ import { MediaViewer } from "@/components/media-input";
 import { useMarkSeen } from "@/lib/notifications";
 
 export const Route = createFileRoute("/_authenticated/siswa/mapel")({
-  head: () => ({ meta: [{ title: "Mata Pelajaran · EduQuest Academy" }] }),
+  head: () => ({ meta: [{ title: "Mata Pelajaran · Pelajaranku" }] }),
   component: SiswaMapelPage,
 });
 

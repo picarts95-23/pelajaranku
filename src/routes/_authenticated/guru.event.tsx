@@ -22,7 +22,7 @@ import { gcalTemplateUrl } from "@/lib/google-calendar";
 import { getCalendarFeedUrl } from "@/lib/google-calendar.functions";
 
 export const Route = createFileRoute("/_authenticated/guru/event")({
-  head: () => ({ meta: [{ title: "Kegiatan · EduQuest Academy" }] }),
+  head: () => ({ meta: [{ title: "Kegiatan · Pelajaranku" }] }),
   component: GuruEventPage,
 });
 

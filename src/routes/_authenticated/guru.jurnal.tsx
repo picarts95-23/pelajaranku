@@ -17,7 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ExportMenu } from "@/components/export-menu";
 
 export const Route = createFileRoute("/_authenticated/guru/jurnal")({
-  head: () => ({ meta: [{ title: "Jurnal · EduQuest Academy" }] }),
+  head: () => ({ meta: [{ title: "Jurnal · Pelajaranku" }] }),
   component: GuruJurnalPage,
 });
 

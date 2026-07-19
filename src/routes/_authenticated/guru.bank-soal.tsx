@@ -24,7 +24,7 @@ import {
 } from "@/components/question-fields";
 
 export const Route = createFileRoute("/_authenticated/guru/bank-soal")({
-  head: () => ({ meta: [{ title: "Bank Soal · EduQuest Academy" }] }),
+  head: () => ({ meta: [{ title: "Bank Soal · Pelajaranku" }] }),
   component: GuruBankSoalPage,
 });
 

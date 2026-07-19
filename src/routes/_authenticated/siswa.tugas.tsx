@@ -21,7 +21,7 @@ import { ANSWER_FORMATS } from "@/lib/quran-data";
 import { useMarkSeen } from "@/lib/notifications";
 
 export const Route = createFileRoute("/_authenticated/siswa/tugas")({
-  head: () => ({ meta: [{ title: "Tugas & Latihan · EduQuest Academy" }] }),
+  head: () => ({ meta: [{ title: "Tugas & Latihan · Pelajaranku" }] }),
   component: SiswaTugasPage,
 });
 

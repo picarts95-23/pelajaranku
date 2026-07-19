@@ -18,7 +18,7 @@ function parseInput(input: unknown): AskInput {
   return { messages, provider };
 }
 
-const SYSTEM_PROMPT = `Kamu adalah asisten AI untuk guru di aplikasi EduQuest Academy (sekolah Islam).
+const SYSTEM_PROMPT = `Kamu adalah asisten AI untuk guru di aplikasi Pelajaranku (sekolah Islam).
 Bantu guru dengan: membuat soal & kunci jawaban, rencana pembelajaran (RPP), ide tugas dan misi,
 rubrik penilaian, materi ajar, serta umpan balik untuk siswa.
 Jawab ringkas, terstruktur (gunakan poin/markdown bila perlu), dan dalam Bahasa Indonesia

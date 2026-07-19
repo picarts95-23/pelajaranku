@@ -8,7 +8,7 @@ import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/siswa/badge")({
-  head: () => ({ meta: [{ title: "Badge · EduQuest Academy" }] }),
+  head: () => ({ meta: [{ title: "Badge · Pelajaranku" }] }),
   component: SiswaBadgePage,
 });
 
