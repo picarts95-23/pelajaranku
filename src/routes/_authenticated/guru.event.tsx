@@ -87,6 +87,20 @@ function GuruEventPage() {
     setTimeout(() => setCopied(false), 1800);
   };
 
+  // Status sinkronisasi: cek apakah feed ICS bisa dijangkau publik.
+  const syncQ = useQuery({
+    queryKey: ["gcal-sync-status", feedQ.data?.httpsUrl],
+    enabled: !!feedQ.data?.httpsUrl,
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const started = Date.now();
+      const res = await fetch(feedQ.data!.httpsUrl, { method: "GET", cache: "no-store" });
+      const text = res.ok ? await res.text() : "";
+      const count = (text.match(/BEGIN:VEVENT/g) ?? []).length;
+      return { ok: res.ok, status: res.status, count, checkedAt: new Date(started).toISOString() };
+    },
+  });
+
   return (
     <DashboardShell accent="guru">
       <PageHeader title={t("navEvents")} subtitle={lang === "id" ? "Agenda dan kegiatan kelas" : "Class agenda and events"}
