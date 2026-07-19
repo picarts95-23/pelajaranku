@@ -137,7 +137,10 @@ function GuruEventPage() {
         <div className="flex items-start gap-3">
           <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-gradient-quest text-quest-foreground"><CalendarDays className="size-5" /></div>
           <div className="min-w-0 flex-1">
-            <div className="font-display font-bold">{lang === "id" ? "Langganan Google Kalender (mudah)" : "Google Calendar subscription (easy)"}</div>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="font-display font-bold">{lang === "id" ? "Langganan Google Kalender (mudah)" : "Google Calendar subscription (easy)"}</div>
+              <SyncBadge lang={lang} state={syncQ.isFetching ? "checking" : syncQ.data?.ok ? "ok" : syncQ.data ? "fail" : "idle"} count={syncQ.data?.count} checkedAt={syncQ.data?.checkedAt} onRefresh={() => syncQ.refetch()} />
+            </div>
             <p className="mt-1 text-xs text-muted-foreground">
               {lang === "id"
                 ? "Salin URL di bawah, lalu di Google Kalender pilih menu ‘Kalender lain’ → ‘Berlangganan dari URL’ dan tempelkan. Semua kegiatan Anda akan muncul otomatis dan diperbarui berkala tanpa perlu login."
