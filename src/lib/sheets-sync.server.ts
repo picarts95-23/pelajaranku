@@ -243,7 +243,6 @@ async function buildTeacherTabs(teacherId: string): Promise<Tabs> {
     : { data: [] as any[] };
 
 
-  const sName = (id: unknown) => studentNameById.get(id as string) || cell(id);
   const cName = (id: unknown) => classNameById.get(id as string) || cell(id);
 
   const tabs: Tabs = {};
