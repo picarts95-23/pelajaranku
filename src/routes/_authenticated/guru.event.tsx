@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarDays, Plus, Trash2, MapPin, RefreshCw, Link as LinkIcon, Unlink, Loader2 } from "lucide-react";
+import { CalendarDays, Plus, Trash2, MapPin, Copy, Check, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
@@ -17,7 +17,7 @@ import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { LinkFields, LinkBadges } from "@/components/link-fields";
 import { gcalTemplateUrl } from "@/lib/google-calendar";
-import { getGcalStatus, getGcalAuthUrl, disconnectGcal, syncEventToGcal } from "@/lib/google-calendar.functions";
+import { getCalendarFeedUrl } from "@/lib/google-calendar.functions";
 
 export const Route = createFileRoute("/_authenticated/guru/event")({
   head: () => ({ meta: [{ title: "Kegiatan · EduQuest Academy" }] }),
@@ -69,46 +69,21 @@ function GuruEventPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["events"] }),
   });
 
-  // Google Calendar full account sync
-  const statusFn = useServerFn(getGcalStatus);
-  const authUrlFn = useServerFn(getGcalAuthUrl);
-  const disconnectFn = useServerFn(disconnectGcal);
-  const syncFn = useServerFn(syncEventToGcal);
-
-  const gcalQ = useQuery({
-    queryKey: ["gcal-status", user?.id],
+  // Langganan kalender (satu URL, tempel ke Google Kalender — tanpa OAuth)
+  const feedFn = useServerFn(getCalendarFeedUrl);
+  const feedQ = useQuery({
+    queryKey: ["gcal-feed", user?.id],
     enabled: !!user,
-    queryFn: () => statusFn(),
+    queryFn: () => feedFn(),
   });
-
-  useEffect(() => {
-    const p = new URLSearchParams(window.location.search);
-    const g = p.get("gcal");
-    if (g === "success") {
-      toast.success(lang === "id" ? "Google Kalender terhubung" : "Google Calendar connected");
-      qc.invalidateQueries({ queryKey: ["gcal-status"] });
-    } else if (g === "error") {
-      toast.error(lang === "id" ? "Gagal menghubungkan Google Kalender" : "Failed to connect Google Calendar");
-    }
-    if (g) window.history.replaceState({}, "", window.location.pathname);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const connectMut = useMutation({
-    mutationFn: async () => { const { url } = await authUrlFn(); window.location.href = url; },
-    onError: (e: Error) => toast.error(e.message),
-  });
-  const disconnectMut = useMutation({
-    mutationFn: () => disconnectFn(),
-    onSuccess: () => { toast.success(lang === "id" ? "Terputus" : "Disconnected"); qc.invalidateQueries({ queryKey: ["gcal-status"] }); },
-    onError: (e: Error) => toast.error(e.message),
-  });
-  const syncMut = useMutation({
-    mutationFn: (eventId: string) => syncFn({ data: { eventId } }),
-    onSuccess: () => { toast.success(lang === "id" ? "Tersinkron ke Google Kalender" : "Synced to Google Calendar"); qc.invalidateQueries({ queryKey: ["events"] }); },
-    onError: (e: Error) => toast.error(e.message),
-  });
-  const connected = gcalQ.data?.connected;
+  const [copied, setCopied] = useState(false);
+  const copyUrl = async () => {
+    if (!feedQ.data?.httpsUrl) return;
+    await navigator.clipboard.writeText(feedQ.data.httpsUrl);
+    setCopied(true);
+    toast.success(lang === "id" ? "URL disalin" : "URL copied");
+    setTimeout(() => setCopied(false), 1800);
+  };
 
   return (
     <DashboardShell accent="guru">
@@ -142,28 +117,38 @@ function GuruEventPage() {
           </Dialog>
         } />
 
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border-2 border-border bg-card p-4 shadow-soft">
-        <div className="flex items-center gap-3">
-          <div className="grid size-10 place-items-center rounded-xl bg-gradient-quest text-quest-foreground"><CalendarDays className="size-5" /></div>
-          <div>
-            <div className="font-display font-bold">{lang === "id" ? "Google Kalender" : "Google Calendar"}</div>
-            <div className="text-xs text-muted-foreground">
-              {connected
-                ? (lang === "id" ? `Terhubung: ${gcalQ.data?.email ?? ""}` : `Connected: ${gcalQ.data?.email ?? ""}`)
-                : (lang === "id" ? "Hubungkan akun untuk menyinkronkan kegiatan otomatis" : "Connect your account to auto-sync events")}
+      <div className="mb-4 rounded-2xl border-2 border-border bg-card p-4 shadow-soft">
+        <div className="flex items-start gap-3">
+          <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-gradient-quest text-quest-foreground"><CalendarDays className="size-5" /></div>
+          <div className="min-w-0 flex-1">
+            <div className="font-display font-bold">{lang === "id" ? "Langganan Google Kalender (mudah)" : "Google Calendar subscription (easy)"}</div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {lang === "id"
+                ? "Salin URL di bawah, lalu di Google Kalender pilih menu ‘Kalender lain’ → ‘Berlangganan dari URL’ dan tempelkan. Semua kegiatan Anda akan muncul otomatis dan diperbarui berkala tanpa perlu login."
+                : "Copy the URL below, then in Google Calendar go to ‘Other calendars’ → ‘From URL’ and paste it. All your events will appear automatically — no login needed."}
+            </p>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <Input readOnly value={feedQ.data?.httpsUrl ?? (lang === "id" ? "Memuat…" : "Loading…")} className="min-w-0 flex-1 font-mono text-xs" onFocus={(e) => e.currentTarget.select()} />
+              <Button size="sm" variant="outline" onClick={copyUrl} disabled={!feedQ.data}>
+                {copied ? <Check className="size-4" /> : <Copy className="size-4" />} {lang === "id" ? "Salin URL" : "Copy URL"}
+              </Button>
+              <a
+                href="https://calendar.google.com/calendar/u/0/r/settings/addbyurl"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-md border-2 border-border bg-background px-3 py-1.5 text-xs font-display font-bold hover:bg-muted"
+              >
+                <ExternalLink className="size-3.5" /> {lang === "id" ? "Buka Google Kalender" : "Open Google Calendar"}
+              </a>
             </div>
+            <ol className="mt-3 list-decimal space-y-0.5 pl-5 text-xs text-muted-foreground">
+              <li>{lang === "id" ? "Klik ‘Salin URL’ di atas." : "Click ‘Copy URL’ above."}</li>
+              <li>{lang === "id" ? "Klik ‘Buka Google Kalender’." : "Click ‘Open Google Calendar’."}</li>
+              <li>{lang === "id" ? "Tempel URL, lalu klik ‘Tambahkan kalender’." : "Paste the URL, then click ‘Add calendar’."}</li>
+              <li>{lang === "id" ? "Selesai — kegiatan akan tersinkron otomatis." : "Done — events sync automatically."}</li>
+            </ol>
           </div>
         </div>
-        {connected ? (
-          <Button variant="outline" size="sm" disabled={disconnectMut.isPending} onClick={() => disconnectMut.mutate()}>
-            <Unlink className="size-4" /> {lang === "id" ? "Putuskan" : "Disconnect"}
-          </Button>
-        ) : (
-          <Button variant="guru" size="sm" disabled={connectMut.isPending} onClick={() => connectMut.mutate()}>
-            {connectMut.isPending ? <Loader2 className="size-4 animate-spin" /> : <LinkIcon className="size-4" />}
-            {lang === "id" ? "Hubungkan Google Kalender" : "Connect Google Calendar"}
-          </Button>
-        )}
       </div>
 
       {events.length === 0 ? <EmptyState message={t("empty")} /> : (
@@ -192,17 +177,6 @@ function GuruEventPage() {
                 >
                   <CalendarDays className="size-3.5" /> {lang === "id" ? "Tambah ke Kalender" : "Add to Calendar"}
                 </a>
-                {connected && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={syncMut.isPending}
-                    onClick={() => syncMut.mutate(e.id)}
-                  >
-                    {syncMut.isPending && syncMut.variables === e.id ? <Loader2 className="size-3.5 animate-spin" /> : <RefreshCw className="size-3.5" />}
-                    {e.google_event_id ? (lang === "id" ? "Perbarui Sinkron" : "Re-sync") : (lang === "id" ? "Sinkronkan" : "Sync")}
-                  </Button>
-                )}
               </div>
             </div>
           ))}

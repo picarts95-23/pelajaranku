@@ -14,6 +14,32 @@ function originFromRequest(): string {
   return url.origin;
 }
 
+/** Get (or create) the public ICS subscribe URL for this teacher. */
+export const getCalendarFeedUrl = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    let { data } = await supabaseAdmin
+      .from("teacher_calendar_feeds")
+      .select("token")
+      .eq("user_id", context.userId)
+      .maybeSingle();
+    if (!data) {
+      const ins = await supabaseAdmin
+        .from("teacher_calendar_feeds")
+        .insert({ user_id: context.userId })
+        .select("token")
+        .single();
+      if (ins.error) throw ins.error;
+      data = ins.data;
+    }
+    const origin = originFromRequest();
+    const httpsUrl = `${origin}/api/public/calendar/${data!.token}/ics`;
+    // webcal:// makes calendar apps subscribe (auto-refresh) instead of one-time import.
+    const webcalUrl = httpsUrl.replace(/^https?:\/\//, "webcal://");
+    return { httpsUrl, webcalUrl };
+  });
+
 /** Current Google Calendar connection status for the signed-in teacher. */
 export const getGcalStatus = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])

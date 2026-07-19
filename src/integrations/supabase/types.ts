@@ -1245,6 +1245,24 @@ export type Database = {
           },
         ]
       }
+      teacher_calendar_feeds: {
+        Row: {
+          created_at: string
+          token: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          token?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          token?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       teacher_sheet_sync: {
         Row: {
           created_at: string
