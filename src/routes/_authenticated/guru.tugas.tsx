@@ -458,6 +458,7 @@ function AssignmentDetail({ assignment, onDelete, onEdited }: { assignment: any;
   const [grading, setGrading] = useState<any | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "submitted" | "graded">("all");
+  const [editOpen, setEditOpen] = useState(false);
 
   const { data: answerKey } = useQuery({
     queryKey: ["answer-key", assignment.id],
