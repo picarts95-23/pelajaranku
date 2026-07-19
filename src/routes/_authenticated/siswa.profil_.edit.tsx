@@ -39,11 +39,17 @@ const schema = z.object({
 type FormState = z.infer<typeof schema>;
 
 function EditProfil() {
-  const { user, profile, role, refresh } = useAuth();
+  const { user, profile, role, loading, refresh } = useAuth();
   const { lang } = useLang();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const roster = role === "guru" ? GURU_CHARACTERS : SISWA_CHARACTERS;
+
+  useEffect(() => {
+    if (!loading && role && role !== "siswa") {
+      navigate({ to: role === "admin" ? "/admin" : "/dashboard/guru" });
+    }
+  }, [role, loading, navigate]);
 
   const [form, setForm] = useState<FormState>({
     full_name: "", username: "", class_name: "", school_id_number: "",
