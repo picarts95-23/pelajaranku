@@ -450,7 +450,7 @@ function GuruTugasPage() {
   );
 }
 
-function AssignmentDetail({ assignment, onDelete }: { assignment: any; onDelete: () => void }) {
+function AssignmentDetail({ assignment, onDelete, onEdited }: { assignment: any; onDelete: () => void; onEdited: () => void }) {
   const { t, lang } = useLang();
   const qc = useQueryClient();
   const fmtLabel = ANSWER_FORMATS.find((f) => f.value === assignment.answer_format);
