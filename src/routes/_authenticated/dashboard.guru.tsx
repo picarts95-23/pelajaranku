@@ -95,6 +95,59 @@ function GuruDashboard() {
     },
   });
 
+  // Missed-assignment recap: past-deadline tasks with no submission from enrolled students.
+  const { data: missed = [] } = useQuery({
+    queryKey: ["guru-missed-tasks", user?.id], enabled: !!user,
+    queryFn: async () => {
+      const { data: assigns } = await supabase
+        .from("assignments")
+        .select("id, title, class_id, due_at, subject, classes(name)")
+        .eq("teacher_id", user!.id)
+        .not("due_at", "is", null)
+        .lte("due_at", new Date().toISOString())
+        .order("due_at", { ascending: false });
+      const list = (assigns ?? []) as any[];
+      if (list.length === 0) return [];
+      const classIds = Array.from(new Set(list.map((a) => a.class_id).filter(Boolean)));
+      const assignIds = list.map((a) => a.id);
+      const [{ data: enrolls }, { data: subs }] = await Promise.all([
+        supabase.from("class_enrollments").select("class_id, student_id").in("class_id", classIds),
+        supabase.from("submissions").select("assignment_id, student_id").in("assignment_id", assignIds),
+      ]);
+      const studentIds = Array.from(new Set((enrolls ?? []).map((e: any) => e.student_id)));
+      const [{ data: profs }, { data: privs }] = await Promise.all([
+        studentIds.length ? supabase.from("profiles").select("id, full_name").in("id", studentIds) : Promise.resolve({ data: [] as any[] }),
+        studentIds.length ? supabase.from("profile_private").select("id, school_id_number").in("id", studentIds) : Promise.resolve({ data: [] as any[] }),
+      ]);
+      const nameById = new Map((profs ?? []).map((p: any) => [p.id, p.full_name]));
+      const nisById = new Map((privs ?? []).map((p: any) => [p.id, p.school_id_number]));
+      const rosterByClass = new Map<string, string[]>();
+      for (const e of (enrolls ?? []) as any[]) {
+        if (!rosterByClass.has(e.class_id)) rosterByClass.set(e.class_id, []);
+        rosterByClass.get(e.class_id)!.push(e.student_id);
+      }
+      const submittedKeys = new Set((subs ?? []).map((s: any) => `${s.assignment_id}::${s.student_id}`));
+      const rows: { key: string; assignmentId: string; title: string; className: string; dueAt: string; studentId: string; studentName: string; nis: string | null }[] = [];
+      for (const a of list) {
+        const roster = a.class_id ? rosterByClass.get(a.class_id) ?? [] : [];
+        for (const sid of roster) {
+          if (submittedKeys.has(`${a.id}::${sid}`)) continue;
+          rows.push({
+            key: `${a.id}::${sid}`,
+            assignmentId: a.id,
+            title: a.title,
+            className: a.classes?.name ?? "—",
+            dueAt: a.due_at,
+            studentId: sid,
+            studentName: nameById.get(sid) ?? "—",
+            nis: nisById.get(sid) ?? null,
+          });
+        }
+      }
+      return rows;
+    },
+  });
+
   return (
     <DashboardShell accent="guru">
       <motion.section
