@@ -177,17 +177,6 @@ function GuruEventPage() {
                 >
                   <CalendarDays className="size-3.5" /> {lang === "id" ? "Tambah ke Kalender" : "Add to Calendar"}
                 </a>
-                {connected && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={syncMut.isPending}
-                    onClick={() => syncMut.mutate(e.id)}
-                  >
-                    {syncMut.isPending && syncMut.variables === e.id ? <Loader2 className="size-3.5 animate-spin" /> : <RefreshCw className="size-3.5" />}
-                    {e.google_event_id ? (lang === "id" ? "Perbarui Sinkron" : "Re-sync") : (lang === "id" ? "Sinkronkan" : "Sync")}
-                  </Button>
-                )}
               </div>
             </div>
           ))}
