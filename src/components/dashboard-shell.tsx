@@ -101,7 +101,7 @@ export function DashboardShell({
                 <Compass className="size-4 text-primary-foreground" />
               </div>
               <span className="hidden font-display text-lg font-bold sm:inline">
-                Pelajaranku <span className="text-gradient-magic">Academy</span>
+                <span className="text-gradient-magic">Pelajaranku</span>
               </span>
             </Link>
           </div>

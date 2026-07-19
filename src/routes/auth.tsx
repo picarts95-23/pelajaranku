@@ -176,7 +176,7 @@ function AuthPage() {
             <div className="grid size-12 place-items-center rounded-2xl bg-gradient-magic shadow-magic">
               <Compass className="size-6 text-primary-foreground" />
             </div>
-            <span className="font-display text-2xl font-bold">Pelajaranku <span className="text-gradient-magic">Academy</span></span>
+            <span className="font-display text-2xl font-bold"><span className="text-gradient-magic">Pelajaranku</span></span>
           </div>
           <h1 className="mt-8 font-display text-5xl font-bold leading-tight">
             <span className="text-gradient-hero">{mode === "login" ? t("enterGuild") : t("startQuest")}</span>
