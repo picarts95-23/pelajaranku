@@ -151,11 +151,22 @@ async function buildTeacherTabs(teacherId: string): Promise<Tabs> {
     : [];
   const studentIds = Array.from(new Set(enrollments.map((e: any) => e.student_id as string)));
 
-  // Student profiles.
+  // Student profiles + private data (NIS, gender, birthdate, hobby).
   const profiles = studentIds.length
-    ? (((await supabaseAdmin.from("profiles").select("id, full_name, username, class_name, xp, level, coins").in("id", studentIds)).data) ?? [])
+    ? (((await supabaseAdmin.from("profiles").select("id, full_name, username, class_name, xp, level, coins, character_key, created_at").in("id", studentIds)).data) ?? [])
     : [];
+  const privates = studentIds.length
+    ? (((await supabaseAdmin.from("profile_private").select("id, school_id_number, gender, birthdate, hobby").in("id", studentIds)).data) ?? [])
+    : [];
+  const privateById = new Map<string, any>(privates.map((p: any) => [p.id, p]));
   const studentNameById = new Map<string, string>(profiles.map((p: any) => [p.id as string, (p.full_name as string) ?? ""]));
+  const studentNisById = new Map<string, string>(privates.map((p: any) => [p.id as string, (p.school_id_number as string) ?? ""]));
+
+  // Class-of-enrollment lookup: primary class per student = first enrollment.
+  const primaryClassByStudent = new Map<string, string>();
+  for (const e of enrollments as any[]) {
+    if (!primaryClassByStudent.has(e.student_id)) primaryClassByStudent.set(e.student_id, e.class_id);
+  }
 
   // Teacher attendance weights.
   const { data: settings } = await supabaseAdmin
@@ -209,6 +220,27 @@ async function buildTeacherTabs(teacherId: string): Promise<Tabs> {
     .from("lesson_plans")
     .select("week_label, class_id, subject, start_date, end_date, objectives, materials, methods, media, assessment, notes, created_at")
     .eq("teacher_id", teacherId).order("start_date", { ascending: true });
+
+  // Announcements, events, question bank, badges earned by enrolled students.
+  const { data: announcements } = await supabaseAdmin
+    .from("announcements")
+    .select("class_id, title, body, pinned, created_at")
+    .eq("teacher_id", teacherId).order("created_at", { ascending: false });
+  const { data: events } = await supabaseAdmin
+    .from("events")
+    .select("class_id, title, description, location, start_at, end_at, quiz_link, game_link, created_at")
+    .eq("teacher_id", teacherId).order("start_at", { ascending: true });
+  const { data: bank } = await supabaseAdmin
+    .from("question_bank")
+    .select("subject, topic, question, type, answer, difficulty, grade_level, created_at")
+    .eq("teacher_id", teacherId).order("created_at", { ascending: false });
+  const { data: userBadges } = studentIds.length
+    ? await supabaseAdmin
+        .from("user_badges")
+        .select("user_id, earned_at, badges(name, description, icon, xp_requirement)")
+        .in("user_id", studentIds)
+        .order("earned_at", { ascending: false })
+    : { data: [] as any[] };
 
 
   const sName = (id: unknown) => studentNameById.get(id as string) || cell(id);
