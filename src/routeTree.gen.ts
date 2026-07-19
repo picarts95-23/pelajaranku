@@ -47,6 +47,7 @@ import { Route as AuthenticatedDashboardGuruRouteImport } from './routes/_authen
 import { Route as ApiPublicHooksSyncSheetsRouteImport } from './routes/api/public/hooks/sync-sheets'
 import { Route as AuthenticatedSiswaProfilEditRouteImport } from './routes/_authenticated/siswa.profil_.edit'
 import { Route as ApiPublicGoogleCalendarCallbackRouteImport } from './routes/api/public/google.calendar.callback'
+import { Route as ApiPublicCalendarTokenIcsRouteImport } from './routes/api/public/calendar.$token.ics'
 
 const VerifyRoleRoute = VerifyRoleRouteImport.update({
   id: '/verify-role',
@@ -253,6 +254,12 @@ const ApiPublicGoogleCalendarCallbackRoute =
     path: '/api/public/google/calendar/callback',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCalendarTokenIcsRoute =
+  ApiPublicCalendarTokenIcsRouteImport.update({
+    id: '/api/public/calendar/$token/ics',
+    path: '/api/public/calendar/$token/ics',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -291,6 +298,7 @@ export interface FileRoutesByFullPath {
   '/siswa/tugas': typeof AuthenticatedSiswaTugasRoute
   '/siswa/profil/edit': typeof AuthenticatedSiswaProfilEditRoute
   '/api/public/hooks/sync-sheets': typeof ApiPublicHooksSyncSheetsRoute
+  '/api/public/calendar/$token/ics': typeof ApiPublicCalendarTokenIcsRoute
   '/api/public/google/calendar/callback': typeof ApiPublicGoogleCalendarCallbackRoute
 }
 export interface FileRoutesByTo {
@@ -330,6 +338,7 @@ export interface FileRoutesByTo {
   '/siswa/tugas': typeof AuthenticatedSiswaTugasRoute
   '/siswa/profil/edit': typeof AuthenticatedSiswaProfilEditRoute
   '/api/public/hooks/sync-sheets': typeof ApiPublicHooksSyncSheetsRoute
+  '/api/public/calendar/$token/ics': typeof ApiPublicCalendarTokenIcsRoute
   '/api/public/google/calendar/callback': typeof ApiPublicGoogleCalendarCallbackRoute
 }
 export interface FileRoutesById {
@@ -371,6 +380,7 @@ export interface FileRoutesById {
   '/_authenticated/siswa/tugas': typeof AuthenticatedSiswaTugasRoute
   '/_authenticated/siswa/profil_/edit': typeof AuthenticatedSiswaProfilEditRoute
   '/api/public/hooks/sync-sheets': typeof ApiPublicHooksSyncSheetsRoute
+  '/api/public/calendar/$token/ics': typeof ApiPublicCalendarTokenIcsRoute
   '/api/public/google/calendar/callback': typeof ApiPublicGoogleCalendarCallbackRoute
 }
 export interface FileRouteTypes {
@@ -412,6 +422,7 @@ export interface FileRouteTypes {
     | '/siswa/tugas'
     | '/siswa/profil/edit'
     | '/api/public/hooks/sync-sheets'
+    | '/api/public/calendar/$token/ics'
     | '/api/public/google/calendar/callback'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -451,6 +462,7 @@ export interface FileRouteTypes {
     | '/siswa/tugas'
     | '/siswa/profil/edit'
     | '/api/public/hooks/sync-sheets'
+    | '/api/public/calendar/$token/ics'
     | '/api/public/google/calendar/callback'
   id:
     | '__root__'
@@ -491,6 +503,7 @@ export interface FileRouteTypes {
     | '/_authenticated/siswa/tugas'
     | '/_authenticated/siswa/profil_/edit'
     | '/api/public/hooks/sync-sheets'
+    | '/api/public/calendar/$token/ics'
     | '/api/public/google/calendar/callback'
   fileRoutesById: FileRoutesById
 }
@@ -503,6 +516,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   VerifyRoleRoute: typeof VerifyRoleRoute
   ApiPublicHooksSyncSheetsRoute: typeof ApiPublicHooksSyncSheetsRoute
+  ApiPublicCalendarTokenIcsRoute: typeof ApiPublicCalendarTokenIcsRoute
   ApiPublicGoogleCalendarCallbackRoute: typeof ApiPublicGoogleCalendarCallbackRoute
 }
 
@@ -774,6 +788,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicGoogleCalendarCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/calendar/$token/ics': {
+      id: '/api/public/calendar/$token/ics'
+      path: '/api/public/calendar/$token/ics'
+      fullPath: '/api/public/calendar/$token/ics'
+      preLoaderRoute: typeof ApiPublicCalendarTokenIcsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -853,6 +874,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   VerifyRoleRoute: VerifyRoleRoute,
   ApiPublicHooksSyncSheetsRoute: ApiPublicHooksSyncSheetsRoute,
+  ApiPublicCalendarTokenIcsRoute: ApiPublicCalendarTokenIcsRoute,
   ApiPublicGoogleCalendarCallbackRoute: ApiPublicGoogleCalendarCallbackRoute,
 }
 export const routeTree = rootRouteImport
