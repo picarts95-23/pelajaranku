@@ -170,6 +170,9 @@ function GuruKelasPage() {
                   <Button size="sm" variant="outline" onClick={() => setManageClass(c)}>
                     <Users className="size-4" /> {lang === "id" ? "Anggota" : "Members"}
                   </Button>
+                  <Button size="sm" variant="ghost" title={lang === "id" ? "Ubah mata pelajaran" : "Edit subjects"} onClick={() => setEditSubjectsClass(c)}>
+                    <Pencil className="size-4" />
+                  </Button>
                   <Button size="sm" variant="ghost" title={lang === "id" ? "Riwayat" : "History"} onClick={() => setHistoryClass(c)}>
                     <History className="size-4" />
                   </Button>
