@@ -15,7 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { isHalaqohSubject, type HalaqohDaily } from "@/lib/mutabaah";
 
 export const Route = createFileRoute("/_authenticated/guru/rekap")({
-  head: () => ({ meta: [{ title: "Rekap Nilai · EduQuest Academy" }] }),
+  head: () => ({ meta: [{ title: "Rekap Nilai · Pelajaranku" }] }),
   component: GuruRekapPage,
 });
 

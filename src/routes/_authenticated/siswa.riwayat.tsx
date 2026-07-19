@@ -8,7 +8,7 @@ import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/siswa/riwayat")({
-  head: () => ({ meta: [{ title: "Riwayat Gamifikasi · EduQuest Academy" }] }),
+  head: () => ({ meta: [{ title: "Riwayat Gamifikasi · Pelajaranku" }] }),
   component: SiswaHistoryPage,
 });
 

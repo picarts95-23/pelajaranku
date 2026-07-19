@@ -13,7 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
 export const Route = createFileRoute("/_authenticated/siswa/kelas")({
-  head: () => ({ meta: [{ title: "Kelas Saya · EduQuest Academy" }] }),
+  head: () => ({ meta: [{ title: "Kelas Saya · Pelajaranku" }] }),
   component: SiswaKelasPage,
 });
 

@@ -23,7 +23,7 @@ export const Route = createFileRoute("/reset-password")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Atur Ulang Kata Sandi · EduQuest Academy" },
+      { title: "Atur Ulang Kata Sandi · Pelajaranku" },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -242,7 +242,7 @@ function ResetPasswordPage() {
       </div>
 
       <div className="pointer-events-none absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-1 text-xs text-muted-foreground">
-        <Compass className="size-3.5" /> EduQuest Academy
+        <Compass className="size-3.5" /> Pelajaranku
       </div>
     </div>
   );

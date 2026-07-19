@@ -28,7 +28,7 @@ import {
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
     meta: [
-      { title: "Panel Admin · EduQuest Academy" },
+      { title: "Panel Admin · Pelajaranku" },
       { name: "robots", content: "noindex" },
     ],
   }),

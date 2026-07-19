@@ -1,8 +1,8 @@
-# EduQuest Academy
+# Pelajaranku
 
 > Platform pembelajaran interaktif bernuansa islami untuk guru dan siswi, dengan misi harian, kuis, gamifikasi (XP, koin, level), dan dashboard untuk guru maupun siswi.
 
-EduQuest Academy (Pelajaranku) membantu sekolah islami menjadikan belajar sebagai petualangan ilmu — guru mengelola kelas, tugas, presensi, dan penilaian; siswi menuntaskan misi belajar, membaca materi, dan mengumpulkan kebaikan.
+Pelajaranku (Pelajaranku) membantu sekolah islami menjadikan belajar sebagai petualangan ilmu — guru mengelola kelas, tugas, presensi, dan penilaian; siswi menuntaskan misi belajar, membaca materi, dan mengumpulkan kebaikan.
 
 ## Pages
 

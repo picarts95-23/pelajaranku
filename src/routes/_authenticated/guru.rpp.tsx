@@ -17,7 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ExportMenu } from "@/components/export-menu";
 
 export const Route = createFileRoute("/_authenticated/guru/rpp")({
-  head: () => ({ meta: [{ title: "RPP Pekanan · EduQuest Academy" }] }),
+  head: () => ({ meta: [{ title: "RPP Pekanan · Pelajaranku" }] }),
   component: GuruRppPage,
 });
 

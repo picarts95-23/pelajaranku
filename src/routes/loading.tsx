@@ -14,8 +14,8 @@ export const Route = createFileRoute("/loading")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Menyiapkan Portal · EduQuest Academy" },
-      { name: "description", content: "Menyiapkan ruang belajarmu di EduQuest Academy. Mohon tunggu sebentar." },
+      { title: "Menyiapkan Portal · Pelajaranku" },
+      { name: "description", content: "Menyiapkan ruang belajarmu di Pelajaranku. Mohon tunggu sebentar." },
       { name: "robots", content: "noindex" },
     ],
   }),

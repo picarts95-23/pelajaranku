@@ -29,10 +29,10 @@ export const Route = createFileRoute("/api/public/calendar/$token/ics")({
         const lines = [
           "BEGIN:VCALENDAR",
           "VERSION:2.0",
-          "PRODID:-//EduQuest//Kegiatan//ID",
+          "PRODID:-//Pelajaranku//Kegiatan//ID",
           "CALSCALE:GREGORIAN",
           "METHOD:PUBLISH",
-          "X-WR-CALNAME:EduQuest - Kegiatan Kelas",
+          "X-WR-CALNAME:Pelajaranku - Kegiatan Kelas",
           "X-WR-TIMEZONE:Asia/Jakarta",
         ];
         for (const e of events ?? []) {

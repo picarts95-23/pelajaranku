@@ -83,7 +83,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Pelajaranku — Pertualangan Mencari Ilmu" },
       { name: "description", content: "Aplikasi pembelajaran interaktif bernuansa islami untuk guru dan siswi. Naik tingkat ilmu, tunaikan misi, dan kuasai pelajaran." },
-      { name: "author", content: "EduQuest" },
+      { name: "author", content: "Pelajaranku" },
       { property: "og:title", content: "Pelajaranku — Pertualangan Mencari Ilmu" },
       { property: "og:description", content: "Aplikasi pembelajaran interaktif bernuansa islami untuk guru dan siswi. Naik tingkat ilmu, tunaikan misi, dan kuasai pelajaran." },
       { property: "og:type", content: "website" },

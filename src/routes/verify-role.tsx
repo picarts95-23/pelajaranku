@@ -17,7 +17,7 @@ export const Route = createFileRoute("/verify-role")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Verifikasi Peran · EduQuest Academy" },
+      { title: "Verifikasi Peran · Pelajaranku" },
       { name: "description", content: "Memverifikasi peran akunmu untuk mengarahkan ke dashboard yang tepat." },
       { name: "robots", content: "noindex" },
     ],

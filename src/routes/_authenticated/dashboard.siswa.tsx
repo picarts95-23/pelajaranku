@@ -13,7 +13,7 @@ import { resolveAvatar } from "@/lib/character-roster";
 import { format } from "date-fns";
 
 export const Route = createFileRoute("/_authenticated/dashboard/siswa")({
-  head: () => ({ meta: [{ title: "Dashboard Siswa · EduQuest RPG" }] }),
+  head: () => ({ meta: [{ title: "Dashboard Siswa · Pelajaranku" }] }),
   component: SiswaDashboard,
 });
 

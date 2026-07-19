@@ -18,7 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { BADGE_EMOJIS } from "@/lib/badge-emojis";
 
 export const Route = createFileRoute("/_authenticated/guru/gamifikasi")({
-  head: () => ({ meta: [{ title: "Gamifikasi · EduQuest Academy" }] }),
+  head: () => ({ meta: [{ title: "Gamifikasi · Pelajaranku" }] }),
   component: GuruGamifikasiPage,
 });
 

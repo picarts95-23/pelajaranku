@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { RecordCard } from "./guru.mutabaah";
 
 export const Route = createFileRoute("/_authenticated/siswa/mutabaah")({
-  head: () => ({ meta: [{ title: "Mutaba'ah Tahfidz · EduQuest Academy" }] }),
+  head: () => ({ meta: [{ title: "Mutaba'ah Tahfidz · Pelajaranku" }] }),
   component: SiswaMutabaahPage,
 });
 

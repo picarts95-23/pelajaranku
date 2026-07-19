@@ -12,9 +12,9 @@ const bgMeadow = "/assets/bg-meadow-siswi.jpg";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "EduQuest Academy — Belajar Jadi Perjalanan Ilmu" },
+      { title: "Pelajaranku — Belajar Jadi Perjalanan Ilmu" },
       { name: "description", content: "Platform pembelajaran interaktif bernuansa islami untuk siswi. Misi harian, tantangan kuis, dan dashboard guru & siswi yang menyenangkan." },
-      { property: "og:title", content: "EduQuest Academy — Platform Belajar Islami" },
+      { property: "og:title", content: "Pelajaranku — Platform Belajar Islami" },
       { property: "og:description", content: "Belajar terasa bermakna. Naik tingkat ilmu setiap hari dengan misi, kuis, dan hadiah." },
       { property: "og:url", content: "https://pelajaranku.lovable.app/" },
       { property: "og:type", content: "website" },
@@ -26,7 +26,7 @@ export const Route = createFileRoute("/")({
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "EducationalOrganization",
-          name: "EduQuest Academy",
+          name: "Pelajaranku",
           url: "https://pelajaranku.lovable.app/",
           description:
             "Platform pembelajaran interaktif bernuansa islami untuk guru dan siswi dengan misi harian, kuis, dan gamifikasi.",
@@ -55,7 +55,7 @@ function Landing() {
           <div className="grid size-10 place-items-center rounded-2xl bg-gradient-magic shadow-magic">
             <Compass className="size-5 text-primary-foreground" />
           </div>
-          <span className="font-display text-xl font-bold tracking-tight">EduQuest <span className="text-gradient-magic">Academy</span></span>
+          <span className="font-display text-xl font-bold tracking-tight">Pelajaranku <span className="text-gradient-magic">Academy</span></span>
         </Link>
         <div className="flex items-center gap-3">
           <LangToggle />
@@ -227,7 +227,7 @@ function Landing() {
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 text-sm text-muted-foreground sm:flex-row">
           <div className="flex items-center gap-2">
             <Compass className="size-4 text-primary" />
-            <span className="font-display font-semibold">EduQuest Academy</span>
+            <span className="font-display font-semibold">Pelajaranku</span>
             <span>© {new Date().getFullYear()}</span>
           </div>
           <div>Dibuat dengan ✨ untuk para penuntut ilmu & pengajar</div>

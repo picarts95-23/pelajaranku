@@ -25,7 +25,7 @@ import { QuizGradeDialog } from "@/components/quiz-grade-dialog";
 import { signAnswerFile } from "@/lib/transcribe.functions";
 
 export const Route = createFileRoute("/_authenticated/guru/tugas")({
-  head: () => ({ meta: [{ title: "Tugas · EduQuest Academy" }] }),
+  head: () => ({ meta: [{ title: "Tugas · Pelajaranku" }] }),
   component: GuruTugasPage,
 });
 

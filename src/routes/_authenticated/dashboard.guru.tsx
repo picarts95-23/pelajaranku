@@ -13,7 +13,7 @@ import { SheetBackupCard } from "@/components/sheet-backup-card";
 import { format } from "date-fns";
 
 export const Route = createFileRoute("/_authenticated/dashboard/guru")({
-  head: () => ({ meta: [{ title: "Dashboard Guru · EduQuest RPG" }] }),
+  head: () => ({ meta: [{ title: "Dashboard Guru · Pelajaranku" }] }),
   component: GuruDashboard,
 });
 

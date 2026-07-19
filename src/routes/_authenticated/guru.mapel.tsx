@@ -18,7 +18,7 @@ import { useTeacherSubjects } from "@/components/subject-select";
 import { MediaInput, MediaViewer } from "@/components/media-input";
 
 export const Route = createFileRoute("/_authenticated/guru/mapel")({
-  head: () => ({ meta: [{ title: "Mata Pelajaran · EduQuest Academy" }] }),
+  head: () => ({ meta: [{ title: "Mata Pelajaran · Pelajaranku" }] }),
   component: GuruMapelPage,
 });
 

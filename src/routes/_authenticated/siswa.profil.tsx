@@ -13,7 +13,7 @@ import { getCharacterByKey } from "@/lib/character-roster";
 import { format } from "date-fns";
 
 export const Route = createFileRoute("/_authenticated/siswa/profil")({
-  head: () => ({ meta: [{ title: "Profil Siswi · EduQuest Academy" }] }),
+  head: () => ({ meta: [{ title: "Profil Siswi · Pelajaranku" }] }),
   component: SiswaProfil,
 });
 

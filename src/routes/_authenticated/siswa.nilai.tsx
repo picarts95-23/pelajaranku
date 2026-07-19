@@ -10,7 +10,7 @@ import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/siswa/nilai")({
-  head: () => ({ meta: [{ title: "Nilai Saya · EduQuest Academy" }] }),
+  head: () => ({ meta: [{ title: "Nilai Saya · Pelajaranku" }] }),
   component: SiswaNilaiPage,
 });
 

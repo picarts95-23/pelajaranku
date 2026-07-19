@@ -34,7 +34,7 @@ export const exportToGoogleSheet = createServerFn({ method: "POST" })
       throw new Error("Data ekspor tidak valid.");
     }
     return {
-      title: input.title.slice(0, 120) || "Rekap EduQuest",
+      title: input.title.slice(0, 120) || "Rekap Pelajaranku",
       values: input.values.slice(0, 5000).map((row) => row.map((c) => String(c ?? ""))),
     };
   })
