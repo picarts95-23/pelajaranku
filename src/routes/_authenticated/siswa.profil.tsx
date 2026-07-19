@@ -1,6 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import { Award, BookOpen, Cake, Coins, GraduationCap, Heart, IdCard, Pencil, Quote, Sparkles, Star, Trophy, User2, Venus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -18,8 +18,15 @@ export const Route = createFileRoute("/_authenticated/siswa/profil")({
 });
 
 function SiswaProfil() {
-  const { user, profile } = useAuth();
+  const { user, profile, role, loading } = useAuth();
+  const navigate = useNavigate();
   const { lang } = useLang();
+
+  useEffect(() => {
+    if (!loading && role && role !== "siswa") {
+      navigate({ to: role === "admin" ? "/admin" : "/dashboard/guru" });
+    }
+  }, [role, loading, navigate]);
 
   const p = profile as any;
   const xp = profile?.xp ?? 0;
