@@ -439,7 +439,7 @@ function GuruTugasPage() {
 
           <div className="lg:col-span-2">
             {currentAssignment ? (
-              <AssignmentDetail assignment={currentAssignment} onDelete={() => { if (confirm(`${t("delete")}?`)) { deleteMut.mutate(currentAssignment.id); setSelected(null); } }} />
+              <AssignmentDetail assignment={currentAssignment} onDelete={() => { if (confirm(`${t("delete")}?`)) { deleteMut.mutate(currentAssignment.id); setSelected(null); } }} onEdited={() => qc.invalidateQueries({ queryKey: ["assignments"] })} />
             ) : (
               <EmptyState message={lang === "id" ? "Pilih tugas untuk melihat pengumpulan" : "Select an assignment to view submissions"} />
             )}
