@@ -117,28 +117,38 @@ function GuruEventPage() {
           </Dialog>
         } />
 
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border-2 border-border bg-card p-4 shadow-soft">
-        <div className="flex items-center gap-3">
-          <div className="grid size-10 place-items-center rounded-xl bg-gradient-quest text-quest-foreground"><CalendarDays className="size-5" /></div>
-          <div>
-            <div className="font-display font-bold">{lang === "id" ? "Google Kalender" : "Google Calendar"}</div>
-            <div className="text-xs text-muted-foreground">
-              {connected
-                ? (lang === "id" ? `Terhubung: ${gcalQ.data?.email ?? ""}` : `Connected: ${gcalQ.data?.email ?? ""}`)
-                : (lang === "id" ? "Hubungkan akun untuk menyinkronkan kegiatan otomatis" : "Connect your account to auto-sync events")}
+      <div className="mb-4 rounded-2xl border-2 border-border bg-card p-4 shadow-soft">
+        <div className="flex items-start gap-3">
+          <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-gradient-quest text-quest-foreground"><CalendarDays className="size-5" /></div>
+          <div className="min-w-0 flex-1">
+            <div className="font-display font-bold">{lang === "id" ? "Langganan Google Kalender (mudah)" : "Google Calendar subscription (easy)"}</div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {lang === "id"
+                ? "Salin URL di bawah, lalu di Google Kalender pilih menu ‘Kalender lain’ → ‘Berlangganan dari URL’ dan tempelkan. Semua kegiatan Anda akan muncul otomatis dan diperbarui berkala tanpa perlu login."
+                : "Copy the URL below, then in Google Calendar go to ‘Other calendars’ → ‘From URL’ and paste it. All your events will appear automatically — no login needed."}
+            </p>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <Input readOnly value={feedQ.data?.httpsUrl ?? (lang === "id" ? "Memuat…" : "Loading…")} className="min-w-0 flex-1 font-mono text-xs" onFocus={(e) => e.currentTarget.select()} />
+              <Button size="sm" variant="outline" onClick={copyUrl} disabled={!feedQ.data}>
+                {copied ? <Check className="size-4" /> : <Copy className="size-4" />} {lang === "id" ? "Salin URL" : "Copy URL"}
+              </Button>
+              <a
+                href="https://calendar.google.com/calendar/u/0/r/settings/addbyurl"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-md border-2 border-border bg-background px-3 py-1.5 text-xs font-display font-bold hover:bg-muted"
+              >
+                <ExternalLink className="size-3.5" /> {lang === "id" ? "Buka Google Kalender" : "Open Google Calendar"}
+              </a>
             </div>
+            <ol className="mt-3 list-decimal space-y-0.5 pl-5 text-xs text-muted-foreground">
+              <li>{lang === "id" ? "Klik ‘Salin URL’ di atas." : "Click ‘Copy URL’ above."}</li>
+              <li>{lang === "id" ? "Klik ‘Buka Google Kalender’." : "Click ‘Open Google Calendar’."}</li>
+              <li>{lang === "id" ? "Tempel URL, lalu klik ‘Tambahkan kalender’." : "Paste the URL, then click ‘Add calendar’."}</li>
+              <li>{lang === "id" ? "Selesai — kegiatan akan tersinkron otomatis." : "Done — events sync automatically."}</li>
+            </ol>
           </div>
         </div>
-        {connected ? (
-          <Button variant="outline" size="sm" disabled={disconnectMut.isPending} onClick={() => disconnectMut.mutate()}>
-            <Unlink className="size-4" /> {lang === "id" ? "Putuskan" : "Disconnect"}
-          </Button>
-        ) : (
-          <Button variant="guru" size="sm" disabled={connectMut.isPending} onClick={() => connectMut.mutate()}>
-            {connectMut.isPending ? <Loader2 className="size-4 animate-spin" /> : <LinkIcon className="size-4" />}
-            {lang === "id" ? "Hubungkan Google Kalender" : "Connect Google Calendar"}
-          </Button>
-        )}
       </div>
 
       {events.length === 0 ? <EmptyState message={t("empty")} /> : (
