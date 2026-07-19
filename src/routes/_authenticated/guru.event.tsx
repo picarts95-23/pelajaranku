@@ -2,7 +2,9 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarDays, Plus, Trash2, MapPin, Copy, Check, ExternalLink } from "lucide-react";
+import { CalendarDays, Plus, Trash2, MapPin, Copy, Check, ExternalLink, List, LayoutGrid, RefreshCw, CheckCircle2, AlertCircle } from "lucide-react";
+import { MonthCalendar } from "@/components/month-calendar";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
@@ -85,6 +87,20 @@ function GuruEventPage() {
     setTimeout(() => setCopied(false), 1800);
   };
 
+  // Status sinkronisasi: cek apakah feed ICS bisa dijangkau publik.
+  const syncQ = useQuery({
+    queryKey: ["gcal-sync-status", feedQ.data?.httpsUrl],
+    enabled: !!feedQ.data?.httpsUrl,
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const started = Date.now();
+      const res = await fetch(feedQ.data!.httpsUrl, { method: "GET", cache: "no-store" });
+      const text = res.ok ? await res.text() : "";
+      const count = (text.match(/BEGIN:VEVENT/g) ?? []).length;
+      return { ok: res.ok, status: res.status, count, checkedAt: new Date(started).toISOString() };
+    },
+  });
+
   return (
     <DashboardShell accent="guru">
       <PageHeader title={t("navEvents")} subtitle={lang === "id" ? "Agenda dan kegiatan kelas" : "Class agenda and events"}
@@ -121,7 +137,10 @@ function GuruEventPage() {
         <div className="flex items-start gap-3">
           <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-gradient-quest text-quest-foreground"><CalendarDays className="size-5" /></div>
           <div className="min-w-0 flex-1">
-            <div className="font-display font-bold">{lang === "id" ? "Langganan Google Kalender (mudah)" : "Google Calendar subscription (easy)"}</div>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="font-display font-bold">{lang === "id" ? "Langganan Google Kalender (mudah)" : "Google Calendar subscription (easy)"}</div>
+              <SyncBadge lang={lang} state={syncQ.isFetching ? "checking" : syncQ.data?.ok ? "ok" : syncQ.data ? "fail" : "idle"} count={syncQ.data?.count} checkedAt={syncQ.data?.checkedAt} onRefresh={() => syncQ.refetch()} />
+            </div>
             <p className="mt-1 text-xs text-muted-foreground">
               {lang === "id"
                 ? "Salin URL di bawah, lalu di Google Kalender pilih menu ‘Kalender lain’ → ‘Berlangganan dari URL’ dan tempelkan. Semua kegiatan Anda akan muncul otomatis dan diperbarui berkala tanpa perlu login."
@@ -151,37 +170,85 @@ function GuruEventPage() {
         </div>
       </div>
 
-      {events.length === 0 ? <EmptyState message={t("empty")} /> : (
-        <div className="grid gap-3 sm:grid-cols-2">
-          {events.map((e: any) => (
-            <div key={e.id} className="rounded-2xl border-2 border-border bg-card p-4 shadow-card-rpg">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex items-start gap-3">
-                  <div className="grid size-12 place-items-center rounded-xl bg-gradient-quest text-quest-foreground"><CalendarDays className="size-5" /></div>
-                  <div>
-                    <div className="font-display font-bold">{e.title}</div>
-                    <div className="text-xs text-muted-foreground">{e.classes?.name} · {format(new Date(e.start_at), "dd MMM yyyy HH:mm")}</div>
-                    {e.location && <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><MapPin className="size-3" />{e.location}</div>}
+      <Tabs defaultValue="calendar">
+        <TabsList className="mb-3">
+          <TabsTrigger value="calendar"><LayoutGrid className="mr-1.5 size-4" /> {lang === "id" ? "Kalender" : "Calendar"}</TabsTrigger>
+          <TabsTrigger value="list"><List className="mr-1.5 size-4" /> {lang === "id" ? "Daftar" : "List"}</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="calendar" className="mt-0">
+          <MonthCalendar
+            lang={lang}
+            events={events.map((e: any) => ({
+              id: e.id, title: e.title, start_at: e.start_at, end_at: e.end_at, className: e.classes?.name ?? null,
+            }))}
+          />
+        </TabsContent>
+
+        <TabsContent value="list" className="mt-0">
+          {events.length === 0 ? <EmptyState message={t("empty")} /> : (
+            <div className="grid gap-3 sm:grid-cols-2">
+              {events.map((e: any) => (
+                <div key={e.id} className="rounded-2xl border-2 border-border bg-card p-4 shadow-card-rpg">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-start gap-3">
+                      <div className="grid size-12 place-items-center rounded-xl bg-gradient-quest text-quest-foreground"><CalendarDays className="size-5" /></div>
+                      <div>
+                        <div className="font-display font-bold">{e.title}</div>
+                        <div className="text-xs text-muted-foreground">{e.classes?.name} · {format(new Date(e.start_at), "dd MMM yyyy HH:mm")}</div>
+                        {e.location && <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><MapPin className="size-3" />{e.location}</div>}
+                      </div>
+                    </div>
+                    <Button size="sm" variant="ghost" onClick={() => { if (confirm(`${t("delete")}?`)) deleteMut.mutate(e.id); }}><Trash2 className="size-4 text-destructive" /></Button>
+                  </div>
+                  {e.description && <p className="mt-3 text-sm text-foreground/80">{e.description}</p>}
+                  <LinkBadges quizLink={e.quiz_link} gameLink={e.game_link} />
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <a
+                      href={gcalTemplateUrl({ title: e.title, start: e.start_at, end: e.end_at, details: e.description, location: e.location })}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 rounded-full bg-quest/10 px-3 py-1 text-xs font-display font-bold text-quest hover:bg-quest/20"
+                    >
+                      <CalendarDays className="size-3.5" /> {lang === "id" ? "Tambah ke Kalender" : "Add to Calendar"}
+                    </a>
                   </div>
                 </div>
-                <Button size="sm" variant="ghost" onClick={() => { if (confirm(`${t("delete")}?`)) deleteMut.mutate(e.id); }}><Trash2 className="size-4 text-destructive" /></Button>
-              </div>
-              {e.description && <p className="mt-3 text-sm text-foreground/80">{e.description}</p>}
-              <LinkBadges quizLink={e.quiz_link} gameLink={e.game_link} />
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <a
-                  href={gcalTemplateUrl({ title: e.title, start: e.start_at, end: e.end_at, details: e.description, location: e.location })}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-full bg-quest/10 px-3 py-1 text-xs font-display font-bold text-quest hover:bg-quest/20"
-                >
-                  <CalendarDays className="size-3.5" /> {lang === "id" ? "Tambah ke Kalender" : "Add to Calendar"}
-                </a>
-              </div>
+              ))}
             </div>
-          ))}
-        </div>
-      )}
+          )}
+        </TabsContent>
+      </Tabs>
     </DashboardShell>
   );
 }
+
+function SyncBadge({ lang, state, count, checkedAt, onRefresh }: {
+  lang: string;
+  state: "idle" | "checking" | "ok" | "fail";
+  count?: number;
+  checkedAt?: string;
+  onRefresh: () => void;
+}) {
+  const label =
+    state === "checking" ? (lang === "id" ? "Memeriksa…" : "Checking…") :
+    state === "ok" ? (lang === "id" ? `Tersinkron · ${count ?? 0} kegiatan` : `Synced · ${count ?? 0} events`) :
+    state === "fail" ? (lang === "id" ? "Gagal sinkron" : "Sync failed") :
+    (lang === "id" ? "Belum diperiksa" : "Not checked");
+  const cls =
+    state === "ok" ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400" :
+    state === "fail" ? "bg-destructive/15 text-destructive" :
+    "bg-muted text-muted-foreground";
+  const Icon = state === "ok" ? CheckCircle2 : state === "fail" ? AlertCircle : RefreshCw;
+  return (
+    <button
+      type="button"
+      onClick={onRefresh}
+      title={checkedAt ? `${lang === "id" ? "Diperiksa" : "Checked"}: ${format(new Date(checkedAt), "HH:mm:ss")}` : undefined}
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-display font-bold ${cls}`}
+    >
+      <Icon className={`size-3.5 ${state === "checking" ? "animate-spin" : ""}`} /> {label}
+    </button>
+  );
+}
+
