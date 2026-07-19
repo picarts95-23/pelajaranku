@@ -658,6 +658,14 @@ function AssignmentDetail({ assignment, onDelete, onEdited }: { assignment: any;
           onClose={() => { setGrading(null); qc.invalidateQueries({ queryKey: ["submissions", assignment.id] }); }}
         />
       )}
+      {editOpen && (
+        <AssignmentEditDialog
+          assignment={assignment}
+          initialAnswerKey={answerKey ?? ""}
+          onClose={() => setEditOpen(false)}
+          onSaved={() => { setEditOpen(false); onEdited(); qc.invalidateQueries({ queryKey: ["answer-key", assignment.id] }); }}
+        />
+      )}
     </div>
   );
 }
