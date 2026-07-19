@@ -42,6 +42,7 @@ function GuruKelasPage() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ name: "", subjects: [] as string[], academic_year: "", description: "" });
   const [manageClass, setManageClass] = useState<ClassRow | null>(null);
+  const [editSubjectsClass, setEditSubjectsClass] = useState<ClassRow | null>(null);
   const [historyClass, setHistoryClass] = useState<ClassRow | null>(null);
 
   useEffect(() => {
