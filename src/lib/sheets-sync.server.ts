@@ -260,13 +260,40 @@ async function buildTeacherTabs(teacherId: string): Promise<Tabs> {
   ];
 
   tabs["Siswa"] = [
-    ["Nama Siswa", "Username", "Kelas", "XP", "Level", "Koin"],
-    ...profiles.map((p: any) => [cell(p.full_name), cell(p.username), cell(p.class_name), cell(p.xp), cell(p.level), cell(p.coins)]),
+    ["NIS", "Nama Lengkap", "Username", "Kelas Terdaftar", "Kelas (Profil)", "Jenis Kelamin", "Tanggal Lahir", "Hobi", "Karakter", "XP", "Level", "Koin", "Bergabung"],
+    ...profiles.map((p: any) => {
+      const priv = privateById.get(p.id) ?? {};
+      const primary = primaryClassByStudent.get(p.id);
+      return [
+        cell(priv.school_id_number),
+        cell(p.full_name),
+        cell(p.username),
+        primary ? cName(primary) : "",
+        cell(p.class_name),
+        cell(priv.gender),
+        cell(priv.birthdate),
+        cell(priv.hobby),
+        cell(p.character_key),
+        cell(p.xp),
+        cell(p.level),
+        cell(p.coins),
+        cell(p.created_at),
+      ];
+    }),
   ];
 
+  const sMeta = (id: string) => {
+    const nis = studentNisById.get(id) ?? "";
+    const name = studentNameById.get(id) ?? id;
+    return { nis, name };
+  };
+
   tabs["Presensi"] = [
-    ["Tanggal", "Kelas", "Nama Siswa", "Status", "Catatan"],
-    ...attendance.map((a: any) => [cell(a.date), cName(a.class_id), sName(a.student_id), cell(a.status), cell(a.note)]),
+    ["Tanggal", "Kelas", "NIS", "Nama Siswa", "Status", "Catatan"],
+    ...attendance.map((a: any) => {
+      const m = sMeta(a.student_id);
+      return [cell(a.date), cName(a.class_id), m.nis, m.name, cell(a.status), cell(a.note)];
+    }),
   ];
 
   // Accumulated attendance score per (class, student).
@@ -284,11 +311,14 @@ async function buildTeacherTabs(teacherId: string): Promise<Tabs> {
     rec.weighted += weights[st] ?? 0;
   }
   tabs["Nilai Kehadiran"] = [
-    ["Kelas", "Nama Siswa", "Hadir", "Izin", "Sakit", "Alpa", "Total Pertemuan", "Nilai Kehadiran (0-100)"],
+    ["Kelas", "NIS", "Nama Siswa", "Hadir", "Izin", "Sakit", "Alpa", "Total Pertemuan", "Nilai Kehadiran (0-100)"],
     ...Array.from(attAgg.values())
       .map((r) => ({ ...r, score: r.total > 0 ? Math.round(r.weighted / r.total) : 0 }))
-      .sort((a, b) => cName(a.classId).localeCompare(cName(b.classId)) || sName(a.studentId).localeCompare(sName(b.studentId)))
-      .map((r) => [cName(r.classId), sName(r.studentId), String(r.counts.hadir), String(r.counts.izin), String(r.counts.sakit), String(r.counts.alpa), String(r.total), String(r.score)]),
+      .sort((a, b) => cName(a.classId).localeCompare(cName(b.classId)) || (studentNameById.get(a.studentId) ?? "").localeCompare(studentNameById.get(b.studentId) ?? ""))
+      .map((r) => {
+        const m = sMeta(r.studentId);
+        return [cName(r.classId), m.nis, m.name, String(r.counts.hadir), String(r.counts.izin), String(r.counts.sakit), String(r.counts.alpa), String(r.total), String(r.score)];
+      }),
   ];
 
   tabs["Tugas"] = [
@@ -297,21 +327,64 @@ async function buildTeacherTabs(teacherId: string): Promise<Tabs> {
   ];
 
   tabs["Pengumpulan"] = [
-    ["Tugas", "Nama Siswa", "Status", "Nilai", "Umpan Balik", "Dikumpulkan", "Dinilai"],
-    ...submissions.map((s: any) => [assignmentTitleById.get(s.assignment_id as string) || cell(s.assignment_id), sName(s.student_id), cell(s.status), cell(s.score), cell(s.feedback), cell(s.submitted_at), cell(s.graded_at)]),
+    ["Tugas", "Kelas", "NIS", "Nama Siswa", "Status", "Nilai", "Umpan Balik", "Dikumpulkan", "Dinilai"],
+    ...submissions.map((s: any) => {
+      const m = sMeta(s.student_id);
+      const a = assignments.find((x) => x.id === s.assignment_id) as any;
+      return [
+        assignmentTitleById.get(s.assignment_id as string) || cell(s.assignment_id),
+        a ? cName(a.class_id) : "",
+        m.nis, m.name,
+        cell(s.status), cell(s.score), cell(s.feedback), cell(s.submitted_at), cell(s.graded_at),
+      ];
+    }),
+  ];
+
+  // Missed assignments: past-deadline, no submission by an enrolled student.
+  const submittedKeys = new Set(
+    (submissions as any[]).map((s) => `${s.assignment_id}::${s.student_id}`),
+  );
+  const now = Date.now();
+  const enrollmentsByClass = new Map<string, string[]>();
+  for (const e of enrollments as any[]) {
+    if (!enrollmentsByClass.has(e.class_id)) enrollmentsByClass.set(e.class_id, []);
+    enrollmentsByClass.get(e.class_id)!.push(e.student_id);
+  }
+  const missedRows: string[][] = [];
+  for (const a of assignments as any[]) {
+    if (!a.due_at || new Date(a.due_at).getTime() > now) continue;
+    const rosters = a.class_id ? enrollmentsByClass.get(a.class_id) ?? [] : [];
+    for (const sid of rosters) {
+      if (submittedKeys.has(`${a.id}::${sid}`)) continue;
+      const m = sMeta(sid);
+      missedRows.push([
+        cell(a.title), cName(a.class_id), cell(a.subject),
+        m.nis, m.name, cell(a.due_at),
+      ]);
+    }
+  }
+  tabs["Tidak Mengerjakan"] = [
+    ["Tugas", "Kelas", "Mata Pelajaran", "NIS", "Nama Siswa", "Batas Waktu (Sudah Lewat)"],
+    ...missedRows,
   ];
 
   tabs["Nilai Adab"] = [
-    ["Nama Siswa", "Kelas", "Mata Pelajaran", "Nilai", "Diperbarui"],
-    ...((adab ?? []) as any[]).map((r) => [sName(r.student_id), cName(r.class_id), cell(r.subject), cell(r.score), cell(r.updated_at)]),
+    ["NIS", "Nama Siswa", "Kelas", "Mata Pelajaran", "Nilai", "Diperbarui"],
+    ...((adab ?? []) as any[]).map((r) => {
+      const m = sMeta(r.student_id);
+      return [m.nis, m.name, cName(r.class_id), cell(r.subject), cell(r.score), cell(r.updated_at)];
+    }),
   ];
 
   tabs["Mutaba'ah"] = [
-    ["Tanggal", "Nama Siswa", "Kelas", "Sesi", "Jenis Setoran", "Surah", "Juz", "Halaman", "Tajwid", "Kelancaran", "Fashohah", "Total", "Predikat"],
-    ...((mutabaah ?? []) as any[]).map((m) => [
-      cell(m.session_date), sName(m.student_id), cName(m.class_id), cell(m.session_type), cell(m.setoran_kind),
-      cell(m.surah), cell(m.juz), cell(m.pages_count), cell(m.tajwid_score), cell(m.kelancaran_score), cell(m.fashohah_score), cell(m.total_score), cell(m.predikat),
-    ]),
+    ["Tanggal", "NIS", "Nama Siswa", "Kelas", "Sesi", "Jenis Setoran", "Surah", "Juz", "Halaman", "Tajwid", "Kelancaran", "Fashohah", "Total", "Predikat"],
+    ...((mutabaah ?? []) as any[]).map((m) => {
+      const s = sMeta(m.student_id);
+      return [
+        cell(m.session_date), s.nis, s.name, cName(m.class_id), cell(m.session_type), cell(m.setoran_kind),
+        cell(m.surah), cell(m.juz), cell(m.pages_count), cell(m.tajwid_score), cell(m.kelancaran_score), cell(m.fashohah_score), cell(m.total_score), cell(m.predikat),
+      ];
+    }),
   ];
 
   tabs["Materi"] = [
@@ -330,6 +403,36 @@ async function buildTeacherTabs(teacherId: string): Promise<Tabs> {
       cell(r.week_label), cName(r.class_id), cell(r.subject), cell(r.start_date), cell(r.end_date),
       cell(r.objectives), cell(r.materials), cell(r.methods), cell(r.media), cell(r.assessment), cell(r.notes),
     ]),
+  ];
+
+  tabs["Pengumuman"] = [
+    ["Tanggal", "Kelas", "Judul", "Isi", "Disematkan"],
+    ...((announcements ?? []) as any[]).map((a) => [cell(a.created_at), cName(a.class_id), cell(a.title), cell(a.body), a.pinned ? "Ya" : "Tidak"]),
+  ];
+
+  tabs["Event Kelas"] = [
+    ["Mulai", "Selesai", "Kelas", "Judul", "Deskripsi", "Lokasi", "Link Kuis", "Link Game", "Dibuat"],
+    ...((events ?? []) as any[]).map((e) => [
+      cell(e.start_at), cell(e.end_at), cName(e.class_id), cell(e.title), cell(e.description),
+      cell(e.location), cell(e.quiz_link), cell(e.game_link), cell(e.created_at),
+    ]),
+  ];
+
+  tabs["Bank Soal"] = [
+    ["Mata Pelajaran", "Topik", "Jenjang", "Tingkat", "Tipe", "Pertanyaan", "Jawaban", "Dibuat"],
+    ...((bank ?? []) as any[]).map((b) => [
+      cell(b.subject), cell(b.topic), cell(b.grade_level), cell(b.difficulty), cell(b.type),
+      cell(b.question), cell(b.answer), cell(b.created_at),
+    ]),
+  ];
+
+  tabs["Badge Siswa"] = [
+    ["Diperoleh", "NIS", "Nama Siswa", "Nama Badge", "Deskripsi", "Ikon", "Syarat XP"],
+    ...((userBadges ?? []) as any[]).map((ub) => {
+      const s = sMeta(ub.user_id);
+      const b = ub.badges ?? {};
+      return [cell(ub.earned_at), s.nis, s.name, cell(b.name), cell(b.description), cell(b.icon), cell(b.xp_requirement)];
+    }),
   ];
 
   return tabs;
