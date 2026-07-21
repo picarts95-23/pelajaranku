@@ -294,8 +294,19 @@ function QuestCard({ a }: { a: any }) {
                 </div>
                 <DialogFooter>
                   <Button variant="ghost" onClick={() => setOpen(false)}>{t("cancel")}</Button>
-                  <Button variant="quest" disabled={submitMut.isPending} onClick={() => submitMut.mutate()}>{t("submit")}</Button>
+                  <Button
+                    variant="quest"
+                    disabled={
+                      submitMut.isPending
+                      || (isVoiceFmt && !voiceBlob && !a.mySubmission?.file_url)
+                      || (isPhotoFmt && !imageFile && !a.mySubmission?.file_url)
+                    }
+                    onClick={() => submitMut.mutate()}
+                  >
+                    {submitMut.isPending ? (lang === "id" ? "Mengirim…" : "Sending…") : t("submit")}
+                  </Button>
                 </DialogFooter>
+
               </DialogContent>
             </Dialog>
           )}
