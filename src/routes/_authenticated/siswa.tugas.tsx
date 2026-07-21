@@ -121,10 +121,19 @@ function QuestCard({ a }: { a: any }) {
 
       if (isVoiceFmt) {
         if (voiceBlob) {
-          const ext = voiceBlob.type.includes("mp4") ? "mp4" : "webm";
+          if (voiceBlob.size === 0) throw new Error(lang === "id" ? "Rekaman kosong. Coba rekam ulang." : "Empty recording. Please re-record.");
+          const rawType = voiceBlob.type || "audio/webm";
+          const baseType = rawType.split(";")[0].trim() || "audio/webm";
+          const ext = baseType.includes("mp4") ? "mp4"
+            : baseType.includes("ogg") ? "ogg"
+            : baseType.includes("mpeg") ? "mp3"
+            : baseType.includes("wav") ? "wav"
+            : "webm";
           const path = `${user.id}/${a.id}-${Date.now()}.${ext}`;
-          const { error: upErr } = await supabase.storage.from("voice-answers").upload(path, voiceBlob, { upsert: true, contentType: voiceBlob.type });
-          if (upErr) throw upErr;
+          const { error: upErr } = await supabase.storage
+            .from("voice-answers")
+            .upload(path, voiceBlob, { upsert: true, contentType: baseType });
+          if (upErr) throw new Error(`Upload rekaman gagal: ${upErr.message}`);
           storedFileUrl = path;
         } else if (!a.mySubmission?.file_url) {
           throw new Error(lang === "id" ? "Rekam jawaban suaramu dulu." : "Record your voice answer first.");
@@ -137,7 +146,7 @@ function QuestCard({ a }: { a: any }) {
         const ext = (imageFile.name.split(".").pop() || "jpg").toLowerCase();
         const path = `${user.id}/${a.id}-${Date.now()}.${ext}`;
         const { error: upErr } = await supabase.storage.from("answer-images").upload(path, imageFile, { upsert: true, contentType: imageFile.type });
-        if (upErr) throw upErr;
+        if (upErr) throw new Error(`Upload foto gagal: ${upErr.message}`);
         storedFileUrl = path;
       } else if (isPhotoFmt && !a.mySubmission?.file_url) {
         throw new Error(lang === "id" ? "Unggah foto jawabanmu dulu." : "Upload your photo answer first.");
@@ -167,10 +176,14 @@ function QuestCard({ a }: { a: any }) {
       qc.invalidateQueries({ queryKey: ["siswa-quests"] });
     },
     onError: (e: Error) => {
-      const msg = /row-level security|violates|policy/i.test(e.message)
+      const raw = e.message || "";
+      // Only map to "deadline passed" when the DB itself rejected the submissions insert —
+      // storage/network/permission errors get their real message so the student can act on it.
+      const isDeadline = /new row violates row-level security policy for table "submissions"/i.test(raw)
+        || /assignments\.due_at/i.test(raw);
+      toast.error(isDeadline
         ? (lang === "id" ? "Tenggat tugas sudah lewat." : "Task deadline has passed.")
-        : e.message;
-      toast.error(msg);
+        : raw);
     },
   });
 
