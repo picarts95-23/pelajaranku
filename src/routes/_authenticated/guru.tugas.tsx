@@ -683,20 +683,25 @@ function GradeRow({ sub, maxScore, isVoice, onGrade }: { sub: any; maxScore: num
   // bucket (photo answer / attachment) — resolve it via the teacher-only signer.
   const isPrivatePhoto = !isVoice && !!sub.file_url && !/^https?:\/\//i.test(sub.file_url);
 
-  // Automatically resolve a signed URL for the student's recording so the teacher
-  // can play it straight away in the grading panel.
+  // Sign the student's voice recording via the teacher-only server function.
+  // Using the admin-signed URL avoids storage RLS edge cases and works for
+  // both class assignments and personal (assigned_student_id) tasks.
   useEffect(() => {
     let active = true;
     async function load() {
       if (!isVoice || !sub.file_url) return;
-      const { data, error } = await supabase.storage.from("voice-answers").createSignedUrl(sub.file_url, 3600);
-      if (!active) return;
-      if (error || !data?.signedUrl) { setVoiceError(true); return; }
-      setVoiceUrl(data.signedUrl);
+      try {
+        const r = await signFile({ data: { bucket: "voice-answers", path: sub.file_url } });
+        if (!active) return;
+        if (r?.url) setVoiceUrl(r.url); else setVoiceError(true);
+      } catch {
+        if (active) setVoiceError(true);
+      }
     }
     load();
     return () => { active = false; };
-  }, [isVoice, sub.file_url]);
+  }, [isVoice, sub.file_url, signFile]);
+
 
   // Resolve a signed URL for a private uploaded photo answer.
   useEffect(() => {
