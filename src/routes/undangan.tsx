@@ -79,8 +79,10 @@ function InviteActivation() {
   }
 
   if (!session) {
-    // Preserve the code across sign-in via the redirect back to /undangan.
-    const back = `/undangan${initialCode ? `?code=${encodeURIComponent(initialCode)}` : ""}`;
+    // Remember the invite so we can auto-return after sign-in.
+    if (typeof window !== "undefined" && initialCode) {
+      try { window.localStorage.setItem("pending_teacher_invite", initialCode); } catch { /* ignore */ }
+    }
     return (
       <div className="min-h-screen bg-gradient-sunset px-4 py-10">
         <div className="mx-auto max-w-md rounded-3xl border-2 border-border bg-card p-6 shadow-magic">
@@ -89,8 +91,8 @@ function InviteActivation() {
           </div>
           <h1 className="mt-4 text-center font-display text-2xl font-bold">Undangan Guru</h1>
           <p className="mt-2 text-center text-sm text-muted-foreground">
-            Masuk atau daftar dulu dengan email Anda, lalu kembali ke halaman ini.
-            Kode undangan akan otomatis diproses.
+            Masuk atau daftar dulu dengan email Anda. Setelah berhasil masuk,
+            akun Anda akan otomatis diaktifkan sebagai guru.
           </p>
           {initialCode && (
             <div className="mt-4 rounded-xl border-2 border-primary/30 bg-primary/5 p-3 text-center text-sm">
@@ -99,19 +101,16 @@ function InviteActivation() {
           )}
           <div className="mt-5 grid gap-2">
             <Button asChild className="w-full">
-              <Link to="/auth" search={{ mode: "signup", role: "siswa" }} state={{ next: back } as any}>
+              <Link to="/auth" search={{ mode: "signup", role: "siswa" }}>
                 <MailCheck className="size-4" /> Daftar akun baru
               </Link>
             </Button>
             <Button asChild variant="outline" className="w-full">
-              <Link to="/auth" search={{ mode: "login", role: "siswa" }} state={{ next: back } as any}>
+              <Link to="/auth" search={{ mode: "login", role: "siswa" }}>
                 <LogIn className="size-4" /> Sudah punya akun — masuk
               </Link>
             </Button>
           </div>
-          <p className="mt-4 text-center text-xs text-muted-foreground">
-            Setelah masuk, buka kembali tautan undangan yang Anda terima dari admin.
-          </p>
         </div>
       </div>
     );

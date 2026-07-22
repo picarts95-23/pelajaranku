@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VerifyRoleRouteImport } from './routes/verify-role'
+import { Route as UndanganRouteImport } from './routes/undangan'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SetupRouteImport } from './routes/setup'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
@@ -57,6 +58,11 @@ import { Route as ApiPublicCalendarTokenIcsRouteImport } from './routes/api/publ
 const VerifyRoleRoute = VerifyRoleRouteImport.update({
   id: '/verify-role',
   path: '/verify-role',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UndanganRoute = UndanganRouteImport.update({
+  id: '/undangan',
+  path: '/undangan',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -300,6 +306,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/undangan': typeof UndanganRoute
   '/verify-role': typeof VerifyRoleRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/panduan': typeof AuthenticatedPanduanRoute
@@ -345,6 +352,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/undangan': typeof UndanganRoute
   '/verify-role': typeof VerifyRoleRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/panduan': typeof AuthenticatedPanduanRoute
@@ -392,6 +400,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/undangan': typeof UndanganRoute
   '/verify-role': typeof VerifyRoleRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/panduan': typeof AuthenticatedPanduanRoute
@@ -439,6 +448,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/setup'
     | '/sitemap.xml'
+    | '/undangan'
     | '/verify-role'
     | '/admin'
     | '/panduan'
@@ -484,6 +494,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/setup'
     | '/sitemap.xml'
+    | '/undangan'
     | '/verify-role'
     | '/admin'
     | '/panduan'
@@ -530,6 +541,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/setup'
     | '/sitemap.xml'
+    | '/undangan'
     | '/verify-role'
     | '/_authenticated/admin'
     | '/_authenticated/panduan'
@@ -577,6 +589,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   SetupRoute: typeof SetupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  UndanganRoute: typeof UndanganRoute
   VerifyRoleRoute: typeof VerifyRoleRoute
   ApiPublicHooksSyncSheetsRoute: typeof ApiPublicHooksSyncSheetsRoute
   ApiPublicCalendarTokenIcsRoute: typeof ApiPublicCalendarTokenIcsRoute
@@ -590,6 +603,13 @@ declare module '@tanstack/react-router' {
       path: '/verify-role'
       fullPath: '/verify-role'
       preLoaderRoute: typeof VerifyRoleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/undangan': {
+      id: '/undangan'
+      path: '/undangan'
+      fullPath: '/undangan'
+      preLoaderRoute: typeof UndanganRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sitemap.xml': {
@@ -979,6 +999,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   SetupRoute: SetupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  UndanganRoute: UndanganRoute,
   VerifyRoleRoute: VerifyRoleRoute,
   ApiPublicHooksSyncSheetsRoute: ApiPublicHooksSyncSheetsRoute,
   ApiPublicCalendarTokenIcsRoute: ApiPublicCalendarTokenIcsRoute,
