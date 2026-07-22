@@ -25,6 +25,7 @@ import {
   listAllUsers, setUserArchived, deleteUserAccount, setUserPassword, type AdminUserRow,
 } from "@/lib/admin.functions";
 import { exportSchemaDump } from "@/lib/self-hosting.functions";
+import { AdminOnboarding } from "@/components/admin-onboarding";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
