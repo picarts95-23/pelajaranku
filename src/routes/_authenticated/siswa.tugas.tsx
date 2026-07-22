@@ -1,7 +1,7 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Sword, Sparkles, Coins, Send, BookOpen, FileQuestion, CheckCircle2, Trophy, Clock } from "lucide-react";
+import { Sword, Sparkles, Coins, Send, BookOpen, FileQuestion, CheckCircle2, Trophy, Clock, Camera, ImageIcon, HelpCircle, X, Inbox } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
