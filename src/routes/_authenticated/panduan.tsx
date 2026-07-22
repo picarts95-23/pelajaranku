@@ -174,6 +174,8 @@ function PanduanPage() {
           </div>
         </section>
 
+        <ResponsiveChecklist />
+
         <section className="space-y-3">
           <h2 className="text-lg font-bold flex items-center gap-2"><Upload className="h-5 w-5 text-primary" /> Pasang di Layar Utama</h2>
           <Card className="p-4 space-y-2 text-sm">
