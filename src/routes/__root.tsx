@@ -156,6 +156,7 @@ function RootComponent() {
       <LangContext.Provider value={{ lang, setLang, t }}>
         <AuthProvider>
           <Outlet />
+          <OfflineOnboarding />
           <Toaster richColors position="top-center" />
         </AuthProvider>
       </LangContext.Provider>
