@@ -200,19 +200,19 @@ function QuestCard({ a }: { a: any }) {
   const overdue = pastDue && !status;
 
   return (
-    <div className="rounded-2xl border-2 border-border bg-card p-5 shadow-card-rpg">
+    <div className="rounded-2xl border-2 border-border bg-card p-4 shadow-card-rpg sm:p-5">
       <div className="flex items-start gap-3">
-        <div className="grid size-12 place-items-center rounded-xl bg-gradient-quest text-quest-foreground shadow-soft"><Sword className="size-5" /></div>
+        <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-gradient-quest text-quest-foreground shadow-soft sm:size-12"><Sword className="size-5" /></div>
         <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0">
-              <div className="font-display text-lg font-bold">{FORMAT_EMOJI[fmt] ?? "📝"} {a.title}</div>
-              <div className="text-xs text-muted-foreground">{a.classes?.name ?? t("personalTask")} · {a.due_at ? `${t("due")}: ${format(new Date(a.due_at), "dd MMM HH:mm")}` : ""}</div>
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <div className="font-display text-base font-bold break-words sm:text-lg">{FORMAT_EMOJI[fmt] ?? "📝"} {a.title}</div>
+              <div className="mt-0.5 text-xs text-muted-foreground break-words">{a.classes?.name ?? t("personalTask")}{a.due_at ? ` · ${t("due")}: ${format(new Date(a.due_at), "dd MMM HH:mm")}` : ""}</div>
             </div>
-            {status === "graded" ? <span className="rounded-full bg-xp/20 px-2 py-0.5 text-xs font-display font-bold text-xp">⭐ {a.mySubmission?.score}/{a.max_score}</span>
-              : status === "submitted" ? <span className="rounded-full bg-primary/15 px-2 py-0.5 text-xs font-display font-bold text-primary">📤 {t("submitted")}</span>
-              : overdue ? <span className="rounded-full bg-destructive/20 px-2 py-0.5 text-xs font-display font-bold text-destructive">{lang === "id" ? "Lewat" : "Overdue"}</span>
-              : <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-display font-bold">{t("notSubmitted")}</span>}
+            {status === "graded" ? <span className="shrink-0 rounded-full bg-xp/20 px-2 py-0.5 text-xs font-display font-bold text-xp">⭐ {a.mySubmission?.score}/{a.max_score}</span>
+              : status === "submitted" ? <span className="shrink-0 rounded-full bg-primary/15 px-2 py-0.5 text-xs font-display font-bold text-primary">📤 {t("submitted")}</span>
+              : overdue ? <span className="shrink-0 rounded-full bg-destructive/20 px-2 py-0.5 text-xs font-display font-bold text-destructive">{lang === "id" ? "Lewat" : "Overdue"}</span>
+              : <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-display font-bold">{t("notSubmitted")}</span>}
           </div>
           {a.description && <p className="mt-2 line-clamp-3 text-sm text-foreground/80">{a.description}</p>}
 
