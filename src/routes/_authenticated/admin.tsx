@@ -284,7 +284,15 @@ function AdminPage() {
           Arsipkan untuk menyembunyikan pengguna tanpa menghapus data. Hapus permanen akan menghilangkan akun beserta seluruh datanya.
           Password lama tidak dapat dilihat (tersimpan terenkripsi) — admin hanya dapat menetapkan password baru.
         </p>
+        <div className="mt-4 rounded-2xl border-2 border-dashed border-border bg-card p-4 text-center text-sm">
+          Ingin memindahkan data ke Supabase Anda sendiri? Ikuti{" "}
+          <a href="/setup" className="font-display font-semibold text-primary underline-offset-2 hover:underline">
+            Wizard Setup Supabase
+          </a>{" "}— 4 langkah dengan uji koneksi otomatis.
+        </div>
       </main>
+
+      <AdminOnboarding email={user?.email} />
 
       <AlertDialog open={!!pendingDelete} onOpenChange={(o) => !o && setPendingDelete(null)}>
         <AlertDialogContent>
