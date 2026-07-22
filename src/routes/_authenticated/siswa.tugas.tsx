@@ -19,6 +19,7 @@ import { LinkBadges } from "@/components/link-fields";
 import { VoiceRecorder } from "@/components/voice-recorder";
 import { ANSWER_FORMATS } from "@/lib/quran-data";
 import { useMarkSeen } from "@/lib/notifications";
+import { compressImage } from "@/lib/compress-image";
 
 export const Route = createFileRoute("/_authenticated/siswa/tugas")({
   head: () => ({ meta: [{ title: "Tugas & Latihan · Pelajaranku" }] }),
@@ -551,7 +552,10 @@ function PhotoInput({ file, onChange, idPrefix }: { file: File | null; onChange:
         accept="image/*"
         capture="environment"
         className="hidden"
-        onChange={(e) => onChange(e.target.files?.[0] ?? null)}
+        onChange={async (e) => {
+          const f = e.target.files?.[0];
+          onChange(f ? await compressImage(f) : null);
+        }}
       />
       <input
         ref={galRef}
@@ -559,8 +563,12 @@ function PhotoInput({ file, onChange, idPrefix }: { file: File | null; onChange:
         type="file"
         accept="image/*"
         className="hidden"
-        onChange={(e) => onChange(e.target.files?.[0] ?? null)}
+        onChange={async (e) => {
+          const f = e.target.files?.[0];
+          onChange(f ? await compressImage(f) : null);
+        }}
       />
+
       {file && (
         <div className="mt-2 flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-700">
           <CheckCircle2 className="size-4 shrink-0" />
