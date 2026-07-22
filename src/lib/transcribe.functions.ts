@@ -25,6 +25,28 @@ export const signAnswerFile = createServerFn({ method: "POST" })
     const { data: isGuru } = await supabase.rpc("has_role", { _user_id: userId, _role: "guru" });
     if (!isGuru) throw new Error("FORBIDDEN");
 
+    // Verify the requesting teacher actually owns an assignment referencing this
+    // file path — either as submissions.file_url, or inside quiz answer content.
+    // Uses the user-scoped client so RLS restricts the join to the caller's
+    // own assignments (assignments.teacher_id = auth.uid()).
+    const { data: direct } = await supabase
+      .from("submissions")
+      .select("id, assignment:assignments!inner(teacher_id)")
+      .eq("file_url", data.path)
+      .eq("assignment.teacher_id", userId)
+      .limit(1);
+    let owned = !!direct && direct.length > 0;
+    if (!owned) {
+      const { data: viaContent } = await supabase
+        .from("submissions")
+        .select("id, assignment:assignments!inner(teacher_id)")
+        .ilike("content", `%${data.path}%`)
+        .eq("assignment.teacher_id", userId)
+        .limit(1);
+      owned = !!viaContent && viaContent.length > 0;
+    }
+    if (!owned) throw new Error("FORBIDDEN");
+
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: signed, error } = await supabaseAdmin.storage
       .from(data.bucket)
