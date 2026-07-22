@@ -207,7 +207,7 @@ function GuruDashboard() {
 
       {recentSubs.length > 0 && (
         <section className="mt-6 rounded-3xl border-2 border-guru/40 bg-guru/5 p-5 shadow-card-rpg">
-          <div className="mb-3 flex items-center justify-between">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <h2 className="font-display text-lg font-bold flex items-center gap-2">
               <ClipboardCheck className="size-5 text-guru" /> {lang === "id" ? "Pengumpulan Baru Siswa" : "New Student Submissions"}
               <span className="grid min-w-6 place-items-center rounded-full bg-destructive px-1.5 text-xs font-bold text-white">{recentSubs.length}</span>
@@ -229,7 +229,7 @@ function GuruDashboard() {
       )}
 
       <section className="mt-6 rounded-3xl border-2 border-destructive/40 bg-destructive/5 p-5 shadow-card-rpg">
-        <div className="mb-3 flex items-center justify-between gap-2">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <h2 className="font-display text-lg font-bold flex items-center gap-2">
             <AlertTriangle className="size-5 text-destructive" />
             {lang === "id" ? "Rekap Siswa Tidak Mengerjakan Tugas" : "Missed Assignments Recap"}
@@ -244,8 +244,8 @@ function GuruDashboard() {
               : "No students have missed a deadline."}
           </p>
         ) : (
-          <div className="max-h-[360px] overflow-y-auto rounded-2xl border-2 border-border bg-card">
-            <table className="w-full text-sm">
+          <div className="max-h-[360px] overflow-auto rounded-2xl border-2 border-border bg-card">
+            <table className="w-full min-w-[640px] text-sm">
               <thead className="sticky top-0 bg-muted/80 text-left text-xs uppercase tracking-wider text-muted-foreground">
                 <tr>
                   <th className="px-3 py-2">{lang === "id" ? "Siswa" : "Student"}</th>
@@ -386,8 +386,8 @@ function GuruDashboard() {
           {recentAssignments.length === 0 ? (
             <div className="text-center py-8 text-sm text-muted-foreground">{t("empty")}</div>
           ) : (
-            <div className="overflow-hidden rounded-2xl border-2 border-border">
-              <table className="w-full text-sm">
+            <div className="overflow-x-auto rounded-2xl border-2 border-border">
+              <table className="w-full min-w-[520px] text-sm">
                 <thead className="bg-muted/60 text-left text-xs uppercase tracking-wider text-muted-foreground">
                   <tr><th className="px-4 py-3">{lang === "id" ? "Judul" : "Title"}</th><th className="px-4 py-3">{lang === "id" ? "Kelas" : "Class"}</th><th className="px-4 py-3">{lang === "id" ? "Deadline" : "Due"}</th><th className="px-4 py-3 text-right">{t("submissions")}</th></tr>
                 </thead>
