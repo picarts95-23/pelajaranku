@@ -61,6 +61,12 @@ function SiswaTugasPage() {
       <PageHeader
         title={lang === "id" ? "Tugas & Latihan" : "Tasks & Practice"}
         subtitle={lang === "id" ? "Semua misi, tugas, dan kuis kamu — tunaikan untuk meraih XP & koin!" : "All your missions, tasks, and quizzes — complete them to earn XP & coins!"}
+        actions={
+          <>
+            <Link to="/siswa/permintaan"><Button size="sm" variant="outline"><Inbox className="size-4" /> {lang === "id" ? "Minta Tugas" : "Request Task"}</Button></Link>
+            <HowToDialog />
+          </>
+        }
       />
 
       <Tabs defaultValue="tugas">
