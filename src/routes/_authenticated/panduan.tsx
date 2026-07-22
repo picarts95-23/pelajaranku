@@ -375,3 +375,119 @@ const GURU_FEATURES = [
   { title: "Kegiatan", desc: "Rencanakan event; siswa bisa memantau via kalender. Ekspor ke Google Calendar via URL langganan." },
   { title: "Papan Pengumuman", desc: "Sebar pengumuman ke kelas, lihat reaksi & feedback siswa." },
 ];
+
+const CHECKLIST_GROUPS: { size: string; label: string; hint: string; items: string[] }[] = [
+  {
+    size: "sm",
+    label: "Layar Kecil (HP ≤ 480px)",
+    hint: "Uji di HP kecil atau DevTools 360×640 / 375×667",
+    items: [
+      "Hero dashboard tidak terpotong; nama & Level XP terbaca penuh.",
+      "Tombol 'Tugas & Latihan' pada hero terlihat dan bisa diketuk.",
+      "Kartu statistik (Level, Coin, Misi, Rank) tersusun rapi tanpa overflow horizontal.",
+      "Kartu Misi Aktif: ikon, judul, dan badge XP sejajar; judul panjang tidak menutupi badge.",
+      "Halaman /siswa/tugas: judul tugas & status pill tetap terlihat, tidak keluar layar.",
+      "Dialog kirim tugas (foto/rekaman/kuis) bisa di-scroll penuh sampai tombol Kirim.",
+      "Tidak ada scrollbar horizontal di seluruh halaman.",
+    ],
+  },
+  {
+    size: "md",
+    label: "Layar Sedang (Tablet 481–1024px)",
+    hint: "Uji di tablet atau DevTools 768×1024",
+    items: [
+      "Grid menu siswa menampilkan 2 kolom rapi tanpa kartu terpotong.",
+      "Kartu Misi Aktif & Leaderboard sejajar dengan proporsi seimbang.",
+      "Halaman Tugas: QuestCard & QuizCard menampilkan info lengkap (kelas, tenggat, XP).",
+      "Dialog kirim tugas muncul di tengah dengan lebar nyaman, tombol aksi terlihat.",
+      "Tombol perangkat di sidebar/topbar dapat diakses tanpa menutup konten utama.",
+    ],
+  },
+  {
+    size: "lg",
+    label: "Layar Besar (Laptop/Desktop ≥ 1025px)",
+    hint: "Uji di laptop 1280×800 atau lebih",
+    items: [
+      "Hero menampilkan avatar karakter di sisi kanan tanpa menabrak teks.",
+      "Grid menu siswa menampilkan 3–4 kolom dengan spasi konsisten.",
+      "Section Misi Aktif (2/3) & Leaderboard (1/3) berdampingan dengan tinggi seimbang.",
+      "Halaman Tugas: daftar tab (Tugas / Kuis / Permintaan) terlihat semua tanpa scroll horizontal.",
+      "Dialog tugas tetap max-w-lg dan tidak terlalu lebar; semua tombol terlihat tanpa scroll.",
+    ],
+  },
+];
+
+function ResponsiveChecklist() {
+  const STORAGE_KEY = "pelajaranku-responsive-checklist";
+  const [checked, setChecked] = useState<Record<string, boolean>>({});
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) setChecked(JSON.parse(raw));
+    } catch {}
+  }, []);
+  const toggle = (key: string) => {
+    setChecked((prev) => {
+      const next = { ...prev, [key]: !prev[key] };
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
+  const reset = () => {
+    setChecked({});
+    try { localStorage.removeItem(STORAGE_KEY); } catch {}
+  };
+  const total = CHECKLIST_GROUPS.reduce((n, g) => n + g.items.length, 0);
+  const done = Object.values(checked).filter(Boolean).length;
+
+  return (
+    <section className="space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-lg font-bold flex items-center gap-2">
+          <CheckCircle2 className="h-5 w-5 text-primary" /> Checklist Uji Tampilan Dashboard Siswa
+        </h2>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span className="rounded-full bg-primary/10 px-2 py-0.5 font-display font-bold text-primary">{done}/{total}</span>
+          <Button size="sm" variant="ghost" onClick={reset}>Reset</Button>
+        </div>
+      </div>
+      <p className="text-sm text-muted-foreground">
+        Pakai daftar ini setiap kali ada perubahan tampilan: buka dashboard siswa & halaman Tugas/Latihan pada tiga ukuran layar berikut,
+        lalu centang setelah verifikasi. Progres tersimpan di perangkat.
+      </p>
+      <div className="grid gap-3 lg:grid-cols-3">
+        {CHECKLIST_GROUPS.map((g) => (
+          <Card key={g.size} className="p-4 space-y-3">
+            <div>
+              <div className="font-semibold">{g.label}</div>
+              <div className="text-xs text-muted-foreground">{g.hint}</div>
+            </div>
+            <ul className="space-y-2">
+              {g.items.map((it, idx) => {
+                const key = `${g.size}-${idx}`;
+                const isDone = !!checked[key];
+                return (
+                  <li key={key}>
+                    <label className="flex items-start gap-2 text-sm cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
+                        checked={isDone}
+                        onChange={() => toggle(key)}
+                      />
+                      <span className={isDone ? "line-through text-muted-foreground" : ""}>{it}</span>
+                    </label>
+                  </li>
+                );
+              })}
+            </ul>
+          </Card>
+        ))}
+      </div>
+      <Card className="p-3 text-xs text-muted-foreground">
+        Tip: di Chrome/Edge tekan <b>F12</b> → ikon <i>Toggle device toolbar</i> untuk simulasi ukuran layar.
+        Di aplikasi ini, gunakan tombol perangkat (HP/Tablet/Desktop) di atas preview untuk uji cepat.
+      </Card>
+    </section>
+  );
+}
