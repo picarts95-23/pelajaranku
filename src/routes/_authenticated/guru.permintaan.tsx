@@ -51,9 +51,16 @@ function GuruPermintaanPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("task_requests")
-        .select("*, classes(name), profiles:student_id(full_name, class_name)")
+        .select("*, classes(name)")
         .order("created_at", { ascending: false });
-      return (data ?? []) as Req[];
+      const rows = (data ?? []) as any[];
+      const ids = Array.from(new Set(rows.map((r) => r.student_id).filter(Boolean)));
+      let profMap: Record<string, { full_name: string; class_name: string | null }> = {};
+      if (ids.length) {
+        const { data: profs } = await supabase.from("profiles").select("id, full_name, class_name").in("id", ids);
+        (profs ?? []).forEach((p: any) => { profMap[p.id] = { full_name: p.full_name, class_name: p.class_name }; });
+      }
+      return rows.map((r) => ({ ...r, profiles: profMap[r.student_id] ?? null })) as Req[];
     },
   });
 
