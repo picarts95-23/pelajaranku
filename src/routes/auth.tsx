@@ -19,7 +19,7 @@ import { claimTeacherRole } from "@/lib/roles.functions";
 
 const searchSchema = z.object({
   mode: z.enum(["login", "signup"]).optional().default("login"),
-  role: z.enum(["guru", "siswa"]).optional().default("siswa"),
+  role: z.enum(["guru", "siswa", "admin"]).optional().default("siswa"),
   email: z.string().optional(),
   reset: z.enum(["success"]).optional(),
 });
