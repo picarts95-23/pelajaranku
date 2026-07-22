@@ -26,6 +26,7 @@ import {
 } from "@/lib/admin.functions";
 import { exportSchemaDump } from "@/lib/self-hosting.functions";
 import { AdminOnboarding } from "@/components/admin-onboarding";
+import { TeacherInvitesPanel } from "@/components/teacher-invites-panel";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
