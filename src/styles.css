@@ -139,17 +139,47 @@
 
 @layer base {
   * { border-color: var(--color-border); }
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
   html, body {
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-body);
     font-feature-settings: "ss01", "cv01";
+    overflow-x: hidden;
+  }
+  body {
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
   h1, h2, h3, h4, h5, .font-display { font-family: var(--font-display); letter-spacing: -0.01em; }
+  h1, h2, h3, h4, h5, h6, p, span, div, li, a { overflow-wrap: anywhere; word-break: break-word; }
+  img, video, canvas, svg { max-width: 100%; height: auto; }
+  button, [role="button"], a { touch-action: manipulation; }
+  input, textarea, select { font-size: 16px; } /* prevent iOS zoom on focus */
+  @media (min-width: 768px) {
+    input, textarea, select { font-size: inherit; }
+  }
   body {
     background-image:
       radial-gradient(ellipse 80% 50% at 50% -10%, oklch(0.72 0.14 350 / 0.18), transparent 70%),
       radial-gradient(ellipse 60% 40% at 90% 110%, oklch(0.62 0.15 320 / 0.14), transparent 70%);
+  }
+  /* Reduce motion for accessibility & low-end devices */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
   }
 }
 
