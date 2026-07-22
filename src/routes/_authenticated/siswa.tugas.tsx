@@ -240,6 +240,7 @@ function QuestCard({ a }: { a: any }) {
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader><DialogTitle>{FORMAT_EMOJI[fmt] ?? "📝"} {a.title}</DialogTitle></DialogHeader>
+                <TaskTypeGuide fmt={fmt} hasLink={!!(a.quiz_link || a.game_link)} />
                 <div className="space-y-3">
                   {fmt === "multiple_choice" && Array.isArray(a.options) ? (
                     <div>
@@ -425,6 +426,8 @@ function QuizCard({ quiz }: { quiz: any }) {
           </DialogTrigger>
           <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
             <DialogHeader><DialogTitle>{quiz.title}</DialogTitle></DialogHeader>
+            <TaskTypeGuide fmt="quiz" />
+
             {result ? (
               <div className="space-y-4 py-4 text-center">
                 <div className="text-5xl">{result.manual_pending > 0 ? "📝" : "🎉"}</div>
