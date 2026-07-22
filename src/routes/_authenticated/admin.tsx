@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
   ShieldCheck, Search, Trash2, Archive, ArchiveRestore, Loader2, LogOut, Users,
-  KeyRound, Eye, EyeOff, Wand2, Copy,
+  KeyRound, Eye, EyeOff, Wand2, Copy, Download, Database,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,7 @@ import { LangToggle } from "@/components/lang-toggle";
 import {
   listAllUsers, setUserArchived, deleteUserAccount, setUserPassword, type AdminUserRow,
 } from "@/lib/admin.functions";
+import { exportSchemaDump } from "@/lib/self-hosting.functions";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
@@ -52,6 +53,30 @@ function AdminPage() {
   const archiveFn = useServerFn(setUserArchived);
   const deleteFn = useServerFn(deleteUserAccount);
   const passwordFn = useServerFn(setUserPassword);
+  const exportSchemaFn = useServerFn(exportSchemaDump);
+  const [exporting, setExporting] = useState(false);
+
+  const downloadSchema = async () => {
+    try {
+      setExporting(true);
+      const { sql } = await exportSchemaFn();
+      const blob = new Blob([sql], { type: "text/sql;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const stamp = new Date().toISOString().slice(0, 10);
+      a.href = url;
+      a.download = `pelajaranku-supabase-schema-${stamp}.sql`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      toast.success("Skema berhasil diunduh");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Gagal mengunduh skema");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const usersQuery = useQuery({
     queryKey: ["admin-users"],
@@ -157,7 +182,28 @@ function AdminPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-5 py-6">
+      <main className="mx-auto max-w-5xl space-y-5 px-5 py-6">
+        <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+          className="rounded-3xl border-2 border-border bg-card p-5 shadow-card-rpg">
+          <div className="flex flex-wrap items-start gap-4">
+            <div className="grid size-11 shrink-0 place-items-center rounded-2xl bg-gradient-magic shadow-magic">
+              <Database className="size-6 text-primary-foreground" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h2 className="font-display text-lg font-bold leading-tight">Pindahkan data ke Supabase Anda sendiri</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Unduh skema lengkap (tabel, RLS, fungsi) lalu jalankan di project Supabase gratis milik Anda.
+                Ideal jika Anda ingin memiliki datanya 100% atau menjual aplikasi ini kepada sekolah lain.
+                Panduan lengkap ada di <code className="rounded bg-muted px-1.5 py-0.5 text-xs">docs/self-hosting.md</code>.
+              </p>
+            </div>
+            <Button onClick={downloadSchema} disabled={exporting} className="shrink-0">
+              {exporting ? <Loader2 className="size-4 animate-spin" /> : <Download className="size-4" />}
+              Unduh skema (.sql)
+            </Button>
+          </div>
+        </motion.section>
+
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
           className="rounded-3xl border-2 border-border bg-card p-5 shadow-card-rpg">
           <div className="flex flex-wrap items-center gap-2">
