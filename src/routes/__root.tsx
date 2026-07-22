@@ -16,6 +16,7 @@ import { LangContext, translations, type Key, type Lang } from "../lib/i18n";
 import { useState, useMemo } from "react";
 import { Toaster } from "../components/ui/sonner";
 import { registerServiceWorker } from "../lib/register-sw";
+import { OfflineOnboarding } from "../components/offline-onboarding";
 
 function NotFoundComponent() {
   return (
@@ -155,6 +156,7 @@ function RootComponent() {
       <LangContext.Provider value={{ lang, setLang, t }}>
         <AuthProvider>
           <Outlet />
+          <OfflineOnboarding />
           <Toaster richColors position="top-center" />
         </AuthProvider>
       </LangContext.Provider>

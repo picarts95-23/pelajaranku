@@ -137,6 +137,79 @@
   --ring: oklch(0.72 0.15 350);
 }
 
+/* Fallback untuk browser tanpa dukungan oklch() (iOS Safari <15.4, Chrome iOS lama).
+   Tanpa ini, semua token warna menjadi invalid dan UI di iPhone 7/8 pada iOS 15.x
+   hanya menampilkan gradien/bentuk warna tanpa teks/border yang jelas. */
+@supports not (color: oklch(0 0 0)) {
+  :root {
+    --background: #fdf5f2;
+    --foreground: #3a1f45;
+    --card: #ffffff;
+    --card-foreground: #3a1f45;
+    --popover: #ffffff;
+    --popover-foreground: #3a1f45;
+    --primary: #b83a6b;
+    --primary-foreground: #fffaf7;
+    --secondary: #d9c6e5;
+    --secondary-foreground: #33203f;
+    --muted: #f4e4ea;
+    --muted-foreground: #7a5c74;
+    --accent: #e4b34a;
+    --accent-foreground: #3a2a10;
+    --destructive: #d13b2b;
+    --destructive-foreground: #ffffff;
+    --border: #e6d0da;
+    --input: #efdfe6;
+    --ring: #b83a6b;
+    --magic: #a55ba0;
+    --magic-foreground: #ffffff;
+    --quest: #e0b048;
+    --quest-foreground: #2f2410;
+    --xp: #7cc4a4;
+    --coin: #e8b642;
+    --guru: #6b4785;
+    --siswa: #d18aa8;
+    --sidebar: #fdf5f2;
+    --sidebar-foreground: #3a1f45;
+    --sidebar-primary: #b83a6b;
+    --sidebar-primary-foreground: #fffaf7;
+    --sidebar-accent: #f4e4ea;
+    --sidebar-accent-foreground: #3a1f45;
+    --sidebar-border: #e6d0da;
+    --sidebar-ring: #b83a6b;
+    --gradient-hero: linear-gradient(135deg, #f2b48e 0%, #e295b3 45%, #a4488c 100%);
+    --gradient-magic: linear-gradient(135deg, #b83a6b, #a55ba0);
+    --gradient-sunset: linear-gradient(180deg, #fbe9cf 0%, #f2a878 55%, #b04988 100%);
+    --gradient-quest: linear-gradient(135deg, #f2cf7c, #e8b34d);
+    --shadow-soft: 0 4px 16px -2px rgba(184, 58, 107, 0.18);
+    --shadow-magic: 0 12px 40px -8px rgba(184, 58, 107, 0.35);
+    --shadow-glow: 0 0 32px rgba(232, 182, 66, 0.5);
+    --shadow-card: 0 2px 0 0 #e6d0da, 0 8px 24px -8px rgba(184, 58, 107, 0.2);
+  }
+  .dark {
+    --background: #2b1a35;
+    --foreground: #f4e9df;
+    --card: #382544;
+    --card-foreground: #f4e9df;
+    --popover: #382544;
+    --popover-foreground: #f4e9df;
+    --primary: #d987ac;
+    --primary-foreground: #241432;
+    --secondary: #c4a8d1;
+    --secondary-foreground: #241432;
+    --muted: #40304f;
+    --muted-foreground: #c4b0b8;
+    --accent: #e6b350;
+    --accent-foreground: #241432;
+    --border: #4a3958;
+    --input: #40304f;
+    --ring: #d987ac;
+  }
+  body {
+    background-image: none;
+  }
+}
+
 @layer base {
   * { border-color: var(--color-border); }
   html {
