@@ -40,26 +40,61 @@ export function VoiceRecorder({ value, onChange }: Props) {
     setError(null);
     setRequesting(true);
     try {
+      if (typeof window === "undefined" || !navigator.mediaDevices?.getUserMedia) {
+        throw new Error(
+          lang === "id"
+            ? "Perangkat/browser ini tidak mendukung perekaman suara. Coba pakai Chrome/Safari terbaru."
+            : "This device/browser does not support recording. Try the latest Chrome/Safari.",
+        );
+      }
+      if (typeof MediaRecorder === "undefined") {
+        throw new Error(
+          lang === "id"
+            ? "Browser tidak mendukung MediaRecorder. Perbarui browser lalu coba lagi."
+            : "Browser does not support MediaRecorder. Please update your browser.",
+        );
+      }
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
-      const mimeType = ["audio/webm", "audio/mp4"].find((m) => MediaRecorder.isTypeSupported(m));
+      // Try iOS/Safari-friendly types first (audio/mp4), then WebM opus.
+      const preferred = ["audio/mp4", "audio/mp4;codecs=mp4a.40.2", "audio/webm;codecs=opus", "audio/webm", "audio/ogg"];
+      const mimeType = preferred.find((m) => MediaRecorder.isTypeSupported?.(m));
       const rec = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
       chunksRef.current = [];
-      rec.ondataavailable = (e) => e.data.size > 0 && chunksRef.current.push(e.data);
+      rec.ondataavailable = (e) => e.data && e.data.size > 0 && chunksRef.current.push(e.data);
       rec.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: rec.mimeType });
+        const type = rec.mimeType || mimeType || "audio/webm";
+        const blob = new Blob(chunksRef.current, { type });
+        if (blob.size === 0) {
+          setError(lang === "id" ? "Rekaman kosong. Cek izin mikrofon lalu coba lagi." : "Empty recording. Check mic permission and try again.");
+          streamRef.current?.getTracks().forEach((t) => t.stop());
+          return;
+        }
         const newUrl = URL.createObjectURL(blob);
         setUrl(newUrl);
         onChange?.({ blob, url: newUrl });
         streamRef.current?.getTracks().forEach((t) => t.stop());
       };
-      rec.start();
+      // Flush data every second so short clips still capture audio on iOS.
+      rec.start(1000);
       recRef.current = rec;
       setRecording(true);
       setSeconds(0);
       timerRef.current = setInterval(() => setSeconds((s) => s + 1), 1000);
-    } catch {
-      setError(lang === "id" ? "Akses mikrofon ditolak." : "Microphone access denied.");
+    } catch (err: any) {
+      const name = err?.name || "";
+      const msg = err?.message || "";
+      if (name === "NotAllowedError" || /denied|permission/i.test(msg)) {
+        setError(
+          lang === "id"
+            ? "Izin mikrofon ditolak. Ketuk gembok/ikon di address bar → izinkan Mikrofon → muat ulang halaman."
+            : "Microphone permission denied. Tap the lock icon in the address bar → allow Microphone → reload.",
+        );
+      } else if (name === "NotFoundError") {
+        setError(lang === "id" ? "Mikrofon tidak ditemukan pada perangkat ini." : "No microphone found on this device.");
+      } else {
+        setError(msg || (lang === "id" ? "Tidak bisa memulai rekaman." : "Cannot start recording."));
+      }
     } finally {
       setRequesting(false);
     }
