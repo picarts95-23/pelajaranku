@@ -19,7 +19,7 @@ import { claimTeacherRole } from "@/lib/roles.functions";
 
 const searchSchema = z.object({
   mode: z.enum(["login", "signup"]).optional().default("login"),
-  role: z.enum(["guru", "siswa"]).optional().default("siswa"),
+  role: z.enum(["guru", "siswa", "admin"]).optional().default("siswa"),
   email: z.string().optional(),
   reset: z.enum(["success"]).optional(),
 });
@@ -240,27 +240,44 @@ function AuthPage() {
           {/* Role choose */}
           <div className="mb-5">
             <Label className="mb-2 block">{t("role")}</Label>
-            <div className="grid grid-cols-2 gap-3">
-              {(["siswa", "guru"] as const).map((r) => (
-                <button
-                  key={r}
-                  type="button"
-                  onClick={() => setRole(r)}
-                  className={`rounded-2xl border-2 px-4 py-3 text-left font-display transition-all ${
-                    role === r
-                      ? r === "guru"
-                        ? "border-guru bg-guru/10 shadow-soft"
-                        : "border-siswa bg-siswa/10 shadow-soft"
-                      : "border-border bg-card hover:border-foreground/30"
-                  }`}
-                >
-                  <div className="text-xs uppercase tracking-wider text-muted-foreground">{r === "guru" ? "☪︎ Guru" : "✦ Siswi"}</div>
-                  <div className="text-base font-bold">{r === "guru" ? t("guru") : t("siswa")}</div>
-                </button>
-              ))}
+            <div className="grid grid-cols-3 gap-2">
+              {(["siswa", "guru", "admin"] as const).map((r) => {
+                const meta = {
+                  siswa: { emoji: "✦", label: t("siswa"), border: "border-siswa", bg: "bg-siswa/10" },
+                  guru:  { emoji: "☪︎", label: t("guru"),  border: "border-guru",  bg: "bg-guru/10" },
+                  admin: { emoji: "🛡️", label: "Admin",     border: "border-primary", bg: "bg-primary/10" },
+                }[r];
+                return (
+                  <button key={r} type="button" onClick={() => setRole(r)}
+                    className={`rounded-2xl border-2 px-3 py-3 text-left font-display transition-all ${
+                      role === r ? `${meta.border} ${meta.bg} shadow-soft` : "border-border bg-card hover:border-foreground/30"
+                    }`}>
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{meta.emoji} {r === "admin" ? "Admin" : r === "guru" ? "Guru" : "Siswi"}</div>
+                    <div className="text-sm font-bold sm:text-base">{meta.label}</div>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
+          {role === "admin" && mode === "signup" ? (
+            <div className="space-y-4">
+              <div className="rounded-2xl border-2 border-dashed border-primary/40 bg-primary/5 p-4 text-sm">
+                <p className="font-display font-semibold">Admin tidak didaftarkan lewat form</p>
+                <p className="mt-2 text-muted-foreground">
+                  Peran admin otomatis diberikan kepada email yang ditetapkan pemilik aplikasi
+                  (<code>ADMIN_EMAIL</code> di pengaturan server). Login dengan email admin — sistem akan
+                  menaikkan peran Anda menjadi admin secara otomatis.
+                </p>
+                <p className="mt-2 text-muted-foreground">
+                  Belum mengatur email admin? Jalankan <a href="/setup" className="font-semibold text-primary underline-offset-2 hover:underline">Wizard Setup</a> untuk konfigurasi awal.
+                </p>
+              </div>
+              <Button type="button" className="w-full" onClick={() => setMode("login")}>
+                Masuk sebagai Admin
+              </Button>
+            </div>
+          ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === "signup" && (
               <>
@@ -319,9 +336,10 @@ function AuthPage() {
               disabled={submitting}
             >
               {submitting && <Loader2 className="size-4 animate-spin" />}
-              {mode === "login" ? t("login") : t("signup")} · {role === "guru" ? t("guru") : t("siswa")}
+              {mode === "login" ? t("login") : t("signup")} · {role === "admin" ? "Admin" : role === "guru" ? t("guru") : t("siswa")}
             </Button>
           </form>
+          )}
         </motion.div>
 
       </div>
