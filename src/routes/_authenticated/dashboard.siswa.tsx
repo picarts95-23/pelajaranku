@@ -59,20 +59,20 @@ function SiswaDashboard() {
     <DashboardShell accent="siswa">
       <motion.section
         initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-        className="relative overflow-hidden rounded-3xl border-2 border-border bg-gradient-hero p-6 text-primary-foreground shadow-magic sm:p-8"
+        className="relative overflow-hidden rounded-3xl border-2 border-border bg-gradient-hero p-4 text-primary-foreground shadow-magic sm:p-6 lg:p-8"
       >
         <div className="absolute -right-10 -top-10 size-48 rounded-full bg-white/20 blur-3xl" />
         <div className="absolute -left-10 -bottom-10 size-56 rounded-full bg-accent/40 blur-3xl" />
-        <div className="relative grid gap-6 sm:grid-cols-[1fr_auto] sm:items-center">
-          <div>
-            <div className="text-sm font-display font-semibold uppercase tracking-wider opacity-80">{t("welcome")}</div>
-            <h1 className="mt-1 font-display text-3xl font-bold sm:text-4xl">{profile?.full_name ?? "Siswi"} ✨</h1>
-            <p className="mt-2 max-w-xl opacity-90">
+        <div className="relative grid gap-6 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+          <div className="min-w-0">
+            <div className="text-xs font-display font-semibold uppercase tracking-wider opacity-80 sm:text-sm">{t("welcome")}</div>
+            <h1 className="mt-1 font-display text-2xl font-bold break-words sm:text-3xl lg:text-4xl">{profile?.full_name ?? "Siswi"} ✨</h1>
+            <p className="mt-2 max-w-xl text-sm opacity-90 sm:text-base">
               {lang === "id"
                 ? `Kelas ${profile?.class_name ?? "—"} · Lanjutkan perjalanan belajarmu hari ini!`
                 : `Class ${profile?.class_name ?? "—"} · Continue your learning journey today!`}
             </p>
-            <div className="mt-6 max-w-md">
+            <div className="mt-5 max-w-md">
               <div className="mb-1.5 flex items-end justify-between text-sm">
                 <span className="font-display font-semibold">{t("level")} {level}</span>
                 <span className="opacity-90">{xp % 100} / 100 XP</span>
@@ -82,8 +82,8 @@ function SiswaDashboard() {
               </div>
             </div>
             <div className="mt-4 flex flex-wrap gap-2">
-              <Link to="/siswa/tugas"><Button variant="outline" className="bg-white/10 border-white/30 text-white hover:bg-white/20">{t("navMyQuests")}</Button></Link>
-              <Link to="/siswa/kelas"><Button variant="outline" className="bg-white/10 border-white/30 text-white hover:bg-white/20">{t("myClasses")}</Button></Link>
+              <Link to="/siswa/tugas"><Button size="sm" variant="outline" className="bg-white/10 border-white/30 text-white hover:bg-white/20">{t("navMyQuests")}</Button></Link>
+              <Link to="/siswa/kelas"><Button size="sm" variant="outline" className="bg-white/10 border-white/30 text-white hover:bg-white/20">{t("myClasses")}</Button></Link>
             </div>
           </div>
           <motion.div
