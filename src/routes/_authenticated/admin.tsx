@@ -53,6 +53,30 @@ function AdminPage() {
   const archiveFn = useServerFn(setUserArchived);
   const deleteFn = useServerFn(deleteUserAccount);
   const passwordFn = useServerFn(setUserPassword);
+  const exportSchemaFn = useServerFn(exportSchemaDump);
+  const [exporting, setExporting] = useState(false);
+
+  const downloadSchema = async () => {
+    try {
+      setExporting(true);
+      const { sql } = await exportSchemaFn();
+      const blob = new Blob([sql], { type: "text/sql;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const stamp = new Date().toISOString().slice(0, 10);
+      a.href = url;
+      a.download = `pelajaranku-supabase-schema-${stamp}.sql`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      toast.success("Skema berhasil diunduh");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Gagal mengunduh skema");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const usersQuery = useQuery({
     queryKey: ["admin-users"],
