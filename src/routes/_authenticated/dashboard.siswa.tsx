@@ -123,13 +123,13 @@ function SiswaDashboard() {
             <ul className="space-y-3">
               {activeQuests.slice(0, 5).map((q: any, i: number) => (
                 <motion.li key={q.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.08 }}
-                  className="group flex items-center gap-4 rounded-2xl border-2 border-border bg-muted/40 p-4 transition-all hover:border-accent hover:bg-card hover:shadow-soft">
-                  <div className="grid size-12 place-items-center rounded-xl bg-gradient-quest text-quest-foreground shadow-soft"><Sword className="size-5" /></div>
+                  className="group flex items-center gap-3 rounded-2xl border-2 border-border bg-muted/40 p-3 transition-all hover:border-accent hover:bg-card hover:shadow-soft sm:gap-4 sm:p-4">
+                  <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-gradient-quest text-quest-foreground shadow-soft sm:size-12"><Sword className="size-5" /></div>
                   <div className="min-w-0 flex-1">
                     <div className="font-display font-semibold truncate">{q.title}</div>
-                    <div className="text-xs text-muted-foreground">{q.classes?.name} · {q.due_at ? format(new Date(q.due_at), "dd MMM") : ""}</div>
+                    <div className="truncate text-xs text-muted-foreground">{q.classes?.name}{q.due_at ? ` · ${format(new Date(q.due_at), "dd MMM")}` : ""}</div>
                   </div>
-                  <div className="flex items-center gap-1 rounded-full bg-xp/15 px-3 py-1 text-sm font-display font-bold text-xp"><Sparkles className="size-3.5" /> +{q.xp_reward}</div>
+                  <div className="shrink-0 flex items-center gap-1 rounded-full bg-xp/15 px-2.5 py-1 text-xs font-display font-bold text-xp sm:px-3 sm:text-sm"><Sparkles className="size-3.5" /> +{q.xp_reward}</div>
                 </motion.li>
               ))}
             </ul>
