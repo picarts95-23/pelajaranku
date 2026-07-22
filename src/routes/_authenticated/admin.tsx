@@ -26,6 +26,7 @@ import {
 } from "@/lib/admin.functions";
 import { exportSchemaDump } from "@/lib/self-hosting.functions";
 import { AdminOnboarding } from "@/components/admin-onboarding";
+import { TeacherInvitesPanel } from "@/components/teacher-invites-panel";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
@@ -204,6 +205,8 @@ function AdminPage() {
             </Button>
           </div>
         </motion.section>
+
+        <TeacherInvitesPanel />
 
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
           className="rounded-3xl border-2 border-border bg-card p-5 shadow-card-rpg">
