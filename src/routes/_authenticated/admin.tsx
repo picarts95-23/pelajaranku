@@ -40,7 +40,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
 const roleLabel: Record<string, string> = { admin: "Admin", guru: "Guru", siswa: "Siswi" };
 
 function AdminPage() {
-  const { role, loading, signOut } = useAuth();
+  const { role, loading, signOut, user } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [q, setQ] = useState("");
