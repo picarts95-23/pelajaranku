@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
   ShieldCheck, Search, Trash2, Archive, ArchiveRestore, Loader2, LogOut, Users,
-  KeyRound, Eye, EyeOff, Wand2, Copy,
+  KeyRound, Eye, EyeOff, Wand2, Copy, Download, Database,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,7 @@ import { LangToggle } from "@/components/lang-toggle";
 import {
   listAllUsers, setUserArchived, deleteUserAccount, setUserPassword, type AdminUserRow,
 } from "@/lib/admin.functions";
+import { exportSchemaDump } from "@/lib/self-hosting.functions";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
