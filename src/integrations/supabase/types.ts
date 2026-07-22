@@ -1245,6 +1245,72 @@ export type Database = {
           },
         ]
       }
+      task_requests: {
+        Row: {
+          assignment_id: string | null
+          class_id: string | null
+          created_at: string
+          description: string | null
+          desired_due_at: string | null
+          id: string
+          responded_at: string | null
+          status: Database["public"]["Enums"]["task_request_status"]
+          student_id: string
+          subject: string | null
+          teacher_id: string | null
+          teacher_note: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assignment_id?: string | null
+          class_id?: string | null
+          created_at?: string
+          description?: string | null
+          desired_due_at?: string | null
+          id?: string
+          responded_at?: string | null
+          status?: Database["public"]["Enums"]["task_request_status"]
+          student_id: string
+          subject?: string | null
+          teacher_id?: string | null
+          teacher_note?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assignment_id?: string | null
+          class_id?: string | null
+          created_at?: string
+          description?: string | null
+          desired_due_at?: string | null
+          id?: string
+          responded_at?: string | null
+          status?: Database["public"]["Enums"]["task_request_status"]
+          student_id?: string
+          subject?: string | null
+          teacher_id?: string | null
+          teacher_note?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_requests_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_requests_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       teacher_calendar_feeds: {
         Row: {
           created_at: string
@@ -1506,6 +1572,12 @@ export type Database = {
         | "short_answer"
         | "image"
       submission_status: "draft" | "submitted" | "graded" | "returned"
+      task_request_status:
+        | "pending"
+        | "accepted"
+        | "declined"
+        | "converted"
+        | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1646,6 +1718,13 @@ export const Constants = {
         "image",
       ],
       submission_status: ["draft", "submitted", "graded", "returned"],
+      task_request_status: [
+        "pending",
+        "accepted",
+        "declined",
+        "converted",
+        "cancelled",
+      ],
     },
   },
 } as const

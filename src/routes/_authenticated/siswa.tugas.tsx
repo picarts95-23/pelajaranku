@@ -1,7 +1,7 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Sword, Sparkles, Coins, Send, BookOpen, FileQuestion, CheckCircle2, Trophy, Clock } from "lucide-react";
+import { Sword, Sparkles, Coins, Send, BookOpen, FileQuestion, CheckCircle2, Trophy, Clock, Camera, ImageIcon, HelpCircle, X, Inbox } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
@@ -61,6 +61,12 @@ function SiswaTugasPage() {
       <PageHeader
         title={lang === "id" ? "Tugas & Latihan" : "Tasks & Practice"}
         subtitle={lang === "id" ? "Semua misi, tugas, dan kuis kamu — tunaikan untuk meraih XP & koin!" : "All your missions, tasks, and quizzes — complete them to earn XP & coins!"}
+        actions={
+          <>
+            <Link to="/siswa/permintaan"><Button size="sm" variant="outline"><Inbox className="size-4" /> {lang === "id" ? "Minta Tugas" : "Request Task"}</Button></Link>
+            <HowToDialog />
+          </>
+        }
       />
 
       <Tabs defaultValue="tugas">
@@ -124,7 +130,7 @@ function QuestCard({ a }: { a: any }) {
           if (voiceBlob.size === 0) throw new Error(lang === "id" ? "Rekaman kosong. Coba rekam ulang." : "Empty recording. Please re-record.");
           const rawType = voiceBlob.type || "audio/webm";
           const baseType = rawType.split(";")[0].trim() || "audio/webm";
-          const ext = baseType.includes("mp4") ? "mp4"
+          const ext = baseType.includes("mp4") || baseType.includes("m4a") || baseType.includes("aac") ? "m4a"
             : baseType.includes("ogg") ? "ogg"
             : baseType.includes("mpeg") ? "mp3"
             : baseType.includes("wav") ? "wav"
@@ -143,9 +149,11 @@ function QuestCard({ a }: { a: any }) {
       }
 
       if (imageFile) {
-        const ext = (imageFile.name.split(".").pop() || "jpg").toLowerCase();
+        if (imageFile.size === 0) throw new Error(lang === "id" ? "Foto kosong. Pilih ulang." : "Empty photo. Please reselect.");
+        if (imageFile.size > 15 * 1024 * 1024) throw new Error(lang === "id" ? "Ukuran foto maksimal 15 MB." : "Max photo size is 15 MB.");
+        const ext = (imageFile.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
         const path = `${user.id}/${a.id}-${Date.now()}.${ext}`;
-        const { error: upErr } = await supabase.storage.from("answer-images").upload(path, imageFile, { upsert: true, contentType: imageFile.type });
+        const { error: upErr } = await supabase.storage.from("answer-images").upload(path, imageFile, { upsert: true, contentType: imageFile.type || "image/jpeg" });
         if (upErr) throw new Error(`Upload foto gagal: ${upErr.message}`);
         storedFileUrl = path;
       } else if (isPhotoFmt && !a.mySubmission?.file_url) {
@@ -274,9 +282,7 @@ function QuestCard({ a }: { a: any }) {
                   ) : isPhotoFmt ? (
                     <div>
                       <Label>{lang === "id" ? "Unggah foto/gambar jawabanmu" : "Upload your photo/image answer"}</Label>
-                      <input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
-                        className="mt-2 block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-siswa file:px-3 file:py-1.5 file:text-white" />
-                      {imageFile && <p className="mt-1 text-xs text-emerald-600">✅ {imageFile.name}</p>}
+                      <PhotoInput file={imageFile} onChange={setImageFile} idPrefix={`p-${a.id}`} />
                       {!imageFile && a.mySubmission?.file_url && <p className="mt-1 text-xs text-muted-foreground">✅ {lang === "id" ? "Foto sebelumnya tersimpan. Pilih file baru untuk mengganti." : "Previous photo saved. Choose a new file to replace."}</p>}
                     </div>
                   ) : (
@@ -284,9 +290,7 @@ function QuestCard({ a }: { a: any }) {
                       <div><Label>{t("yourAnswer")}</Label><Textarea rows={6} value={content} onChange={(e) => setContent(e.target.value)} /></div>
                       <div>
                         <Label>{lang === "id" ? "Lampiran foto (opsional)" : "Photo attachment (optional)"}</Label>
-                        <input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
-                          className="mt-1 block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-siswa file:px-3 file:py-1.5 file:text-white" />
-                        {imageFile && <p className="mt-1 text-xs text-emerald-600">✅ {imageFile.name}</p>}
+                        <PhotoInput file={imageFile} onChange={setImageFile} idPrefix={`opt-${a.id}`} />
                       </div>
                       <div><Label>{t("fileUrl")}</Label><Input value={fileUrl} onChange={(e) => setFileUrl(e.target.value)} placeholder="https://..." /></div>
                     </>
@@ -489,9 +493,7 @@ function QuizCard({ quiz }: { quiz: any }) {
 
                       {type === "image" && (
                         <div className="mt-2">
-                          <input type="file" accept="image/*" onChange={(e) => setImageFiles((v) => ({ ...v, [qi]: e.target.files?.[0] ?? null }))}
-                            className="block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-siswa file:px-3 file:py-1.5 file:text-white" />
-                          {imageFiles[qi] && <p className="mt-1 text-xs text-emerald-600">✅ {imageFiles[qi]!.name}</p>}
+                          <PhotoInput file={imageFiles[qi] ?? null} onChange={(f) => setImageFiles((v) => ({ ...v, [qi]: f }))} idPrefix={`qi-${quiz.id}-${qi}`} />
                         </div>
                       )}
 
@@ -515,6 +517,115 @@ function QuizCard({ quiz }: { quiz: any }) {
           </DialogContent>
         </Dialog>
       )}
+    </div>
+  );
+}
+
+/** Mobile-friendly photo picker: separate "Camera" (capture) and "Gallery" buttons. */
+function PhotoInput({ file, onChange, idPrefix }: { file: File | null; onChange: (f: File | null) => void; idPrefix: string }) {
+  const { lang } = useLang();
+  const camRef = useRef<HTMLInputElement | null>(null);
+  const galRef = useRef<HTMLInputElement | null>(null);
+  return (
+    <div className="mt-2">
+      <div className="flex flex-wrap gap-2">
+        <Button type="button" size="sm" variant="siswa" onClick={() => camRef.current?.click()}>
+          <Camera className="size-4" /> {lang === "id" ? "Ambil Foto" : "Take Photo"}
+        </Button>
+        <Button type="button" size="sm" variant="outline" onClick={() => galRef.current?.click()}>
+          <ImageIcon className="size-4" /> {lang === "id" ? "Pilih dari Galeri" : "Choose from Gallery"}
+        </Button>
+        {file && (
+          <Button type="button" size="icon" variant="ghost" className="size-8 text-destructive" onClick={() => onChange(null)} aria-label="clear">
+            <X className="size-4" />
+          </Button>
+        )}
+      </div>
+      <input
+        ref={camRef}
+        id={`${idPrefix}-cam`}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={(e) => onChange(e.target.files?.[0] ?? null)}
+      />
+      <input
+        ref={galRef}
+        id={`${idPrefix}-gal`}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => onChange(e.target.files?.[0] ?? null)}
+      />
+      {file && (
+        <div className="mt-2 flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-700">
+          <CheckCircle2 className="size-4 shrink-0" />
+          <span className="truncate">{file.name}</span>
+          <span className="ml-auto shrink-0 text-emerald-600/70">{(file.size / 1024).toFixed(0)} KB</span>
+        </div>
+      )}
+      <p className="mt-1.5 text-[11px] text-muted-foreground">
+        {lang === "id"
+          ? "Format: JPG/PNG/HEIC. Maks 15 MB. Pastikan tulisan terbaca jelas."
+          : "JPG/PNG/HEIC, max 15 MB. Make sure your writing is legible."}
+      </p>
+    </div>
+  );
+}
+
+/** Panduan singkat "Cara Kirim Tugas" untuk siswa. */
+function HowToDialog() {
+  const { lang } = useLang();
+  const [open, setOpen] = useState(false);
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="quest"><HelpCircle className="size-4" /> {lang === "id" ? "Panduan Kirim" : "How to Submit"}</Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-lg">
+        <DialogHeader><DialogTitle>{lang === "id" ? "Cara Mengumpulkan Tugas" : "How to Submit Assignments"}</DialogTitle></DialogHeader>
+        <div className="space-y-3 text-sm">
+          <Step n={1} title={lang === "id" ? "Buka tugas" : "Open the task"}>
+            {lang === "id" ? "Ketuk kartu tugas, lalu tekan tombol Kirim." : "Tap a task card, then press Submit."}
+          </Step>
+          <Step n={2} title={lang === "id" ? "Rekaman Suara 🎙️" : "Voice Recording 🎙️"}>
+            {lang === "id"
+              ? "Tekan Mulai rekam. Bila muncul permintaan izin mikrofon, pilih Izinkan. Ketuk Berhenti saat selesai lalu Putar untuk memeriksa. Jika tidak keluar suara, ulangi rekam."
+              : "Tap Start recording. If prompted, allow the microphone. Tap Stop when done, then Play to review. Re-record if needed."}
+          </Step>
+          <Step n={3} title={lang === "id" ? "Foto Jawaban 📷" : "Photo Answer 📷"}>
+            {lang === "id"
+              ? "Ketuk Ambil Foto untuk memakai kamera HP, atau Pilih dari Galeri untuk memilih foto yang sudah ada. Pastikan tulisan jelas dan tidak buram."
+              : "Tap Take Photo to use your camera, or Choose from Gallery. Ensure the writing is clear and not blurry."}
+          </Step>
+          <Step n={4} title={lang === "id" ? "Kirim ✨" : "Submit ✨"}>
+            {lang === "id"
+              ? "Tekan Kirim. Kalau berhasil, statusnya berubah jadi Terkirim 📤. Selama tenggat belum lewat, kamu boleh Edit Pengumpulan."
+              : "Tap Submit. On success the status becomes Submitted 📤. You can edit before the deadline passes."}
+          </Step>
+          <Step n={5} title={lang === "id" ? "Kalau gagal ⚠️" : "If it fails ⚠️"}>
+            {lang === "id"
+              ? "Cek koneksi internet, pastikan izin mikrofon/kamera menyala, ukuran foto ≤ 15 MB, dan tenggat belum lewat. Pesan error akan muncul di layar."
+              : "Check your connection, mic/camera permissions, keep photos ≤ 15 MB, and confirm the deadline hasn't passed. Error toasts show details."}
+          </Step>
+        </div>
+        <DialogFooter>
+          <Button variant="siswa" onClick={() => setOpen(false)}>{lang === "id" ? "Siap!" : "Got it!"}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function Step({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
+  return (
+    <div className="flex gap-3">
+      <div className="grid size-7 shrink-0 place-items-center rounded-full bg-siswa font-display text-xs font-bold text-white">{n}</div>
+      <div className="min-w-0">
+        <div className="font-display text-sm font-bold">{title}</div>
+        <div className="text-xs text-muted-foreground">{children}</div>
+      </div>
     </div>
   );
 }

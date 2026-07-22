@@ -21,6 +21,7 @@ import { Route as AuthenticatedSiswaTugasRouteImport } from './routes/_authentic
 import { Route as AuthenticatedSiswaStatusRouteImport } from './routes/_authenticated/siswa.status'
 import { Route as AuthenticatedSiswaRiwayatRouteImport } from './routes/_authenticated/siswa.riwayat'
 import { Route as AuthenticatedSiswaProfilRouteImport } from './routes/_authenticated/siswa.profil'
+import { Route as AuthenticatedSiswaPermintaanRouteImport } from './routes/_authenticated/siswa.permintaan'
 import { Route as AuthenticatedSiswaPengumumanRouteImport } from './routes/_authenticated/siswa.pengumuman'
 import { Route as AuthenticatedSiswaNilaiRouteImport } from './routes/_authenticated/siswa.nilai'
 import { Route as AuthenticatedSiswaMutabaahRouteImport } from './routes/_authenticated/siswa.mutabaah'
@@ -34,6 +35,7 @@ import { Route as AuthenticatedGuruSiswaRouteImport } from './routes/_authentica
 import { Route as AuthenticatedGuruRppRouteImport } from './routes/_authenticated/guru.rpp'
 import { Route as AuthenticatedGuruRekapRouteImport } from './routes/_authenticated/guru.rekap'
 import { Route as AuthenticatedGuruPresensiRouteImport } from './routes/_authenticated/guru.presensi'
+import { Route as AuthenticatedGuruPermintaanRouteImport } from './routes/_authenticated/guru.permintaan'
 import { Route as AuthenticatedGuruPengumumanRouteImport } from './routes/_authenticated/guru.pengumuman'
 import { Route as AuthenticatedGuruMutabaahRouteImport } from './routes/_authenticated/guru.mutabaah'
 import { Route as AuthenticatedGuruMapelRouteImport } from './routes/_authenticated/guru.mapel'
@@ -112,6 +114,12 @@ const AuthenticatedSiswaProfilRoute =
     path: '/siswa/profil',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSiswaPermintaanRoute =
+  AuthenticatedSiswaPermintaanRouteImport.update({
+    id: '/siswa/permintaan',
+    path: '/siswa/permintaan',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSiswaPengumumanRoute =
   AuthenticatedSiswaPengumumanRouteImport.update({
     id: '/siswa/pengumuman',
@@ -179,6 +187,12 @@ const AuthenticatedGuruPresensiRoute =
   AuthenticatedGuruPresensiRouteImport.update({
     id: '/guru/presensi',
     path: '/guru/presensi',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedGuruPermintaanRoute =
+  AuthenticatedGuruPermintaanRouteImport.update({
+    id: '/guru/permintaan',
+    path: '/guru/permintaan',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedGuruPengumumanRoute =
@@ -286,6 +300,7 @@ export interface FileRoutesByFullPath {
   '/guru/mapel': typeof AuthenticatedGuruMapelRoute
   '/guru/mutabaah': typeof AuthenticatedGuruMutabaahRoute
   '/guru/pengumuman': typeof AuthenticatedGuruPengumumanRoute
+  '/guru/permintaan': typeof AuthenticatedGuruPermintaanRoute
   '/guru/presensi': typeof AuthenticatedGuruPresensiRoute
   '/guru/rekap': typeof AuthenticatedGuruRekapRoute
   '/guru/rpp': typeof AuthenticatedGuruRppRoute
@@ -299,6 +314,7 @@ export interface FileRoutesByFullPath {
   '/siswa/mutabaah': typeof AuthenticatedSiswaMutabaahRoute
   '/siswa/nilai': typeof AuthenticatedSiswaNilaiRoute
   '/siswa/pengumuman': typeof AuthenticatedSiswaPengumumanRoute
+  '/siswa/permintaan': typeof AuthenticatedSiswaPermintaanRoute
   '/siswa/profil': typeof AuthenticatedSiswaProfilRoute
   '/siswa/riwayat': typeof AuthenticatedSiswaRiwayatRoute
   '/siswa/status': typeof AuthenticatedSiswaStatusRoute
@@ -327,6 +343,7 @@ export interface FileRoutesByTo {
   '/guru/mapel': typeof AuthenticatedGuruMapelRoute
   '/guru/mutabaah': typeof AuthenticatedGuruMutabaahRoute
   '/guru/pengumuman': typeof AuthenticatedGuruPengumumanRoute
+  '/guru/permintaan': typeof AuthenticatedGuruPermintaanRoute
   '/guru/presensi': typeof AuthenticatedGuruPresensiRoute
   '/guru/rekap': typeof AuthenticatedGuruRekapRoute
   '/guru/rpp': typeof AuthenticatedGuruRppRoute
@@ -340,6 +357,7 @@ export interface FileRoutesByTo {
   '/siswa/mutabaah': typeof AuthenticatedSiswaMutabaahRoute
   '/siswa/nilai': typeof AuthenticatedSiswaNilaiRoute
   '/siswa/pengumuman': typeof AuthenticatedSiswaPengumumanRoute
+  '/siswa/permintaan': typeof AuthenticatedSiswaPermintaanRoute
   '/siswa/profil': typeof AuthenticatedSiswaProfilRoute
   '/siswa/riwayat': typeof AuthenticatedSiswaRiwayatRoute
   '/siswa/status': typeof AuthenticatedSiswaStatusRoute
@@ -370,6 +388,7 @@ export interface FileRoutesById {
   '/_authenticated/guru/mapel': typeof AuthenticatedGuruMapelRoute
   '/_authenticated/guru/mutabaah': typeof AuthenticatedGuruMutabaahRoute
   '/_authenticated/guru/pengumuman': typeof AuthenticatedGuruPengumumanRoute
+  '/_authenticated/guru/permintaan': typeof AuthenticatedGuruPermintaanRoute
   '/_authenticated/guru/presensi': typeof AuthenticatedGuruPresensiRoute
   '/_authenticated/guru/rekap': typeof AuthenticatedGuruRekapRoute
   '/_authenticated/guru/rpp': typeof AuthenticatedGuruRppRoute
@@ -383,6 +402,7 @@ export interface FileRoutesById {
   '/_authenticated/siswa/mutabaah': typeof AuthenticatedSiswaMutabaahRoute
   '/_authenticated/siswa/nilai': typeof AuthenticatedSiswaNilaiRoute
   '/_authenticated/siswa/pengumuman': typeof AuthenticatedSiswaPengumumanRoute
+  '/_authenticated/siswa/permintaan': typeof AuthenticatedSiswaPermintaanRoute
   '/_authenticated/siswa/profil': typeof AuthenticatedSiswaProfilRoute
   '/_authenticated/siswa/riwayat': typeof AuthenticatedSiswaRiwayatRoute
   '/_authenticated/siswa/status': typeof AuthenticatedSiswaStatusRoute
@@ -413,6 +433,7 @@ export interface FileRouteTypes {
     | '/guru/mapel'
     | '/guru/mutabaah'
     | '/guru/pengumuman'
+    | '/guru/permintaan'
     | '/guru/presensi'
     | '/guru/rekap'
     | '/guru/rpp'
@@ -426,6 +447,7 @@ export interface FileRouteTypes {
     | '/siswa/mutabaah'
     | '/siswa/nilai'
     | '/siswa/pengumuman'
+    | '/siswa/permintaan'
     | '/siswa/profil'
     | '/siswa/riwayat'
     | '/siswa/status'
@@ -454,6 +476,7 @@ export interface FileRouteTypes {
     | '/guru/mapel'
     | '/guru/mutabaah'
     | '/guru/pengumuman'
+    | '/guru/permintaan'
     | '/guru/presensi'
     | '/guru/rekap'
     | '/guru/rpp'
@@ -467,6 +490,7 @@ export interface FileRouteTypes {
     | '/siswa/mutabaah'
     | '/siswa/nilai'
     | '/siswa/pengumuman'
+    | '/siswa/permintaan'
     | '/siswa/profil'
     | '/siswa/riwayat'
     | '/siswa/status'
@@ -496,6 +520,7 @@ export interface FileRouteTypes {
     | '/_authenticated/guru/mapel'
     | '/_authenticated/guru/mutabaah'
     | '/_authenticated/guru/pengumuman'
+    | '/_authenticated/guru/permintaan'
     | '/_authenticated/guru/presensi'
     | '/_authenticated/guru/rekap'
     | '/_authenticated/guru/rpp'
@@ -509,6 +534,7 @@ export interface FileRouteTypes {
     | '/_authenticated/siswa/mutabaah'
     | '/_authenticated/siswa/nilai'
     | '/_authenticated/siswa/pengumuman'
+    | '/_authenticated/siswa/permintaan'
     | '/_authenticated/siswa/profil'
     | '/_authenticated/siswa/riwayat'
     | '/_authenticated/siswa/status'
@@ -618,6 +644,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSiswaProfilRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/siswa/permintaan': {
+      id: '/_authenticated/siswa/permintaan'
+      path: '/siswa/permintaan'
+      fullPath: '/siswa/permintaan'
+      preLoaderRoute: typeof AuthenticatedSiswaPermintaanRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/siswa/pengumuman': {
       id: '/_authenticated/siswa/pengumuman'
       path: '/siswa/pengumuman'
@@ -707,6 +740,13 @@ declare module '@tanstack/react-router' {
       path: '/guru/presensi'
       fullPath: '/guru/presensi'
       preLoaderRoute: typeof AuthenticatedGuruPresensiRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/guru/permintaan': {
+      id: '/_authenticated/guru/permintaan'
+      path: '/guru/permintaan'
+      fullPath: '/guru/permintaan'
+      preLoaderRoute: typeof AuthenticatedGuruPermintaanRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/guru/pengumuman': {
@@ -830,6 +870,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedGuruMapelRoute: typeof AuthenticatedGuruMapelRoute
   AuthenticatedGuruMutabaahRoute: typeof AuthenticatedGuruMutabaahRoute
   AuthenticatedGuruPengumumanRoute: typeof AuthenticatedGuruPengumumanRoute
+  AuthenticatedGuruPermintaanRoute: typeof AuthenticatedGuruPermintaanRoute
   AuthenticatedGuruPresensiRoute: typeof AuthenticatedGuruPresensiRoute
   AuthenticatedGuruRekapRoute: typeof AuthenticatedGuruRekapRoute
   AuthenticatedGuruRppRoute: typeof AuthenticatedGuruRppRoute
@@ -843,6 +884,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSiswaMutabaahRoute: typeof AuthenticatedSiswaMutabaahRoute
   AuthenticatedSiswaNilaiRoute: typeof AuthenticatedSiswaNilaiRoute
   AuthenticatedSiswaPengumumanRoute: typeof AuthenticatedSiswaPengumumanRoute
+  AuthenticatedSiswaPermintaanRoute: typeof AuthenticatedSiswaPermintaanRoute
   AuthenticatedSiswaProfilRoute: typeof AuthenticatedSiswaProfilRoute
   AuthenticatedSiswaRiwayatRoute: typeof AuthenticatedSiswaRiwayatRoute
   AuthenticatedSiswaStatusRoute: typeof AuthenticatedSiswaStatusRoute
@@ -863,6 +905,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedGuruMapelRoute: AuthenticatedGuruMapelRoute,
   AuthenticatedGuruMutabaahRoute: AuthenticatedGuruMutabaahRoute,
   AuthenticatedGuruPengumumanRoute: AuthenticatedGuruPengumumanRoute,
+  AuthenticatedGuruPermintaanRoute: AuthenticatedGuruPermintaanRoute,
   AuthenticatedGuruPresensiRoute: AuthenticatedGuruPresensiRoute,
   AuthenticatedGuruRekapRoute: AuthenticatedGuruRekapRoute,
   AuthenticatedGuruRppRoute: AuthenticatedGuruRppRoute,
@@ -876,6 +919,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSiswaMutabaahRoute: AuthenticatedSiswaMutabaahRoute,
   AuthenticatedSiswaNilaiRoute: AuthenticatedSiswaNilaiRoute,
   AuthenticatedSiswaPengumumanRoute: AuthenticatedSiswaPengumumanRoute,
+  AuthenticatedSiswaPermintaanRoute: AuthenticatedSiswaPermintaanRoute,
   AuthenticatedSiswaProfilRoute: AuthenticatedSiswaProfilRoute,
   AuthenticatedSiswaRiwayatRoute: AuthenticatedSiswaRiwayatRoute,
   AuthenticatedSiswaStatusRoute: AuthenticatedSiswaStatusRoute,
@@ -901,13 +945,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

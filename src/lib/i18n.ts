@@ -97,6 +97,7 @@ export const translations = {
   navBadges: { id: "Badge", en: "Badges", ar: "الشارات" },
   navHistory: { id: "Riwayat", en: "History", ar: "السجل" },
   navProfile: { id: "Profil", en: "Profile", ar: "الملف الشخصي" },
+  navTaskRequests: { id: "Permintaan Tugas", en: "Task Requests", ar: "طلبات المهام" },
   gamificationHistory: { id: "Riwayat Gamifikasi", en: "Gamification History", ar: "سجل التحفيز" },
   historySubtitle: { id: "Rangkuman perubahan skor dan pencapaian badge per tanggal", en: "Summary of score changes and badge achievements by date", ar: "ملخص تغييرات النقاط وإنجازات الشارات حسب التاريخ" },
   totalXpEarned: { id: "Total XP Diperoleh", en: "Total XP Earned", ar: "إجمالي الخبرة المكتسبة" },
