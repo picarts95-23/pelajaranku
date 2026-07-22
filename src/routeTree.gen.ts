@@ -15,7 +15,9 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SetupRouteImport } from './routes/setup'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as LoadingRouteImport } from './routes/loading'
+import { Route as DemoRouteImport } from './routes/demo'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AktivasiRouteImport } from './routes/aktivasi'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedPanduanRouteImport } from './routes/_authenticated/panduan'
@@ -85,9 +87,19 @@ const LoadingRoute = LoadingRouteImport.update({
   path: '/loading',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DemoRoute = DemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AktivasiRoute = AktivasiRouteImport.update({
+  id: '/aktivasi',
+  path: '/aktivasi',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
@@ -301,7 +313,9 @@ const ApiPublicCalendarTokenIcsRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/aktivasi': typeof AktivasiRoute
   '/auth': typeof AuthRoute
+  '/demo': typeof DemoRoute
   '/loading': typeof LoadingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
@@ -347,7 +361,9 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/aktivasi': typeof AktivasiRoute
   '/auth': typeof AuthRoute
+  '/demo': typeof DemoRoute
   '/loading': typeof LoadingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
@@ -395,7 +411,9 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/aktivasi': typeof AktivasiRoute
   '/auth': typeof AuthRoute
+  '/demo': typeof DemoRoute
   '/loading': typeof LoadingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
@@ -443,7 +461,9 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/aktivasi'
     | '/auth'
+    | '/demo'
     | '/loading'
     | '/reset-password'
     | '/setup'
@@ -489,7 +509,9 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/aktivasi'
     | '/auth'
+    | '/demo'
     | '/loading'
     | '/reset-password'
     | '/setup'
@@ -536,7 +558,9 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/aktivasi'
     | '/auth'
+    | '/demo'
     | '/loading'
     | '/reset-password'
     | '/setup'
@@ -584,7 +608,9 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AktivasiRoute: typeof AktivasiRoute
   AuthRoute: typeof AuthRoute
+  DemoRoute: typeof DemoRoute
   LoadingRoute: typeof LoadingRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SetupRoute: typeof SetupRoute
@@ -640,11 +666,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoadingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/demo': {
+      id: '/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof DemoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/aktivasi': {
+      id: '/aktivasi'
+      path: '/aktivasi'
+      fullPath: '/aktivasi'
+      preLoaderRoute: typeof AktivasiRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -994,7 +1034,9 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AktivasiRoute: AktivasiRoute,
   AuthRoute: AuthRoute,
+  DemoRoute: DemoRoute,
   LoadingRoute: LoadingRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SetupRoute: SetupRoute,
