@@ -34,6 +34,7 @@ const GURU_NAV: NavItem[] = [
   { to: "/guru/permintaan", key: "navTaskRequests", icon: Inbox },
   { to: "/guru/bank-soal", key: "navQuestionBank", icon: Database },
   { to: "/guru/gamifikasi", key: "navGamification", icon: Trophy },
+  { to: "/panduan", key: "navGuide", icon: HelpCircle },
 ];
 
 const SISWA_NAV: NavItem[] = [
@@ -50,6 +51,7 @@ const SISWA_NAV: NavItem[] = [
   { to: "/siswa/riwayat", key: "navHistory", icon: History },
   { to: "/siswa/leaderboard", key: "leaderboard", icon: Trophy },
   { to: "/siswa/profil", key: "navProfile", icon: UserCircle2 },
+  { to: "/panduan", key: "navGuide", icon: HelpCircle },
 ];
 
 
