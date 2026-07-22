@@ -51,6 +51,29 @@ function PanduanPage() {
           </p>
         </header>
 
+        <Card className="p-4 border-2 border-primary/30 bg-primary/5">
+          <div className="flex flex-wrap items-start gap-3">
+            <div className="grid size-10 place-items-center rounded-xl bg-primary text-primary-foreground shrink-0">
+              <Upload className="h-5 w-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="font-bold">Panduan Offline (tanpa internet)</div>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Buka sekali saat online, lalu simpan/bookmark — halaman ringan ini bisa dibaca kembali walau sinyal hilang.
+              </p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <Button asChild size="sm" variant="quest">
+                  <a href="/panduan-offline.html" target="_blank" rel="noopener">Buka Panduan Offline</a>
+                </Button>
+                <Button asChild size="sm" variant="outline">
+                  <a href="/panduan-offline.html" download="panduan-pelajaranku.html">💾 Unduh ke Perangkat</a>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </Card>
+
+
         <DevicePicker value={device} onChange={setDevice} />
 
         <DeviceTips device={device} />
