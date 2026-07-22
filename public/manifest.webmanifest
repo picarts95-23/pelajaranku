@@ -1,0 +1,17 @@
+{
+  "name": "Pelajaranku",
+  "short_name": "Pelajaranku",
+  "description": "Aplikasi pembelajaran interaktif bernuansa islami untuk guru dan siswi.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fdf3f0",
+  "theme_color": "#b83a6b",
+  "lang": "id",
+  "icons": [
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/apple-touch-icon.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
