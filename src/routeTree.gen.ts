@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VerifyRoleRouteImport } from './routes/verify-role'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as SetupRouteImport } from './routes/setup'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as LoadingRouteImport } from './routes/loading'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -61,6 +62,11 @@ const VerifyRoleRoute = VerifyRoleRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SetupRoute = SetupRouteImport.update({
+  id: '/setup',
+  path: '/setup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -292,6 +298,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/loading': typeof LoadingRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/setup': typeof SetupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/verify-role': typeof VerifyRoleRoute
   '/admin': typeof AuthenticatedAdminRoute
@@ -336,6 +343,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/loading': typeof LoadingRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/setup': typeof SetupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/verify-role': typeof VerifyRoleRoute
   '/admin': typeof AuthenticatedAdminRoute
@@ -382,6 +390,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/loading': typeof LoadingRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/setup': typeof SetupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/verify-role': typeof VerifyRoleRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
@@ -428,6 +437,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/loading'
     | '/reset-password'
+    | '/setup'
     | '/sitemap.xml'
     | '/verify-role'
     | '/admin'
@@ -472,6 +482,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/loading'
     | '/reset-password'
+    | '/setup'
     | '/sitemap.xml'
     | '/verify-role'
     | '/admin'
@@ -517,6 +528,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/loading'
     | '/reset-password'
+    | '/setup'
     | '/sitemap.xml'
     | '/verify-role'
     | '/_authenticated/admin'
@@ -563,6 +575,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   LoadingRoute: typeof LoadingRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  SetupRoute: typeof SetupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   VerifyRoleRoute: typeof VerifyRoleRoute
   ApiPublicHooksSyncSheetsRoute: typeof ApiPublicHooksSyncSheetsRoute
@@ -584,6 +597,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/setup': {
+      id: '/setup'
+      path: '/setup'
+      fullPath: '/setup'
+      preLoaderRoute: typeof SetupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -957,6 +977,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   LoadingRoute: LoadingRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  SetupRoute: SetupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   VerifyRoleRoute: VerifyRoleRoute,
   ApiPublicHooksSyncSheetsRoute: ApiPublicHooksSyncSheetsRoute,
@@ -966,13 +987,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
