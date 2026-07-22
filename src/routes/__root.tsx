@@ -17,6 +17,7 @@ import { useState, useMemo } from "react";
 import { Toaster } from "../components/ui/sonner";
 import { registerServiceWorker } from "../lib/register-sw";
 import { OfflineOnboarding } from "../components/offline-onboarding";
+import { IosInstallPrompt } from "../components/ios-install-prompt";
 
 function NotFoundComponent() {
   return (
@@ -157,6 +158,7 @@ function RootComponent() {
         <AuthProvider>
           <Outlet />
           <OfflineOnboarding />
+          <IosInstallPrompt />
           <Toaster richColors position="top-center" />
         </AuthProvider>
       </LangContext.Provider>
