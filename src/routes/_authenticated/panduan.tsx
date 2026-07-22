@@ -254,6 +254,85 @@ function GuideCard({ icon, title, steps }: { icon: React.ReactNode; title: strin
   );
 }
 
+function Troubleshooting({ device }: { device: Device }) {
+  const cam = device === "hp"
+    ? [
+        "Android Chrome: ketuk 🔒/ⓘ di address bar → Izin situs → aktifkan Kamera & Mikrofon → muat ulang halaman.",
+        "iPhone Safari: Pengaturan iOS → Safari → Kamera/Mikrofon → Izinkan; atau saat pop-up muncul, pilih Izinkan.",
+        "Kalau kamera dipakai aplikasi lain (Zoom/WA), tutup dulu aplikasi itu.",
+        "Coba mode Bukan Penyamaran (Incognito sering memblokir kamera/mikrofon).",
+      ]
+    : device === "tablet"
+    ? [
+        "Ketuk ikon 🔒 di address bar → Izin situs → Izinkan Kamera & Mikrofon → muat ulang.",
+        "iPad Safari: Pengaturan → Safari → Kamera/Mikrofon → Izinkan.",
+        "Tutup aplikasi lain yang sedang memakai kamera (Zoom/Meet).",
+      ]
+    : [
+        "Klik 🔒 di address bar → Site settings → izinkan Camera & Microphone → reload.",
+        "Windows: Settings → Privacy → Camera/Microphone → pastikan browser diizinkan.",
+        "macOS: System Settings → Privacy & Security → Camera/Microphone → centang browser.",
+        "Tutup Zoom/Meet/OBS bila sedang berjalan — mereka mengunci perangkat.",
+      ];
+
+  const size = device === "hp"
+    ? [
+        "Batas 15 MB per foto/audio. Foto HP modern sering 5–8 MB — aman.",
+        "Kalau ditolak, buka foto di Galeri → Edit → Simpan sebagai (kompres) atau screenshot lalu kirim ulang.",
+        "Untuk rekaman panjang, coba pecah menjadi 2 rekaman pendek.",
+      ]
+    : device === "tablet"
+    ? [
+        "Batas 15 MB. Foto tablet biasanya di bawah batas.",
+        "Kalau terlalu besar: buka Foto → Edit → Simpan salinan lebih kecil.",
+      ]
+    : [
+        "Batas 15 MB per file. Gunakan Paint / Preview / Photos untuk resize ke ≤ 1600px lebar.",
+        "Bisa juga pakai TinyPNG/Squoosh di browser untuk mengecilkan foto tanpa aplikasi.",
+      ];
+
+  const fmt = [
+    "Foto: JPG / JPEG / PNG / WEBP / HEIC. HEIC (iPhone) otomatis dikonversi — kalau gagal, ubah Pengaturan iOS → Kamera → Format → Paling Kompatibel.",
+    "Audio (rekaman langsung dari tombol Rekam): m4a / mp3 / webm / ogg / wav — semua didukung.",
+    "Link: gunakan URL lengkap diawali https:// (contoh: https://forms.gle/...).",
+    "Kalau file muncul tanpa ekstensi (mis. dari WhatsApp), ganti nama & tambahkan .jpg atau .mp3.",
+  ];
+
+  const network = device === "hp" || device === "tablet"
+    ? [
+        "Sinyal lemah bikin upload berhenti. Dekatkan ke Wi-Fi atau pindah ke tempat sinyal 4G/5G.",
+        "Jangan menutup tab/browser sebelum muncul notifikasi Berhasil.",
+        "Kalau macet lama, tarik untuk refresh lalu kirim ulang (jawaban rekaman/foto perlu dipilih ulang).",
+      ]
+    : [
+        "Kalau upload macet: cek indikator Wi-Fi / kabel LAN.",
+        "Coba nonaktifkan VPN atau ekstensi pemblokir (uBlock, Privacy Badger) — kadang memblok upload storage.",
+        "Kalau kantor/sekolah pakai proxy, minta akses ke *.lovable.app & *.supabase.co.",
+      ];
+
+  return (
+    <section className="space-y-3">
+      <h2 className="text-lg font-bold flex items-center gap-2">
+        <AlertTriangle className="h-5 w-5 text-destructive" /> Gagal Upload? Coba Ini
+      </h2>
+      <div className="grid gap-4 md:grid-cols-2">
+        <GuideCard icon={<Camera className="h-5 w-5" />} title="Izin Kamera / Mikrofon Ditolak" steps={cam} />
+        <GuideCard icon={<ImageIcon className="h-5 w-5" />} title="Ukuran File Terlalu Besar (>15MB)" steps={size} />
+        <GuideCard icon={<Upload className="h-5 w-5" />} title="Format File Tidak Didukung" steps={fmt} />
+        <GuideCard icon={<Send className="h-5 w-5" />} title="Upload Macet / Gagal Terkirim" steps={network} />
+      </div>
+      <Card className="p-4 text-sm space-y-1.5 border-destructive/30">
+        <p className="font-semibold flex items-center gap-2"><AlertTriangle className="h-4 w-4 text-destructive" /> Pesan error yang sering muncul</p>
+        <p>• <b>"Tenggat tugas sudah lewat"</b> — tidak bisa lagi dikirim; hubungi guru untuk permintaan susulan lewat menu <i>Minta Tugas</i>.</p>
+        <p>• <b>"Rekaman kosong"</b> — mikrofon tidak menangkap suara. Cek izin, coba rekam ulang lebih dekat ke mikrofon.</p>
+        <p>• <b>"Upload rekaman/foto gagal"</b> — koneksi terputus; muat ulang halaman lalu kirim ulang.</p>
+        <p>• <b>"Foto kosong / Ukuran maks 15 MB"</b> — pilih ulang atau kompres foto.</p>
+      </Card>
+    </section>
+  );
+}
+
+
 const SISWA_FEATURES = [
   { title: "Tugas / Misi", desc: "Lihat semua tugas aktif, kirim jawaban (foto/rekaman/link/kuis), lacak tenggat waktu." },
   { title: "Permintaan Tugas", desc: "Ajukan tugas personal ke guru bila kamu ingin tantangan tambahan." },
