@@ -632,3 +632,152 @@ function Step({ n, title, children }: { n: number; title: string; children: Reac
     </div>
   );
 }
+
+/** Panduan langkah spesifik yang muncul di dalam dialog kirim tugas, menyesuaikan format tugas. */
+function TaskTypeGuide({ fmt, hasLink }: { fmt: string; hasLink?: boolean }) {
+  const { lang } = useLang();
+  const [open, setOpen] = useState(false);
+  const id = lang === "id";
+
+  const guides: Record<string, { emoji: string; title: string; steps: string[] }> = {
+    voice: {
+      emoji: "🎙️",
+      title: id ? "Panduan Tugas Rekaman Suara" : "Voice Recording Guide",
+      steps: id ? [
+        "Tekan tombol Mulai rekam. Jika muncul permintaan izin mikrofon, pilih Izinkan.",
+        "Bicara jelas dekat mikrofon. Cari tempat yang tidak berisik.",
+        "Tekan Berhenti saat selesai, lalu Putar untuk memeriksa hasilnya.",
+        "Kalau kurang jelas, tekan Rekam ulang. Kalau sudah oke, tekan Kirim.",
+      ] : [
+        "Tap Start recording. Allow the microphone if asked.",
+        "Speak clearly, close to the mic, in a quiet place.",
+        "Tap Stop when done, then Play to review.",
+        "Re-record if unclear, then tap Submit.",
+      ],
+    },
+    muroja: {
+      emoji: "📖",
+      title: id ? "Panduan Setor Hafalan" : "Muroja'ah Guide",
+      steps: id ? [
+        "Perhatikan surat/ayat yang harus disetor pada label di kartu.",
+        "Tekan Mulai rekam, lalu baca hafalanmu dengan tartil.",
+        "Tekan Berhenti, lalu Putar untuk memastikan bacaan tidak terpotong.",
+        "Tekan Kirim untuk menyetor hafalanmu ke guru.",
+      ] : [
+        "Note the surah/ayat shown on the card.",
+        "Tap Start recording and recite calmly.",
+        "Tap Stop, then Play to make sure nothing was cut off.",
+        "Tap Submit to send your recitation.",
+      ],
+    },
+    photo: {
+      emoji: "📷",
+      title: id ? "Panduan Tugas Foto" : "Photo Task Guide",
+      steps: id ? [
+        "Kerjakan jawabanmu di buku/kertas dulu dengan tulisan yang jelas.",
+        "Tekan Ambil Foto untuk memakai kamera, atau Pilih dari Galeri.",
+        "Pastikan foto terang, tidak buram, dan seluruh jawaban terlihat.",
+        "Ukuran foto maksimal 15 MB. Tekan Kirim setelah foto muncul.",
+      ] : [
+        "Do the work on paper with clear handwriting.",
+        "Tap Take Photo or Choose from Gallery.",
+        "Make sure the photo is bright, sharp, and shows the whole answer.",
+        "Max 15 MB. Tap Submit once the photo appears.",
+      ],
+    },
+    multiple_choice: {
+      emoji: "🔘",
+      title: id ? "Panduan Pilihan Ganda" : "Multiple Choice Guide",
+      steps: id ? [
+        "Baca soal dan semua opsi dengan teliti.",
+        "Ketuk satu opsi jawaban — kotak akan berwarna bila terpilih.",
+        "Kamu masih bisa mengubah pilihan sebelum menekan Kirim.",
+        "Tekan Kirim untuk mengunci jawabanmu.",
+      ] : [
+        "Read the question and every option carefully.",
+        "Tap one option — it highlights when selected.",
+        "You can change your choice before submitting.",
+        "Tap Submit to lock in your answer.",
+      ],
+    },
+    complex_mc: {
+      emoji: "☑️",
+      title: id ? "Panduan Pilihan Ganda Kompleks" : "Multi-Select Guide",
+      steps: id ? [
+        "Boleh memilih LEBIH DARI SATU jawaban yang benar.",
+        "Ketuk sekali untuk memilih, ketuk lagi untuk membatalkan.",
+        "Pastikan minimal satu jawaban dicentang sebelum Kirim.",
+      ] : [
+        "You may pick MORE THAN ONE correct answer.",
+        "Tap to select, tap again to unselect.",
+        "Ensure at least one is selected before Submit.",
+      ],
+    },
+    quiz: {
+      emoji: "🧠",
+      title: id ? "Panduan Kuis" : "Quiz Guide",
+      steps: id ? [
+        "Jawab setiap soal berurutan — kamu bisa menggulir ke bawah.",
+        "Tiap soal punya format berbeda (pilihan, isian, esai, suara, foto). Ikuti tampilannya.",
+        "Kamu hanya bisa mengirim SATU KALI, jadi periksa dulu sebelum Kirim Jawaban.",
+        "Nilai otomatis muncul setelah kirim; soal esai/suara/foto menunggu penilaian guru.",
+      ] : [
+        "Answer each question in order — scroll down to see them all.",
+        "Each question type looks different (choice, short, essay, voice, photo).",
+        "You can submit only ONCE — review before pressing Submit Answers.",
+        "Auto-graded score shows up immediately; essay/voice/photo await teacher grading.",
+      ],
+    },
+    descriptive: {
+      emoji: "✍️",
+      title: id ? "Panduan Tugas Uraian" : "Descriptive Task Guide",
+      steps: id ? [
+        "Tulis jawabanmu di kolom teks. Boleh panjang, boleh singkat sesuai perintah.",
+        "Opsional: lampirkan foto pendukung lewat tombol foto.",
+        "Opsional: tempel tautan (Google Drive/Docs) di kolom URL bila diminta.",
+        "Periksa ejaan, lalu tekan Kirim.",
+      ] : [
+        "Type your answer in the text box.",
+        "Optional: attach a supporting photo.",
+        "Optional: paste a link (Drive/Docs) if requested.",
+        "Proofread, then tap Submit.",
+      ],
+    },
+  };
+
+  const key = fmt === "voice" || fmt === "muroja" || fmt === "photo" || fmt === "multiple_choice" || fmt === "complex_mc" || fmt === "quiz"
+    ? fmt : "descriptive";
+  const g = guides[key];
+
+  return (
+    <div className="rounded-xl border-2 border-siswa/30 bg-siswa/5">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left"
+      >
+        <span className="inline-flex items-center gap-2 font-display text-sm font-bold text-siswa">
+          <HelpCircle className="size-4" /> {g.emoji} {g.title}
+        </span>
+        <span className="text-xs text-muted-foreground">{open ? (id ? "Sembunyikan" : "Hide") : (id ? "Lihat langkah" : "Show steps")}</span>
+      </button>
+      {open && (
+        <ol className="space-y-1.5 border-t border-siswa/20 px-3 py-2.5 text-xs text-foreground/80">
+          {g.steps.map((s, i) => (
+            <li key={i} className="flex gap-2">
+              <span className="grid size-5 shrink-0 place-items-center rounded-full bg-siswa font-display text-[10px] font-bold text-white">{i + 1}</span>
+              <span className="min-w-0">{s}</span>
+            </li>
+          ))}
+          {hasLink && (
+            <li className="flex gap-2">
+              <span className="grid size-5 shrink-0 place-items-center rounded-full bg-primary font-display text-[10px] font-bold text-white">🔗</span>
+              <span className="min-w-0">{id ? "Ada tautan kuis/permainan pada kartu tugas — buka & kerjakan dulu, baru kembali ke sini untuk mengirim." : "This task has a quiz/game link — open it first, then come back to submit."}</span>
+            </li>
+          )}
+        </ol>
+      )}
+    </div>
+  );
+}
+
