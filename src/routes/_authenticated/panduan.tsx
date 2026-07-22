@@ -136,6 +136,9 @@ function PanduanPage() {
           </Card>
         </section>
 
+        <Troubleshooting device={device} />
+
+
         <section className="space-y-3">
           <h2 className="text-lg font-bold">Fitur Utama</h2>
           <div className="grid gap-3 sm:grid-cols-2">
