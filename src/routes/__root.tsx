@@ -158,6 +158,7 @@ function RootComponent() {
         <AuthProvider>
           <Outlet />
           <OfflineOnboarding />
+          <IosInstallPrompt />
           <Toaster richColors position="top-center" />
         </AuthProvider>
       </LangContext.Provider>
