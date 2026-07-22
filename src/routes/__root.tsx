@@ -15,6 +15,7 @@ import { AuthProvider } from "../lib/auth-context";
 import { LangContext, translations, type Key, type Lang } from "../lib/i18n";
 import { useState, useMemo } from "react";
 import { Toaster } from "../components/ui/sonner";
+import { registerServiceWorker } from "../lib/register-sw";
 
 function NotFoundComponent() {
   return (
@@ -144,6 +145,10 @@ function RootComponent() {
     document.documentElement.lang = lang;
     document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
   }, [lang]);
+
+  useEffect(() => {
+    registerServiceWorker();
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
