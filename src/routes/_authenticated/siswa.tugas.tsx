@@ -520,3 +520,112 @@ function QuizCard({ quiz }: { quiz: any }) {
     </div>
   );
 }
+
+/** Mobile-friendly photo picker: separate "Camera" (capture) and "Gallery" buttons. */
+function PhotoInput({ file, onChange, idPrefix }: { file: File | null; onChange: (f: File | null) => void; idPrefix: string }) {
+  const { lang } = useLang();
+  const camRef = useRef<HTMLInputElement | null>(null);
+  const galRef = useRef<HTMLInputElement | null>(null);
+  return (
+    <div className="mt-2">
+      <div className="flex flex-wrap gap-2">
+        <Button type="button" size="sm" variant="siswa" onClick={() => camRef.current?.click()}>
+          <Camera className="size-4" /> {lang === "id" ? "Ambil Foto" : "Take Photo"}
+        </Button>
+        <Button type="button" size="sm" variant="outline" onClick={() => galRef.current?.click()}>
+          <ImageIcon className="size-4" /> {lang === "id" ? "Pilih dari Galeri" : "Choose from Gallery"}
+        </Button>
+        {file && (
+          <Button type="button" size="icon" variant="ghost" className="size-8 text-destructive" onClick={() => onChange(null)} aria-label="clear">
+            <X className="size-4" />
+          </Button>
+        )}
+      </div>
+      <input
+        ref={camRef}
+        id={`${idPrefix}-cam`}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={(e) => onChange(e.target.files?.[0] ?? null)}
+      />
+      <input
+        ref={galRef}
+        id={`${idPrefix}-gal`}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => onChange(e.target.files?.[0] ?? null)}
+      />
+      {file && (
+        <div className="mt-2 flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-700">
+          <CheckCircle2 className="size-4 shrink-0" />
+          <span className="truncate">{file.name}</span>
+          <span className="ml-auto shrink-0 text-emerald-600/70">{(file.size / 1024).toFixed(0)} KB</span>
+        </div>
+      )}
+      <p className="mt-1.5 text-[11px] text-muted-foreground">
+        {lang === "id"
+          ? "Format: JPG/PNG/HEIC. Maks 15 MB. Pastikan tulisan terbaca jelas."
+          : "JPG/PNG/HEIC, max 15 MB. Make sure your writing is legible."}
+      </p>
+    </div>
+  );
+}
+
+/** Panduan singkat "Cara Kirim Tugas" untuk siswa. */
+function HowToDialog() {
+  const { lang } = useLang();
+  const [open, setOpen] = useState(false);
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="quest"><HelpCircle className="size-4" /> {lang === "id" ? "Panduan Kirim" : "How to Submit"}</Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-lg">
+        <DialogHeader><DialogTitle>{lang === "id" ? "Cara Mengumpulkan Tugas" : "How to Submit Assignments"}</DialogTitle></DialogHeader>
+        <div className="space-y-3 text-sm">
+          <Step n={1} title={lang === "id" ? "Buka tugas" : "Open the task"}>
+            {lang === "id" ? "Ketuk kartu tugas, lalu tekan tombol Kirim." : "Tap a task card, then press Submit."}
+          </Step>
+          <Step n={2} title={lang === "id" ? "Rekaman Suara 🎙️" : "Voice Recording 🎙️"}>
+            {lang === "id"
+              ? "Tekan Mulai rekam. Bila muncul permintaan izin mikrofon, pilih Izinkan. Ketuk Berhenti saat selesai lalu Putar untuk memeriksa. Jika tidak keluar suara, ulangi rekam."
+              : "Tap Start recording. If prompted, allow the microphone. Tap Stop when done, then Play to review. Re-record if needed."}
+          </Step>
+          <Step n={3} title={lang === "id" ? "Foto Jawaban 📷" : "Photo Answer 📷"}>
+            {lang === "id"
+              ? "Ketuk Ambil Foto untuk memakai kamera HP, atau Pilih dari Galeri untuk memilih foto yang sudah ada. Pastikan tulisan jelas dan tidak buram."
+              : "Tap Take Photo to use your camera, or Choose from Gallery. Ensure the writing is clear and not blurry."}
+          </Step>
+          <Step n={4} title={lang === "id" ? "Kirim ✨" : "Submit ✨"}>
+            {lang === "id"
+              ? "Tekan Kirim. Kalau berhasil, statusnya berubah jadi Terkirim 📤. Selama tenggat belum lewat, kamu boleh Edit Pengumpulan."
+              : "Tap Submit. On success the status becomes Submitted 📤. You can edit before the deadline passes."}
+          </Step>
+          <Step n={5} title={lang === "id" ? "Kalau gagal ⚠️" : "If it fails ⚠️"}>
+            {lang === "id"
+              ? "Cek koneksi internet, pastikan izin mikrofon/kamera menyala, ukuran foto ≤ 15 MB, dan tenggat belum lewat. Pesan error akan muncul di layar."
+              : "Check your connection, mic/camera permissions, keep photos ≤ 15 MB, and confirm the deadline hasn't passed. Error toasts show details."}
+          </Step>
+        </div>
+        <DialogFooter>
+          <Button variant="siswa" onClick={() => setOpen(false)}>{lang === "id" ? "Siap!" : "Got it!"}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function Step({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
+  return (
+    <div className="flex gap-3">
+      <div className="grid size-7 shrink-0 place-items-center rounded-full bg-siswa font-display text-xs font-bold text-white">{n}</div>
+      <div className="min-w-0">
+        <div className="font-display text-sm font-bold">{title}</div>
+        <div className="text-xs text-muted-foreground">{children}</div>
+      </div>
+    </div>
+  );
+}
