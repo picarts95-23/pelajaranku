@@ -1329,6 +1329,42 @@ export type Database = {
         }
         Relationships: []
       }
+      teacher_invites: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string
+          expires_at: string
+          id: string
+          note: string | null
+          revoked_at: string | null
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by: string
+          expires_at?: string
+          id?: string
+          note?: string | null
+          revoked_at?: string | null
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string
+          expires_at?: string
+          id?: string
+          note?: string | null
+          revoked_at?: string | null
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: []
+      }
       teacher_sheet_sync: {
         Row: {
           created_at: string
