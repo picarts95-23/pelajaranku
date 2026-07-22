@@ -35,6 +35,19 @@ function LoadingPortal() {
       navigate({ to: "/auth" });
       return;
     }
+    // If the user arrived via a teacher-invite link before signing in, the
+    // invite code was parked in localStorage. Redeem it once we have a session
+    // so the invitee lands on the teacher dashboard automatically.
+    try {
+      const pending = typeof window !== "undefined"
+        ? window.localStorage.getItem("pending_teacher_invite")
+        : null;
+      if (pending) {
+        window.localStorage.removeItem("pending_teacher_invite");
+        navigate({ to: "/undangan", search: { code: pending } });
+        return;
+      }
+    } catch { /* ignore storage errors */ }
     // The database role (user_roles) is the ONLY source of truth for routing.
     // The role chosen on the login form must never decide the destination,
     // otherwise a teacher could land on the student dashboard and vice-versa.
