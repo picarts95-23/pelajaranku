@@ -16,6 +16,7 @@ import { Route as LoadingRouteImport } from './routes/loading'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedPanduanRouteImport } from './routes/_authenticated/panduan'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedSiswaTugasRouteImport } from './routes/_authenticated/siswa.tugas'
 import { Route as AuthenticatedSiswaStatusRouteImport } from './routes/_authenticated/siswa.status'
@@ -85,6 +86,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedPanduanRoute = AuthenticatedPanduanRouteImport.update({
+  id: '/panduan',
+  path: '/panduan',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
@@ -289,6 +295,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/verify-role': typeof VerifyRoleRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/panduan': typeof AuthenticatedPanduanRoute
   '/dashboard/guru': typeof AuthenticatedDashboardGuruRoute
   '/dashboard/siswa': typeof AuthenticatedDashboardSiswaRoute
   '/guru/bank-soal': typeof AuthenticatedGuruBankSoalRoute
@@ -332,6 +339,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/verify-role': typeof VerifyRoleRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/panduan': typeof AuthenticatedPanduanRoute
   '/dashboard/guru': typeof AuthenticatedDashboardGuruRoute
   '/dashboard/siswa': typeof AuthenticatedDashboardSiswaRoute
   '/guru/bank-soal': typeof AuthenticatedGuruBankSoalRoute
@@ -377,6 +385,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/verify-role': typeof VerifyRoleRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/panduan': typeof AuthenticatedPanduanRoute
   '/_authenticated/dashboard/guru': typeof AuthenticatedDashboardGuruRoute
   '/_authenticated/dashboard/siswa': typeof AuthenticatedDashboardSiswaRoute
   '/_authenticated/guru/bank-soal': typeof AuthenticatedGuruBankSoalRoute
@@ -422,6 +431,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/verify-role'
     | '/admin'
+    | '/panduan'
     | '/dashboard/guru'
     | '/dashboard/siswa'
     | '/guru/bank-soal'
@@ -465,6 +475,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/verify-role'
     | '/admin'
+    | '/panduan'
     | '/dashboard/guru'
     | '/dashboard/siswa'
     | '/guru/bank-soal'
@@ -509,6 +520,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/verify-role'
     | '/_authenticated/admin'
+    | '/_authenticated/panduan'
     | '/_authenticated/dashboard/guru'
     | '/_authenticated/dashboard/siswa'
     | '/_authenticated/guru/bank-soal'
@@ -608,6 +620,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/panduan': {
+      id: '/_authenticated/panduan'
+      path: '/panduan'
+      fullPath: '/panduan'
+      preLoaderRoute: typeof AuthenticatedPanduanRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin': {
       id: '/_authenticated/admin'
@@ -859,6 +878,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedPanduanRoute: typeof AuthenticatedPanduanRoute
   AuthenticatedDashboardGuruRoute: typeof AuthenticatedDashboardGuruRoute
   AuthenticatedDashboardSiswaRoute: typeof AuthenticatedDashboardSiswaRoute
   AuthenticatedGuruBankSoalRoute: typeof AuthenticatedGuruBankSoalRoute
@@ -894,6 +914,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedPanduanRoute: AuthenticatedPanduanRoute,
   AuthenticatedDashboardGuruRoute: AuthenticatedDashboardGuruRoute,
   AuthenticatedDashboardSiswaRoute: AuthenticatedDashboardSiswaRoute,
   AuthenticatedGuruBankSoalRoute: AuthenticatedGuruBankSoalRoute,
