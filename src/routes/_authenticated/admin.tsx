@@ -206,6 +206,8 @@ function AdminPage() {
           </div>
         </motion.section>
 
+        <TeacherInvitesPanel />
+
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
           className="rounded-3xl border-2 border-border bg-card p-5 shadow-card-rpg">
           <div className="flex flex-wrap items-center gap-2">

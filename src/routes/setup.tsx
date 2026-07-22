@@ -41,9 +41,35 @@ function SetupWizard() {
   const cleanUrl = url.trim().replace(/\/$/, "");
   const projectRef = cleanUrl.match(/https:\/\/([a-z0-9]+)\.supabase\.co/i)?.[1] ?? "";
 
+  const decodeJwtRole = (jwt: string): string | null => {
+    try {
+      const payload = JSON.parse(atob(jwt.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+      return (payload?.role as string) ?? null;
+    } catch { return null; }
+  };
+
+  const validateUrlShape = (raw: string): string | null => {
+    if (!raw) return "URL project belum diisi.";
+    if (!/^https:\/\//i.test(raw)) return "URL harus dimulai dengan https://";
+    if (!/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/i.test(raw)) {
+      return "Format URL tidak sesuai. Contoh benar: https://xxxxxx.supabase.co";
+    }
+    return null;
+  };
+
   const testAnon = async () => {
-    if (!cleanUrl || !anonKey.trim()) {
-      setAnonTest({ status: "fail", message: "URL dan anon key wajib diisi." });
+    const urlErr = validateUrlShape(url.trim());
+    if (urlErr) { setAnonTest({ status: "fail", message: urlErr }); return; }
+    if (!anonKey.trim()) {
+      setAnonTest({ status: "fail", message: "Anon key belum ditempel." });
+      return;
+    }
+    const jwtRole = decodeJwtRole(anonKey.trim());
+    if (jwtRole && jwtRole !== "anon") {
+      setAnonTest({
+        status: "fail",
+        message: `Key yang Anda tempel adalah key "${jwtRole}", bukan "anon". Buka Supabase → Project Settings → API → Project API Keys → salin baris "anon public".`,
+      });
       return;
     }
     setAnonTest({ status: "testing" });
@@ -51,25 +77,57 @@ function SetupWizard() {
       const r = await fetch(`${cleanUrl}/auth/v1/settings`, {
         headers: { apikey: anonKey.trim() },
       });
+      if (r.status === 401 || r.status === 403) {
+        throw new Error("Anon key ditolak (401/403). Pastikan Anda menyalin key 'anon public' — bukan URL, bukan service_role, dan tidak ada spasi/enter tambahan.");
+      }
+      if (r.status === 404) {
+        throw new Error("Endpoint tidak ditemukan (404). Kemungkinan Project URL salah — cek ulang subdomain 'xxxxxx.supabase.co'.");
+      }
+      if (r.status >= 500) {
+        throw new Error(`Server Supabase merespons ${r.status}. Coba lagi beberapa saat.`);
+      }
       if (!r.ok) throw new Error(`HTTP ${r.status} — periksa URL & anon key.`);
       const j = await r.json();
       setAnonTest({
         status: "ok",
-        message: `Terhubung! Auth aktif${j?.external?.email ? " · email login diizinkan" : ""}.`,
+        message: `Terhubung ke ${cleanUrl}. Auth aktif${j?.external?.email ? " · login email diizinkan" : ""}.`,
       });
     } catch (e: any) {
-      setAnonTest({ status: "fail", message: e?.message ?? "Gagal menghubungi Supabase." });
+      const msg = e?.message ?? "Gagal menghubungi Supabase.";
+      const isNetwork = /Failed to fetch|NetworkError|CORS/i.test(msg);
+      setAnonTest({
+        status: "fail",
+        message: isNetwork
+          ? `Tidak dapat menghubungi ${cleanUrl}. Periksa URL (pastikan subdomain benar) dan koneksi internet Anda.`
+          : msg,
+      });
     }
   };
 
   const testService = async () => {
-    if (!cleanUrl || !serviceKey.trim()) {
-      setServiceTest({ status: "fail", message: "URL dan service key wajib diisi." });
+    const urlErr = validateUrlShape(url.trim());
+    if (urlErr) { setServiceTest({ status: "fail", message: `Selesaikan Langkah 1 dulu: ${urlErr}` }); return; }
+    if (!serviceKey.trim()) {
+      setServiceTest({ status: "fail", message: "Service key belum ditempel." });
+      return;
+    }
+    const jwtRole = decodeJwtRole(serviceKey.trim());
+    if (jwtRole && jwtRole !== "service_role") {
+      setServiceTest({
+        status: "fail",
+        message: `Key yang Anda tempel adalah key "${jwtRole}", bukan "service_role". Kembali ke Supabase → Project Settings → API dan salin baris "service_role secret" (bagian merah, klik "Reveal" dulu).`,
+      });
+      return;
+    }
+    if (anonKey.trim() && serviceKey.trim() === anonKey.trim()) {
+      setServiceTest({
+        status: "fail",
+        message: "Service key sama persis dengan anon key. Anda menempel key yang salah — service_role berbeda dan lebih panjang.",
+      });
       return;
     }
     setServiceTest({ status: "testing" });
     try {
-      // Service role can list auth users — a good privilege probe.
       const r = await fetch(`${cleanUrl}/auth/v1/admin/users?page=1&per_page=1`, {
         headers: {
           apikey: serviceKey.trim(),
@@ -77,12 +135,30 @@ function SetupWizard() {
         },
       });
       if (r.status === 401 || r.status === 403) {
-        throw new Error("Ditolak (401/403) — key ini bukan service_role.");
+        throw new Error("Ditolak (401/403). Key ini bukan service_role, atau service_role sudah diputar (rotated) di Supabase. Buka Project Settings → API → salin ulang 'service_role secret'.");
+      }
+      if (r.status === 404) {
+        throw new Error("Endpoint admin tidak ditemukan (404). Periksa URL project di Langkah 1.");
+      }
+      if (r.status >= 500) {
+        throw new Error(`Server Supabase merespons ${r.status}. Coba lagi beberapa saat.`);
       }
       if (!r.ok) throw new Error(`HTTP ${r.status} — periksa service key.`);
-      setServiceTest({ status: "ok", message: "Service role terverifikasi (akses admin OK)." });
+      const j = await r.json();
+      const count = Array.isArray(j?.users) ? j.users.length : 0;
+      setServiceTest({
+        status: "ok",
+        message: `Service role terverifikasi. Akses admin OK · ${count} pengguna terdeteksi.`,
+      });
     } catch (e: any) {
-      setServiceTest({ status: "fail", message: e?.message ?? "Gagal memverifikasi service key." });
+      const msg = e?.message ?? "Gagal memverifikasi service key.";
+      const isNetwork = /Failed to fetch|NetworkError|CORS/i.test(msg);
+      setServiceTest({
+        status: "fail",
+        message: isNetwork
+          ? `Tidak dapat menghubungi ${cleanUrl}. Periksa URL & koneksi internet.`
+          : msg,
+      });
     }
   };
 
