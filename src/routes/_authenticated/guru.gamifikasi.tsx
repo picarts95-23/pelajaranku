@@ -240,8 +240,8 @@ function GuruGamifikasiPage() {
       <section>
         <h2 className="mb-3 font-display text-lg font-bold flex items-center gap-2"><Trophy className="size-5 text-quest" /> {t("leaderboard")}</h2>
         {leaderboard.length === 0 ? <EmptyState message={t("empty")} /> : (
-          <div className="overflow-hidden rounded-2xl border-2 border-border bg-card shadow-card-rpg">
-            <table className="w-full text-sm">
+          <div className="overflow-x-auto rounded-2xl border-2 border-border bg-card shadow-card-rpg">
+            <table className="w-full min-w-[540px] text-sm">
               <thead className="bg-muted/60 text-xs uppercase tracking-wider text-muted-foreground">
                 <tr><th className="px-4 py-3 text-left">#</th><th className="px-4 py-3 text-left">{t("fullName")}</th><th className="px-4 py-3 text-right">{t("level")}</th><th className="px-4 py-3 text-right">{t("xp")}</th><th className="px-4 py-3 text-right">{t("coins")}</th></tr>
               </thead>

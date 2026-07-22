@@ -244,8 +244,8 @@ function GuruDashboard() {
               : "No students have missed a deadline."}
           </p>
         ) : (
-          <div className="max-h-[360px] overflow-y-auto rounded-2xl border-2 border-border bg-card">
-            <table className="w-full text-sm">
+          <div className="max-h-[360px] overflow-auto rounded-2xl border-2 border-border bg-card">
+            <table className="w-full min-w-[640px] text-sm">
               <thead className="sticky top-0 bg-muted/80 text-left text-xs uppercase tracking-wider text-muted-foreground">
                 <tr>
                   <th className="px-3 py-2">{lang === "id" ? "Siswa" : "Student"}</th>
@@ -386,8 +386,8 @@ function GuruDashboard() {
           {recentAssignments.length === 0 ? (
             <div className="text-center py-8 text-sm text-muted-foreground">{t("empty")}</div>
           ) : (
-            <div className="overflow-hidden rounded-2xl border-2 border-border">
-              <table className="w-full text-sm">
+            <div className="overflow-x-auto rounded-2xl border-2 border-border">
+              <table className="w-full min-w-[520px] text-sm">
                 <thead className="bg-muted/60 text-left text-xs uppercase tracking-wider text-muted-foreground">
                   <tr><th className="px-4 py-3">{lang === "id" ? "Judul" : "Title"}</th><th className="px-4 py-3">{lang === "id" ? "Kelas" : "Class"}</th><th className="px-4 py-3">{lang === "id" ? "Deadline" : "Due"}</th><th className="px-4 py-3 text-right">{t("submissions")}</th></tr>
                 </thead>

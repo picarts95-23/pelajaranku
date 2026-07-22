@@ -138,8 +138,8 @@ function GuruSiswaPage() {
       {filtered.length === 0 ? (
         <EmptyState message={t("empty")} />
       ) : (
-        <div className="overflow-hidden rounded-2xl border-2 border-border bg-card shadow-card-rpg">
-          <table className="w-full text-sm">
+        <div className="overflow-x-auto rounded-2xl border-2 border-border bg-card shadow-card-rpg">
+          <table className="w-full min-w-[520px] text-sm">
             <thead className="bg-muted/60 text-left text-xs uppercase tracking-wider text-muted-foreground">
               <tr>
                 <th className="px-4 py-3">{t("fullName")}</th>
