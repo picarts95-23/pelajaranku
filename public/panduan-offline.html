@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Panduan Offline — Pelajaranku</title>
+<meta name="description" content="Panduan ringan cara mengirim tugas di Pelajaranku, bisa dibuka tanpa internet." />
+<meta name="theme-color" content="#7c3f5e" />
+<link rel="icon" href="/favicon.ico" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.55; color: #1f1220; background: #fdf7f4;
+    padding: 16px; padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+    -webkit-text-size-adjust: 100%;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  header { border-bottom: 2px solid #f0d9d0; padding-bottom: 12px; margin-bottom: 16px; }
+  h1 { font-size: 22px; margin: 0 0 4px; color: #7c3f5e; }
+  h2 { font-size: 17px; margin: 22px 0 8px; color: #7c3f5e; display: flex; align-items: center; gap: 6px; }
+  h3 { font-size: 15px; margin: 14px 0 6px; }
+  p, li { font-size: 15px; }
+  .muted { color: #6b5560; font-size: 13px; }
+  .card {
+    background: #fff; border: 2px solid #f0d9d0; border-radius: 14px;
+    padding: 12px 14px; margin: 8px 0; box-shadow: 0 1px 2px rgba(0,0,0,.03);
+  }
+  .badge {
+    display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px;
+    background: #f0d9d0; color: #7c3f5e; font-weight: 700; margin-right: 6px;
+  }
+  ol, ul { padding-left: 20px; margin: 6px 0; }
+  ol li, ul li { margin: 3px 0; }
+  .note { background: #fff8e6; border: 2px solid #f5d78a; border-radius: 12px; padding: 10px 12px; font-size: 14px; }
+  .danger { background: #fdecec; border: 2px solid #f5b5b5; border-radius: 12px; padding: 10px 12px; font-size: 14px; }
+  .toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 4px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px;
+    border-radius: 999px; border: 2px solid #7c3f5e; background: #7c3f5e; color: #fff;
+    font-weight: 700; font-size: 14px; text-decoration: none; cursor: pointer;
+  }
+  .btn.secondary { background: #fff; color: #7c3f5e; }
+  .grid { display: grid; gap: 10px; grid-template-columns: 1fr; }
+  @media (min-width: 640px) { .grid { grid-template-columns: 1fr 1fr; } }
+  footer { margin-top: 24px; padding-top: 12px; border-top: 2px solid #f0d9d0; font-size: 12px; color: #6b5560; }
+  @media print {
+    body { background: #fff; padding: 0; }
+    .toolbar, .no-print { display: none !important; }
+    .card { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>📘 Panduan Offline — Pelajaranku</h1>
+    <p class="muted">Halaman ini bisa dibuka tanpa internet setelah dimuat sekali. Simpan / bookmark untuk akses cepat.</p>
+    <div class="toolbar no-print">
+      <button class="btn" onclick="window.print()">🖨️ Cetak / Simpan PDF</button>
+      <a class="btn secondary" href="./panduan-offline.html" download="panduan-pelajaranku.html">💾 Unduh ke Perangkat</a>
+      <a class="btn secondary" href="/panduan">↩︎ Buka Panduan Interaktif</a>
+    </div>
+    <p class="muted no-print" id="statusLine">Status koneksi: memeriksa…</p>
+  </header>
+
+  <div class="note no-print">
+    <b>Cara menyimpan supaya bisa dibaca offline:</b>
+    <ul>
+      <li><b>Android/Chrome:</b> ketuk ⋮ → <i>Unduh halaman</i> atau <i>Tambahkan ke Layar Utama</i>.</li>
+      <li><b>iPhone/Safari:</b> ketuk ikon Share ⬆️ → <i>Add to Home Screen</i> atau <i>Options → Save PDF to Files</i>.</li>
+      <li><b>Laptop:</b> tekan <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>S</kbd> untuk simpan, atau klik <b>Unduh ke Perangkat</b>.</li>
+    </ul>
+  </div>
+
+  <h2>✅ Sebelum Kirim, Periksa</h2>
+  <div class="card">
+    <ul>
+      <li><b>Tenggat waktu</b> — kalau lewat, tombol Kirim otomatis mati.</li>
+      <li><b>Koneksi</b> — pastikan Wi-Fi / sinyal stabil saat menekan Kirim.</li>
+      <li><b>Ukuran file</b> maksimal 15 MB (foto & audio).</li>
+      <li><b>Browser</b> Chrome / Safari / Edge / Samsung Internet versi terbaru.</li>
+      <li>Baca pesan error di layar — biasanya menjelaskan penyebabnya.</li>
+    </ul>
+  </div>
+
+  <h2>📝 Cara Mengirim Tugas (per jenis)</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>📷 Tugas Foto / Gambar</h3>
+      <ol>
+        <li>Buka menu <b>Tugas</b>, pilih tugas bertipe foto.</li>
+        <li>Ketuk <b>Ambil Foto</b> (kamera) atau <b>Pilih dari Galeri</b>.</li>
+        <li>Pastikan gambar terang, jelas, dan ≤ 15 MB.</li>
+        <li>Tekan <b>Kirim</b>. Tunggu notifikasi berhasil.</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h3>🎙️ Tugas Rekaman Suara</h3>
+      <ol>
+        <li>Buka tugas, ketuk <b>Rekam</b>.</li>
+        <li>Izinkan mikrofon saat browser bertanya.</li>
+        <li>Rekam dekat mikrofon, ketuk <b>Stop</b>, lalu <b>Putar</b> untuk memeriksa.</li>
+        <li>Tekan <b>Kirim</b>.</li>
+      </ol>
+      <p class="muted">iPhone/Safari: pakai versi Safari terbaru agar rekaman berjalan.</p>
+    </div>
+    <div class="card">
+      <h3>🔗 Tugas Link (Form / Kuis)</h3>
+      <ol>
+        <li>Buka tugas, ketuk tombol link dari guru.</li>
+        <li>Kerjakan di tab yang terbuka.</li>
+        <li>Kembali ke Pelajaranku, tandai selesai bila diminta.</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h3>🧠 Kuis Pilihan Ganda</h3>
+      <ol>
+        <li>Buka tugas bertipe Kuis.</li>
+        <li>Jawab tiap soal — kamu hanya bisa kirim <b>satu kali</b>.</li>
+        <li>Setelah semua terjawab, tekan <b>Kirim Jawaban</b>.</li>
+        <li>Nilai otomatis muncul langsung.</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h3>✍️ Tugas Uraian</h3>
+      <ol>
+        <li>Tulis jawaban di kolom teks.</li>
+        <li>Opsional: lampirkan foto atau tempel URL (https://...).</li>
+        <li>Periksa ejaan, tekan <b>Kirim</b>.</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h3>📖 Muroja'ah Tahfidz</h3>
+      <ol>
+        <li>Perhatikan surat/ayat yang harus disetor.</li>
+        <li>Ketuk <b>Rekam</b>, baca dengan tartil.</li>
+        <li>Ketuk <b>Stop</b>, <b>Putar</b> untuk cek, lalu <b>Kirim</b>.</li>
+      </ol>
+    </div>
+  </div>
+
+  <h2>🛠️ Gagal Upload? Coba Ini</h2>
+
+  <h3>Izin Kamera / Mikrofon</h3>
+  <div class="card">
+    <ul>
+      <li><b>Android/Chrome:</b> ketuk 🔒 di address bar → Izin situs → aktifkan Kamera & Mikrofon → muat ulang.</li>
+      <li><b>iPhone/Safari:</b> Pengaturan iOS → Safari → Kamera / Mikrofon → <i>Izinkan</i>.</li>
+      <li><b>Laptop:</b> klik 🔒 di address bar → Site settings → izinkan Camera & Microphone → reload. Tutup Zoom/Meet bila berjalan.</li>
+      <li>Kalau kamera dipakai aplikasi lain (Zoom/WA), tutup dulu.</li>
+    </ul>
+  </div>
+
+  <h3>Ukuran File Terlalu Besar (>15 MB)</h3>
+  <div class="card">
+    <ul>
+      <li>Buka Galeri → Edit → Simpan salinan lebih kecil.</li>
+      <li>Atau screenshot foto lalu kirim screenshot-nya.</li>
+      <li>Laptop: gunakan Paint / Preview untuk resize ke ≤ 1600 px.</li>
+      <li>Rekaman panjang → pecah jadi 2 rekaman pendek.</li>
+    </ul>
+  </div>
+
+  <h3>Format File Tidak Didukung</h3>
+  <div class="card">
+    <ul>
+      <li>Foto: JPG / JPEG / PNG / WEBP / HEIC.</li>
+      <li>HEIC gagal? Pengaturan iOS → Kamera → Format → <i>Paling Kompatibel</i>.</li>
+      <li>Audio (dari tombol Rekam): m4a / mp3 / webm / ogg / wav.</li>
+      <li>Link: harus lengkap, diawali <code>https://</code>.</li>
+      <li>File tanpa ekstensi (mis. dari WhatsApp): ganti nama, tambahkan <code>.jpg</code> / <code>.mp3</code>.</li>
+    </ul>
+  </div>
+
+  <h3>Upload Macet / Gagal Terkirim</h3>
+  <div class="card">
+    <ul>
+      <li>Sinyal lemah — dekati Wi-Fi atau pindah tempat.</li>
+      <li>Jangan tutup tab sampai muncul notifikasi <b>Berhasil</b>.</li>
+      <li>Laptop: nonaktifkan VPN / ekstensi pemblokir upload.</li>
+      <li>Kalau macet lama: muat ulang halaman, lalu kirim ulang (rekaman/foto perlu dipilih ulang).</li>
+    </ul>
+  </div>
+
+  <h2>⚠️ Pesan Error yang Sering Muncul</h2>
+  <div class="danger">
+    <ul>
+      <li><b>"Tenggat tugas sudah lewat"</b> — tidak bisa lagi dikirim. Hubungi guru lewat menu <i>Minta Tugas</i>.</li>
+      <li><b>"Rekaman kosong"</b> — mikrofon tidak menangkap suara. Cek izin & rekam ulang dekat mikrofon.</li>
+      <li><b>"Upload rekaman/foto gagal"</b> — koneksi terputus. Muat ulang & kirim ulang.</li>
+      <li><b>"Foto kosong / Ukuran maks 15 MB"</b> — pilih ulang atau kompres foto.</li>
+    </ul>
+  </div>
+
+  <footer>
+    © Pelajaranku — Panduan ringan untuk dibaca offline. Untuk fitur interaktif, buka
+    <a href="/panduan">/panduan</a> saat online.
+  </footer>
+</div>
+<script>
+  (function () {
+    var el = document.getElementById('statusLine');
+    function update() {
+      if (!el) return;
+      el.textContent = navigator.onLine
+        ? 'Status koneksi: Online ✅ (halaman ini juga bisa dibuka saat offline setelah dimuat sekali).'
+        : 'Status koneksi: Offline 📴 — kamu masih bisa membaca panduan ini.';
+    }
+    update();
+    window.addEventListener('online', update);
+    window.addEventListener('offline', update);
+  })();
+</script>
+</body>
+</html>
