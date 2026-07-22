@@ -59,20 +59,20 @@ function SiswaDashboard() {
     <DashboardShell accent="siswa">
       <motion.section
         initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-        className="relative overflow-hidden rounded-3xl border-2 border-border bg-gradient-hero p-6 text-primary-foreground shadow-magic sm:p-8"
+        className="relative overflow-hidden rounded-3xl border-2 border-border bg-gradient-hero p-4 text-primary-foreground shadow-magic sm:p-6 lg:p-8"
       >
         <div className="absolute -right-10 -top-10 size-48 rounded-full bg-white/20 blur-3xl" />
         <div className="absolute -left-10 -bottom-10 size-56 rounded-full bg-accent/40 blur-3xl" />
-        <div className="relative grid gap-6 sm:grid-cols-[1fr_auto] sm:items-center">
-          <div>
-            <div className="text-sm font-display font-semibold uppercase tracking-wider opacity-80">{t("welcome")}</div>
-            <h1 className="mt-1 font-display text-3xl font-bold sm:text-4xl">{profile?.full_name ?? "Siswi"} ✨</h1>
-            <p className="mt-2 max-w-xl opacity-90">
+        <div className="relative grid gap-6 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+          <div className="min-w-0">
+            <div className="text-xs font-display font-semibold uppercase tracking-wider opacity-80 sm:text-sm">{t("welcome")}</div>
+            <h1 className="mt-1 font-display text-2xl font-bold break-words sm:text-3xl lg:text-4xl">{profile?.full_name ?? "Siswi"} ✨</h1>
+            <p className="mt-2 max-w-xl text-sm opacity-90 sm:text-base">
               {lang === "id"
                 ? `Kelas ${profile?.class_name ?? "—"} · Lanjutkan perjalanan belajarmu hari ini!`
                 : `Class ${profile?.class_name ?? "—"} · Continue your learning journey today!`}
             </p>
-            <div className="mt-6 max-w-md">
+            <div className="mt-5 max-w-md">
               <div className="mb-1.5 flex items-end justify-between text-sm">
                 <span className="font-display font-semibold">{t("level")} {level}</span>
                 <span className="opacity-90">{xp % 100} / 100 XP</span>
@@ -82,8 +82,8 @@ function SiswaDashboard() {
               </div>
             </div>
             <div className="mt-4 flex flex-wrap gap-2">
-              <Link to="/siswa/tugas"><Button variant="outline" className="bg-white/10 border-white/30 text-white hover:bg-white/20">{t("navMyQuests")}</Button></Link>
-              <Link to="/siswa/kelas"><Button variant="outline" className="bg-white/10 border-white/30 text-white hover:bg-white/20">{t("myClasses")}</Button></Link>
+              <Link to="/siswa/tugas"><Button size="sm" variant="outline" className="bg-white/10 border-white/30 text-white hover:bg-white/20">{t("navMyQuests")}</Button></Link>
+              <Link to="/siswa/kelas"><Button size="sm" variant="outline" className="bg-white/10 border-white/30 text-white hover:bg-white/20">{t("myClasses")}</Button></Link>
             </div>
           </div>
           <motion.div
@@ -123,13 +123,13 @@ function SiswaDashboard() {
             <ul className="space-y-3">
               {activeQuests.slice(0, 5).map((q: any, i: number) => (
                 <motion.li key={q.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.08 }}
-                  className="group flex items-center gap-4 rounded-2xl border-2 border-border bg-muted/40 p-4 transition-all hover:border-accent hover:bg-card hover:shadow-soft">
-                  <div className="grid size-12 place-items-center rounded-xl bg-gradient-quest text-quest-foreground shadow-soft"><Sword className="size-5" /></div>
+                  className="group flex items-center gap-3 rounded-2xl border-2 border-border bg-muted/40 p-3 transition-all hover:border-accent hover:bg-card hover:shadow-soft sm:gap-4 sm:p-4">
+                  <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-gradient-quest text-quest-foreground shadow-soft sm:size-12"><Sword className="size-5" /></div>
                   <div className="min-w-0 flex-1">
                     <div className="font-display font-semibold truncate">{q.title}</div>
-                    <div className="text-xs text-muted-foreground">{q.classes?.name} · {q.due_at ? format(new Date(q.due_at), "dd MMM") : ""}</div>
+                    <div className="truncate text-xs text-muted-foreground">{q.classes?.name}{q.due_at ? ` · ${format(new Date(q.due_at), "dd MMM")}` : ""}</div>
                   </div>
-                  <div className="flex items-center gap-1 rounded-full bg-xp/15 px-3 py-1 text-sm font-display font-bold text-xp"><Sparkles className="size-3.5" /> +{q.xp_reward}</div>
+                  <div className="shrink-0 flex items-center gap-1 rounded-full bg-xp/15 px-2.5 py-1 text-xs font-display font-bold text-xp sm:px-3 sm:text-sm"><Sparkles className="size-3.5" /> +{q.xp_reward}</div>
                 </motion.li>
               ))}
             </ul>
