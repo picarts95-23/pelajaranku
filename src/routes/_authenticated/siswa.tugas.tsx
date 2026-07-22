@@ -391,12 +391,12 @@ function QuizCard({ quiz }: { quiz: any }) {
   const overdue = !!quiz.due_at && new Date(quiz.due_at) < new Date() && !done;
 
   return (
-    <div className="rounded-2xl border-2 border-border bg-card p-5 shadow-card-rpg">
-      <div className="flex items-center gap-2">
-        <FileQuestion className="size-5 text-accent" />
-        <h3 className="truncate font-display text-lg font-bold">{quiz.title}</h3>
+    <div className="rounded-2xl border-2 border-border bg-card p-4 shadow-card-rpg sm:p-5">
+      <div className="flex items-start gap-2">
+        <FileQuestion className="size-5 shrink-0 text-accent mt-0.5" />
+        <h3 className="min-w-0 flex-1 font-display text-base font-bold break-words sm:text-lg">{quiz.title}</h3>
       </div>
-      <p className="mt-1 text-xs text-muted-foreground">
+      <p className="mt-1 text-xs text-muted-foreground break-words">
         {quiz.classes?.name ?? "—"} · {questions.length} {lang === "id" ? "soal" : "questions"}
         {quiz.due_at ? ` · ${lang === "id" ? "tenggat" : "due"} ${format(new Date(quiz.due_at), "dd MMM")}` : ""}
       </p>
