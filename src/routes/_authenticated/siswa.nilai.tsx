@@ -79,6 +79,12 @@ function SiswaNilaiPage() {
                   </div>
                 </div>
                 {s.feedback && <div className="mt-3 flex items-start gap-2 rounded-xl bg-muted/40 p-3 text-sm"><MessageCircle className="size-4 shrink-0 text-primary mt-0.5" /><span>{s.feedback}</span></div>}
+                {s.feedback_media_url && (
+                  <div className="mt-3 rounded-xl bg-muted/40 p-3">
+                    <div className="mb-1 flex items-center gap-1.5 text-xs font-display font-bold text-primary">🎁 {lang === "id" ? "Koreksi dari guru" : "Teacher's correction"}</div>
+                    <MediaViewer mediaType={s.feedback_media_type} mediaUrl={s.feedback_media_url} />
+                  </div>
+                )}
               </div>
             );
           })}
