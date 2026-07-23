@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ScrollText, Plus, Trash2, ChevronRight, X, Play, KeyRound, Send, Search, Pencil } from "lucide-react";
+import { ScrollText, Plus, Trash2, ChevronRight, X, Play, KeyRound, Send, Search, Pencil, Copy, CheckCircle2, History } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
@@ -440,7 +440,12 @@ function GuruTugasPage() {
 
           <div className="lg:col-span-2">
             {currentAssignment ? (
-              <AssignmentDetail assignment={currentAssignment} onDelete={() => { if (confirm(`${t("delete")}?`)) { deleteMut.mutate(currentAssignment.id); setSelected(null); } }} onEdited={() => qc.invalidateQueries({ queryKey: ["assignments"] })} />
+              <AssignmentDetail
+                assignment={currentAssignment}
+                onDelete={() => { if (confirm(`${t("delete")}?`)) { deleteMut.mutate(currentAssignment.id); setSelected(null); } }}
+                onEdited={() => qc.invalidateQueries({ queryKey: ["assignments"] })}
+                onDuplicated={(newId) => setSelected(newId)}
+              />
             ) : (
               <EmptyState message={lang === "id" ? "Pilih tugas untuk melihat pengumpulan" : "Select an assignment to view submissions"} />
             )}
@@ -451,7 +456,7 @@ function GuruTugasPage() {
   );
 }
 
-function AssignmentDetail({ assignment, onDelete, onEdited }: { assignment: any; onDelete: () => void; onEdited: () => void }) {
+function AssignmentDetail({ assignment, onDelete, onEdited, onDuplicated }: { assignment: any; onDelete: () => void; onEdited: () => void; onDuplicated: (id: string) => void }) {
   const { t, lang } = useLang();
   const qc = useQueryClient();
   const fmtLabel = ANSWER_FORMATS.find((f) => f.value === assignment.answer_format);
@@ -520,7 +525,57 @@ function AssignmentDetail({ assignment, onDelete, onEdited }: { assignment: any;
       const { error } = await supabase.from("submissions").update({ status: "graded", score, feedback, feedback_media_type, feedback_media_url }).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { toast.success(lang === "id" ? "Nilai disimpan ✅" : "Grade saved ✅"); qc.invalidateQueries({ queryKey: ["submissions", assignment.id] }); },
+    onSuccess: (_r, vars) => {
+      toast.success(lang === "id" ? "Nilai disimpan ✅" : "Grade saved ✅");
+      qc.invalidateQueries({ queryKey: ["submissions", assignment.id] });
+      qc.invalidateQueries({ queryKey: ["submission-revisions", vars.id] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  // Duplicate this assignment (with all metadata + optional answer key) so the
+  // teacher can quickly craft a similar tugas and edit only what changed.
+  const dupMut = useMutation({
+    mutationFn: async () => {
+      const { data: userData } = await supabase.auth.getUser();
+      const teacherId = userData.user?.id;
+      if (!teacherId) throw new Error("no user");
+      const src = assignment;
+      const copyTitle = `${src.title ?? "Tugas"} (${lang === "id" ? "Salinan" : "Copy"})`;
+      const payload: any = {
+        teacher_id: teacherId,
+        class_id: src.class_id ?? null,
+        assigned_student_id: src.assigned_student_id ?? null,
+        title: copyTitle,
+        description: src.description ?? null,
+        subject: src.subject ?? null,
+        exam_type: src.exam_type ?? "harian",
+        halaqoh_kind: src.halaqoh_kind ?? null,
+        due_at: null,
+        max_score: src.max_score ?? 100,
+        xp_reward: src.xp_reward ?? 50,
+        coin_reward: src.coin_reward ?? 10,
+        quiz_link: src.quiz_link ?? null,
+        game_link: src.game_link ?? null,
+        answer_format: src.answer_format ?? "descriptive",
+        options: src.options ?? null,
+        questions: src.questions ?? null,
+        muroja_juz: src.muroja_juz ?? null,
+        muroja_surah: src.muroja_surah ?? null,
+        muroja_ayat: src.muroja_ayat ?? null,
+      };
+      const { data: created, error } = await supabase.from("assignments").insert(payload).select("id").single();
+      if (error) throw error;
+      if (answerKey && created?.id) {
+        await supabase.from("assignment_answer_keys").insert({ assignment_id: created.id, teacher_id: teacherId, answer_key: answerKey });
+      }
+      return created.id as string;
+    },
+    onSuccess: async (newId) => {
+      toast.success(lang === "id" ? "Tugas diduplikasi. Silakan edit sesuai kebutuhan." : "Assignment duplicated. Edit as needed.");
+      await qc.invalidateQueries({ queryKey: ["assignments"] });
+      if (newId) onDuplicated(newId);
+    },
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -568,6 +623,7 @@ function AssignmentDetail({ assignment, onDelete, onEdited }: { assignment: any;
         </div>
         <div className="flex shrink-0 items-center gap-1">
           <Button size="sm" variant="ghost" onClick={() => setEditOpen(true)} title={lang === "id" ? "Edit" : "Edit"}><Pencil className="size-4 text-guru" /></Button>
+          <Button size="sm" variant="ghost" onClick={() => dupMut.mutate()} disabled={dupMut.isPending} title={lang === "id" ? "Duplikat tugas serupa" : "Duplicate similar assignment"}><Copy className="size-4 text-guru" /></Button>
           <Button size="sm" variant="ghost" onClick={onDelete}><Trash2 className="size-4 text-destructive" /></Button>
         </div>
       </div>
@@ -769,13 +825,78 @@ function GradeRow({ sub, maxScore, isVoice, onGrade }: { sub: any; maxScore: num
           <Label className="text-xs">💬 {t("feedback")}</Label>
           <Input value={fb} onChange={(e) => setFb(e.target.value)} />
         </div>
-        <Button variant="guru" size="sm" disabled={score === ""} onClick={() => onGrade(Number(score), fb, feedbackMedia)}>🏆 {t("giveGrade")}</Button>
+        <Button variant="guru" size="sm" disabled={score === ""} onClick={() => onGrade(Number(score), fb, feedbackMedia)}>
+          {sub.status === "graded"
+            ? <><History className="size-3.5" /> {lang === "id" ? "Kirim Revisi" : "Send Revision"}</>
+            : <>🏆 {t("giveGrade")}</>}
+        </Button>
       </div>
+      {sub.status === "graded" && (
+        <p className="mt-1 text-[11px] text-muted-foreground">
+          {lang === "id"
+            ? "✏️ Nilai sudah diberikan. Ubah nilai/koreksi lalu klik Kirim Revisi — versi lama tetap tersimpan sebagai riwayat untuk siswa."
+            : "Grade already given. Edit and click Send Revision — the previous version is kept in history for the student."}
+        </p>
+      )}
       {user?.id && (
         <div className="mt-3">
-          <div className="mb-1 text-xs font-display font-bold text-guru">🎙️ {lang === "id" ? "Koreksi audio / gambar / video (opsional)" : "Audio / image / video correction (optional)"}</div>
+          <div className="mb-1 flex items-center justify-between gap-2">
+            <div className="text-xs font-display font-bold text-guru">🎙️ {lang === "id" ? "Koreksi audio / gambar / video (opsional)" : "Audio / image / video correction (optional)"}</div>
+            {feedbackMedia.media_url && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[11px] font-display font-bold text-emerald-700">
+                <CheckCircle2 className="size-3" /> {lang === "id" ? "File siap dikirim" : "File ready to send"}
+              </span>
+            )}
+          </div>
           <MediaInput userId={user.id} value={feedbackMedia} onChange={setFeedbackMedia} />
           {feedbackMedia.media_url && <MediaViewer mediaType={feedbackMedia.media_type} mediaUrl={feedbackMedia.media_url} />}
+        </div>
+      )}
+      <RevisionHistoryPanel submissionId={sub.id} />
+    </div>
+  );
+}
+
+function RevisionHistoryPanel({ submissionId }: { submissionId: string }) {
+  const { lang } = useLang();
+  const [open, setOpen] = useState(false);
+  const { data: revs = [] } = useQuery({
+    queryKey: ["submission-revisions", submissionId],
+    enabled: open,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("submission_grade_revisions")
+        .select("id, score, feedback, feedback_media_type, feedback_media_url, created_at")
+        .eq("submission_id", submissionId)
+        .order("created_at", { ascending: false });
+      return data ?? [];
+    },
+  });
+  return (
+    <div className="mt-3 border-t border-dashed border-border pt-2">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="inline-flex items-center gap-1.5 text-xs font-display font-bold text-muted-foreground hover:text-guru"
+      >
+        <History className="size-3.5" /> {lang === "id" ? "Riwayat revisi penilaian" : "Grade revision history"} {open ? "▾" : "▸"}
+      </button>
+      {open && (
+        <div className="mt-2 space-y-2">
+          {revs.length === 0 ? (
+            <p className="text-xs text-muted-foreground">{lang === "id" ? "Belum ada revisi." : "No revisions yet."}</p>
+          ) : (
+            revs.map((r: any, i: number) => (
+              <div key={r.id} className="rounded-lg border border-border bg-card/60 p-2 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="font-display font-bold">v{revs.length - i} · {format(new Date(r.created_at), "dd MMM yyyy HH:mm")}</span>
+                  <span className="font-display font-bold text-primary">{r.score ?? "—"}</span>
+                </div>
+                {r.feedback && <p className="mt-1 whitespace-pre-wrap text-foreground/80">{r.feedback}</p>}
+                {r.feedback_media_url && <MediaViewer mediaType={r.feedback_media_type} mediaUrl={r.feedback_media_url} />}
+              </div>
+            ))
+          )}
         </div>
       )}
     </div>

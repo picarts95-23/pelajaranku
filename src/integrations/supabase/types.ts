@@ -1118,6 +1118,50 @@ export type Database = {
         }
         Relationships: []
       }
+      submission_grade_revisions: {
+        Row: {
+          created_at: string
+          feedback: string | null
+          feedback_media_type: string | null
+          feedback_media_url: string | null
+          id: string
+          revised_by: string | null
+          score: number | null
+          status: string | null
+          submission_id: string
+        }
+        Insert: {
+          created_at?: string
+          feedback?: string | null
+          feedback_media_type?: string | null
+          feedback_media_url?: string | null
+          id?: string
+          revised_by?: string | null
+          score?: number | null
+          status?: string | null
+          submission_id: string
+        }
+        Update: {
+          created_at?: string
+          feedback?: string | null
+          feedback_media_type?: string | null
+          feedback_media_url?: string | null
+          id?: string
+          revised_by?: string | null
+          score?: number | null
+          status?: string | null
+          submission_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "submission_grade_revisions_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       submissions: {
         Row: {
           assignment_id: string
