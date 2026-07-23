@@ -25,6 +25,8 @@ import {
   listAllUsers, setUserArchived, deleteUserAccount, setUserPassword, type AdminUserRow,
 } from "@/lib/admin.functions";
 import { exportSchemaDump } from "@/lib/self-hosting.functions";
+import { buildSetupPackageZip, triggerDownload } from "@/lib/setup-package";
+import { Package } from "lucide-react";
 import { AdminOnboarding } from "@/components/admin-onboarding";
 import { TeacherInvitesPanel } from "@/components/teacher-invites-panel";
 
@@ -57,26 +59,36 @@ function AdminPage() {
   const passwordFn = useServerFn(setUserPassword);
   const exportSchemaFn = useServerFn(exportSchemaDump);
   const [exporting, setExporting] = useState(false);
+  const [packing, setPacking] = useState(false);
 
   const downloadSchema = async () => {
     try {
       setExporting(true);
       const { sql } = await exportSchemaFn();
       const blob = new Blob([sql], { type: "text/sql;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
       const stamp = new Date().toISOString().slice(0, 10);
-      a.href = url;
-      a.download = `pelajaranku-supabase-schema-${stamp}.sql`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
+      triggerDownload(blob, `pelajaranku-supabase-schema-${stamp}.sql`);
       toast.success("Skema berhasil diunduh");
     } catch (e: any) {
       toast.error(e?.message ?? "Gagal mengunduh skema");
     } finally {
       setExporting(false);
+    }
+  };
+
+  const downloadSetupPackage = async () => {
+    try {
+      setPacking(true);
+      toast.info("Menyiapkan paket setup lengkap…");
+      const { sql, generatedAt } = await exportSchemaFn();
+      const blob = await buildSetupPackageZip({ sql, generatedAt });
+      const stamp = new Date().toISOString().slice(0, 10);
+      triggerDownload(blob, `pelajaranku-paket-setup-${stamp}.zip`);
+      toast.success("Paket setup siap! Bagikan ke pembeli.");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Gagal membuat paket");
+    } finally {
+      setPacking(false);
     }
   };
 
@@ -192,19 +204,29 @@ function AdminPage() {
               <Database className="size-6 text-primary-foreground" />
             </div>
             <div className="min-w-0 flex-1">
-              <h2 className="font-display text-lg font-bold leading-tight">Pindahkan data ke Supabase Anda sendiri</h2>
+              <h2 className="font-display text-lg font-bold leading-tight">Paket setup untuk pembeli</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Unduh skema lengkap (tabel, RLS, fungsi) lalu jalankan di project Supabase gratis milik Anda.
-                Ideal jika Anda ingin memiliki datanya 100% atau menjual aplikasi ini kepada sekolah lain.
-                Panduan lengkap ada di <code className="rounded bg-muted px-1.5 py-0.5 text-xs">docs/self-hosting.md</code>.
+                <strong>Unduh Paket Setup Lengkap</strong> untuk mendapatkan satu file ZIP berisi:
+                panduan pembeli, panduan self-hosting, file SQL skema, template <code className="rounded bg-muted px-1 py-0.5 text-xs">.env</code>,
+                langkah aktivasi lisensi, dan ringkasan 6 langkah. Pembeli tinggal ekstrak dan ikuti — tanpa perlu bertanya.
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Ingin file mentah SQL saja? Gunakan tombol <em>Unduh skema (.sql)</em>.
               </p>
             </div>
-            <Button onClick={downloadSchema} disabled={exporting} className="shrink-0">
-              {exporting ? <Loader2 className="size-4 animate-spin" /> : <Download className="size-4" />}
-              Unduh skema (.sql)
-            </Button>
+            <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+              <Button variant="outline" onClick={downloadSchema} disabled={exporting || packing}>
+                {exporting ? <Loader2 className="size-4 animate-spin" /> : <Download className="size-4" />}
+                Skema (.sql)
+              </Button>
+              <Button onClick={downloadSetupPackage} disabled={packing || exporting}>
+                {packing ? <Loader2 className="size-4 animate-spin" /> : <Package className="size-4" />}
+                Paket Setup Lengkap (.zip)
+              </Button>
+            </div>
           </div>
         </motion.section>
+
 
         <TeacherInvitesPanel />
 
