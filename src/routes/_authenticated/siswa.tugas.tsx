@@ -130,6 +130,7 @@ function QuestCard({ a }: { a: any }) {
       if (isVoiceFmt) {
         if (voiceBlob) {
           if (voiceBlob.size === 0) throw new Error(lang === "id" ? "Rekaman kosong. Coba rekam ulang." : "Empty recording. Please re-record.");
+          assertMediaSize(voiceBlob, "voiceAnswer", lang as "id" | "en");
           const rawType = voiceBlob.type || "audio/webm";
           const baseType = rawType.split(";")[0].trim() || "audio/webm";
           const ext = baseType.includes("mp4") || baseType.includes("m4a") || baseType.includes("aac") ? "m4a"
@@ -151,11 +152,12 @@ function QuestCard({ a }: { a: any }) {
       }
 
       if (imageFile) {
-        if (imageFile.size === 0) throw new Error(lang === "id" ? "Foto kosong. Pilih ulang." : "Empty photo. Please reselect.");
-        if (imageFile.size > 15 * 1024 * 1024) throw new Error(lang === "id" ? "Ukuran foto maksimal 15 MB." : "Max photo size is 15 MB.");
-        const ext = (imageFile.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+        // Kompres dulu (client-side), lalu validasi ukuran akhir.
+        const compressed = await compressImage(imageFile);
+        assertMediaSize(compressed, "answerImage", lang as "id" | "en");
+        const ext = (compressed.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
         const path = `${user.id}/${a.id}-${Date.now()}.${ext}`;
-        const { error: upErr } = await supabase.storage.from("answer-images").upload(path, imageFile, { upsert: true, contentType: imageFile.type || "image/jpeg" });
+        const { error: upErr } = await supabase.storage.from("answer-images").upload(path, compressed, { upsert: true, contentType: compressed.type || "image/jpeg" });
         if (upErr) throw new Error(`Upload foto gagal: ${upErr.message}`);
         storedFileUrl = path;
       } else if (isPhotoFmt && !a.mySubmission?.file_url) {
