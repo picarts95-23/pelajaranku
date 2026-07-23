@@ -1164,6 +1164,9 @@ export type Database = {
           created_at: string
           fashohah_score: number
           id: string
+          iqro_jilid: number | null
+          iqro_letters: string[] | null
+          iqro_page: number | null
           juz: number | null
           kelancaran_helps: number
           kelancaran_score: number
@@ -1191,6 +1194,9 @@ export type Database = {
           created_at?: string
           fashohah_score?: number
           id?: string
+          iqro_jilid?: number | null
+          iqro_letters?: string[] | null
+          iqro_page?: number | null
           juz?: number | null
           kelancaran_helps?: number
           kelancaran_score?: number
@@ -1218,6 +1224,9 @@ export type Database = {
           created_at?: string
           fashohah_score?: number
           id?: string
+          iqro_jilid?: number | null
+          iqro_letters?: string[] | null
+          iqro_page?: number | null
           juz?: number | null
           kelancaran_helps?: number
           kelancaran_score?: number
