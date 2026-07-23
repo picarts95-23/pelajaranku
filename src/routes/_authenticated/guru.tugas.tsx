@@ -567,14 +567,10 @@ function AssignmentDetail({ assignment, onDelete, onEdited, onDuplicated }: { as
       }
       return created.id as string;
     },
-    onSuccess: (newId) => {
+    onSuccess: async (newId) => {
       toast.success(lang === "id" ? "Tugas diduplikasi. Silakan edit sesuai kebutuhan." : "Assignment duplicated. Edit as needed.");
-      qc.invalidateQueries({ queryKey: ["assignments"] });
-      // Jump straight to the copy so teacher can tweak & set new deadline.
-      setTimeout(() => { window.location.hash = ""; }, 0);
-      // Signal parent to focus new item — reuse `selected` via URL hash trick isn't possible from here,
-      // so just invalidate & let user pick from list. Also open edit dialog on the source is not desired.
-      void newId;
+      await qc.invalidateQueries({ queryKey: ["assignments"] });
+      if (newId) onDuplicated(newId);
     },
     onError: (e: Error) => toast.error(e.message),
   });
