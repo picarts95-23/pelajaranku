@@ -524,6 +524,56 @@ function AssignmentDetail({ assignment, onDelete, onEdited }: { assignment: any;
     onError: (e: Error) => toast.error(e.message),
   });
 
+  // Duplicate this assignment (with all metadata + optional answer key) so the
+  // teacher can quickly craft a similar tugas and edit only what changed.
+  const dupMut = useMutation({
+    mutationFn: async () => {
+      const { data: userData } = await supabase.auth.getUser();
+      const teacherId = userData.user?.id;
+      if (!teacherId) throw new Error("no user");
+      const src = assignment;
+      const copyTitle = `${src.title ?? "Tugas"} (${lang === "id" ? "Salinan" : "Copy"})`;
+      const payload: any = {
+        teacher_id: teacherId,
+        class_id: src.class_id ?? null,
+        assigned_student_id: src.assigned_student_id ?? null,
+        title: copyTitle,
+        description: src.description ?? null,
+        subject: src.subject ?? null,
+        exam_type: src.exam_type ?? "harian",
+        halaqoh_kind: src.halaqoh_kind ?? null,
+        due_at: null,
+        max_score: src.max_score ?? 100,
+        xp_reward: src.xp_reward ?? 50,
+        coin_reward: src.coin_reward ?? 10,
+        quiz_link: src.quiz_link ?? null,
+        game_link: src.game_link ?? null,
+        answer_format: src.answer_format ?? "descriptive",
+        options: src.options ?? null,
+        questions: src.questions ?? null,
+        muroja_juz: src.muroja_juz ?? null,
+        muroja_surah: src.muroja_surah ?? null,
+        muroja_ayat: src.muroja_ayat ?? null,
+      };
+      const { data: created, error } = await supabase.from("assignments").insert(payload).select("id").single();
+      if (error) throw error;
+      if (answerKey && created?.id) {
+        await supabase.from("assignment_answer_keys").insert({ assignment_id: created.id, teacher_id: teacherId, answer_key: answerKey });
+      }
+      return created.id as string;
+    },
+    onSuccess: (newId) => {
+      toast.success(lang === "id" ? "Tugas diduplikasi. Silakan edit sesuai kebutuhan." : "Assignment duplicated. Edit as needed.");
+      qc.invalidateQueries({ queryKey: ["assignments"] });
+      // Jump straight to the copy so teacher can tweak & set new deadline.
+      setTimeout(() => { window.location.hash = ""; }, 0);
+      // Signal parent to focus new item — reuse `selected` via URL hash trick isn't possible from here,
+      // so just invalidate & let user pick from list. Also open edit dialog on the source is not desired.
+      void newId;
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const exportColumns = [
     { key: "name", header: lang === "id" ? "Nama Siswa" : "Student" },
     { key: "status", header: "Status" },
