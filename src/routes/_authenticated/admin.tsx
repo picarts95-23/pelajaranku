@@ -25,6 +25,8 @@ import {
   listAllUsers, setUserArchived, deleteUserAccount, setUserPassword, type AdminUserRow,
 } from "@/lib/admin.functions";
 import { exportSchemaDump } from "@/lib/self-hosting.functions";
+import { buildSetupPackageZip, triggerDownload } from "@/lib/setup-package";
+import { Package } from "lucide-react";
 import { AdminOnboarding } from "@/components/admin-onboarding";
 import { TeacherInvitesPanel } from "@/components/teacher-invites-panel";
 
