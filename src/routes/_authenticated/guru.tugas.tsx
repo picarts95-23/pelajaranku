@@ -440,7 +440,12 @@ function GuruTugasPage() {
 
           <div className="lg:col-span-2">
             {currentAssignment ? (
-              <AssignmentDetail assignment={currentAssignment} onDelete={() => { if (confirm(`${t("delete")}?`)) { deleteMut.mutate(currentAssignment.id); setSelected(null); } }} onEdited={() => qc.invalidateQueries({ queryKey: ["assignments"] })} />
+              <AssignmentDetail
+                assignment={currentAssignment}
+                onDelete={() => { if (confirm(`${t("delete")}?`)) { deleteMut.mutate(currentAssignment.id); setSelected(null); } }}
+                onEdited={() => qc.invalidateQueries({ queryKey: ["assignments"] })}
+                onDuplicated={(newId) => setSelected(newId)}
+              />
             ) : (
               <EmptyState message={lang === "id" ? "Pilih tugas untuk melihat pengumpulan" : "Select an assignment to view submissions"} />
             )}
@@ -451,7 +456,7 @@ function GuruTugasPage() {
   );
 }
 
-function AssignmentDetail({ assignment, onDelete, onEdited }: { assignment: any; onDelete: () => void; onEdited: () => void }) {
+function AssignmentDetail({ assignment, onDelete, onEdited, onDuplicated }: { assignment: any; onDelete: () => void; onEdited: () => void; onDuplicated: (id: string) => void }) {
   const { t, lang } = useLang();
   const qc = useQueryClient();
   const fmtLabel = ANSWER_FORMATS.find((f) => f.value === assignment.answer_format);
