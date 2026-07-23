@@ -671,10 +671,12 @@ function AssignmentDetail({ assignment, onDelete, onEdited }: { assignment: any;
   );
 }
 
-function GradeRow({ sub, maxScore, isVoice, onGrade }: { sub: any; maxScore: number; isVoice: boolean; onGrade: (score: number, feedback: string) => void }) {
+function GradeRow({ sub, maxScore, isVoice, onGrade }: { sub: any; maxScore: number; isVoice: boolean; onGrade: (score: number, feedback: string, media: MediaValue) => void }) {
   const { t, lang } = useLang();
+  const { user } = useAuth();
   const [score, setScore] = useState<number | "">(sub.score ?? "");
   const [fb, setFb] = useState(sub.feedback ?? "");
+  const [feedbackMedia, setFeedbackMedia] = useState<MediaValue>({ media_type: sub.feedback_media_type ?? null, media_url: sub.feedback_media_url ?? null });
   const [voiceUrl, setVoiceUrl] = useState<string | null>(null);
   const [voiceError, setVoiceError] = useState(false);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
