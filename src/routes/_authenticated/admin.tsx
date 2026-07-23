@@ -250,6 +250,36 @@ function AdminPage() {
 
         <TeacherInvitesPanel />
 
+        <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+          className="rounded-3xl border-2 border-border bg-card p-5 shadow-card-rpg">
+          <div className="flex flex-wrap items-start gap-4">
+            <div className="grid size-11 shrink-0 place-items-center rounded-2xl bg-gradient-magic shadow-magic">
+              <Trash className="size-6 text-primary-foreground" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h2 className="font-display text-lg font-bold leading-tight">Pembersihan media otomatis</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Sapu file rekaman/foto/lampiran yang sudah tidak dirujuk database.
+                Grace 7 hari untuk yatim, dan hard-delete untuk file lebih tua dari 365 hari.
+                Foto siswa/guru sudah dikompres otomatis sebelum diunggah.
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Tip: jalankan <em>Simulasi</em> dulu untuk melihat berapa file yang akan dihapus.
+              </p>
+            </div>
+            <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+              <Button variant="outline" onClick={() => runCleanup(true)} disabled={cleaning}>
+                {cleaning ? <Loader2 className="size-4 animate-spin" /> : <Eye className="size-4" />}
+                Simulasi
+              </Button>
+              <Button onClick={() => runCleanup(false)} disabled={cleaning}>
+                {cleaning ? <Loader2 className="size-4 animate-spin" /> : <Trash className="size-4" />}
+                Bersihkan sekarang
+              </Button>
+            </div>
+          </div>
+        </motion.section>
+
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
           className="rounded-3xl border-2 border-border bg-card p-5 shadow-card-rpg">
           <div className="flex flex-wrap items-center gap-2">
