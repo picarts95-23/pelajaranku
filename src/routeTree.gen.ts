@@ -53,6 +53,7 @@ import { Route as AuthenticatedGuruBankSoalRouteImport } from './routes/_authent
 import { Route as AuthenticatedDashboardSiswaRouteImport } from './routes/_authenticated/dashboard.siswa'
 import { Route as AuthenticatedDashboardGuruRouteImport } from './routes/_authenticated/dashboard.guru'
 import { Route as ApiPublicHooksSyncSheetsRouteImport } from './routes/api/public/hooks/sync-sheets'
+import { Route as ApiPublicHooksMediaCleanupRouteImport } from './routes/api/public/hooks/media-cleanup'
 import { Route as AuthenticatedSiswaProfilEditRouteImport } from './routes/_authenticated/siswa.profil_.edit'
 import { Route as ApiPublicGoogleCalendarCallbackRouteImport } from './routes/api/public/google.calendar.callback'
 import { Route as ApiPublicCalendarTokenIcsRouteImport } from './routes/api/public/calendar.$token.ics'
@@ -292,6 +293,12 @@ const ApiPublicHooksSyncSheetsRoute =
     path: '/api/public/hooks/sync-sheets',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksMediaCleanupRoute =
+  ApiPublicHooksMediaCleanupRouteImport.update({
+    id: '/api/public/hooks/media-cleanup',
+    path: '/api/public/hooks/media-cleanup',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedSiswaProfilEditRoute =
   AuthenticatedSiswaProfilEditRouteImport.update({
     id: '/siswa/profil_/edit',
@@ -355,6 +362,7 @@ export interface FileRoutesByFullPath {
   '/siswa/status': typeof AuthenticatedSiswaStatusRoute
   '/siswa/tugas': typeof AuthenticatedSiswaTugasRoute
   '/siswa/profil/edit': typeof AuthenticatedSiswaProfilEditRoute
+  '/api/public/hooks/media-cleanup': typeof ApiPublicHooksMediaCleanupRoute
   '/api/public/hooks/sync-sheets': typeof ApiPublicHooksSyncSheetsRoute
   '/api/public/calendar/$token/ics': typeof ApiPublicCalendarTokenIcsRoute
   '/api/public/google/calendar/callback': typeof ApiPublicGoogleCalendarCallbackRoute
@@ -403,6 +411,7 @@ export interface FileRoutesByTo {
   '/siswa/status': typeof AuthenticatedSiswaStatusRoute
   '/siswa/tugas': typeof AuthenticatedSiswaTugasRoute
   '/siswa/profil/edit': typeof AuthenticatedSiswaProfilEditRoute
+  '/api/public/hooks/media-cleanup': typeof ApiPublicHooksMediaCleanupRoute
   '/api/public/hooks/sync-sheets': typeof ApiPublicHooksSyncSheetsRoute
   '/api/public/calendar/$token/ics': typeof ApiPublicCalendarTokenIcsRoute
   '/api/public/google/calendar/callback': typeof ApiPublicGoogleCalendarCallbackRoute
@@ -453,6 +462,7 @@ export interface FileRoutesById {
   '/_authenticated/siswa/status': typeof AuthenticatedSiswaStatusRoute
   '/_authenticated/siswa/tugas': typeof AuthenticatedSiswaTugasRoute
   '/_authenticated/siswa/profil_/edit': typeof AuthenticatedSiswaProfilEditRoute
+  '/api/public/hooks/media-cleanup': typeof ApiPublicHooksMediaCleanupRoute
   '/api/public/hooks/sync-sheets': typeof ApiPublicHooksSyncSheetsRoute
   '/api/public/calendar/$token/ics': typeof ApiPublicCalendarTokenIcsRoute
   '/api/public/google/calendar/callback': typeof ApiPublicGoogleCalendarCallbackRoute
@@ -503,6 +513,7 @@ export interface FileRouteTypes {
     | '/siswa/status'
     | '/siswa/tugas'
     | '/siswa/profil/edit'
+    | '/api/public/hooks/media-cleanup'
     | '/api/public/hooks/sync-sheets'
     | '/api/public/calendar/$token/ics'
     | '/api/public/google/calendar/callback'
@@ -551,6 +562,7 @@ export interface FileRouteTypes {
     | '/siswa/status'
     | '/siswa/tugas'
     | '/siswa/profil/edit'
+    | '/api/public/hooks/media-cleanup'
     | '/api/public/hooks/sync-sheets'
     | '/api/public/calendar/$token/ics'
     | '/api/public/google/calendar/callback'
@@ -600,6 +612,7 @@ export interface FileRouteTypes {
     | '/_authenticated/siswa/status'
     | '/_authenticated/siswa/tugas'
     | '/_authenticated/siswa/profil_/edit'
+    | '/api/public/hooks/media-cleanup'
     | '/api/public/hooks/sync-sheets'
     | '/api/public/calendar/$token/ics'
     | '/api/public/google/calendar/callback'
@@ -617,6 +630,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   UndanganRoute: typeof UndanganRoute
   VerifyRoleRoute: typeof VerifyRoleRoute
+  ApiPublicHooksMediaCleanupRoute: typeof ApiPublicHooksMediaCleanupRoute
   ApiPublicHooksSyncSheetsRoute: typeof ApiPublicHooksSyncSheetsRoute
   ApiPublicCalendarTokenIcsRoute: typeof ApiPublicCalendarTokenIcsRoute
   ApiPublicGoogleCalendarCallbackRoute: typeof ApiPublicGoogleCalendarCallbackRoute
@@ -932,6 +946,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksSyncSheetsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/media-cleanup': {
+      id: '/api/public/hooks/media-cleanup'
+      path: '/api/public/hooks/media-cleanup'
+      fullPath: '/api/public/hooks/media-cleanup'
+      preLoaderRoute: typeof ApiPublicHooksMediaCleanupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/siswa/profil_/edit': {
       id: '/_authenticated/siswa/profil_/edit'
       path: '/siswa/profil/edit'
@@ -1043,6 +1064,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   UndanganRoute: UndanganRoute,
   VerifyRoleRoute: VerifyRoleRoute,
+  ApiPublicHooksMediaCleanupRoute: ApiPublicHooksMediaCleanupRoute,
   ApiPublicHooksSyncSheetsRoute: ApiPublicHooksSyncSheetsRoute,
   ApiPublicCalendarTokenIcsRoute: ApiPublicCalendarTokenIcsRoute,
   ApiPublicGoogleCalendarCallbackRoute: ApiPublicGoogleCalendarCallbackRoute,
