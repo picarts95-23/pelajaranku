@@ -769,8 +769,15 @@ function GradeRow({ sub, maxScore, isVoice, onGrade }: { sub: any; maxScore: num
           <Label className="text-xs">💬 {t("feedback")}</Label>
           <Input value={fb} onChange={(e) => setFb(e.target.value)} />
         </div>
-        <Button variant="guru" size="sm" disabled={score === ""} onClick={() => onGrade(Number(score), fb)}>🏆 {t("giveGrade")}</Button>
+        <Button variant="guru" size="sm" disabled={score === ""} onClick={() => onGrade(Number(score), fb, feedbackMedia)}>🏆 {t("giveGrade")}</Button>
       </div>
+      {user?.id && (
+        <div className="mt-3">
+          <div className="mb-1 text-xs font-display font-bold text-guru">🎙️ {lang === "id" ? "Koreksi audio / gambar / video (opsional)" : "Audio / image / video correction (optional)"}</div>
+          <MediaInput userId={user.id} value={feedbackMedia} onChange={setFeedbackMedia} />
+          {feedbackMedia.media_url && <MediaViewer mediaType={feedbackMedia.media_type} mediaUrl={feedbackMedia.media_url} />}
+        </div>
+      )}
     </div>
   );
 }
