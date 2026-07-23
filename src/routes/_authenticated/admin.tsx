@@ -59,8 +59,27 @@ function AdminPage() {
   const deleteFn = useServerFn(deleteUserAccount);
   const passwordFn = useServerFn(setUserPassword);
   const exportSchemaFn = useServerFn(exportSchemaDump);
+  const cleanupFn = useServerFn(cleanupMediaStorage);
   const [exporting, setExporting] = useState(false);
   const [packing, setPacking] = useState(false);
+  const [cleaning, setCleaning] = useState(false);
+
+  const runCleanup = async (dryRun: boolean) => {
+    try {
+      setCleaning(true);
+      const res = await cleanupFn({ data: { dryRun } });
+      const t = res.totals;
+      toast.success(
+        dryRun
+          ? `Simulasi: ${t.orphan} file akan dihapus (dari ${t.scanned} dipindai).`
+          : `Bersih: ${t.deleted} file terhapus dari ${t.scanned} yang dipindai.`,
+      );
+    } catch (e: any) {
+      toast.error(e?.message ?? "Gagal menjalankan pembersihan");
+    } finally {
+      setCleaning(false);
+    }
+  };
 
   const downloadSchema = async () => {
     try {
