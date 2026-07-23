@@ -525,7 +525,11 @@ function AssignmentDetail({ assignment, onDelete, onEdited, onDuplicated }: { as
       const { error } = await supabase.from("submissions").update({ status: "graded", score, feedback, feedback_media_type, feedback_media_url }).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => { toast.success(lang === "id" ? "Nilai disimpan ✅" : "Grade saved ✅"); qc.invalidateQueries({ queryKey: ["submissions", assignment.id] }); },
+    onSuccess: (_r, vars) => {
+      toast.success(lang === "id" ? "Nilai disimpan ✅" : "Grade saved ✅");
+      qc.invalidateQueries({ queryKey: ["submissions", assignment.id] });
+      qc.invalidateQueries({ queryKey: ["submission-revisions", vars.id] });
+    },
     onError: (e: Error) => toast.error(e.message),
   });
 
