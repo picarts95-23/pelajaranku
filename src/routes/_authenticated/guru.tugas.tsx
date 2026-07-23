@@ -629,7 +629,7 @@ function AssignmentDetail({ assignment, onDelete, onEdited }: { assignment: any;
             </div>
           ) : (
             <div className="space-y-2">
-              {filteredSubs.map((s: any) => <GradeRow key={s.id} sub={s} maxScore={assignment.max_score} isVoice={assignment.answer_format === "voice" || assignment.answer_format === "muroja"} onGrade={(score, fb) => gradeMut.mutate({ id: s.id, score, feedback: fb })} />)}
+              {filteredSubs.map((s: any) => <GradeRow key={s.id} sub={s} maxScore={assignment.max_score} isVoice={assignment.answer_format === "voice" || assignment.answer_format === "muroja"} onGrade={(score, fb, media) => gradeMut.mutate({ id: s.id, score, feedback: fb, feedback_media_type: media.media_type, feedback_media_url: media.media_url })} />)}
             </div>
           )}
         </>
