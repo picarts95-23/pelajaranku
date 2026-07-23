@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { GraduationCap, MessageCircle, Sparkles } from "lucide-react";
+import { GraduationCap, MessageCircle, Sparkles, History } from "lucide-react";
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import { format } from "date-fns";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
@@ -85,11 +85,59 @@ function SiswaNilaiPage() {
                     <MediaViewer mediaType={s.feedback_media_type} mediaUrl={s.feedback_media_url} />
                   </div>
                 )}
+                <StudentRevisionHistory submissionId={s.id} maxScore={s.assignments?.max_score ?? 100} />
               </div>
             );
           })}
         </div>
       )}
     </DashboardShell>
+  );
+}
+
+function StudentRevisionHistory({ submissionId, maxScore }: { submissionId: string; maxScore: number }) {
+  const { lang } = useLang();
+  const [open, setOpen] = useState(false);
+  const { data: revs = [] } = useQuery({
+    queryKey: ["my-submission-revisions", submissionId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("submission_grade_revisions")
+        .select("id, score, feedback, feedback_media_type, feedback_media_url, created_at")
+        .eq("submission_id", submissionId)
+        .order("created_at", { ascending: false });
+      return data ?? [];
+    },
+  });
+  if (revs.length === 0) return null;
+  return (
+    <div className="mt-3 border-t border-dashed border-border pt-2">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="inline-flex items-center gap-1.5 text-xs font-display font-bold text-muted-foreground hover:text-primary"
+      >
+        <History className="size-3.5" /> {lang === "id" ? `Nilai ini pernah direvisi (${revs.length})` : `Grade revised (${revs.length})`} {open ? "▾" : "▸"}
+      </button>
+      {open && (
+        <div className="mt-2 space-y-2">
+          <p className="text-[11px] text-muted-foreground">
+            {lang === "id"
+              ? "Berikut versi penilaian sebelumnya dari guru. Nilai terbaru berada di kartu di atas."
+              : "Previous grading versions from your teacher. The latest is shown in the card above."}
+          </p>
+          {revs.map((r: any, i: number) => (
+            <div key={r.id} className="rounded-lg border border-border bg-muted/30 p-2 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="font-display font-bold">v{revs.length - i} · {format(new Date(r.created_at), "dd MMM yyyy HH:mm")}</span>
+                <span className="font-display font-bold text-primary">{r.score ?? "—"}<span className="text-[10px] text-muted-foreground">/{maxScore}</span></span>
+              </div>
+              {r.feedback && <p className="mt-1 whitespace-pre-wrap text-foreground/80">{r.feedback}</p>}
+              {r.feedback_media_url && <div className="mt-1"><MediaViewer mediaType={r.feedback_media_type} mediaUrl={r.feedback_media_url} /></div>}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
