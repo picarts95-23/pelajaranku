@@ -59,26 +59,36 @@ function AdminPage() {
   const passwordFn = useServerFn(setUserPassword);
   const exportSchemaFn = useServerFn(exportSchemaDump);
   const [exporting, setExporting] = useState(false);
+  const [packing, setPacking] = useState(false);
 
   const downloadSchema = async () => {
     try {
       setExporting(true);
       const { sql } = await exportSchemaFn();
       const blob = new Blob([sql], { type: "text/sql;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
       const stamp = new Date().toISOString().slice(0, 10);
-      a.href = url;
-      a.download = `pelajaranku-supabase-schema-${stamp}.sql`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
+      triggerDownload(blob, `pelajaranku-supabase-schema-${stamp}.sql`);
       toast.success("Skema berhasil diunduh");
     } catch (e: any) {
       toast.error(e?.message ?? "Gagal mengunduh skema");
     } finally {
       setExporting(false);
+    }
+  };
+
+  const downloadSetupPackage = async () => {
+    try {
+      setPacking(true);
+      toast.info("Menyiapkan paket setup lengkap…");
+      const { sql, generatedAt } = await exportSchemaFn();
+      const blob = await buildSetupPackageZip({ sql, generatedAt });
+      const stamp = new Date().toISOString().slice(0, 10);
+      triggerDownload(blob, `pelajaranku-paket-setup-${stamp}.zip`);
+      toast.success("Paket setup siap! Bagikan ke pembeli.");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Gagal membuat paket");
+    } finally {
+      setPacking(false);
     }
   };
 
