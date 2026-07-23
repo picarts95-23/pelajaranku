@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { VoiceRecorder } from "@/components/voice-recorder";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
+import { compressImage } from "@/lib/compress-image";
+import { assertMediaSize, type MediaLimitKey } from "@/lib/media-limits";
 
 export type MediaValue = { media_type: string | null; media_url: string | null };
 
@@ -43,10 +45,21 @@ export function MediaInput({
   }
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>, type: MediaKind) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const ext = file.name.split(".").pop() || (type === "image" ? "jpg" : "mp4");
-    await uploadBlob(file, ext, type);
+    const raw = e.target.files?.[0];
+    if (!raw) return;
+    try {
+      // Kompres foto guru sebelum upload; audio/video langsung dicek batasnya.
+      const file = type === "image" ? await compressImage(raw) : raw;
+      const limitKey: MediaLimitKey =
+        type === "image" ? "lessonImage" : type === "audio" ? "lessonAudio" : "lessonVideo";
+      assertMediaSize(file, limitKey, lang as "id" | "en");
+      const ext = file.name.split(".").pop() || (type === "image" ? "jpg" : "mp4");
+      await uploadBlob(file, ext, type);
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      e.target.value = "";
+    }
   }
 
   function clearMedia() {
