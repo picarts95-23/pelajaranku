@@ -25,11 +25,12 @@ import {
   listAllUsers, setUserArchived, deleteUserAccount, setUserPassword, type AdminUserRow,
 } from "@/lib/admin.functions";
 import { exportSchemaDump } from "@/lib/self-hosting.functions";
-import { cleanupMediaStorage } from "@/lib/media-cleanup.functions";
 import { buildSetupPackageZip, triggerDownload } from "@/lib/setup-package";
 import { Package, Trash } from "lucide-react";
 import { AdminOnboarding } from "@/components/admin-onboarding";
 import { TeacherInvitesPanel } from "@/components/teacher-invites-panel";
+import { StoragePanel } from "@/components/storage-panel";
+import { TeacherSignupSettings } from "@/components/teacher-signup-settings";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
@@ -59,27 +60,8 @@ function AdminPage() {
   const deleteFn = useServerFn(deleteUserAccount);
   const passwordFn = useServerFn(setUserPassword);
   const exportSchemaFn = useServerFn(exportSchemaDump);
-  const cleanupFn = useServerFn(cleanupMediaStorage);
   const [exporting, setExporting] = useState(false);
   const [packing, setPacking] = useState(false);
-  const [cleaning, setCleaning] = useState(false);
-
-  const runCleanup = async (dryRun: boolean) => {
-    try {
-      setCleaning(true);
-      const res = await cleanupFn({ data: { dryRun } });
-      const t = res.totals;
-      toast.success(
-        dryRun
-          ? `Simulasi: ${t.orphan} file akan dihapus (dari ${t.scanned} dipindai).`
-          : `Bersih: ${t.deleted} file terhapus dari ${t.scanned} yang dipindai.`,
-      );
-    } catch (e: any) {
-      toast.error(e?.message ?? "Gagal menjalankan pembersihan");
-    } finally {
-      setCleaning(false);
-    }
-  };
 
   const downloadSchema = async () => {
     try {
