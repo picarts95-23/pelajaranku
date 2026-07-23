@@ -349,13 +349,16 @@ function QuizCard({ quiz }: { quiz: any }) {
         if (type === "voice") {
           const blob = voiceBlobs[i];
           if (!blob) throw new Error(lang === "id" ? `Rekam jawaban soal ${i + 1}` : `Record answer for Q${i + 1}`);
+          assertMediaSize(blob, "voiceAnswer", lang as "id" | "en");
           const path = `${user!.id}/${quiz.id}-${i}-${crypto.randomUUID()}.webm`;
           const { error: upErr } = await supabase.storage.from("voice-answers").upload(path, blob);
           if (upErr) throw upErr;
           finalAnswers[i] = path;
         } else if (type === "image") {
-          const file = imageFiles[i];
-          if (!file) throw new Error(lang === "id" ? `Unggah foto jawaban soal ${i + 1}` : `Upload photo for Q${i + 1}`);
+          const raw = imageFiles[i];
+          if (!raw) throw new Error(lang === "id" ? `Unggah foto jawaban soal ${i + 1}` : `Upload photo for Q${i + 1}`);
+          const file = await compressImage(raw);
+          assertMediaSize(file, "answerImage", lang as "id" | "en");
           const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
           const path = `${user!.id}/${quiz.id}-${i}-${crypto.randomUUID()}.${ext}`;
           const { error: upErr } = await supabase.storage.from("answer-images").upload(path, file, { contentType: file.type });
