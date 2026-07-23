@@ -25,19 +25,23 @@ export const Route = createFileRoute("/api/public/hooks/media-cleanup")({
           const answers = new Set<string>();
           const lesson = new Set<string>();
 
-          const [subs, mats, asg, qb] = await Promise.all([
+          const [subs, mats, qb] = await Promise.all([
             supabaseAdmin.from("submissions").select("file_url").not("file_url", "is", null),
-            supabaseAdmin.from("materials").select("attachment_url").not("attachment_url", "is", null),
-            supabaseAdmin.from("assignments").select("file_url").not("file_url", "is", null),
-            supabaseAdmin.from("question_bank").select("attachment_url").not("attachment_url", "is", null),
+            supabaseAdmin.from("materials").select("file_url, media_url"),
+            supabaseAdmin.from("question_bank").select("image_url").not("image_url", "is", null),
           ]);
-          for (const s of subs.data ?? []) {
+          for (const s of (subs.data as any[] | null) ?? []) {
             const u: string = s.file_url ?? "";
             if (u && !u.startsWith("http")) answers.add(u);
           }
-          for (const m of mats.data ?? []) if (m.attachment_url && !m.attachment_url.startsWith("http")) lesson.add(m.attachment_url);
-          for (const a of asg.data ?? []) if (a.file_url && !a.file_url.startsWith("http")) lesson.add(a.file_url);
-          for (const q of qb.data ?? []) if (q.attachment_url && !q.attachment_url.startsWith("http")) lesson.add(q.attachment_url);
+          for (const m of (mats.data as any[] | null) ?? []) {
+            for (const v of [m.file_url, m.media_url]) {
+              if (v && !String(v).startsWith("http")) lesson.add(v);
+            }
+          }
+          for (const q of (qb.data as any[] | null) ?? []) {
+            if (q.image_url && !q.image_url.startsWith("http")) lesson.add(q.image_url);
+          }
 
           const BUCKETS = ["voice-answers", "answer-images", "lesson-media"] as const;
           const GRACE = 7 * 24 * 60 * 60 * 1000;
