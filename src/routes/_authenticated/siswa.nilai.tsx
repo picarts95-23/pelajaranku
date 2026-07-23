@@ -5,6 +5,7 @@ import { GraduationCap, MessageCircle, Sparkles } from "lucide-react";
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import { format } from "date-fns";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
+import { MediaViewer } from "@/components/media-input";
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
@@ -78,6 +79,12 @@ function SiswaNilaiPage() {
                   </div>
                 </div>
                 {s.feedback && <div className="mt-3 flex items-start gap-2 rounded-xl bg-muted/40 p-3 text-sm"><MessageCircle className="size-4 shrink-0 text-primary mt-0.5" /><span>{s.feedback}</span></div>}
+                {s.feedback_media_url && (
+                  <div className="mt-3 rounded-xl bg-muted/40 p-3">
+                    <div className="mb-1 flex items-center gap-1.5 text-xs font-display font-bold text-primary">🎁 {lang === "id" ? "Koreksi dari guru" : "Teacher's correction"}</div>
+                    <MediaViewer mediaType={s.feedback_media_type} mediaUrl={s.feedback_media_url} />
+                  </div>
+                )}
               </div>
             );
           })}

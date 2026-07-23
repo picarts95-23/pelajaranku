@@ -16,6 +16,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { LinkFields, LinkBadges } from "@/components/link-fields";
+import { MediaInput, MediaViewer, type MediaValue } from "@/components/media-input";
 import { SubjectSelect } from "@/components/subject-select";
 import { ExportMenu } from "@/components/export-menu";
 import { ANSWER_FORMATS, JUZ_LIST, SURAHS, type AnswerFormat } from "@/lib/quran-data";
@@ -515,8 +516,8 @@ function AssignmentDetail({ assignment, onDelete, onEdited }: { assignment: any;
   const gradedCount = (subs as any[]).filter((s) => s.status === "graded").length;
 
   const gradeMut = useMutation({
-    mutationFn: async ({ id, score, feedback }: { id: string; score: number; feedback: string }) => {
-      const { error } = await supabase.from("submissions").update({ status: "graded", score, feedback }).eq("id", id);
+    mutationFn: async ({ id, score, feedback, feedback_media_type, feedback_media_url }: { id: string; score: number; feedback: string; feedback_media_type: string | null; feedback_media_url: string | null }) => {
+      const { error } = await supabase.from("submissions").update({ status: "graded", score, feedback, feedback_media_type, feedback_media_url }).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => { toast.success(lang === "id" ? "Nilai disimpan ✅" : "Grade saved ✅"); qc.invalidateQueries({ queryKey: ["submissions", assignment.id] }); },
@@ -628,7 +629,7 @@ function AssignmentDetail({ assignment, onDelete, onEdited }: { assignment: any;
             </div>
           ) : (
             <div className="space-y-2">
-              {filteredSubs.map((s: any) => <GradeRow key={s.id} sub={s} maxScore={assignment.max_score} isVoice={assignment.answer_format === "voice" || assignment.answer_format === "muroja"} onGrade={(score, fb) => gradeMut.mutate({ id: s.id, score, feedback: fb })} />)}
+              {filteredSubs.map((s: any) => <GradeRow key={s.id} sub={s} maxScore={assignment.max_score} isVoice={assignment.answer_format === "voice" || assignment.answer_format === "muroja"} onGrade={(score, fb, media) => gradeMut.mutate({ id: s.id, score, feedback: fb, feedback_media_type: media.media_type, feedback_media_url: media.media_url })} />)}
             </div>
           )}
         </>
@@ -670,10 +671,12 @@ function AssignmentDetail({ assignment, onDelete, onEdited }: { assignment: any;
   );
 }
 
-function GradeRow({ sub, maxScore, isVoice, onGrade }: { sub: any; maxScore: number; isVoice: boolean; onGrade: (score: number, feedback: string) => void }) {
+function GradeRow({ sub, maxScore, isVoice, onGrade }: { sub: any; maxScore: number; isVoice: boolean; onGrade: (score: number, feedback: string, media: MediaValue) => void }) {
   const { t, lang } = useLang();
+  const { user } = useAuth();
   const [score, setScore] = useState<number | "">(sub.score ?? "");
   const [fb, setFb] = useState(sub.feedback ?? "");
+  const [feedbackMedia, setFeedbackMedia] = useState<MediaValue>({ media_type: sub.feedback_media_type ?? null, media_url: sub.feedback_media_url ?? null });
   const [voiceUrl, setVoiceUrl] = useState<string | null>(null);
   const [voiceError, setVoiceError] = useState(false);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
@@ -766,8 +769,15 @@ function GradeRow({ sub, maxScore, isVoice, onGrade }: { sub: any; maxScore: num
           <Label className="text-xs">💬 {t("feedback")}</Label>
           <Input value={fb} onChange={(e) => setFb(e.target.value)} />
         </div>
-        <Button variant="guru" size="sm" disabled={score === ""} onClick={() => onGrade(Number(score), fb)}>🏆 {t("giveGrade")}</Button>
+        <Button variant="guru" size="sm" disabled={score === ""} onClick={() => onGrade(Number(score), fb, feedbackMedia)}>🏆 {t("giveGrade")}</Button>
       </div>
+      {user?.id && (
+        <div className="mt-3">
+          <div className="mb-1 text-xs font-display font-bold text-guru">🎙️ {lang === "id" ? "Koreksi audio / gambar / video (opsional)" : "Audio / image / video correction (optional)"}</div>
+          <MediaInput userId={user.id} value={feedbackMedia} onChange={setFeedbackMedia} />
+          {feedbackMedia.media_url && <MediaViewer mediaType={feedbackMedia.media_type} mediaUrl={feedbackMedia.media_url} />}
+        </div>
+      )}
     </div>
   );
 }

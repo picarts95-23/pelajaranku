@@ -1124,6 +1124,8 @@ export type Database = {
           content: string | null
           created_at: string
           feedback: string | null
+          feedback_media_type: string | null
+          feedback_media_url: string | null
           file_url: string | null
           graded_at: string | null
           graded_by: string | null
@@ -1140,6 +1142,8 @@ export type Database = {
           content?: string | null
           created_at?: string
           feedback?: string | null
+          feedback_media_type?: string | null
+          feedback_media_url?: string | null
           file_url?: string | null
           graded_at?: string | null
           graded_by?: string | null
@@ -1156,6 +1160,8 @@ export type Database = {
           content?: string | null
           created_at?: string
           feedback?: string | null
+          feedback_media_type?: string | null
+          feedback_media_url?: string | null
           file_url?: string | null
           graded_at?: string | null
           graded_by?: string | null
