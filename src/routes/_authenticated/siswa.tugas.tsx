@@ -20,6 +20,7 @@ import { VoiceRecorder } from "@/components/voice-recorder";
 import { ANSWER_FORMATS } from "@/lib/quran-data";
 import { useMarkSeen } from "@/lib/notifications";
 import { compressImage } from "@/lib/compress-image";
+import { assertMediaSize } from "@/lib/media-limits";
 
 export const Route = createFileRoute("/_authenticated/siswa/tugas")({
   head: () => ({ meta: [{ title: "Tugas & Latihan · Pelajaranku" }] }),
@@ -129,6 +130,7 @@ function QuestCard({ a }: { a: any }) {
       if (isVoiceFmt) {
         if (voiceBlob) {
           if (voiceBlob.size === 0) throw new Error(lang === "id" ? "Rekaman kosong. Coba rekam ulang." : "Empty recording. Please re-record.");
+          assertMediaSize(voiceBlob, "voiceAnswer", lang as "id" | "en");
           const rawType = voiceBlob.type || "audio/webm";
           const baseType = rawType.split(";")[0].trim() || "audio/webm";
           const ext = baseType.includes("mp4") || baseType.includes("m4a") || baseType.includes("aac") ? "m4a"
@@ -150,11 +152,12 @@ function QuestCard({ a }: { a: any }) {
       }
 
       if (imageFile) {
-        if (imageFile.size === 0) throw new Error(lang === "id" ? "Foto kosong. Pilih ulang." : "Empty photo. Please reselect.");
-        if (imageFile.size > 15 * 1024 * 1024) throw new Error(lang === "id" ? "Ukuran foto maksimal 15 MB." : "Max photo size is 15 MB.");
-        const ext = (imageFile.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+        // Kompres dulu (client-side), lalu validasi ukuran akhir.
+        const compressed = await compressImage(imageFile);
+        assertMediaSize(compressed, "answerImage", lang as "id" | "en");
+        const ext = (compressed.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
         const path = `${user.id}/${a.id}-${Date.now()}.${ext}`;
-        const { error: upErr } = await supabase.storage.from("answer-images").upload(path, imageFile, { upsert: true, contentType: imageFile.type || "image/jpeg" });
+        const { error: upErr } = await supabase.storage.from("answer-images").upload(path, compressed, { upsert: true, contentType: compressed.type || "image/jpeg" });
         if (upErr) throw new Error(`Upload foto gagal: ${upErr.message}`);
         storedFileUrl = path;
       } else if (isPhotoFmt && !a.mySubmission?.file_url) {
@@ -346,13 +349,16 @@ function QuizCard({ quiz }: { quiz: any }) {
         if (type === "voice") {
           const blob = voiceBlobs[i];
           if (!blob) throw new Error(lang === "id" ? `Rekam jawaban soal ${i + 1}` : `Record answer for Q${i + 1}`);
+          assertMediaSize(blob, "voiceAnswer", lang as "id" | "en");
           const path = `${user!.id}/${quiz.id}-${i}-${crypto.randomUUID()}.webm`;
           const { error: upErr } = await supabase.storage.from("voice-answers").upload(path, blob);
           if (upErr) throw upErr;
           finalAnswers[i] = path;
         } else if (type === "image") {
-          const file = imageFiles[i];
-          if (!file) throw new Error(lang === "id" ? `Unggah foto jawaban soal ${i + 1}` : `Upload photo for Q${i + 1}`);
+          const raw = imageFiles[i];
+          if (!raw) throw new Error(lang === "id" ? `Unggah foto jawaban soal ${i + 1}` : `Upload photo for Q${i + 1}`);
+          const file = await compressImage(raw);
+          assertMediaSize(file, "answerImage", lang as "id" | "en");
           const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
           const path = `${user!.id}/${quiz.id}-${i}-${crypto.randomUUID()}.${ext}`;
           const { error: upErr } = await supabase.storage.from("answer-images").upload(path, file, { contentType: file.type });

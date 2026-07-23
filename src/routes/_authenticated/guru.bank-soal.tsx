@@ -81,12 +81,16 @@ function GuruBankSoalPage() {
 
 
   async function uploadImage(e: React.ChangeEvent<HTMLInputElement>, qi: number) {
-    const file = e.target.files?.[0];
-    if (!file || !user) return;
+    const raw = e.target.files?.[0];
+    if (!raw || !user) return;
     setUploadingIdx(qi);
     try {
+      const { compressImage } = await import("@/lib/compress-image");
+      const { assertMediaSize } = await import("@/lib/media-limits");
+      const file = await compressImage(raw);
+      assertMediaSize(file, "lessonImage", lang as "id" | "en");
       const path = `${user.id}/qb-${crypto.randomUUID()}.${file.name.split(".").pop() || "jpg"}`;
-      const { error } = await supabase.storage.from("lesson-media").upload(path, file);
+      const { error } = await supabase.storage.from("lesson-media").upload(path, file, { contentType: file.type });
       if (error) throw error;
       setQ(qi, { image_url: path });
       toast.success(lang === "id" ? "Gambar diunggah" : "Image uploaded");
@@ -94,6 +98,7 @@ function GuruBankSoalPage() {
       toast.error((err as Error).message);
     } finally {
       setUploadingIdx(null);
+      e.target.value = "";
     }
   }
 
