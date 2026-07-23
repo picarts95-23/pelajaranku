@@ -160,6 +160,30 @@ export type Database = {
           },
         ]
       }
+      app_settings: {
+        Row: {
+          id: string
+          teacher_access_code: string | null
+          teacher_signup_mode: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          id?: string
+          teacher_access_code?: string | null
+          teacher_signup_mode?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          id?: string
+          teacher_access_code?: string | null
+          teacher_signup_mode?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       assignment_answer_keys: {
         Row: {
           answer_key: string | null
@@ -1517,6 +1541,7 @@ export type Database = {
         Args: { _status_id: string; _uid: string }
         Returns: boolean
       }
+      get_teacher_signup_mode: { Args: never; Returns: string }
       grade_quiz_submission: {
         Args: { _answers: Json; _assignment_id: string }
         Returns: Json
