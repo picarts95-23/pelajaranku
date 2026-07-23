@@ -821,13 +821,78 @@ function GradeRow({ sub, maxScore, isVoice, onGrade }: { sub: any; maxScore: num
           <Label className="text-xs">💬 {t("feedback")}</Label>
           <Input value={fb} onChange={(e) => setFb(e.target.value)} />
         </div>
-        <Button variant="guru" size="sm" disabled={score === ""} onClick={() => onGrade(Number(score), fb, feedbackMedia)}>🏆 {t("giveGrade")}</Button>
+        <Button variant="guru" size="sm" disabled={score === ""} onClick={() => onGrade(Number(score), fb, feedbackMedia)}>
+          {sub.status === "graded"
+            ? <><History className="size-3.5" /> {lang === "id" ? "Kirim Revisi" : "Send Revision"}</>
+            : <>🏆 {t("giveGrade")}</>}
+        </Button>
       </div>
+      {sub.status === "graded" && (
+        <p className="mt-1 text-[11px] text-muted-foreground">
+          {lang === "id"
+            ? "✏️ Nilai sudah diberikan. Ubah nilai/koreksi lalu klik Kirim Revisi — versi lama tetap tersimpan sebagai riwayat untuk siswa."
+            : "Grade already given. Edit and click Send Revision — the previous version is kept in history for the student."}
+        </p>
+      )}
       {user?.id && (
         <div className="mt-3">
-          <div className="mb-1 text-xs font-display font-bold text-guru">🎙️ {lang === "id" ? "Koreksi audio / gambar / video (opsional)" : "Audio / image / video correction (optional)"}</div>
+          <div className="mb-1 flex items-center justify-between gap-2">
+            <div className="text-xs font-display font-bold text-guru">🎙️ {lang === "id" ? "Koreksi audio / gambar / video (opsional)" : "Audio / image / video correction (optional)"}</div>
+            {feedbackMedia.media_url && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[11px] font-display font-bold text-emerald-700">
+                <CheckCircle2 className="size-3" /> {lang === "id" ? "File siap dikirim" : "File ready to send"}
+              </span>
+            )}
+          </div>
           <MediaInput userId={user.id} value={feedbackMedia} onChange={setFeedbackMedia} />
           {feedbackMedia.media_url && <MediaViewer mediaType={feedbackMedia.media_type} mediaUrl={feedbackMedia.media_url} />}
+        </div>
+      )}
+      <RevisionHistoryPanel submissionId={sub.id} />
+    </div>
+  );
+}
+
+function RevisionHistoryPanel({ submissionId }: { submissionId: string }) {
+  const { lang } = useLang();
+  const [open, setOpen] = useState(false);
+  const { data: revs = [] } = useQuery({
+    queryKey: ["submission-revisions", submissionId],
+    enabled: open,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("submission_grade_revisions")
+        .select("id, score, feedback, feedback_media_type, feedback_media_url, created_at")
+        .eq("submission_id", submissionId)
+        .order("created_at", { ascending: false });
+      return data ?? [];
+    },
+  });
+  return (
+    <div className="mt-3 border-t border-dashed border-border pt-2">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="inline-flex items-center gap-1.5 text-xs font-display font-bold text-muted-foreground hover:text-guru"
+      >
+        <History className="size-3.5" /> {lang === "id" ? "Riwayat revisi penilaian" : "Grade revision history"} {open ? "▾" : "▸"}
+      </button>
+      {open && (
+        <div className="mt-2 space-y-2">
+          {revs.length === 0 ? (
+            <p className="text-xs text-muted-foreground">{lang === "id" ? "Belum ada revisi." : "No revisions yet."}</p>
+          ) : (
+            revs.map((r: any, i: number) => (
+              <div key={r.id} className="rounded-lg border border-border bg-card/60 p-2 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="font-display font-bold">v{revs.length - i} · {format(new Date(r.created_at), "dd MMM yyyy HH:mm")}</span>
+                  <span className="font-display font-bold text-primary">{r.score ?? "—"}</span>
+                </div>
+                {r.feedback && <p className="mt-1 whitespace-pre-wrap text-foreground/80">{r.feedback}</p>}
+                {r.feedback_media_url && <MediaViewer mediaType={r.feedback_media_type} mediaUrl={r.feedback_media_url} />}
+              </div>
+            ))
+          )}
         </div>
       )}
     </div>
