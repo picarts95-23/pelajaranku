@@ -91,7 +91,8 @@ function GuruEventPage() {
   const syncQ = useQuery({
     queryKey: ["gcal-sync-status", feedQ.data?.httpsUrl],
     enabled: !!feedQ.data?.httpsUrl,
-    refetchInterval: 60_000,
+    refetchInterval: 10 * 60_000,
+    staleTime: 5 * 60_000,
     queryFn: async () => {
       const started = Date.now();
       const res = await fetch(feedQ.data!.httpsUrl, { method: "GET", cache: "no-store" });
