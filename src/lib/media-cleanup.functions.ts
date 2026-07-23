@@ -49,29 +49,25 @@ async function collectReferencedPaths(
     .from("submissions")
     .select("file_url")
     .not("file_url", "is", null);
-  for (const s of subs ?? []) {
+  for (const s of (subs as any[] | null) ?? []) {
     const url: string = s.file_url ?? "";
     if (url && !url.startsWith("http")) answers.add(url);
   }
 
-  // Kunci jawaban kuis kadang menyimpan path per soal (voice/image).
-  const { data: mats } = await admin
-    .from("materials")
-    .select("attachment_url")
-    .not("attachment_url", "is", null);
-  for (const m of mats ?? []) if (m.attachment_url && !m.attachment_url.startsWith("http")) lesson.add(m.attachment_url);
-
-  const { data: asg } = await admin
-    .from("assignments")
-    .select("file_url")
-    .not("file_url", "is", null);
-  for (const a of asg ?? []) if (a.file_url && !a.file_url.startsWith("http")) lesson.add(a.file_url);
+  const { data: mats } = await admin.from("materials").select("file_url, media_url");
+  for (const m of (mats as any[] | null) ?? []) {
+    for (const v of [m.file_url, m.media_url]) {
+      if (v && !String(v).startsWith("http")) lesson.add(v);
+    }
+  }
 
   const { data: qb } = await admin
     .from("question_bank")
-    .select("attachment_url")
-    .not("attachment_url", "is", null);
-  for (const q of qb ?? []) if (q.attachment_url && !q.attachment_url.startsWith("http")) lesson.add(q.attachment_url);
+    .select("image_url")
+    .not("image_url", "is", null);
+  for (const q of (qb as any[] | null) ?? []) {
+    if (q.image_url && !q.image_url.startsWith("http")) lesson.add(q.image_url);
+  }
 
   return { answers, lesson };
 }
