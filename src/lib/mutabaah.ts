@@ -22,11 +22,12 @@ export function predikatOf(total: number, lang: "id" | "en" | string): string {
 // types. These weights are mirrored in the SQL function halaqoh_daily_scores.
 export const HALAQOH_WEIGHTS = { ziyadah: 0.3, murojaah: 0.4, tilawah: 0.3 } as const;
 
-// The three Halaqoh session types used by Mutaba'ah and Halaqoh tasks.
+// The Halaqoh session types used by Mutaba'ah and Halaqoh tasks.
 export const SETORAN_TYPES = [
   { value: "ziyadah", id: "Ziyadah (Hafalan Baru)", en: "Ziyadah (New)" },
   { value: "murojaah", id: "Muroja'ah (Mengulang)", en: "Muroja'ah (Review)" },
   { value: "tilawah", id: "Tilawah Harian (min. 1 halaman)", en: "Daily Tilawah" },
+  { value: "iqro", id: "Bacaan Iqro", en: "Iqro Reading" },
 ] as const;
 
 export function setoranLabel(value: string | null | undefined, lang: "id" | "en" | string): string {
@@ -34,8 +35,17 @@ export function setoranLabel(value: string | null | undefined, lang: "id" | "en"
   if (v.startsWith("ziyadah")) return "Ziyadah";
   if (v.startsWith("muroj") || v.startsWith("muraj")) return "Muroja'ah";
   if (v.startsWith("tilawah")) return lang === "id" ? "Tilawah Harian" : "Daily Tilawah";
+  if (v.startsWith("iqro") || v.startsWith("iqra")) return lang === "id" ? "Bacaan Iqro" : "Iqro";
   return value ?? "—";
 }
+
+// Full set of hijaiyah letters for Iqro session (multi-select).
+export const HIJAIYAH_LETTERS = [
+  "ا","ب","ت","ث","ج","ح","خ","د","ذ","ر","ز","س","ش","ص","ض",
+  "ط","ظ","ع","غ","ف","ق","ك","ل","م","ن","و","ه","ي","ء","ة","ى","لا",
+] as const;
+
+export const IQRO_JILID = [1, 2, 3, 4, 5, 6] as const;
 
 // Detect a Halaqoh Qur'an subject so the recap can source its daily grade
 // from the Mutaba'ah accumulation instead of regular tagged tasks.
