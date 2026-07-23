@@ -516,8 +516,8 @@ function AssignmentDetail({ assignment, onDelete, onEdited }: { assignment: any;
   const gradedCount = (subs as any[]).filter((s) => s.status === "graded").length;
 
   const gradeMut = useMutation({
-    mutationFn: async ({ id, score, feedback }: { id: string; score: number; feedback: string }) => {
-      const { error } = await supabase.from("submissions").update({ status: "graded", score, feedback }).eq("id", id);
+    mutationFn: async ({ id, score, feedback, feedback_media_type, feedback_media_url }: { id: string; score: number; feedback: string; feedback_media_type: string | null; feedback_media_url: string | null }) => {
+      const { error } = await supabase.from("submissions").update({ status: "graded", score, feedback, feedback_media_type, feedback_media_url }).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => { toast.success(lang === "id" ? "Nilai disimpan ✅" : "Grade saved ✅"); qc.invalidateQueries({ queryKey: ["submissions", assignment.id] }); },
