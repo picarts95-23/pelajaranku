@@ -62,7 +62,11 @@ export const updateTeacherSignupSettings = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const patch: Record<string, unknown> = { updated_by: context.userId };
+    const patch: {
+      updated_by: string;
+      teacher_signup_mode?: TeacherSignupMode;
+      teacher_access_code?: string | null;
+    } = { updated_by: context.userId };
     if (data.mode) patch.teacher_signup_mode = data.mode;
     if (data.code !== undefined) patch.teacher_access_code = data.code;
     const { error } = await supabaseAdmin
