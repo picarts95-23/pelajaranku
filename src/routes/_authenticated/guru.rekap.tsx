@@ -5,6 +5,7 @@ import { BarChart3, GraduationCap, Trophy, Save, HeartHandshake, ListChecks, Lin
 import { toast } from "sonner";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
 import { LaporanProgres } from "@/components/laporan-progres";
+import { NilaiManual } from "@/components/nilai-manual";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -242,6 +243,14 @@ function GuruRekapPage() {
           </Select>
         </div>
       </div>
+
+      {classId && subject && (
+        <div className="mb-6">
+          <NilaiManual classId={classId} subject={subject} students={students as any[]} />
+        </div>
+      )}
+
+
 
       {!classId ? (
         <EmptyState message={lang === "id" ? "Pilih kelas untuk mulai." : "Select a class to begin."} />
