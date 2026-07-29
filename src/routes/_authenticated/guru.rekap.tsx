@@ -244,6 +244,14 @@ function GuruRekapPage() {
         </div>
       </div>
 
+      {classId && subject && (
+        <div className="mb-6">
+          <NilaiManual classId={classId} subject={subject} students={students as any[]} />
+        </div>
+      )}
+
+
+
       {!classId ? (
         <EmptyState message={lang === "id" ? "Pilih kelas untuk mulai." : "Select a class to begin."} />
       ) : !subject ? (
