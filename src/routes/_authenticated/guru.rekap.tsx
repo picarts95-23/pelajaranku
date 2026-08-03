@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
 import { LaporanProgres } from "@/components/laporan-progres";
 import { NilaiManual } from "@/components/nilai-manual";
+import { NilaiKelompok } from "@/components/nilai-kelompok";
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -245,10 +247,12 @@ function GuruRekapPage() {
       </div>
 
       {classId && subject && (
-        <div className="mb-6">
+        <div className="mb-6 space-y-4">
           <NilaiManual classId={classId} subject={subject} students={students as any[]} />
+          <NilaiKelompok classId={classId} subject={subject} students={students as any[]} />
         </div>
       )}
+
 
 
 
