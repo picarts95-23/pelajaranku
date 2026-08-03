@@ -245,10 +245,12 @@ function GuruRekapPage() {
       </div>
 
       {classId && subject && (
-        <div className="mb-6">
+        <div className="mb-6 space-y-4">
           <NilaiManual classId={classId} subject={subject} students={students as any[]} />
+          <NilaiKelompok classId={classId} subject={subject} students={students as any[]} />
         </div>
       )}
+
 
 
 
