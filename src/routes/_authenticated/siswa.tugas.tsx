@@ -191,7 +191,7 @@ function QuestCard({ a }: { a: any }) {
       toast.success(lang === "id" ? "Misi terkirim! ✨" : "Mission submitted! ✨");
       setOpen(false);
       setVoiceBlob(null);
-      setImageFile(null);
+      setImageFiles([]);
       qc.invalidateQueries({ queryKey: ["siswa-quests"] });
     },
     onError: (e: Error) => {
