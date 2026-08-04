@@ -134,6 +134,8 @@ export function OfflineOnboarding() {
           </>
         )}
       </button>
+      )}
+
 
       <Dialog open={open} onOpenChange={(v) => (v ? setOpen(true) : dismiss())}>
         <DialogContent className="max-w-lg">
