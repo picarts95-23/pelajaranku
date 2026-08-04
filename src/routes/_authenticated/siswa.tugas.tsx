@@ -293,16 +293,16 @@ function QuestCard({ a }: { a: any }) {
                     </div>
                   ) : isPhotoFmt ? (
                     <div>
-                      <Label>{lang === "id" ? "Unggah foto/gambar jawabanmu" : "Upload your photo/image answer"}</Label>
-                      <PhotoInput file={imageFile} onChange={setImageFile} idPrefix={`p-${a.id}`} />
-                      {!imageFile && a.mySubmission?.file_url && <p className="mt-1 text-xs text-muted-foreground">✅ {lang === "id" ? "Foto sebelumnya tersimpan. Pilih file baru untuk mengganti." : "Previous photo saved. Choose a new file to replace."}</p>}
+                      <Label>{lang === "id" ? "Unggah foto/gambar jawabanmu (bisa lebih dari 1)" : "Upload your photo/image answers (multiple allowed)"}</Label>
+                      <PhotoInput files={imageFiles} onChange={setImageFiles} idPrefix={`p-${a.id}`} />
+                      {imageFiles.length === 0 && prevPhotoCount > 0 && <p className="mt-1 text-xs text-muted-foreground">✅ {lang === "id" ? `${prevPhotoCount} foto sebelumnya tersimpan. Pilih foto baru untuk mengganti semuanya.` : `${prevPhotoCount} previous photo(s) saved. Choose new photos to replace them.`}</p>}
                     </div>
                   ) : (
                     <>
                       <div><Label>{t("yourAnswer")}</Label><Textarea rows={6} value={content} onChange={(e) => setContent(e.target.value)} /></div>
                       <div>
-                        <Label>{lang === "id" ? "Lampiran foto (opsional)" : "Photo attachment (optional)"}</Label>
-                        <PhotoInput file={imageFile} onChange={setImageFile} idPrefix={`opt-${a.id}`} />
+                        <Label>{lang === "id" ? "Lampiran foto (opsional, bisa lebih dari 1)" : "Photo attachments (optional, multiple allowed)"}</Label>
+                        <PhotoInput files={imageFiles} onChange={setImageFiles} idPrefix={`opt-${a.id}`} />
                       </div>
                       <div><Label>{t("fileUrl")}</Label><Input value={fileUrl} onChange={(e) => setFileUrl(e.target.value)} placeholder="https://..." /></div>
                     </>
@@ -315,8 +315,9 @@ function QuestCard({ a }: { a: any }) {
                     disabled={
                       submitMut.isPending
                       || (isVoiceFmt && !voiceBlob && !a.mySubmission?.file_url)
-                      || (isPhotoFmt && !imageFile && !a.mySubmission?.file_url)
+                      || (isPhotoFmt && imageFiles.length === 0 && prevPhotoCount === 0)
                     }
+
                     onClick={() => submitMut.mutate()}
                   >
                     {submitMut.isPending ? (lang === "id" ? "Mengirim…" : "Sending…") : t("submit")}
