@@ -20,6 +20,8 @@ import { VoiceRecorder } from "@/components/voice-recorder";
 import { ANSWER_FORMATS } from "@/lib/quran-data";
 import { useMarkSeen } from "@/lib/notifications";
 import { compressImage } from "@/lib/compress-image";
+import { MAX_ANSWER_PHOTOS, joinAnswerFiles, parseAnswerFiles } from "@/lib/answer-files";
+
 import { assertMediaSize } from "@/lib/media-limits";
 
 export const Route = createFileRoute("/_authenticated/siswa/tugas")({
