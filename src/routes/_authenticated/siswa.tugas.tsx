@@ -153,18 +153,23 @@ function QuestCard({ a }: { a: any }) {
         }
       }
 
-      if (imageFile) {
-        // Kompres dulu (client-side), lalu validasi ukuran akhir.
-        const compressed = await compressImage(imageFile);
-        assertMediaSize(compressed, "answerImage", lang as "id" | "en");
-        const ext = (compressed.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
-        const path = `${user.id}/${a.id}-${Date.now()}.${ext}`;
-        const { error: upErr } = await supabase.storage.from("answer-images").upload(path, compressed, { upsert: true, contentType: compressed.type || "image/jpeg" });
-        if (upErr) throw new Error(`Upload foto gagal: ${upErr.message}`);
-        storedFileUrl = path;
+      if (imageFiles.length > 0) {
+        // Kompres dulu (client-side), lalu validasi ukuran akhir tiap foto.
+        const paths: string[] = [];
+        for (let i = 0; i < imageFiles.length; i++) {
+          const compressed = await compressImage(imageFiles[i]);
+          assertMediaSize(compressed, "answerImage", lang as "id" | "en");
+          const ext = (compressed.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+          const path = `${user.id}/${a.id}-${Date.now()}-${i}.${ext}`;
+          const { error: upErr } = await supabase.storage.from("answer-images").upload(path, compressed, { upsert: true, contentType: compressed.type || "image/jpeg" });
+          if (upErr) throw new Error(`Upload foto ${i + 1} gagal: ${upErr.message}`);
+          paths.push(path);
+        }
+        storedFileUrl = joinAnswerFiles(paths);
       } else if (isPhotoFmt && !a.mySubmission?.file_url) {
         throw new Error(lang === "id" ? "Unggah foto jawabanmu dulu." : "Upload your photo answer first.");
       }
+
 
       let finalContent: string | null = content || null;
       if (fmt === "multiple_choice") {
