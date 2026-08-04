@@ -92,8 +92,11 @@ export function OfflineOnboarding() {
 
   return (
     <>
-      {/* Floating status badge — bottom-left, non-obstructive */}
+      {/* Floating status badge — bottom-left, non-obstructive. Client-only so the
+          service-worker/online state never differs between server and client HTML. */}
+      {mounted && (
       <button
+
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Info mode offline"
