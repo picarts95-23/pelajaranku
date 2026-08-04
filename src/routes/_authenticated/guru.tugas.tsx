@@ -24,6 +24,7 @@ import { isHalaqohSubject, SETORAN_TYPES } from "@/lib/mutabaah";
 import { QuizTabs } from "@/components/quiz-tabs";
 import { QuizGradeDialog } from "@/components/quiz-grade-dialog";
 import { signAnswerFile } from "@/lib/transcribe.functions";
+import { parseAnswerFiles } from "@/lib/answer-files";
 
 export const Route = createFileRoute("/_authenticated/guru/tugas")({
   head: () => ({ meta: [{ title: "Tugas · Pelajaranku" }] }),
