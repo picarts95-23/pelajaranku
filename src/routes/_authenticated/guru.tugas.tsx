@@ -24,6 +24,7 @@ import { isHalaqohSubject, SETORAN_TYPES } from "@/lib/mutabaah";
 import { QuizTabs } from "@/components/quiz-tabs";
 import { QuizGradeDialog } from "@/components/quiz-grade-dialog";
 import { signAnswerFile } from "@/lib/transcribe.functions";
+import { parseAnswerFiles } from "@/lib/answer-files";
 
 export const Route = createFileRoute("/_authenticated/guru/tugas")({
   head: () => ({ meta: [{ title: "Tugas · Pelajaranku" }] }),
@@ -735,12 +736,15 @@ function GradeRow({ sub, maxScore, isVoice, onGrade }: { sub: any; maxScore: num
   const [feedbackMedia, setFeedbackMedia] = useState<MediaValue>({ media_type: sub.feedback_media_type ?? null, media_url: sub.feedback_media_url ?? null });
   const [voiceUrl, setVoiceUrl] = useState<string | null>(null);
   const [voiceError, setVoiceError] = useState(false);
-  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [photoUrls, setPhotoUrls] = useState<string[]>([]);
   const signFile = useServerFn(signAnswerFile);
 
-  // A non-http file_url on a non-voice task is a private path in the answer-images
-  // bucket (photo answer / attachment) — resolve it via the teacher-only signer.
-  const isPrivatePhoto = !isVoice && !!sub.file_url && !/^https?:\/\//i.test(sub.file_url);
+  // Jawaban bisa berisi beberapa foto (path dipisah baris baru).
+  const answerPaths = parseAnswerFiles(sub.file_url);
+  const privatePhotoPaths = isVoice ? [] : answerPaths.filter((p) => !/^https?:\/\//i.test(p));
+  const isPrivatePhoto = privatePhotoPaths.length > 0;
+  const publicUrl = answerPaths.find((p) => /^https?:\/\//i.test(p)) ?? null;
+  const privateKey = privatePhotoPaths.join("|");
 
   // Sign the student's voice recording via the teacher-only server function.
   // Using the admin-signed URL avoids storage RLS edge cases and works for
@@ -762,19 +766,23 @@ function GradeRow({ sub, maxScore, isVoice, onGrade }: { sub: any; maxScore: num
   }, [isVoice, sub.file_url, signFile]);
 
 
-  // Resolve a signed URL for a private uploaded photo answer.
+  // Resolve signed URLs for every private uploaded photo answer.
   useEffect(() => {
     let active = true;
     async function load() {
       if (!isPrivatePhoto) return;
-      try {
-        const r = await signFile({ data: { bucket: "answer-images", path: sub.file_url } });
-        if (active && r?.url) setPhotoUrl(r.url);
-      } catch { /* ignore missing file */ }
+      const urls: string[] = [];
+      for (const p of privateKey.split("|")) {
+        try {
+          const r = await signFile({ data: { bucket: "answer-images", path: p } });
+          if (r?.url) urls.push(r.url);
+        } catch { /* ignore missing file */ }
+      }
+      if (active) setPhotoUrls(urls);
     }
     load();
     return () => { active = false; };
-  }, [isPrivatePhoto, sub.file_url, signFile]);
+  }, [isPrivatePhoto, privateKey, signFile]);
 
   return (
     <div className="rounded-xl border border-border bg-muted/30 p-3">
@@ -800,22 +808,32 @@ function GradeRow({ sub, maxScore, isVoice, onGrade }: { sub: any; maxScore: num
         )
       ) : isPrivatePhoto ? (
         <div className="mt-2">
-          <div className="mb-1 flex items-center gap-1.5 text-xs font-display font-bold text-primary">🖼️ {lang === "id" ? "Foto jawaban siswa" : "Student photo answer"}</div>
-          {photoUrl ? (
-            <a href={photoUrl} target="_blank" rel="noreferrer" className="block"><img src={photoUrl} alt="jawaban siswa" className="max-h-64 rounded-xl border-2 border-border object-contain" /></a>
+          <div className="mb-1 flex items-center gap-1.5 text-xs font-display font-bold text-primary">
+            🖼️ {lang === "id" ? "Foto jawaban siswa" : "Student photo answer"}
+            {privatePhotoPaths.length > 1 && <span className="rounded-full bg-primary/15 px-2 py-0.5">{privatePhotoPaths.length} {lang === "id" ? "foto" : "photos"}</span>}
+          </div>
+          {photoUrls.length > 0 ? (
+            <div className={privatePhotoPaths.length > 1 ? "grid grid-cols-2 gap-2 sm:grid-cols-3" : ""}>
+              {photoUrls.map((u, i) => (
+                <a key={u} href={u} target="_blank" rel="noreferrer" className="block">
+                  <img src={u} alt={`jawaban siswa ${i + 1}`} className="max-h-64 w-full rounded-xl border-2 border-border object-contain" />
+                </a>
+              ))}
+            </div>
           ) : (
             <p className="text-xs text-muted-foreground">{lang === "id" ? "Memuat foto…" : "Loading photo…"}</p>
           )}
         </div>
-      ) : (!isVoice && sub.file_url && (
-        /\.(jpg|jpeg|png|gif|webp|avif)(\?|$)/i.test(sub.file_url) ? (
-          <a href={sub.file_url} target="_blank" rel="noreferrer" className="mt-2 block"><img src={sub.file_url} alt="jawaban siswa" className="max-h-64 rounded-xl border-2 border-border object-contain" /></a>
-        ) : /\.(mp4|webm|mov|ogg)(\?|$)/i.test(sub.file_url) ? (
-          <video controls src={sub.file_url} className="mt-2 max-h-64 w-full rounded-xl border-2 border-border" />
+      ) : (!isVoice && publicUrl && (
+        /\.(jpg|jpeg|png|gif|webp|avif)(\?|$)/i.test(publicUrl) ? (
+          <a href={publicUrl} target="_blank" rel="noreferrer" className="mt-2 block"><img src={publicUrl} alt="jawaban siswa" className="max-h-64 rounded-xl border-2 border-border object-contain" /></a>
+        ) : /\.(mp4|webm|mov|ogg)(\?|$)/i.test(publicUrl) ? (
+          <video controls src={publicUrl} className="mt-2 max-h-64 w-full rounded-xl border-2 border-border" />
         ) : (
-          <a href={sub.file_url} target="_blank" rel="noreferrer" className="mt-1 inline-block text-xs text-primary underline">📎 {lang === "id" ? "Lihat lampiran" : "View attachment"}</a>
+          <a href={publicUrl} target="_blank" rel="noreferrer" className="mt-1 inline-block text-xs text-primary underline">📎 {lang === "id" ? "Lihat lampiran" : "View attachment"}</a>
         )
       ))}
+
       <div className="mt-3 grid gap-2 sm:grid-cols-[120px,1fr,auto] sm:items-end">
         <div>
           <Label className="text-xs">⭐ {t("score")} / {maxScore}</Label>

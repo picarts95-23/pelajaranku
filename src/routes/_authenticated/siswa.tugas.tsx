@@ -20,6 +20,8 @@ import { VoiceRecorder } from "@/components/voice-recorder";
 import { ANSWER_FORMATS } from "@/lib/quran-data";
 import { useMarkSeen } from "@/lib/notifications";
 import { compressImage } from "@/lib/compress-image";
+import { MAX_ANSWER_PHOTOS, joinAnswerFiles, parseAnswerFiles } from "@/lib/answer-files";
+
 import { assertMediaSize } from "@/lib/media-limits";
 
 export const Route = createFileRoute("/_authenticated/siswa/tugas")({
@@ -118,9 +120,11 @@ function QuestCard({ a }: { a: any }) {
   const [choices, setChoices] = useState<string[]>(() => (a.mySubmission?.content ? String(a.mySubmission.content).split(", ").filter(Boolean) : []));
   const [fileUrl, setFileUrl] = useState(a.mySubmission?.file_url ?? "");
   const [voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
   const isVoiceFmt = fmt === "voice" || fmt === "muroja";
   const isPhotoFmt = fmt === "photo";
+  const prevPhotoCount = parseAnswerFiles(a.mySubmission?.file_url).length;
+
 
   const submitMut = useMutation({
     mutationFn: async () => {
@@ -151,18 +155,23 @@ function QuestCard({ a }: { a: any }) {
         }
       }
 
-      if (imageFile) {
-        // Kompres dulu (client-side), lalu validasi ukuran akhir.
-        const compressed = await compressImage(imageFile);
-        assertMediaSize(compressed, "answerImage", lang as "id" | "en");
-        const ext = (compressed.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
-        const path = `${user.id}/${a.id}-${Date.now()}.${ext}`;
-        const { error: upErr } = await supabase.storage.from("answer-images").upload(path, compressed, { upsert: true, contentType: compressed.type || "image/jpeg" });
-        if (upErr) throw new Error(`Upload foto gagal: ${upErr.message}`);
-        storedFileUrl = path;
+      if (imageFiles.length > 0) {
+        // Kompres dulu (client-side), lalu validasi ukuran akhir tiap foto.
+        const paths: string[] = [];
+        for (let i = 0; i < imageFiles.length; i++) {
+          const compressed = await compressImage(imageFiles[i]);
+          assertMediaSize(compressed, "answerImage", lang as "id" | "en");
+          const ext = (compressed.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+          const path = `${user.id}/${a.id}-${Date.now()}-${i}.${ext}`;
+          const { error: upErr } = await supabase.storage.from("answer-images").upload(path, compressed, { upsert: true, contentType: compressed.type || "image/jpeg" });
+          if (upErr) throw new Error(`Upload foto ${i + 1} gagal: ${upErr.message}`);
+          paths.push(path);
+        }
+        storedFileUrl = joinAnswerFiles(paths);
       } else if (isPhotoFmt && !a.mySubmission?.file_url) {
         throw new Error(lang === "id" ? "Unggah foto jawabanmu dulu." : "Upload your photo answer first.");
       }
+
 
       let finalContent: string | null = content || null;
       if (fmt === "multiple_choice") {
@@ -184,7 +193,7 @@ function QuestCard({ a }: { a: any }) {
       toast.success(lang === "id" ? "Misi terkirim! ✨" : "Mission submitted! ✨");
       setOpen(false);
       setVoiceBlob(null);
-      setImageFile(null);
+      setImageFiles([]);
       qc.invalidateQueries({ queryKey: ["siswa-quests"] });
     },
     onError: (e: Error) => {
@@ -286,16 +295,16 @@ function QuestCard({ a }: { a: any }) {
                     </div>
                   ) : isPhotoFmt ? (
                     <div>
-                      <Label>{lang === "id" ? "Unggah foto/gambar jawabanmu" : "Upload your photo/image answer"}</Label>
-                      <PhotoInput file={imageFile} onChange={setImageFile} idPrefix={`p-${a.id}`} />
-                      {!imageFile && a.mySubmission?.file_url && <p className="mt-1 text-xs text-muted-foreground">✅ {lang === "id" ? "Foto sebelumnya tersimpan. Pilih file baru untuk mengganti." : "Previous photo saved. Choose a new file to replace."}</p>}
+                      <Label>{lang === "id" ? "Unggah foto/gambar jawabanmu (bisa lebih dari 1)" : "Upload your photo/image answers (multiple allowed)"}</Label>
+                      <PhotoInput files={imageFiles} onChange={setImageFiles} idPrefix={`p-${a.id}`} />
+                      {imageFiles.length === 0 && prevPhotoCount > 0 && <p className="mt-1 text-xs text-muted-foreground">✅ {lang === "id" ? `${prevPhotoCount} foto sebelumnya tersimpan. Pilih foto baru untuk mengganti semuanya.` : `${prevPhotoCount} previous photo(s) saved. Choose new photos to replace them.`}</p>}
                     </div>
                   ) : (
                     <>
                       <div><Label>{t("yourAnswer")}</Label><Textarea rows={6} value={content} onChange={(e) => setContent(e.target.value)} /></div>
                       <div>
-                        <Label>{lang === "id" ? "Lampiran foto (opsional)" : "Photo attachment (optional)"}</Label>
-                        <PhotoInput file={imageFile} onChange={setImageFile} idPrefix={`opt-${a.id}`} />
+                        <Label>{lang === "id" ? "Lampiran foto (opsional, bisa lebih dari 1)" : "Photo attachments (optional, multiple allowed)"}</Label>
+                        <PhotoInput files={imageFiles} onChange={setImageFiles} idPrefix={`opt-${a.id}`} />
                       </div>
                       <div><Label>{t("fileUrl")}</Label><Input value={fileUrl} onChange={(e) => setFileUrl(e.target.value)} placeholder="https://..." /></div>
                     </>
@@ -308,8 +317,9 @@ function QuestCard({ a }: { a: any }) {
                     disabled={
                       submitMut.isPending
                       || (isVoiceFmt && !voiceBlob && !a.mySubmission?.file_url)
-                      || (isPhotoFmt && !imageFile && !a.mySubmission?.file_url)
+                      || (isPhotoFmt && imageFiles.length === 0 && prevPhotoCount === 0)
                     }
+
                     onClick={() => submitMut.mutate()}
                   >
                     {submitMut.isPending ? (lang === "id" ? "Mengirim…" : "Sending…") : t("submit")}
@@ -503,7 +513,13 @@ function QuizCard({ quiz }: { quiz: any }) {
 
                       {type === "image" && (
                         <div className="mt-2">
-                          <PhotoInput file={imageFiles[qi] ?? null} onChange={(f) => setImageFiles((v) => ({ ...v, [qi]: f }))} idPrefix={`qi-${quiz.id}-${qi}`} />
+                          <PhotoInput
+                            files={imageFiles[qi] ? [imageFiles[qi] as File] : []}
+                            onChange={(f) => setImageFiles((v) => ({ ...v, [qi]: f[f.length - 1] ?? null }))}
+                            idPrefix={`qi-${quiz.id}-${qi}`}
+                            max={1}
+                          />
+
                         </div>
                       )}
 
@@ -531,23 +547,41 @@ function QuizCard({ quiz }: { quiz: any }) {
   );
 }
 
-/** Mobile-friendly photo picker: separate "Camera" (capture) and "Gallery" buttons. */
-function PhotoInput({ file, onChange, idPrefix }: { file: File | null; onChange: (f: File | null) => void; idPrefix: string }) {
+/** Mobile-friendly photo picker: kamera + galeri, mendukung beberapa foto sekaligus. */
+function PhotoInput({
+  files,
+  onChange,
+  idPrefix,
+  max = MAX_ANSWER_PHOTOS,
+}: { files: File[]; onChange: (f: File[]) => void; idPrefix: string; max?: number }) {
   const { lang } = useLang();
   const camRef = useRef<HTMLInputElement | null>(null);
   const galRef = useRef<HTMLInputElement | null>(null);
+  const full = files.length >= max;
+
+  async function addFiles(list: FileList | null) {
+    if (!list || list.length === 0) return;
+    const room = Math.max(0, max - files.length);
+    const picked = Array.from(list).slice(0, room);
+    if (Array.from(list).length > room) {
+      toast.error(lang === "id" ? `Maksimal ${max} foto.` : `Maximum ${max} photos.`);
+    }
+    const compressed = await Promise.all(picked.map((f) => compressImage(f)));
+    onChange([...files, ...compressed]);
+  }
+
   return (
     <div className="mt-2">
       <div className="flex flex-wrap gap-2">
-        <Button type="button" size="sm" variant="siswa" onClick={() => camRef.current?.click()}>
+        <Button type="button" size="sm" variant="siswa" disabled={full} onClick={() => camRef.current?.click()}>
           <Camera className="size-4" /> {lang === "id" ? "Ambil Foto" : "Take Photo"}
         </Button>
-        <Button type="button" size="sm" variant="outline" onClick={() => galRef.current?.click()}>
+        <Button type="button" size="sm" variant="outline" disabled={full} onClick={() => galRef.current?.click()}>
           <ImageIcon className="size-4" /> {lang === "id" ? "Pilih dari Galeri" : "Choose from Gallery"}
         </Button>
-        {file && (
-          <Button type="button" size="icon" variant="ghost" className="size-8 text-destructive" onClick={() => onChange(null)} aria-label="clear">
-            <X className="size-4" />
+        {files.length > 0 && (
+          <Button type="button" size="sm" variant="ghost" className="text-destructive" onClick={() => onChange([])}>
+            <X className="size-4" /> {lang === "id" ? "Hapus semua" : "Clear all"}
           </Button>
         )}
       </div>
@@ -558,38 +592,49 @@ function PhotoInput({ file, onChange, idPrefix }: { file: File | null; onChange:
         accept="image/*"
         capture="environment"
         className="hidden"
-        onChange={async (e) => {
-          const f = e.target.files?.[0];
-          onChange(f ? await compressImage(f) : null);
-        }}
+        onChange={async (e) => { await addFiles(e.target.files); e.target.value = ""; }}
       />
       <input
         ref={galRef}
         id={`${idPrefix}-gal`}
         type="file"
         accept="image/*"
+        multiple
         className="hidden"
-        onChange={async (e) => {
-          const f = e.target.files?.[0];
-          onChange(f ? await compressImage(f) : null);
-        }}
+        onChange={async (e) => { await addFiles(e.target.files); e.target.value = ""; }}
       />
 
-      {file && (
-        <div className="mt-2 flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-700">
-          <CheckCircle2 className="size-4 shrink-0" />
-          <span className="truncate">{file.name}</span>
-          <span className="ml-auto shrink-0 text-emerald-600/70">{(file.size / 1024).toFixed(0)} KB</span>
+      {files.length > 0 && (
+        <div className="mt-2 space-y-1.5">
+          {files.map((f, i) => (
+            <div key={`${f.name}-${i}`} className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-700">
+              <CheckCircle2 className="size-4 shrink-0" />
+              <span className="shrink-0 font-display font-bold">{i + 1}.</span>
+              <span className="truncate">{f.name}</span>
+              <span className="ml-auto shrink-0 text-emerald-600/70">{(f.size / 1024).toFixed(0)} KB</span>
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
+                className="size-7 shrink-0 text-destructive"
+                aria-label={lang === "id" ? "Hapus foto" : "Remove photo"}
+                onClick={() => onChange(files.filter((_, idx) => idx !== i))}
+              >
+                <X className="size-4" />
+              </Button>
+            </div>
+          ))}
         </div>
       )}
       <p className="mt-1.5 text-[11px] text-muted-foreground">
         {lang === "id"
-          ? "Format: JPG/PNG/HEIC. Maks 15 MB. Pastikan tulisan terbaca jelas."
-          : "JPG/PNG/HEIC, max 15 MB. Make sure your writing is legible."}
+          ? `Format: JPG/PNG/HEIC. Bisa kirim sampai ${max} foto (maks 15 MB per foto). Pastikan tulisan terbaca jelas.`
+          : `JPG/PNG/HEIC, up to ${max} photos (max 15 MB each). Make sure your writing is legible.`}
       </p>
     </div>
   );
 }
+
 
 /** Panduan singkat "Cara Kirim Tugas" untuk siswa. */
 function HowToDialog() {
