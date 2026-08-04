@@ -21,10 +21,17 @@ const SEEN_KEY = "pelajaranku:onboarding-offline-seen-v1";
  */
 export function OfflineOnboarding() {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [ready, setReady] = useState<"unknown" | "ready" | "unavailable">("unknown");
-  const [online, setOnline] = useState(
-    typeof navigator === "undefined" ? true : navigator.onLine,
-  );
+  // Always start as "online" so SSR and the first client render agree; the real
+  // value is read after mount (see effect below) to avoid hydration mismatches.
+  const [online, setOnline] = useState(true);
+
+  useEffect(() => {
+    setMounted(true);
+    if (typeof navigator !== "undefined") setOnline(navigator.onLine);
+  }, []);
+
 
   useEffect(() => {
     if (typeof window === "undefined") return;
