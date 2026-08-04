@@ -29,12 +29,15 @@ export const signAnswerFile = createServerFn({ method: "POST" })
     // file path — either as submissions.file_url, or inside quiz answer content.
     // Uses the user-scoped client so RLS restricts the join to the caller's
     // own assignments (assignments.teacher_id = auth.uid()).
+    // `file_url` bisa berisi beberapa path (dipisah baris baru) untuk jawaban
+    // multi-foto, jadi pencocokan memakai ilike alih-alih kesamaan penuh.
     const { data: direct } = await supabase
       .from("submissions")
       .select("id, assignment:assignments!inner(teacher_id)")
-      .eq("file_url", data.path)
+      .ilike("file_url", `%${data.path}%`)
       .eq("assignment.teacher_id", userId)
       .limit(1);
+
     let owned = !!direct && direct.length > 0;
     if (!owned) {
       const { data: viaContent } = await supabase
