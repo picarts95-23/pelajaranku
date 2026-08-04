@@ -503,7 +503,13 @@ function QuizCard({ quiz }: { quiz: any }) {
 
                       {type === "image" && (
                         <div className="mt-2">
-                          <PhotoInput file={imageFiles[qi] ?? null} onChange={(f) => setImageFiles((v) => ({ ...v, [qi]: f }))} idPrefix={`qi-${quiz.id}-${qi}`} />
+                          <PhotoInput
+                            files={imageFiles[qi] ? [imageFiles[qi] as File] : []}
+                            onChange={(f) => setImageFiles((v) => ({ ...v, [qi]: f[f.length - 1] ?? null }))}
+                            idPrefix={`qi-${quiz.id}-${qi}`}
+                            max={1}
+                          />
+
                         </div>
                       )}
 
