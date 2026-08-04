@@ -118,9 +118,11 @@ function QuestCard({ a }: { a: any }) {
   const [choices, setChoices] = useState<string[]>(() => (a.mySubmission?.content ? String(a.mySubmission.content).split(", ").filter(Boolean) : []));
   const [fileUrl, setFileUrl] = useState(a.mySubmission?.file_url ?? "");
   const [voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
   const isVoiceFmt = fmt === "voice" || fmt === "muroja";
   const isPhotoFmt = fmt === "photo";
+  const prevPhotoCount = parseAnswerFiles(a.mySubmission?.file_url).length;
+
 
   const submitMut = useMutation({
     mutationFn: async () => {
