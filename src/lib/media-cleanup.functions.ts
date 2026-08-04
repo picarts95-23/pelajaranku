@@ -77,9 +77,12 @@ async function collectReferencedPaths(admin: any) {
     admin.from("question_bank").select("image_url").not("image_url", "is", null),
   ]);
   for (const s of (subs.data as any[] | null) ?? []) {
-    const u: string = s.file_url ?? "";
-    if (u && !u.startsWith("http")) answers.add(u);
+    // file_url bisa memuat beberapa path (jawaban multi-foto), dipisah baris baru.
+    for (const u of String(s.file_url ?? "").split("\n").map((x) => x.trim())) {
+      if (u && !u.startsWith("http")) answers.add(u);
+    }
   }
+
   for (const m of (mats.data as any[] | null) ?? []) {
     for (const v of [m.file_url, m.media_url]) {
       if (v && !String(v).startsWith("http")) lesson.add(v);
