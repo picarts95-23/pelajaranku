@@ -21,10 +21,17 @@ const SEEN_KEY = "pelajaranku:onboarding-offline-seen-v1";
  */
 export function OfflineOnboarding() {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [ready, setReady] = useState<"unknown" | "ready" | "unavailable">("unknown");
-  const [online, setOnline] = useState(
-    typeof navigator === "undefined" ? true : navigator.onLine,
-  );
+  // Always start as "online" so SSR and the first client render agree; the real
+  // value is read after mount (see effect below) to avoid hydration mismatches.
+  const [online, setOnline] = useState(true);
+
+  useEffect(() => {
+    setMounted(true);
+    if (typeof navigator !== "undefined") setOnline(navigator.onLine);
+  }, []);
+
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -85,8 +92,11 @@ export function OfflineOnboarding() {
 
   return (
     <>
-      {/* Floating status badge — bottom-left, non-obstructive */}
+      {/* Floating status badge — bottom-left, non-obstructive. Client-only so the
+          service-worker/online state never differs between server and client HTML. */}
+      {mounted && (
       <button
+
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Info mode offline"
@@ -124,6 +134,8 @@ export function OfflineOnboarding() {
           </>
         )}
       </button>
+      )}
+
 
       <Dialog open={open} onOpenChange={(v) => (v ? setOpen(true) : dismiss())}>
         <DialogContent className="max-w-lg">
