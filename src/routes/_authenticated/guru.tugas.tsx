@@ -377,6 +377,7 @@ function GuruTugasPage() {
                     <div><Label>{t("coinReward")}</Label><Input type="number" value={form.coin_reward} onChange={(e) => setForm({ ...form, coin_reward: +e.target.value })} /></div>
                   </div>
                   <LinkFields quizLink={form.quiz_link} gameLink={form.game_link} onQuiz={(v) => setForm({ ...form, quiz_link: v })} onGame={(v) => setForm({ ...form, game_link: v })} />
+                  {user && <AssignmentFileInput userId={user.id} value={form.attachment} onChange={(v) => setForm({ ...form, attachment: v })} />}
                 </div>
                 <DialogFooter>
                   <Button variant="ghost" onClick={() => setOpen(false)}>{t("cancel")}</Button>
