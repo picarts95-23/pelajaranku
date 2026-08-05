@@ -16,6 +16,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { LinkBadges } from "@/components/link-fields";
+import { AssignmentFileLink } from "@/components/assignment-file-input";
 import { VoiceRecorder } from "@/components/voice-recorder";
 import { ANSWER_FORMATS } from "@/lib/quran-data";
 import { useMarkSeen } from "@/lib/notifications";
@@ -236,6 +237,7 @@ function QuestCard({ a }: { a: any }) {
           )}
 
           <LinkBadges quizLink={a.quiz_link} gameLink={a.game_link} />
+          <AssignmentFileLink attachmentUrl={a.attachment_url} attachmentName={a.attachment_name} />
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <span className="inline-flex items-center gap-1 rounded-full bg-xp/15 px-2 py-1 font-display text-xs font-bold text-xp"><Sparkles className="size-3" /> +{a.xp_reward} XP</span>
             <span className="inline-flex items-center gap-1 rounded-full bg-coin/15 px-2 py-1 font-display text-xs font-bold text-coin"><Coins className="size-3" /> +{a.coin_reward}</span>

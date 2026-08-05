@@ -17,6 +17,7 @@ import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { LinkFields, LinkBadges } from "@/components/link-fields";
 import { MediaInput, MediaViewer, type MediaValue } from "@/components/media-input";
+import { AssignmentFileInput, AssignmentFileLink, emptyAttachment, type AttachmentValue } from "@/components/assignment-file-input";
 import { SubjectSelect } from "@/components/subject-select";
 import { ExportMenu } from "@/components/export-menu";
 import { ANSWER_FORMATS, JUZ_LIST, SURAHS, type AnswerFormat } from "@/lib/quran-data";
@@ -40,6 +41,7 @@ type TForm = {
   quiz_link: string; game_link: string;
   answer_format: AnswerFormat; options: string[]; answer_key: string;
   muroja_juz: string; muroja_surah: string; muroja_ayat: string;
+  attachment: AttachmentValue;
 };
 
 const emptyForm = (): TForm => ({
@@ -47,7 +49,9 @@ const emptyForm = (): TForm => ({
   max_score: 100, xp_reward: 50, coin_reward: 10, quiz_link: "", game_link: "",
   answer_format: "descriptive", options: ["", ""], answer_key: "",
   muroja_juz: "", muroja_surah: "", muroja_ayat: "",
+  attachment: emptyAttachment(),
 });
+
 
 const EXAM_TYPES = [
   { value: "harian", labelId: "Tugas Harian", labelEn: "Daily Task", emoji: "📚" },
@@ -126,6 +130,9 @@ function GuruTugasPage() {
         muroja_juz: form.answer_format === "muroja" ? form.muroja_juz || null : null,
         muroja_surah: form.answer_format === "muroja" ? form.muroja_surah || null : null,
         muroja_ayat: form.answer_format === "muroja" ? form.muroja_ayat.trim() || null : null,
+        attachment_url: form.attachment.attachment_url,
+        attachment_name: form.attachment.attachment_name,
+        attachment_type: form.attachment.attachment_type,
       }).select("id").single();
       if (error) throw error;
 
@@ -370,6 +377,7 @@ function GuruTugasPage() {
                     <div><Label>{t("coinReward")}</Label><Input type="number" value={form.coin_reward} onChange={(e) => setForm({ ...form, coin_reward: +e.target.value })} /></div>
                   </div>
                   <LinkFields quizLink={form.quiz_link} gameLink={form.game_link} onQuiz={(v) => setForm({ ...form, quiz_link: v })} onGame={(v) => setForm({ ...form, game_link: v })} />
+                  {user && <AssignmentFileInput userId={user.id} value={form.attachment} onChange={(v) => setForm({ ...form, attachment: v })} />}
                 </div>
                 <DialogFooter>
                   <Button variant="ghost" onClick={() => setOpen(false)}>{t("cancel")}</Button>
@@ -564,6 +572,9 @@ function AssignmentDetail({ assignment, onDelete, onEdited, onDuplicated }: { as
         muroja_juz: src.muroja_juz ?? null,
         muroja_surah: src.muroja_surah ?? null,
         muroja_ayat: src.muroja_ayat ?? null,
+        attachment_url: src.attachment_url ?? null,
+        attachment_name: src.attachment_name ?? null,
+        attachment_type: src.attachment_type ?? null,
       };
       const { data: created, error } = await supabase.from("assignments").insert(payload).select("id").single();
       if (error) throw error;
@@ -621,6 +632,7 @@ function AssignmentDetail({ assignment, onDelete, onEdited, onDuplicated }: { as
             </div>
           )}
           <LinkBadges quizLink={assignment.quiz_link} gameLink={assignment.game_link} />
+          <AssignmentFileLink attachmentUrl={assignment.attachment_url} attachmentName={assignment.attachment_name} />
         </div>
         <div className="flex shrink-0 items-center gap-1">
           <Button size="sm" variant="ghost" onClick={() => setEditOpen(true)} title={lang === "id" ? "Edit" : "Edit"}><Pencil className="size-4 text-guru" /></Button>
@@ -946,6 +958,11 @@ function AssignmentEditDialog({ assignment, initialAnswerKey, onClose, onSaved }
   const [gameLink, setGameLink] = useState<string>(assignment.game_link ?? "");
   const [answerKey, setAnswerKey] = useState<string>(initialAnswerKey);
   const [examType, setExamType] = useState<string>(assignment.exam_type ?? "harian");
+  const [attachment, setAttachment] = useState<AttachmentValue>({
+    attachment_url: assignment.attachment_url ?? null,
+    attachment_name: assignment.attachment_name ?? null,
+    attachment_type: assignment.attachment_type ?? null,
+  });
 
   const saveMut = useMutation({
     mutationFn: async () => {
@@ -962,6 +979,9 @@ function AssignmentEditDialog({ assignment, initialAnswerKey, onClose, onSaved }
         coin_reward: coinReward,
         quiz_link: quizLink.trim() || null,
         game_link: gameLink.trim() || null,
+        attachment_url: attachment.attachment_url,
+        attachment_name: attachment.attachment_name,
+        attachment_type: attachment.attachment_type,
       }).eq("id", assignment.id);
       if (error) throw error;
       // Upsert answer key (delete + insert if provided, otherwise delete)
@@ -1011,6 +1031,7 @@ function AssignmentEditDialog({ assignment, initialAnswerKey, onClose, onSaved }
             <div><Label>{t("coinReward")}</Label><Input type="number" value={coinReward} onChange={(e) => setCoinReward(+e.target.value)} /></div>
           </div>
           <LinkFields quizLink={quizLink} gameLink={gameLink} onQuiz={setQuizLink} onGame={setGameLink} />
+          {user && <AssignmentFileInput userId={user.id} value={attachment} onChange={setAttachment} />}
           <p className="text-xs text-muted-foreground">
             {lang === "id"
               ? "Catatan: format jawaban, pilihan ganda, dan sasaran (kelas/siswa) tidak bisa diubah setelah dibuat. Hapus & buat baru bila perlu."
