@@ -632,6 +632,7 @@ function AssignmentDetail({ assignment, onDelete, onEdited, onDuplicated }: { as
             </div>
           )}
           <LinkBadges quizLink={assignment.quiz_link} gameLink={assignment.game_link} />
+          <AssignmentFileLink attachmentUrl={assignment.attachment_url} attachmentName={assignment.attachment_name} />
         </div>
         <div className="flex shrink-0 items-center gap-1">
           <Button size="sm" variant="ghost" onClick={() => setEditOpen(true)} title={lang === "id" ? "Edit" : "Edit"}><Pencil className="size-4 text-guru" /></Button>
