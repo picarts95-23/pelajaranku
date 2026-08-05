@@ -1031,6 +1031,7 @@ function AssignmentEditDialog({ assignment, initialAnswerKey, onClose, onSaved }
             <div><Label>{t("coinReward")}</Label><Input type="number" value={coinReward} onChange={(e) => setCoinReward(+e.target.value)} /></div>
           </div>
           <LinkFields quizLink={quizLink} gameLink={gameLink} onQuiz={setQuizLink} onGame={setGameLink} />
+          {user && <AssignmentFileInput userId={user.id} value={attachment} onChange={setAttachment} />}
           <p className="text-xs text-muted-foreground">
             {lang === "id"
               ? "Catatan: format jawaban, pilihan ganda, dan sasaran (kelas/siswa) tidak bisa diubah setelah dibuat. Hapus & buat baru bila perlu."
