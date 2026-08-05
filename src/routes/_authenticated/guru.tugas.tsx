@@ -40,6 +40,7 @@ type TForm = {
   quiz_link: string; game_link: string;
   answer_format: AnswerFormat; options: string[]; answer_key: string;
   muroja_juz: string; muroja_surah: string; muroja_ayat: string;
+  attachment: AttachmentValue;
 };
 
 const emptyForm = (): TForm => ({
@@ -47,7 +48,9 @@ const emptyForm = (): TForm => ({
   max_score: 100, xp_reward: 50, coin_reward: 10, quiz_link: "", game_link: "",
   answer_format: "descriptive", options: ["", ""], answer_key: "",
   muroja_juz: "", muroja_surah: "", muroja_ayat: "",
+  attachment: emptyAttachment(),
 });
+
 
 const EXAM_TYPES = [
   { value: "harian", labelId: "Tugas Harian", labelEn: "Daily Task", emoji: "📚" },
