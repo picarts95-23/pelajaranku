@@ -958,6 +958,11 @@ function AssignmentEditDialog({ assignment, initialAnswerKey, onClose, onSaved }
   const [gameLink, setGameLink] = useState<string>(assignment.game_link ?? "");
   const [answerKey, setAnswerKey] = useState<string>(initialAnswerKey);
   const [examType, setExamType] = useState<string>(assignment.exam_type ?? "harian");
+  const [attachment, setAttachment] = useState<AttachmentValue>({
+    attachment_url: assignment.attachment_url ?? null,
+    attachment_name: assignment.attachment_name ?? null,
+    attachment_type: assignment.attachment_type ?? null,
+  });
 
   const saveMut = useMutation({
     mutationFn: async () => {
