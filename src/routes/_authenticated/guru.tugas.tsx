@@ -130,6 +130,9 @@ function GuruTugasPage() {
         muroja_juz: form.answer_format === "muroja" ? form.muroja_juz || null : null,
         muroja_surah: form.answer_format === "muroja" ? form.muroja_surah || null : null,
         muroja_ayat: form.answer_format === "muroja" ? form.muroja_ayat.trim() || null : null,
+        attachment_url: form.attachment.attachment_url,
+        attachment_name: form.attachment.attachment_name,
+        attachment_type: form.attachment.attachment_type,
       }).select("id").single();
       if (error) throw error;
 
