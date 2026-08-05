@@ -572,6 +572,9 @@ function AssignmentDetail({ assignment, onDelete, onEdited, onDuplicated }: { as
         muroja_juz: src.muroja_juz ?? null,
         muroja_surah: src.muroja_surah ?? null,
         muroja_ayat: src.muroja_ayat ?? null,
+        attachment_url: src.attachment_url ?? null,
+        attachment_name: src.attachment_name ?? null,
+        attachment_type: src.attachment_type ?? null,
       };
       const { data: created, error } = await supabase.from("assignments").insert(payload).select("id").single();
       if (error) throw error;
