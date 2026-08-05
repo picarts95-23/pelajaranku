@@ -220,6 +220,9 @@ export type Database = {
         Row: {
           answer_format: string
           assigned_student_id: string | null
+          attachment_name: string | null
+          attachment_type: string | null
+          attachment_url: string | null
           class_id: string | null
           coin_reward: number
           created_at: string
@@ -245,6 +248,9 @@ export type Database = {
         Insert: {
           answer_format?: string
           assigned_student_id?: string | null
+          attachment_name?: string | null
+          attachment_type?: string | null
+          attachment_url?: string | null
           class_id?: string | null
           coin_reward?: number
           created_at?: string
@@ -270,6 +276,9 @@ export type Database = {
         Update: {
           answer_format?: string
           assigned_student_id?: string | null
+          attachment_name?: string | null
+          attachment_type?: string | null
+          attachment_url?: string | null
           class_id?: string | null
           coin_reward?: number
           created_at?: string
