@@ -979,6 +979,9 @@ function AssignmentEditDialog({ assignment, initialAnswerKey, onClose, onSaved }
         coin_reward: coinReward,
         quiz_link: quizLink.trim() || null,
         game_link: gameLink.trim() || null,
+        attachment_url: attachment.attachment_url,
+        attachment_name: attachment.attachment_name,
+        attachment_type: attachment.attachment_type,
       }).eq("id", assignment.id);
       if (error) throw error;
       // Upsert answer key (delete + insert if provided, otherwise delete)
