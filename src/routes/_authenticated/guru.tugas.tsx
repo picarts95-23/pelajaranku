@@ -821,19 +821,43 @@ function GradeRow({ sub, maxScore, isVoice, onGrade }: { sub: any; maxScore: num
       ) : isPrivatePhoto ? (
         <div className="mt-2">
           <div className="mb-1 flex items-center gap-1.5 text-xs font-display font-bold text-primary">
-            🖼️ {lang === "id" ? "Foto jawaban siswa" : "Student photo answer"}
-            {privatePhotoPaths.length > 1 && <span className="rounded-full bg-primary/15 px-2 py-0.5">{privatePhotoPaths.length} {lang === "id" ? "foto" : "photos"}</span>}
+            📎 {lang === "id" ? "Jawaban siswa (foto/berkas)" : "Student answer (photos/files)"}
+            {privatePhotoPaths.length > 1 && <span className="rounded-full bg-primary/15 px-2 py-0.5">{privatePhotoPaths.length} {lang === "id" ? "lampiran" : "attachments"}</span>}
           </div>
           {photoUrls.length > 0 ? (
-            <div className={privatePhotoPaths.length > 1 ? "grid grid-cols-2 gap-2 sm:grid-cols-3" : ""}>
-              {photoUrls.map((u, i) => (
-                <a key={u} href={u} target="_blank" rel="noreferrer" className="block">
-                  <img src={u} alt={`jawaban siswa ${i + 1}`} className="max-h-64 w-full rounded-xl border-2 border-border object-contain" />
-                </a>
-              ))}
+            <div className="space-y-2">
+              {(() => {
+                const isImg = (p: string) => /\.(jpg|jpeg|png|gif|webp|avif|heic|heif)$/i.test(p);
+                const imgs = photoUrls.filter((f) => isImg(f.path));
+                const docs = photoUrls.filter((f) => !isImg(f.path));
+                return (
+                  <>
+                    {imgs.length > 0 && (
+                      <div className={imgs.length > 1 ? "grid grid-cols-2 gap-2 sm:grid-cols-3" : ""}>
+                        {imgs.map((f, i) => (
+                          <a key={f.url} href={f.url} target="_blank" rel="noreferrer" className="block">
+                            <img src={f.url} alt={`jawaban siswa ${i + 1}`} className="max-h-64 w-full rounded-xl border-2 border-border object-contain" />
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                    {docs.map((f, i) => (
+                      <a
+                        key={f.url}
+                        href={f.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-xs text-primary underline"
+                      >
+                        📄 {lang === "id" ? "Buka berkas" : "Open file"} {docs.length > 1 ? `#${i + 1}` : ""} ({f.path.split(".").pop()?.toUpperCase()})
+                      </a>
+                    ))}
+                  </>
+                );
+              })()}
             </div>
           ) : (
-            <p className="text-xs text-muted-foreground">{lang === "id" ? "Memuat foto…" : "Loading photo…"}</p>
+            <p className="text-xs text-muted-foreground">{lang === "id" ? "Memuat lampiran…" : "Loading attachments…"}</p>
           )}
         </div>
       ) : (!isVoice && publicUrl && (
