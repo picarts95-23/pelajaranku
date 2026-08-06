@@ -954,3 +954,26 @@ function TaskTypeGuide({ fmt, hasLink }: { fmt: string; hasLink?: boolean }) {
   );
 }
 
+
+function TaskDescription({ text, lang }: { text: string; lang: string }) {
+  const [expanded, setExpanded] = useState(false);
+  const long = text.length > 140 || text.split("\n").length > 3;
+  return (
+    <div className="mt-2">
+      <p className={`whitespace-pre-wrap break-words text-sm text-foreground/80 ${expanded || !long ? "" : "line-clamp-3"}`}>
+        {text}
+      </p>
+      {long && (
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="mt-1 font-display text-xs font-bold text-primary underline-offset-2 hover:underline"
+        >
+          {expanded
+            ? (lang === "id" ? "Sembunyikan deskripsi" : "Hide description")
+            : (lang === "id" ? "Lihat deskripsi lengkap" : "Show full description")}
+        </button>
+      )}
+    </div>
+  );
+}
