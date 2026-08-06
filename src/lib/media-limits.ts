@@ -9,6 +9,8 @@
 export const MEDIA_LIMITS = {
   /** Foto jawaban siswa (setelah client-side compress). */
   answerImage: { maxBytes: 8 * 1024 * 1024, label: "8 MB" },
+  /** Berkas jawaban siswa (PDF/Word/Excel/PPT/ZIP). */
+  answerFile: { maxBytes: 20 * 1024 * 1024, label: "20 MB" },
   /** Rekaman suara jawaban siswa (~3–5 menit opus/webm). */
   voiceAnswer: { maxBytes: 12 * 1024 * 1024, label: "12 MB" },
   /** Lampiran media guru: gambar. */

@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Sword, Sparkles, Coins, Send, BookOpen, FileQuestion, CheckCircle2, Trophy, Clock, Camera, ImageIcon, HelpCircle, X, Inbox } from "lucide-react";
+import { Sword, Sparkles, Coins, Send, BookOpen, FileQuestion, CheckCircle2, Trophy, Clock, Camera, ImageIcon, HelpCircle, X, Inbox, Paperclip, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
@@ -122,6 +122,8 @@ function QuestCard({ a }: { a: any }) {
   const [fileUrl, setFileUrl] = useState(a.mySubmission?.file_url ?? "");
   const [voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [docFiles, setDocFiles] = useState<File[]>([]);
+  const [answerMode, setAnswerMode] = useState<"photo" | "file">("photo");
   const isVoiceFmt = fmt === "voice" || fmt === "muroja";
   const isPhotoFmt = fmt === "photo";
   const prevPhotoCount = parseAnswerFiles(a.mySubmission?.file_url).length;
@@ -156,9 +158,9 @@ function QuestCard({ a }: { a: any }) {
         }
       }
 
-      if (imageFiles.length > 0) {
-        // Kompres dulu (client-side), lalu validasi ukuran akhir tiap foto.
+      if (imageFiles.length > 0 || docFiles.length > 0) {
         const paths: string[] = [];
+        // Kompres dulu (client-side), lalu validasi ukuran akhir tiap foto.
         for (let i = 0; i < imageFiles.length; i++) {
           const compressed = await compressImage(imageFiles[i]);
           assertMediaSize(compressed, "answerImage", lang as "id" | "en");
@@ -168,9 +170,19 @@ function QuestCard({ a }: { a: any }) {
           if (upErr) throw new Error(`Upload foto ${i + 1} gagal: ${upErr.message}`);
           paths.push(path);
         }
+        // Berkas dokumen (PDF/Word/Excel/PPT/ZIP) diunggah apa adanya.
+        for (let i = 0; i < docFiles.length; i++) {
+          const doc = docFiles[i];
+          assertMediaSize(doc, "answerFile", lang as "id" | "en");
+          const ext = (doc.name.split(".").pop() || "bin").toLowerCase().replace(/[^a-z0-9]/g, "") || "bin";
+          const path = `${user.id}/${a.id}-doc-${Date.now()}-${i}.${ext}`;
+          const { error: upErr } = await supabase.storage.from("answer-images").upload(path, doc, { upsert: true, contentType: doc.type || "application/octet-stream" });
+          if (upErr) throw new Error(`Upload berkas ${i + 1} gagal: ${upErr.message}`);
+          paths.push(path);
+        }
         storedFileUrl = joinAnswerFiles(paths);
       } else if (isPhotoFmt && !a.mySubmission?.file_url) {
-        throw new Error(lang === "id" ? "Unggah foto jawabanmu dulu." : "Upload your photo answer first.");
+        throw new Error(lang === "id" ? "Unggah foto atau berkas jawabanmu dulu." : "Upload your photo or file answer first.");
       }
 
 
@@ -195,6 +207,7 @@ function QuestCard({ a }: { a: any }) {
       setOpen(false);
       setVoiceBlob(null);
       setImageFiles([]);
+      setDocFiles([]);
       qc.invalidateQueries({ queryKey: ["siswa-quests"] });
     },
     onError: (e: Error) => {
@@ -297,9 +310,27 @@ function QuestCard({ a }: { a: any }) {
                     </div>
                   ) : isPhotoFmt ? (
                     <div>
-                      <Label>{lang === "id" ? "Unggah foto/gambar jawabanmu (bisa lebih dari 1)" : "Upload your photo/image answers (multiple allowed)"}</Label>
-                      <PhotoInput files={imageFiles} onChange={setImageFiles} idPrefix={`p-${a.id}`} />
-                      {imageFiles.length === 0 && prevPhotoCount > 0 && <p className="mt-1 text-xs text-muted-foreground">✅ {lang === "id" ? `${prevPhotoCount} foto sebelumnya tersimpan. Pilih foto baru untuk mengganti semuanya.` : `${prevPhotoCount} previous photo(s) saved. Choose new photos to replace them.`}</p>}
+                      <Label>{lang === "id" ? "Pilih cara mengirim jawaban" : "Choose how to submit"}</Label>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        <Button type="button" size="sm" variant={answerMode === "photo" ? "siswa" : "outline"} onClick={() => setAnswerMode("photo")}>
+                          <ImageIcon className="size-4" /> {lang === "id" ? "Foto" : "Photo"}
+                        </Button>
+                        <Button type="button" size="sm" variant={answerMode === "file" ? "siswa" : "outline"} onClick={() => setAnswerMode("file")}>
+                          <Paperclip className="size-4" /> {lang === "id" ? "Berkas (PDF/Word/dll)" : "File (PDF/Word/etc)"}
+                        </Button>
+                      </div>
+                      {answerMode === "photo" ? (
+                        <div className="mt-3">
+                          <Label>{lang === "id" ? "Unggah foto/gambar jawabanmu (bisa lebih dari 1)" : "Upload your photo/image answers (multiple allowed)"}</Label>
+                          <PhotoInput files={imageFiles} onChange={setImageFiles} idPrefix={`p-${a.id}`} />
+                        </div>
+                      ) : (
+                        <div className="mt-3">
+                          <Label>{lang === "id" ? "Unggah berkas jawabanmu (PDF/Word/Excel/PPT/ZIP, maks 20 MB)" : "Upload your answer file (PDF/Word/Excel/PPT/ZIP, max 20 MB)"}</Label>
+                          <DocInput files={docFiles} onChange={setDocFiles} idPrefix={`d-${a.id}`} />
+                        </div>
+                      )}
+                      {imageFiles.length === 0 && docFiles.length === 0 && prevPhotoCount > 0 && <p className="mt-1 text-xs text-muted-foreground">✅ {lang === "id" ? `${prevPhotoCount} berkas sebelumnya tersimpan. Pilih yang baru untuk mengganti semuanya.` : `${prevPhotoCount} previous file(s) saved. Choose new ones to replace them.`}</p>}
                     </div>
                   ) : (
                     <>
@@ -307,6 +338,10 @@ function QuestCard({ a }: { a: any }) {
                       <div>
                         <Label>{lang === "id" ? "Lampiran foto (opsional, bisa lebih dari 1)" : "Photo attachments (optional, multiple allowed)"}</Label>
                         <PhotoInput files={imageFiles} onChange={setImageFiles} idPrefix={`opt-${a.id}`} />
+                      </div>
+                      <div>
+                        <Label>{lang === "id" ? "Lampiran berkas (opsional, PDF/Word/dll)" : "File attachments (optional, PDF/Word/etc)"}</Label>
+                        <DocInput files={docFiles} onChange={setDocFiles} idPrefix={`optd-${a.id}`} />
                       </div>
                       <div><Label>{t("fileUrl")}</Label><Input value={fileUrl} onChange={(e) => setFileUrl(e.target.value)} placeholder="https://..." /></div>
                     </>
@@ -319,7 +354,7 @@ function QuestCard({ a }: { a: any }) {
                     disabled={
                       submitMut.isPending
                       || (isVoiceFmt && !voiceBlob && !a.mySubmission?.file_url)
-                      || (isPhotoFmt && imageFiles.length === 0 && prevPhotoCount === 0)
+                      || (isPhotoFmt && imageFiles.length === 0 && docFiles.length === 0 && prevPhotoCount === 0)
                     }
 
                     onClick={() => submitMut.mutate()}
@@ -544,6 +579,67 @@ function QuizCard({ quiz }: { quiz: any }) {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+      )}
+    </div>
+  );
+}
+
+/** Pemilih berkas dokumen (PDF/Word/Excel/PPT/ZIP) untuk jawaban siswa. */
+function DocInput({
+  files,
+  onChange,
+  idPrefix,
+  max = MAX_ANSWER_PHOTOS,
+}: { files: File[]; onChange: (f: File[]) => void; idPrefix: string; max?: number }) {
+  const { lang } = useLang();
+  const ref = useRef<HTMLInputElement | null>(null);
+  const full = files.length >= max;
+
+  function addFiles(list: FileList | null) {
+    if (!list || list.length === 0) return;
+    const room = Math.max(0, max - files.length);
+    const picked = Array.from(list).slice(0, room);
+    if (Array.from(list).length > room) {
+      toast.error(lang === "id" ? `Maksimal ${max} berkas.` : `Maximum ${max} files.`);
+    }
+    onChange([...files, ...picked]);
+  }
+
+  return (
+    <div className="mt-2">
+      <div className="flex flex-wrap gap-2">
+        <Button type="button" size="sm" variant="siswa" disabled={full} onClick={() => ref.current?.click()}>
+          <Paperclip className="size-4" /> {lang === "id" ? "Pilih Berkas" : "Choose File"}
+        </Button>
+        {files.length > 0 && (
+          <Button type="button" size="sm" variant="ghost" className="text-destructive" onClick={() => onChange([])}>
+            <X className="size-4" /> {lang === "id" ? "Hapus semua" : "Clear all"}
+          </Button>
+        )}
+      </div>
+      <input
+        ref={ref}
+        id={`${idPrefix}-doc`}
+        type="file"
+        accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.rtf,.zip,application/pdf"
+        multiple
+        className="hidden"
+        onChange={(e) => { addFiles(e.target.files); e.target.value = ""; }}
+      />
+      {files.length > 0 && (
+        <div className="mt-2 space-y-1.5">
+          {files.map((f, i) => (
+            <div key={`${f.name}-${i}`} className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-700">
+              <FileText className="size-4 shrink-0" />
+              <span className="shrink-0 font-display font-bold">{i + 1}.</span>
+              <span className="truncate">{f.name}</span>
+              <span className="ml-auto shrink-0 text-emerald-600/70">{(f.size / 1024).toFixed(0)} KB</span>
+              <Button type="button" size="icon" variant="ghost" className="size-6 shrink-0" onClick={() => onChange(files.filter((_, j) => j !== i))}>
+                <X className="size-3.5 text-destructive" />
+              </Button>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );
