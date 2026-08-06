@@ -585,6 +585,68 @@ function QuizCard({ quiz }: { quiz: any }) {
 }
 
 /** Mobile-friendly photo picker: kamera + galeri, mendukung beberapa foto sekaligus. */
+/** Pemilih berkas dokumen (PDF/Word/Excel/PPT/ZIP) untuk jawaban siswa. */
+function DocInput({
+  files,
+  onChange,
+  idPrefix,
+  max = MAX_ANSWER_PHOTOS,
+}: { files: File[]; onChange: (f: File[]) => void; idPrefix: string; max?: number }) {
+  const { lang } = useLang();
+  const ref = useRef<HTMLInputElement | null>(null);
+  const full = files.length >= max;
+
+  function addFiles(list: FileList | null) {
+    if (!list || list.length === 0) return;
+    const room = Math.max(0, max - files.length);
+    const picked = Array.from(list).slice(0, room);
+    if (Array.from(list).length > room) {
+      toast.error(lang === "id" ? `Maksimal ${max} berkas.` : `Maximum ${max} files.`);
+    }
+    onChange([...files, ...picked]);
+  }
+
+  return (
+    <div className="mt-2">
+      <div className="flex flex-wrap gap-2">
+        <Button type="button" size="sm" variant="siswa" disabled={full} onClick={() => ref.current?.click()}>
+          <Paperclip className="size-4" /> {lang === "id" ? "Pilih Berkas" : "Choose File"}
+        </Button>
+        {files.length > 0 && (
+          <Button type="button" size="sm" variant="ghost" className="text-destructive" onClick={() => onChange([])}>
+            <X className="size-4" /> {lang === "id" ? "Hapus semua" : "Clear all"}
+          </Button>
+        )}
+      </div>
+      <input
+        ref={ref}
+        id={`${idPrefix}-doc`}
+        type="file"
+        accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.rtf,.zip,application/pdf"
+        multiple
+        className="hidden"
+        onChange={(e) => { addFiles(e.target.files); e.target.value = ""; }}
+      />
+      {files.length > 0 && (
+        <div className="mt-2 space-y-1.5">
+          {files.map((f, i) => (
+            <div key={`${f.name}-${i}`} className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-700">
+              <FileText className="size-4 shrink-0" />
+              <span className="shrink-0 font-display font-bold">{i + 1}.</span>
+              <span className="truncate">{f.name}</span>
+              <span className="ml-auto shrink-0 text-emerald-600/70">{(f.size / 1024).toFixed(0)} KB</span>
+              <Button type="button" size="icon" variant="ghost" className="size-6 shrink-0" onClick={() => onChange(files.filter((_, j) => j !== i))}>
+                <X className="size-3.5 text-destructive" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Mobile-friendly photo picker: kamera + galeri, mendukung beberapa foto sekaligus. */
 function PhotoInput({
   files,
   onChange,
