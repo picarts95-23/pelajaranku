@@ -242,7 +242,11 @@ function GuruJurnalPage() {
                     )}
                   </div>
                 </div>
-                <Button size="sm" variant="ghost" onClick={() => { if (confirm(`${t("delete")}?`)) deleteMut.mutate(j.id); }}><Trash2 className="size-4 text-destructive" /></Button>
+                <div className="flex shrink-0 items-center gap-1">
+                  <Button size="sm" variant="ghost" title={lang === "id" ? "Edit / revisi" : "Edit"} onClick={() => openEdit(j)}><Pencil className="size-4" /></Button>
+                  <Button size="sm" variant="ghost" title={lang === "id" ? "Salin jurnal" : "Duplicate"} onClick={() => duplicate(j)}><Copy className="size-4" /></Button>
+                  <Button size="sm" variant="ghost" onClick={() => { if (confirm(`${t("delete")}?`)) deleteMut.mutate(j.id); }}><Trash2 className="size-4 text-destructive" /></Button>
+                </div>
               </div>
               {j.notes && <p className="mt-3 whitespace-pre-wrap text-sm text-foreground/80">{j.notes}</p>}
             </div>
