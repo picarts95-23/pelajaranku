@@ -208,6 +208,7 @@ function QuestCard({ a }: { a: any }) {
       setOpen(false);
       setVoiceBlob(null);
       setImageFiles([]);
+      setDocFiles([]);
       qc.invalidateQueries({ queryKey: ["siswa-quests"] });
     },
     onError: (e: Error) => {
