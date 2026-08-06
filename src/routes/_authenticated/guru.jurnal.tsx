@@ -33,6 +33,30 @@ const ALL_STUDENTS = "__all__";
 type JForm = { class_id: string; subject: string; student_id: string; date: string; topic: string; notes: string };
 const emptyForm = (): JForm => ({ class_id: "", subject: "", student_id: ALL_STUDENTS, date: new Date().toISOString().slice(0, 10), topic: "", notes: "" });
 
+// Students enrolled in the selected class (synced with class members).
+// class_enrollments.student_id references auth.users (not profiles), so we
+// fetch the enrollment ids first and then resolve their profiles separately.
+function useClassStudents(classId: string) {
+  return useQuery({
+    queryKey: ["jurnal-students", classId], enabled: !!classId,
+    queryFn: async () => {
+      const { data: enr } = await supabase
+        .from("class_enrollments")
+        .select("student_id")
+        .eq("class_id", classId);
+      const ids = (enr ?? []).map((e: any) => e.student_id).filter(Boolean);
+      if (ids.length === 0) return [];
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("id, full_name")
+        .in("id", ids);
+      return (profs ?? [])
+        .filter(Boolean)
+        .sort((a: any, b: any) => (a.full_name ?? "").localeCompare(b.full_name ?? "", "id", { sensitivity: "base" }));
+    },
+  });
+}
+
 function GuruJurnalPage() {
   const { user, role, loading } = useAuth();
   const navigate = useNavigate();
