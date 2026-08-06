@@ -180,8 +180,8 @@ function GuruJurnalPage() {
             {journals.length > 0 && (
               <ExportMenu filename="jurnal" title={lang === "id" ? "Jurnal Mengajar" : "Teaching Journal"} columns={exportColumns} rows={exportRows} />
             )}
-          <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o) setForm(emptyForm()); }}>
-            <DialogTrigger asChild><Button variant="guru"><Plus className="size-4" /> {t("newJournal")}</Button></DialogTrigger>
+          <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setForm(emptyForm()); }}>
+            <DialogTrigger asChild><Button variant="guru" onClick={() => setForm(emptyForm())}><Plus className="size-4" /> {t("newJournal")}</Button></DialogTrigger>
             <DialogContent>
               <DialogHeader><DialogTitle>{t("newJournal")}</DialogTitle></DialogHeader>
               <div className="space-y-3">
