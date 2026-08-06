@@ -242,7 +242,7 @@ function QuestCard({ a }: { a: any }) {
               : overdue ? <span className="shrink-0 rounded-full bg-destructive/20 px-2 py-0.5 text-xs font-display font-bold text-destructive">{lang === "id" ? "Lewat" : "Overdue"}</span>
               : <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-display font-bold">{t("notSubmitted")}</span>}
           </div>
-          {a.description && <p className="mt-2 line-clamp-3 text-sm text-foreground/80">{a.description}</p>}
+          {a.description && <TaskDescription text={a.description} lang={lang} />}
 
           {fmt === "muroja" && (
             <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-display font-bold text-emerald-600">
