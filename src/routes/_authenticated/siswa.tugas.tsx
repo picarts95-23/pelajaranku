@@ -122,6 +122,8 @@ function QuestCard({ a }: { a: any }) {
   const [fileUrl, setFileUrl] = useState(a.mySubmission?.file_url ?? "");
   const [voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [docFiles, setDocFiles] = useState<File[]>([]);
+  const [answerMode, setAnswerMode] = useState<"photo" | "file">("photo");
   const isVoiceFmt = fmt === "voice" || fmt === "muroja";
   const isPhotoFmt = fmt === "photo";
   const prevPhotoCount = parseAnswerFiles(a.mySubmission?.file_url).length;
