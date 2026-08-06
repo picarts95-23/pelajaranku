@@ -104,10 +104,56 @@ function GuruJurnalPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const updateMut = useMutation({
+    mutationFn: async () => {
+      if (!editId || !editForm.class_id || !editForm.topic.trim()) throw new Error(t("required"));
+      const { error } = await supabase.from("journals").update({
+        class_id: editForm.class_id,
+        subject: editForm.subject || null,
+        student_id: editForm.student_id === ALL_STUDENTS ? null : editForm.student_id,
+        date: editForm.date,
+        topic: editForm.topic.trim(),
+        notes: editForm.notes.trim() || null,
+      }).eq("id", editId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success(lang === "id" ? "Jurnal diperbarui" : "Journal updated");
+      setEditId(null);
+      qc.invalidateQueries({ queryKey: ["journals"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const openEdit = (j: any) => {
+    setEditId(j.id);
+    setEditForm({
+      class_id: j.class_id ?? "",
+      subject: j.subject ?? "",
+      student_id: j.student_id ?? ALL_STUDENTS,
+      date: j.date,
+      topic: j.topic ?? "",
+      notes: j.notes ?? "",
+    });
+  };
+
+  const duplicate = (j: any) => {
+    setForm({
+      class_id: j.class_id ?? "",
+      subject: j.subject ?? "",
+      student_id: j.student_id ?? ALL_STUDENTS,
+      date: new Date().toISOString().slice(0, 10),
+      topic: `${j.topic ?? ""}${lang === "id" ? " (salinan)" : " (copy)"}`,
+      notes: j.notes ?? "",
+    });
+    setOpen(true);
+  };
+
   const deleteMut = useMutation({
     mutationFn: async (id: string) => { const { error } = await supabase.from("journals").delete().eq("id", id); if (error) throw error; },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["journals"] }),
   });
+
 
   const exportColumns = [
     { key: "date", header: lang === "id" ? "Tanggal" : "Date" },
