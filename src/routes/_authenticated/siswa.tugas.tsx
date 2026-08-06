@@ -584,7 +584,6 @@ function QuizCard({ quiz }: { quiz: any }) {
   );
 }
 
-/** Mobile-friendly photo picker: kamera + galeri, mendukung beberapa foto sekaligus. */
 /** Pemilih berkas dokumen (PDF/Word/Excel/PPT/ZIP) untuk jawaban siswa. */
 function DocInput({
   files,
