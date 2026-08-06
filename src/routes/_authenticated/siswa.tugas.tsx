@@ -242,7 +242,7 @@ function QuestCard({ a }: { a: any }) {
               : overdue ? <span className="shrink-0 rounded-full bg-destructive/20 px-2 py-0.5 text-xs font-display font-bold text-destructive">{lang === "id" ? "Lewat" : "Overdue"}</span>
               : <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-display font-bold">{t("notSubmitted")}</span>}
           </div>
-          {a.description && <p className="mt-2 line-clamp-3 text-sm text-foreground/80">{a.description}</p>}
+          {a.description && <TaskDescription text={a.description} lang={lang} />}
 
           {fmt === "muroja" && (
             <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-display font-bold text-emerald-600">
@@ -954,3 +954,26 @@ function TaskTypeGuide({ fmt, hasLink }: { fmt: string; hasLink?: boolean }) {
   );
 }
 
+
+function TaskDescription({ text, lang }: { text: string; lang: string }) {
+  const [expanded, setExpanded] = useState(false);
+  const long = text.length > 140 || text.split("\n").length > 3;
+  return (
+    <div className="mt-2">
+      <p className={`whitespace-pre-wrap break-words text-sm text-foreground/80 ${expanded || !long ? "" : "line-clamp-3"}`}>
+        {text}
+      </p>
+      {long && (
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="mt-1 font-display text-xs font-bold text-primary underline-offset-2 hover:underline"
+        >
+          {expanded
+            ? (lang === "id" ? "Sembunyikan deskripsi" : "Hide description")
+            : (lang === "id" ? "Lihat deskripsi lengkap" : "Show full description")}
+        </button>
+      )}
+    </div>
+  );
+}
