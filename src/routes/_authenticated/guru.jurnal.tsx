@@ -253,6 +253,42 @@ function GuruJurnalPage() {
           ))}
         </div>
       )}
+
+      <Dialog open={!!editId} onOpenChange={(o) => { if (!o) setEditId(null); }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>{lang === "id" ? "Edit / Revisi Jurnal" : "Edit Journal"}</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div><Label>{t("navClasses")}</Label>
+              <Select value={editForm.class_id} onValueChange={(v) => setEditForm({ ...editForm, class_id: v, student_id: ALL_STUDENTS })}>
+                <SelectTrigger><SelectValue placeholder={t("selectClass")} /></SelectTrigger>
+                <SelectContent>{classes.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div><Label>{t("subject")}</Label>
+              <Select value={editForm.subject} onValueChange={(v) => setEditForm({ ...editForm, subject: v })}>
+                <SelectTrigger><SelectValue placeholder={lang === "id" ? "Pilih mata pelajaran" : "Select a subject"} /></SelectTrigger>
+                <SelectContent>{SUBJECTS.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div><Label>{t("selectStudent")}</Label>
+              <Select value={editForm.student_id} onValueChange={(v) => setEditForm({ ...editForm, student_id: v })} disabled={!editForm.class_id}>
+                <SelectTrigger><SelectValue placeholder={editForm.class_id ? t("selectStudent") : t("selectClass")} /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL_STUDENTS}>{lang === "id" ? "Semua siswa (kelas)" : "All students (class)"}</SelectItem>
+                  {editStudents.map((s: any) => <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div><Label>{t("date")}</Label><Input type="date" value={editForm.date} onChange={(e) => setEditForm({ ...editForm, date: e.target.value })} /></div>
+            <div><Label>{t("topic")}</Label><Input value={editForm.topic} onChange={(e) => setEditForm({ ...editForm, topic: e.target.value })} /></div>
+            <div><Label>{t("notes")}</Label><Textarea rows={4} value={editForm.notes} onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })} /></div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setEditId(null)}>{t("cancel")}</Button>
+            <Button variant="guru" disabled={updateMut.isPending} onClick={() => updateMut.mutate()}>{t("save")}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardShell>
   );
 }
