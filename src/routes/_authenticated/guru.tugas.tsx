@@ -748,7 +748,7 @@ function GradeRow({ sub, maxScore, isVoice, onGrade }: { sub: any; maxScore: num
   const [feedbackMedia, setFeedbackMedia] = useState<MediaValue>({ media_type: sub.feedback_media_type ?? null, media_url: sub.feedback_media_url ?? null });
   const [voiceUrl, setVoiceUrl] = useState<string | null>(null);
   const [voiceError, setVoiceError] = useState(false);
-  const [photoUrls, setPhotoUrls] = useState<string[]>([]);
+  const [photoUrls, setPhotoUrls] = useState<{ path: string; url: string }[]>([]);
   const signFile = useServerFn(signAnswerFile);
 
   // Jawaban bisa berisi beberapa foto (path dipisah baris baru).
@@ -783,11 +783,11 @@ function GradeRow({ sub, maxScore, isVoice, onGrade }: { sub: any; maxScore: num
     let active = true;
     async function load() {
       if (!isPrivatePhoto) return;
-      const urls: string[] = [];
+      const urls: { path: string; url: string }[] = [];
       for (const p of privateKey.split("|")) {
         try {
           const r = await signFile({ data: { bucket: "answer-images", path: p } });
-          if (r?.url) urls.push(r.url);
+          if (r?.url) urls.push({ path: p, url: r.url });
         } catch { /* ignore missing file */ }
       }
       if (active) setPhotoUrls(urls);
@@ -821,19 +821,43 @@ function GradeRow({ sub, maxScore, isVoice, onGrade }: { sub: any; maxScore: num
       ) : isPrivatePhoto ? (
         <div className="mt-2">
           <div className="mb-1 flex items-center gap-1.5 text-xs font-display font-bold text-primary">
-            🖼️ {lang === "id" ? "Foto jawaban siswa" : "Student photo answer"}
-            {privatePhotoPaths.length > 1 && <span className="rounded-full bg-primary/15 px-2 py-0.5">{privatePhotoPaths.length} {lang === "id" ? "foto" : "photos"}</span>}
+            📎 {lang === "id" ? "Jawaban siswa (foto/berkas)" : "Student answer (photos/files)"}
+            {privatePhotoPaths.length > 1 && <span className="rounded-full bg-primary/15 px-2 py-0.5">{privatePhotoPaths.length} {lang === "id" ? "lampiran" : "attachments"}</span>}
           </div>
           {photoUrls.length > 0 ? (
-            <div className={privatePhotoPaths.length > 1 ? "grid grid-cols-2 gap-2 sm:grid-cols-3" : ""}>
-              {photoUrls.map((u, i) => (
-                <a key={u} href={u} target="_blank" rel="noreferrer" className="block">
-                  <img src={u} alt={`jawaban siswa ${i + 1}`} className="max-h-64 w-full rounded-xl border-2 border-border object-contain" />
-                </a>
-              ))}
+            <div className="space-y-2">
+              {(() => {
+                const isImg = (p: string) => /\.(jpg|jpeg|png|gif|webp|avif|heic|heif)$/i.test(p);
+                const imgs = photoUrls.filter((f) => isImg(f.path));
+                const docs = photoUrls.filter((f) => !isImg(f.path));
+                return (
+                  <>
+                    {imgs.length > 0 && (
+                      <div className={imgs.length > 1 ? "grid grid-cols-2 gap-2 sm:grid-cols-3" : ""}>
+                        {imgs.map((f, i) => (
+                          <a key={f.url} href={f.url} target="_blank" rel="noreferrer" className="block">
+                            <img src={f.url} alt={`jawaban siswa ${i + 1}`} className="max-h-64 w-full rounded-xl border-2 border-border object-contain" />
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                    {docs.map((f, i) => (
+                      <a
+                        key={f.url}
+                        href={f.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-xs text-primary underline"
+                      >
+                        📄 {lang === "id" ? "Buka berkas" : "Open file"} {docs.length > 1 ? `#${i + 1}` : ""} ({f.path.split(".").pop()?.toUpperCase()})
+                      </a>
+                    ))}
+                  </>
+                );
+              })()}
             </div>
           ) : (
-            <p className="text-xs text-muted-foreground">{lang === "id" ? "Memuat foto…" : "Loading photo…"}</p>
+            <p className="text-xs text-muted-foreground">{lang === "id" ? "Memuat lampiran…" : "Loading attachments…"}</p>
           )}
         </div>
       ) : (!isVoice && publicUrl && (
