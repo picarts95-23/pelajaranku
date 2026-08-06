@@ -158,9 +158,9 @@ function QuestCard({ a }: { a: any }) {
         }
       }
 
-      if (imageFiles.length > 0) {
-        // Kompres dulu (client-side), lalu validasi ukuran akhir tiap foto.
+      if (imageFiles.length > 0 || docFiles.length > 0) {
         const paths: string[] = [];
+        // Kompres dulu (client-side), lalu validasi ukuran akhir tiap foto.
         for (let i = 0; i < imageFiles.length; i++) {
           const compressed = await compressImage(imageFiles[i]);
           assertMediaSize(compressed, "answerImage", lang as "id" | "en");
@@ -170,10 +170,21 @@ function QuestCard({ a }: { a: any }) {
           if (upErr) throw new Error(`Upload foto ${i + 1} gagal: ${upErr.message}`);
           paths.push(path);
         }
+        // Berkas dokumen diunggah apa adanya (tanpa kompresi).
+        for (let i = 0; i < docFiles.length; i++) {
+          const doc = docFiles[i];
+          assertMediaSize(doc, "answerFile", lang as "id" | "en");
+          const ext = (doc.name.split(".").pop() || "bin").toLowerCase().replace(/[^a-z0-9]/g, "") || "bin";
+          const path = `${user.id}/${a.id}-doc-${Date.now()}-${i}.${ext}`;
+          const { error: upErr } = await supabase.storage.from("answer-images").upload(path, doc, { upsert: true, contentType: doc.type || "application/octet-stream" });
+          if (upErr) throw new Error(`Upload berkas ${i + 1} gagal: ${upErr.message}`);
+          paths.push(path);
+        }
         storedFileUrl = joinAnswerFiles(paths);
       } else if (isPhotoFmt && !a.mySubmission?.file_url) {
-        throw new Error(lang === "id" ? "Unggah foto jawabanmu dulu." : "Upload your photo answer first.");
+        throw new Error(lang === "id" ? "Unggah foto atau berkas jawabanmu dulu." : "Upload your photo or file answer first.");
       }
+
 
 
       let finalContent: string | null = content || null;
