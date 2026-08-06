@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { NotebookPen, Plus, Trash2, User } from "lucide-react";
+import { Copy, NotebookPen, Pencil, Plus, Trash2, User } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
@@ -33,31 +33,17 @@ const ALL_STUDENTS = "__all__";
 type JForm = { class_id: string; subject: string; student_id: string; date: string; topic: string; notes: string };
 const emptyForm = (): JForm => ({ class_id: "", subject: "", student_id: ALL_STUDENTS, date: new Date().toISOString().slice(0, 10), topic: "", notes: "" });
 
-function GuruJurnalPage() {
-  const { user, role, loading } = useAuth();
-  const navigate = useNavigate();
-  const { t, lang } = useLang();
-  const qc = useQueryClient();
-  const [open, setOpen] = useState(false);
-  const [form, setForm] = useState<JForm>(emptyForm());
-
-  useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
-
-  const { data: classes = [] } = useQuery({
-    queryKey: ["classes-list", user?.id], enabled: !!user,
-    queryFn: async () => (await supabase.from("classes").select("id, name").order("name")).data ?? [],
-  });
-
-  // Students enrolled in the selected class (synced with class members).
-  // class_enrollments.student_id references auth.users (not profiles), so we
-  // fetch the enrollment ids first and then resolve their profiles separately.
-  const { data: classStudents = [] } = useQuery({
-    queryKey: ["jurnal-students", form.class_id], enabled: !!form.class_id,
+// Students enrolled in the selected class (synced with class members).
+// class_enrollments.student_id references auth.users (not profiles), so we
+// fetch the enrollment ids first and then resolve their profiles separately.
+function useClassStudents(classId: string) {
+  return useQuery({
+    queryKey: ["jurnal-students", classId], enabled: !!classId,
     queryFn: async () => {
       const { data: enr } = await supabase
         .from("class_enrollments")
         .select("student_id")
-        .eq("class_id", form.class_id);
+        .eq("class_id", classId);
       const ids = (enr ?? []).map((e: any) => e.student_id).filter(Boolean);
       if (ids.length === 0) return [];
       const { data: profs } = await supabase
@@ -69,6 +55,27 @@ function GuruJurnalPage() {
         .sort((a: any, b: any) => (a.full_name ?? "").localeCompare(b.full_name ?? "", "id", { sensitivity: "base" }));
     },
   });
+}
+
+function GuruJurnalPage() {
+  const { user, role, loading } = useAuth();
+  const navigate = useNavigate();
+  const { t, lang } = useLang();
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState<JForm>(emptyForm());
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<JForm>(emptyForm());
+
+  useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
+
+  const { data: classes = [] } = useQuery({
+    queryKey: ["classes-list", user?.id], enabled: !!user,
+    queryFn: async () => (await supabase.from("classes").select("id, name").order("name")).data ?? [],
+  });
+
+  const { data: classStudents = [] } = useClassStudents(form.class_id);
+  const { data: editStudents = [] } = useClassStudents(editForm.class_id);
 
   const { data: journals = [] } = useQuery({
     queryKey: ["journals", user?.id], enabled: !!user,
@@ -97,10 +104,56 @@ function GuruJurnalPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const updateMut = useMutation({
+    mutationFn: async () => {
+      if (!editId || !editForm.class_id || !editForm.topic.trim()) throw new Error(t("required"));
+      const { error } = await supabase.from("journals").update({
+        class_id: editForm.class_id,
+        subject: editForm.subject || null,
+        student_id: editForm.student_id === ALL_STUDENTS ? null : editForm.student_id,
+        date: editForm.date,
+        topic: editForm.topic.trim(),
+        notes: editForm.notes.trim() || null,
+      }).eq("id", editId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success(lang === "id" ? "Jurnal diperbarui" : "Journal updated");
+      setEditId(null);
+      qc.invalidateQueries({ queryKey: ["journals"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const openEdit = (j: any) => {
+    setEditId(j.id);
+    setEditForm({
+      class_id: j.class_id ?? "",
+      subject: j.subject ?? "",
+      student_id: j.student_id ?? ALL_STUDENTS,
+      date: j.date,
+      topic: j.topic ?? "",
+      notes: j.notes ?? "",
+    });
+  };
+
+  const duplicate = (j: any) => {
+    setForm({
+      class_id: j.class_id ?? "",
+      subject: j.subject ?? "",
+      student_id: j.student_id ?? ALL_STUDENTS,
+      date: new Date().toISOString().slice(0, 10),
+      topic: `${j.topic ?? ""}${lang === "id" ? " (salinan)" : " (copy)"}`,
+      notes: j.notes ?? "",
+    });
+    setOpen(true);
+  };
+
   const deleteMut = useMutation({
     mutationFn: async (id: string) => { const { error } = await supabase.from("journals").delete().eq("id", id); if (error) throw error; },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["journals"] }),
   });
+
 
   const exportColumns = [
     { key: "date", header: lang === "id" ? "Tanggal" : "Date" },
@@ -127,8 +180,8 @@ function GuruJurnalPage() {
             {journals.length > 0 && (
               <ExportMenu filename="jurnal" title={lang === "id" ? "Jurnal Mengajar" : "Teaching Journal"} columns={exportColumns} rows={exportRows} />
             )}
-          <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o) setForm(emptyForm()); }}>
-            <DialogTrigger asChild><Button variant="guru"><Plus className="size-4" /> {t("newJournal")}</Button></DialogTrigger>
+          <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setForm(emptyForm()); }}>
+            <DialogTrigger asChild><Button variant="guru" onClick={() => setForm(emptyForm())}><Plus className="size-4" /> {t("newJournal")}</Button></DialogTrigger>
             <DialogContent>
               <DialogHeader><DialogTitle>{t("newJournal")}</DialogTitle></DialogHeader>
               <div className="space-y-3">
@@ -189,13 +242,53 @@ function GuruJurnalPage() {
                     )}
                   </div>
                 </div>
-                <Button size="sm" variant="ghost" onClick={() => { if (confirm(`${t("delete")}?`)) deleteMut.mutate(j.id); }}><Trash2 className="size-4 text-destructive" /></Button>
+                <div className="flex shrink-0 items-center gap-1">
+                  <Button size="sm" variant="ghost" title={lang === "id" ? "Edit / revisi" : "Edit"} onClick={() => openEdit(j)}><Pencil className="size-4" /></Button>
+                  <Button size="sm" variant="ghost" title={lang === "id" ? "Salin jurnal" : "Duplicate"} onClick={() => duplicate(j)}><Copy className="size-4" /></Button>
+                  <Button size="sm" variant="ghost" onClick={() => { if (confirm(`${t("delete")}?`)) deleteMut.mutate(j.id); }}><Trash2 className="size-4 text-destructive" /></Button>
+                </div>
               </div>
               {j.notes && <p className="mt-3 whitespace-pre-wrap text-sm text-foreground/80">{j.notes}</p>}
             </div>
           ))}
         </div>
       )}
+
+      <Dialog open={!!editId} onOpenChange={(o) => { if (!o) setEditId(null); }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>{lang === "id" ? "Edit / Revisi Jurnal" : "Edit Journal"}</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div><Label>{t("navClasses")}</Label>
+              <Select value={editForm.class_id} onValueChange={(v) => setEditForm({ ...editForm, class_id: v, student_id: ALL_STUDENTS })}>
+                <SelectTrigger><SelectValue placeholder={t("selectClass")} /></SelectTrigger>
+                <SelectContent>{classes.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div><Label>{t("subject")}</Label>
+              <Select value={editForm.subject} onValueChange={(v) => setEditForm({ ...editForm, subject: v })}>
+                <SelectTrigger><SelectValue placeholder={lang === "id" ? "Pilih mata pelajaran" : "Select a subject"} /></SelectTrigger>
+                <SelectContent>{SUBJECTS.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div><Label>{t("selectStudent")}</Label>
+              <Select value={editForm.student_id} onValueChange={(v) => setEditForm({ ...editForm, student_id: v })} disabled={!editForm.class_id}>
+                <SelectTrigger><SelectValue placeholder={editForm.class_id ? t("selectStudent") : t("selectClass")} /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL_STUDENTS}>{lang === "id" ? "Semua siswa (kelas)" : "All students (class)"}</SelectItem>
+                  {editStudents.map((s: any) => <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div><Label>{t("date")}</Label><Input type="date" value={editForm.date} onChange={(e) => setEditForm({ ...editForm, date: e.target.value })} /></div>
+            <div><Label>{t("topic")}</Label><Input value={editForm.topic} onChange={(e) => setEditForm({ ...editForm, topic: e.target.value })} /></div>
+            <div><Label>{t("notes")}</Label><Textarea rows={4} value={editForm.notes} onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })} /></div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setEditId(null)}>{t("cancel")}</Button>
+            <Button variant="guru" disabled={updateMut.isPending} onClick={() => updateMut.mutate()}>{t("save")}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardShell>
   );
 }
