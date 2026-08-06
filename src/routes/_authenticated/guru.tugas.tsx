@@ -783,11 +783,11 @@ function GradeRow({ sub, maxScore, isVoice, onGrade }: { sub: any; maxScore: num
     let active = true;
     async function load() {
       if (!isPrivatePhoto) return;
-      const urls: string[] = [];
+      const urls: { path: string; url: string }[] = [];
       for (const p of privateKey.split("|")) {
         try {
           const r = await signFile({ data: { bucket: "answer-images", path: p } });
-          if (r?.url) urls.push(r.url);
+          if (r?.url) urls.push({ path: p, url: r.url });
         } catch { /* ignore missing file */ }
       }
       if (active) setPhotoUrls(urls);
