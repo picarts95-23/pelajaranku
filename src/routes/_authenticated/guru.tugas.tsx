@@ -748,7 +748,7 @@ function GradeRow({ sub, maxScore, isVoice, onGrade }: { sub: any; maxScore: num
   const [feedbackMedia, setFeedbackMedia] = useState<MediaValue>({ media_type: sub.feedback_media_type ?? null, media_url: sub.feedback_media_url ?? null });
   const [voiceUrl, setVoiceUrl] = useState<string | null>(null);
   const [voiceError, setVoiceError] = useState(false);
-  const [photoUrls, setPhotoUrls] = useState<string[]>([]);
+  const [photoUrls, setPhotoUrls] = useState<{ path: string; url: string }[]>([]);
   const signFile = useServerFn(signAnswerFile);
 
   // Jawaban bisa berisi beberapa foto (path dipisah baris baru).
