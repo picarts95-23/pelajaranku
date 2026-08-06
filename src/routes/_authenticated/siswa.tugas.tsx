@@ -297,9 +297,27 @@ function QuestCard({ a }: { a: any }) {
                     </div>
                   ) : isPhotoFmt ? (
                     <div>
-                      <Label>{lang === "id" ? "Unggah foto/gambar jawabanmu (bisa lebih dari 1)" : "Upload your photo/image answers (multiple allowed)"}</Label>
-                      <PhotoInput files={imageFiles} onChange={setImageFiles} idPrefix={`p-${a.id}`} />
-                      {imageFiles.length === 0 && prevPhotoCount > 0 && <p className="mt-1 text-xs text-muted-foreground">✅ {lang === "id" ? `${prevPhotoCount} foto sebelumnya tersimpan. Pilih foto baru untuk mengganti semuanya.` : `${prevPhotoCount} previous photo(s) saved. Choose new photos to replace them.`}</p>}
+                      <Label>{lang === "id" ? "Pilih cara mengirim jawaban" : "Choose how to submit"}</Label>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        <Button type="button" size="sm" variant={answerMode === "photo" ? "siswa" : "outline"} onClick={() => setAnswerMode("photo")}>
+                          <ImageIcon className="size-4" /> {lang === "id" ? "Foto / Gambar" : "Photo / Image"}
+                        </Button>
+                        <Button type="button" size="sm" variant={answerMode === "file" ? "siswa" : "outline"} onClick={() => setAnswerMode("file")}>
+                          <Paperclip className="size-4" /> {lang === "id" ? "Berkas (PDF/Word/dll)" : "File (PDF/Word/etc)"}
+                        </Button>
+                      </div>
+                      {answerMode === "photo" ? (
+                        <>
+                          <Label className="mt-3 block">{lang === "id" ? "Unggah foto/gambar jawabanmu (bisa lebih dari 1)" : "Upload your photo/image answers (multiple allowed)"}</Label>
+                          <PhotoInput files={imageFiles} onChange={setImageFiles} idPrefix={`p-${a.id}`} />
+                        </>
+                      ) : (
+                        <>
+                          <Label className="mt-3 block">{lang === "id" ? "Unggah berkas jawabanmu (PDF/Word/Excel/PPT/ZIP, maks 20 MB)" : "Upload your answer files (PDF/Word/Excel/PPT/ZIP, max 20 MB)"}</Label>
+                          <DocInput files={docFiles} onChange={setDocFiles} idPrefix={`d-${a.id}`} />
+                        </>
+                      )}
+                      {imageFiles.length === 0 && docFiles.length === 0 && prevPhotoCount > 0 && <p className="mt-1 text-xs text-muted-foreground">✅ {lang === "id" ? `${prevPhotoCount} lampiran sebelumnya tersimpan. Pilih yang baru untuk mengganti semuanya.` : `${prevPhotoCount} previous attachment(s) saved. Choose new ones to replace them.`}</p>}
                     </div>
                   ) : (
                     <>
@@ -307,6 +325,10 @@ function QuestCard({ a }: { a: any }) {
                       <div>
                         <Label>{lang === "id" ? "Lampiran foto (opsional, bisa lebih dari 1)" : "Photo attachments (optional, multiple allowed)"}</Label>
                         <PhotoInput files={imageFiles} onChange={setImageFiles} idPrefix={`opt-${a.id}`} />
+                      </div>
+                      <div>
+                        <Label>{lang === "id" ? "Lampiran berkas (opsional — PDF/Word/Excel/PPT/ZIP)" : "File attachments (optional — PDF/Word/Excel/PPT/ZIP)"}</Label>
+                        <DocInput files={docFiles} onChange={setDocFiles} idPrefix={`optd-${a.id}`} />
                       </div>
                       <div><Label>{t("fileUrl")}</Label><Input value={fileUrl} onChange={(e) => setFileUrl(e.target.value)} placeholder="https://..." /></div>
                     </>
@@ -319,7 +341,7 @@ function QuestCard({ a }: { a: any }) {
                     disabled={
                       submitMut.isPending
                       || (isVoiceFmt && !voiceBlob && !a.mySubmission?.file_url)
-                      || (isPhotoFmt && imageFiles.length === 0 && prevPhotoCount === 0)
+                      || (isPhotoFmt && imageFiles.length === 0 && docFiles.length === 0 && prevPhotoCount === 0)
                     }
 
                     onClick={() => submitMut.mutate()}
