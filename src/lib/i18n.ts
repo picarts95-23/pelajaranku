@@ -85,7 +85,7 @@ export const translations = {
   navStudents: { id: "Siswa", en: "Students", ar: "الطلاب" },
   navAssignments: { id: "Tugas", en: "Assignments", ar: "الواجبات" },
   navAttendance: { id: "Presensi", en: "Attendance", ar: "الحضور" },
-  navJournal: { id: "Jurnal", en: "Journal", ar: "اليوميات" },
+  navJournal: { id: "Dokumen Pembelajaran", en: "Learning Docs", ar: "وثائق التعلم" },
   navRPP: { id: "RPP Pekanan", en: "Weekly Plan", ar: "الخطة الأسبوعية" },
   navMutabaah: { id: "Mutaba'ah", en: "Mutaba'ah", ar: "المتابعة" },
   navEvents: { id: "Kegiatan", en: "Events", ar: "الفعاليات" },

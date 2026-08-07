@@ -343,8 +343,8 @@ function GuruDashboard() {
             <FeatureCard
               to="/guru/jurnal"
               icon={<ScrollText className="size-6" />}
-              title={lang === "id" ? "Jurnal Mengajar" : "Teaching Journal"}
-              desc={lang === "id" ? "Catat aktivitas dan refleksi mengajar." : "Log activities and teaching reflections."}
+              title={lang === "id" ? "Dokumen Pembelajaran" : "Learning Documents"}
+              desc={lang === "id" ? "Prota, Prosem, dan Jurnal Guru." : "Annual, semester programs & journal."}
               tint="bg-primary"
             />
             <FeatureCard

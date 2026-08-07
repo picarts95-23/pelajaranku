@@ -11,14 +11,25 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { ExportMenu } from "@/components/export-menu";
+import { ProgramPanel } from "@/components/program-docs";
 
 export const Route = createFileRoute("/_authenticated/guru/jurnal")({
-  head: () => ({ meta: [{ title: "Jurnal · Pelajaranku" }] }),
-  component: GuruJurnalPage,
+  head: () => ({
+    meta: [
+      { title: "Dokumen Pembelajaran · Pelajaranku" },
+      { name: "description", content: "Kelola Program Tahunan, Program Semester, dan Jurnal Guru dalam satu tempat." },
+      { property: "og:title", content: "Dokumen Pembelajaran · Pelajaranku" },
+      { property: "og:description", content: "Program Tahunan, Program Semester, dan Jurnal Guru yang bisa diedit kapan saja." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+  component: GuruDokumenPage,
 });
 
 const SUBJECTS = [
@@ -57,17 +68,43 @@ function useClassStudents(classId: string) {
   });
 }
 
-function GuruJurnalPage() {
-  const { user, role, loading } = useAuth();
+function GuruDokumenPage() {
+  const { role, loading } = useAuth();
   const navigate = useNavigate();
+  const { lang } = useLang();
+
+  useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
+
+  return (
+    <DashboardShell accent="guru">
+      <PageHeader
+        title={lang === "id" ? "Dokumen Pembelajaran" : "Learning Documents"}
+        subtitle={lang === "id"
+          ? "Program Tahunan, Program Semester, dan Jurnal Guru — semua bisa diedit kembali."
+          : "Annual program, semester program, and teaching journal — all editable anytime."}
+      />
+      <Tabs defaultValue="prota">
+        <TabsList className="flex w-full flex-wrap">
+          <TabsTrigger value="prota">{lang === "id" ? "Program Tahunan" : "Annual"}</TabsTrigger>
+          <TabsTrigger value="prosem">{lang === "id" ? "Program Semester" : "Semester"}</TabsTrigger>
+          <TabsTrigger value="jurnal">{lang === "id" ? "Jurnal Guru" : "Journal"}</TabsTrigger>
+        </TabsList>
+        <TabsContent value="prota" className="mt-4"><ProgramPanel kind="annual" /></TabsContent>
+        <TabsContent value="prosem" className="mt-4"><ProgramPanel kind="semester" /></TabsContent>
+        <TabsContent value="jurnal" className="mt-4"><JournalSection /></TabsContent>
+      </Tabs>
+    </DashboardShell>
+  );
+}
+
+function JournalSection() {
+  const { user } = useAuth();
   const { t, lang } = useLang();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<JForm>(emptyForm());
   const [editId, setEditId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<JForm>(emptyForm());
-
-  useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
 
   const { data: classes = [] } = useQuery({
     queryKey: ["classes-list", user?.id], enabled: !!user,
@@ -154,7 +191,6 @@ function GuruJurnalPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["journals"] }),
   });
 
-
   const exportColumns = [
     { key: "date", header: lang === "id" ? "Tanggal" : "Date" },
     { key: "class", header: lang === "id" ? "Kelas" : "Class" },
@@ -173,13 +209,15 @@ function GuruJurnalPage() {
   }));
 
   return (
-    <DashboardShell accent="guru">
-      <PageHeader title={t("navJournal")} subtitle={lang === "id" ? "Catat materi & refleksi pembelajaran" : "Log lesson topics & reflections"}
-        actions={
-          <div className="flex flex-wrap gap-2">
-            {journals.length > 0 && (
-              <ExportMenu filename="jurnal" title={lang === "id" ? "Jurnal Mengajar" : "Teaching Journal"} columns={exportColumns} rows={exportRows} />
-            )}
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm text-muted-foreground">
+          {lang === "id" ? "Catat materi & refleksi pembelajaran harian." : "Log daily lesson topics & reflections."}
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {journals.length > 0 && (
+            <ExportMenu filename="jurnal" title={lang === "id" ? "Jurnal Mengajar" : "Teaching Journal"} columns={exportColumns} rows={exportRows} />
+          )}
           <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setForm(emptyForm()); }}>
             <DialogTrigger asChild><Button variant="guru" onClick={() => setForm(emptyForm())}><Plus className="size-4" /> {t("newJournal")}</Button></DialogTrigger>
             <DialogContent>
@@ -219,8 +257,9 @@ function GuruJurnalPage() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-          </div>
-        } />
+        </div>
+      </div>
+
       {journals.length === 0 ? <EmptyState message={t("empty")} /> : (
         <div className="space-y-3">
           {journals.map((j: any) => (
@@ -289,6 +328,6 @@ function GuruJurnalPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </DashboardShell>
+    </div>
   );
 }

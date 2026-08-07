@@ -160,6 +160,53 @@ export type Database = {
           },
         ]
       }
+      annual_programs: {
+        Row: {
+          academic_year: string | null
+          class_id: string | null
+          created_at: string
+          id: string
+          items: Json
+          notes: string | null
+          subject: string | null
+          teacher_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          academic_year?: string | null
+          class_id?: string | null
+          created_at?: string
+          id?: string
+          items?: Json
+          notes?: string | null
+          subject?: string | null
+          teacher_id: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          academic_year?: string | null
+          class_id?: string | null
+          created_at?: string
+          id?: string
+          items?: Json
+          notes?: string | null
+          subject?: string | null
+          teacher_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "annual_programs_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       app_settings: {
         Row: {
           id: string
@@ -1005,6 +1052,56 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      semester_programs: {
+        Row: {
+          academic_year: string | null
+          class_id: string | null
+          created_at: string
+          id: string
+          items: Json
+          notes: string | null
+          semester: number
+          subject: string | null
+          teacher_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          academic_year?: string | null
+          class_id?: string | null
+          created_at?: string
+          id?: string
+          items?: Json
+          notes?: string | null
+          semester?: number
+          subject?: string | null
+          teacher_id: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          academic_year?: string | null
+          class_id?: string | null
+          created_at?: string
+          id?: string
+          items?: Json
+          notes?: string | null
+          semester?: number
+          subject?: string | null
+          teacher_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "semester_programs_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sheet_sync_state: {
         Row: {
