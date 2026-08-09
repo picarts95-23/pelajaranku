@@ -310,6 +310,7 @@ export function ProgramPanel({ kind }: { kind: ProgramKind }) {
                           {!isAnnual && <th className="px-2 py-1">{lang === "id" ? "Bulan" : "Month"}</th>}
                           {!isAnnual && <th className="px-2 py-1">{lang === "id" ? "Pekan" : "Weeks"}</th>}
                           <th className="px-2 py-1">{lang === "id" ? "Keterangan" : "Note"}</th>
+                          <th className="px-2 py-1 text-right">{lang === "id" ? "Kirim ke" : "Send to"}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -322,7 +323,30 @@ export function ProgramPanel({ kind }: { kind: ProgramKind }) {
                             {!isAnnual && <td className="px-2 py-1">{it.month || "—"}</td>}
                             {!isAnnual && <td className="px-2 py-1">{it.weeks || "—"}</td>}
                             <td className="px-2 py-1 text-muted-foreground">{it.note || "—"}</td>
+                            <td className="px-2 py-1">
+                              <div className="flex justify-end gap-1">
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="size-7"
+                                  title={lang === "id" ? "Buat RPP dari baris ini" : "Create lesson plan from this row"}
+                                  onClick={() => sendTo("rpp", d, it)}
+                                >
+                                  <NotebookPen className="size-3.5" />
+                                </Button>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="size-7"
+                                  title={lang === "id" ? "Jadwalkan ke Kegiatan" : "Schedule as event"}
+                                  onClick={() => sendTo("event", d, it)}
+                                >
+                                  <CalendarPlus className="size-3.5" />
+                                </Button>
+                              </div>
+                            </td>
                           </tr>
+
                         ))}
                       </tbody>
                     </table>
