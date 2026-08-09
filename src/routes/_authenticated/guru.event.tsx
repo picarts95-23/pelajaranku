@@ -36,6 +36,26 @@ function GuruEventPage() {
 
   useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
 
+  // Prefill from a Prota/Prosem row ("Jadwalkan ke Kegiatan").
+  useEffect(() => {
+    const p = takeProgramPrefill("event");
+    if (!p) return;
+    const date = programItemDate({ month: p.month, weeks: p.weeks, academic_year: p.academic_year });
+    setForm({
+      class_id: p.class_id ?? "",
+      title: p.material,
+      description: [p.sourceTitle, p.subject, p.note, p.hours ? `Alokasi ${p.hours} jam` : null].filter(Boolean).join(" · "),
+      location: "",
+      start_at: `${date}T07:30`,
+      end_at: `${date}T09:00`,
+      quiz_link: "",
+      game_link: "",
+    });
+    setOpen(true);
+    toast.info(lang === "id" ? "Kegiatan diisi otomatis dari program — atur tanggal & jam." : "Event prefilled from the program — set date & time.");
+  }, []);
+
+
   const { data: classes = [] } = useQuery({
     queryKey: ["classes-list", user?.id], enabled: !!user,
     queryFn: async () => (await supabase.from("classes").select("id, name").order("name")).data ?? [],
