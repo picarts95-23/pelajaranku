@@ -15,6 +15,8 @@ import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { ExportMenu } from "@/components/export-menu";
+import { programItemDate, takeProgramPrefill } from "@/lib/program-templates";
+
 
 export const Route = createFileRoute("/_authenticated/guru/rpp")({
   head: () => ({ meta: [{ title: "RPP Pekanan · Pelajaranku" }] }),
@@ -64,6 +66,29 @@ function GuruRppPage() {
   const [form, setForm] = useState<RForm>(emptyForm());
 
   useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
+
+  // Prefill from a Prota/Prosem row ("Buat RPP dari baris ini").
+  useEffect(() => {
+    const p = takeProgramPrefill("rpp");
+    if (!p) return;
+    const start = programItemDate({ month: p.month, weeks: p.weeks, academic_year: p.academic_year });
+    const end = new Date(`${start}T00:00:00Z`);
+    end.setUTCDate(end.getUTCDate() + 6);
+    setForm({
+      ...emptyForm(),
+      class_id: p.class_id ?? "",
+      subject: p.subject ?? "",
+      week_label: p.month ? `${p.month}${p.weeks ? ` pekan ${p.weeks}` : ""} — ${p.material}` : p.material,
+      start_date: start,
+      end_date: end.toISOString().slice(0, 10),
+      objectives: p.material,
+      materials: p.material,
+      notes: [p.sourceTitle, p.note, p.hours ? `Alokasi ${p.hours} jam` : null].filter(Boolean).join(" · "),
+    });
+    setOpen(true);
+    toast.info(lang === "id" ? "RPP diisi otomatis dari program — silakan sesuaikan." : "Plan prefilled from the program — adjust as needed.");
+  }, []);
+
 
   const { data: classes = [] } = useQuery({
     queryKey: ["classes-list", user?.id], enabled: !!user,

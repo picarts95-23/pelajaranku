@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarRange, Copy, FileSpreadsheet, Pencil, Plus, Trash2, X } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
+import { CalendarPlus, CalendarRange, Copy, FileSpreadsheet, NotebookPen, Pencil, Plus, Sparkles, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,13 @@ import { ExportMenu } from "@/components/export-menu";
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  buildAnnualTemplate,
+  buildSemesterTemplate,
+  hasSubjectPreset,
+  stashProgramPrefill,
+} from "@/lib/program-templates";
+
 
 export type ProgramKind = "annual" | "semester";
 
@@ -77,6 +85,8 @@ export function ProgramPanel({ kind }: { kind: ProgramKind }) {
   const { user } = useAuth();
   const { lang } = useLang();
   const qc = useQueryClient();
+  const navigate = useNavigate();
+
   const table = TABLE[kind];
   const isAnnual = kind === "annual";
 
@@ -165,6 +175,42 @@ export function ProgramPanel({ kind }: { kind: ProgramKind }) {
   const addItem = () => setForm((f) => ({ ...f, items: [...f.items, emptyItem(kind)] }));
   const removeItem = (idx: number) =>
     setForm((f) => ({ ...f, items: f.items.length > 1 ? f.items.filter((_, i) => i !== idx) : f.items }));
+
+  /** Fill the row list from an auto template based on subject + semester. */
+  const applyTemplate = () => {
+    if (!form.subject) {
+      toast.error(lang === "id" ? "Pilih mata pelajaran dahulu" : "Choose a subject first");
+      return;
+    }
+    const filled = form.items.some((i) => i.material.trim());
+    if (filled && !confirm(lang === "id" ? "Ganti semua baris dengan template?" : "Replace all rows with the template?")) return;
+    const items = isAnnual
+      ? buildAnnualTemplate({ subject: form.subject })
+      : buildSemesterTemplate({ subject: form.subject, semester: (Number(form.semester) === 2 ? 2 : 1) });
+    setForm((f) => ({ ...f, items: items as ProgramItem[] }));
+    toast.success(
+      hasSubjectPreset(form.subject)
+        ? (lang === "id" ? `Template ${form.subject} dimuat — silakan edit` : `${form.subject} template loaded — edit as needed`)
+        : (lang === "id" ? "Template umum dimuat — silakan edit" : "Generic template loaded — edit as needed"),
+    );
+  };
+
+  /** Send a program row to RPP or Kegiatan as prefilled data. */
+  const sendTo = (target: "rpp" | "event", d: any, it: ProgramItem) => {
+    stashProgramPrefill(target, {
+      class_id: d.class_id ?? null,
+      subject: d.subject ?? null,
+      material: it.material,
+      hours: it.hours ?? null,
+      note: it.note ?? null,
+      month: it.month ?? null,
+      weeks: it.weeks ?? null,
+      academic_year: d.academic_year ?? null,
+      sourceTitle: d.title ?? null,
+    });
+    navigate({ to: target === "rpp" ? "/guru/rpp" : "/guru/event" });
+  };
+
 
   const exportColumns = isAnnual
     ? [
@@ -264,6 +310,7 @@ export function ProgramPanel({ kind }: { kind: ProgramKind }) {
                           {!isAnnual && <th className="px-2 py-1">{lang === "id" ? "Bulan" : "Month"}</th>}
                           {!isAnnual && <th className="px-2 py-1">{lang === "id" ? "Pekan" : "Weeks"}</th>}
                           <th className="px-2 py-1">{lang === "id" ? "Keterangan" : "Note"}</th>
+                          <th className="px-2 py-1 text-right">{lang === "id" ? "Kirim ke" : "Send to"}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -276,7 +323,30 @@ export function ProgramPanel({ kind }: { kind: ProgramKind }) {
                             {!isAnnual && <td className="px-2 py-1">{it.month || "—"}</td>}
                             {!isAnnual && <td className="px-2 py-1">{it.weeks || "—"}</td>}
                             <td className="px-2 py-1 text-muted-foreground">{it.note || "—"}</td>
+                            <td className="px-2 py-1">
+                              <div className="flex justify-end gap-1">
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="size-7"
+                                  title={lang === "id" ? "Buat RPP dari baris ini" : "Create lesson plan from this row"}
+                                  onClick={() => sendTo("rpp", d, it)}
+                                >
+                                  <NotebookPen className="size-3.5" />
+                                </Button>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="size-7"
+                                  title={lang === "id" ? "Jadwalkan ke Kegiatan" : "Schedule as event"}
+                                  onClick={() => sendTo("event", d, it)}
+                                >
+                                  <CalendarPlus className="size-3.5" />
+                                </Button>
+                              </div>
+                            </td>
                           </tr>
+
                         ))}
                       </tbody>
                     </table>
@@ -339,7 +409,18 @@ export function ProgramPanel({ kind }: { kind: ProgramKind }) {
             </div>
 
             <div className="space-y-2">
-              <Label>{lang === "id" ? "Rincian materi" : "Material rows"}</Label>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <Label>{lang === "id" ? "Rincian materi" : "Material rows"}</Label>
+                <Button type="button" size="sm" variant="outline" onClick={applyTemplate}>
+                  <Sparkles className="size-4" /> {lang === "id" ? "Isi otomatis (template)" : "Auto-fill template"}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {lang === "id"
+                  ? "Template disusun otomatis dari mata pelajaran, semester, dan tahun ajaran — tinggal diedit sesuai kebutuhan."
+                  : "The template is generated from subject, semester, and academic year — just edit as needed."}
+              </p>
+
               {form.items.map((it, i) => (
                 <div key={i} className="rounded-xl border-2 border-border bg-muted/30 p-3">
                   <div className="mb-2 flex items-center justify-between">
