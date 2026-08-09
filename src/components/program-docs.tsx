@@ -176,6 +176,42 @@ export function ProgramPanel({ kind }: { kind: ProgramKind }) {
   const removeItem = (idx: number) =>
     setForm((f) => ({ ...f, items: f.items.length > 1 ? f.items.filter((_, i) => i !== idx) : f.items }));
 
+  /** Fill the row list from an auto template based on subject + semester. */
+  const applyTemplate = () => {
+    if (!form.subject) {
+      toast.error(lang === "id" ? "Pilih mata pelajaran dahulu" : "Choose a subject first");
+      return;
+    }
+    const filled = form.items.some((i) => i.material.trim());
+    if (filled && !confirm(lang === "id" ? "Ganti semua baris dengan template?" : "Replace all rows with the template?")) return;
+    const items = isAnnual
+      ? buildAnnualTemplate({ subject: form.subject })
+      : buildSemesterTemplate({ subject: form.subject, semester: (Number(form.semester) === 2 ? 2 : 1) });
+    setForm((f) => ({ ...f, items: items as ProgramItem[] }));
+    toast.success(
+      hasSubjectPreset(form.subject)
+        ? (lang === "id" ? `Template ${form.subject} dimuat — silakan edit` : `${form.subject} template loaded — edit as needed`)
+        : (lang === "id" ? "Template umum dimuat — silakan edit" : "Generic template loaded — edit as needed"),
+    );
+  };
+
+  /** Send a program row to RPP or Kegiatan as prefilled data. */
+  const sendTo = (target: "rpp" | "event", d: any, it: ProgramItem) => {
+    stashProgramPrefill(target, {
+      class_id: d.class_id ?? null,
+      subject: d.subject ?? null,
+      material: it.material,
+      hours: it.hours ?? null,
+      note: it.note ?? null,
+      month: it.month ?? null,
+      weeks: it.weeks ?? null,
+      academic_year: d.academic_year ?? null,
+      sourceTitle: d.title ?? null,
+    });
+    navigate({ to: target === "rpp" ? "/guru/rpp" : "/guru/event" });
+  };
+
+
   const exportColumns = isAnnual
     ? [
         { key: "class", header: "Kelas" }, { key: "subject", header: "Mata Pelajaran" },
