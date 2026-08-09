@@ -85,6 +85,8 @@ export function ProgramPanel({ kind }: { kind: ProgramKind }) {
   const { user } = useAuth();
   const { lang } = useLang();
   const qc = useQueryClient();
+  const navigate = useNavigate();
+
   const table = TABLE[kind];
   const isAnnual = kind === "annual";
 
