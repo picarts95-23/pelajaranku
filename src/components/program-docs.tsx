@@ -409,7 +409,18 @@ export function ProgramPanel({ kind }: { kind: ProgramKind }) {
             </div>
 
             <div className="space-y-2">
-              <Label>{lang === "id" ? "Rincian materi" : "Material rows"}</Label>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <Label>{lang === "id" ? "Rincian materi" : "Material rows"}</Label>
+                <Button type="button" size="sm" variant="outline" onClick={applyTemplate}>
+                  <Sparkles className="size-4" /> {lang === "id" ? "Isi otomatis (template)" : "Auto-fill template"}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {lang === "id"
+                  ? "Template disusun otomatis dari mata pelajaran, semester, dan tahun ajaran — tinggal diedit sesuai kebutuhan."
+                  : "The template is generated from subject, semester, and academic year — just edit as needed."}
+              </p>
+
               {form.items.map((it, i) => (
                 <div key={i} className="rounded-xl border-2 border-border bg-muted/30 p-3">
                   <div className="mb-2 flex items-center justify-between">
