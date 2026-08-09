@@ -15,6 +15,8 @@ import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { ExportMenu } from "@/components/export-menu";
+import { programItemDate, takeProgramPrefill } from "@/lib/program-templates";
+
 
 export const Route = createFileRoute("/_authenticated/guru/rpp")({
   head: () => ({ meta: [{ title: "RPP Pekanan · Pelajaranku" }] }),
