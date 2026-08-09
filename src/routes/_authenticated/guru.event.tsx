@@ -20,6 +20,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { LinkFields, LinkBadges } from "@/components/link-fields";
 import { gcalTemplateUrl } from "@/lib/google-calendar";
 import { getCalendarFeedUrl } from "@/lib/google-calendar.functions";
+import { programItemDate, takeProgramPrefill } from "@/lib/program-templates";
+
 
 export const Route = createFileRoute("/_authenticated/guru/event")({
   head: () => ({ meta: [{ title: "Kegiatan · Pelajaranku" }] }),
