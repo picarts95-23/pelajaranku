@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarRange, Copy, FileSpreadsheet, Pencil, Plus, Trash2, X } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
+import { CalendarPlus, CalendarRange, Copy, FileSpreadsheet, NotebookPen, Pencil, Plus, Sparkles, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,13 @@ import { ExportMenu } from "@/components/export-menu";
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  buildAnnualTemplate,
+  buildSemesterTemplate,
+  hasSubjectPreset,
+  stashProgramPrefill,
+} from "@/lib/program-templates";
+
 
 export type ProgramKind = "annual" | "semester";
 
