@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Award, Trophy, Crown, Star, Coins, Plus, Pencil, Trash2, Gift, X } from "lucide-react";
+import { Award, Trophy, Crown, Star, Coins, Plus, Pencil, Trash2, Gift, X, Sparkles, Users, Check, LibraryBig } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { BADGE_EMOJIS } from "@/lib/badge-emojis";
+import { BADGE_CATALOG, CATALOG_TOTAL, type CatalogBadge } from "@/lib/badge-catalog";
 
 export const Route = createFileRoute("/_authenticated/guru/gamifikasi")({
   head: () => ({ meta: [{ title: "Gamifikasi · Pelajaranku" }] }),
@@ -40,6 +41,10 @@ function GuruGamifikasiPage() {
   const [form, setForm] = useState<BadgeForm>(EMPTY_FORM);
   const [awardStudent, setAwardStudent] = useState("");
   const [awardBadge, setAwardBadge] = useState("");
+  const [awardClass, setAwardClass] = useState("");
+  const [catalogOpen, setCatalogOpen] = useState(false);
+  const [catalogGroup, setCatalogGroup] = useState<string>(BADGE_CATALOG[0].key);
+  const [picked, setPicked] = useState<string[]>([]);
 
   useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
 
@@ -62,7 +67,14 @@ function GuruGamifikasiPage() {
     },
   });
 
+  const { data: classes = [] } = useQuery({
+    queryKey: ["gami-classes", user?.id], enabled: !!user,
+    queryFn: async () =>
+      (await supabase.from("classes").select("id, name").eq("teacher_id", user!.id).order("name")).data ?? [],
+  });
+
   const studentIds = students.map((s: any) => s.id);
+
 
   const { data: awards = [] } = useQuery({
     queryKey: ["badge-awards", studentIds.join(",")], enabled: studentIds.length > 0,
@@ -146,6 +158,63 @@ function GuruGamifikasiPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const existingNames = new Set((badges as any[]).map((b) => (b.name ?? "").toLowerCase().trim()));
+
+  const importCatalog = useMutation({
+    mutationFn: async (items: CatalogBadge[]) => {
+      const rows = items
+        .filter((it) => !existingNames.has(it.name.toLowerCase().trim()))
+        .map((it) => ({
+          code: slugCode(it.name),
+          name: it.name,
+          description: it.description,
+          icon: it.icon,
+          xp_requirement: it.xp_requirement ?? 0,
+        }));
+      if (rows.length === 0) throw new Error(lang === "id" ? "Semua badge terpilih sudah ada." : "All selected badges already exist.");
+      const { error } = await supabase.from("badges").insert(rows);
+      if (error) throw error;
+      return rows.length;
+    },
+    onSuccess: (n) => {
+      toast.success(lang === "id" ? `${n} badge ditambahkan dari katalog` : `${n} badges added from catalog`);
+      qc.invalidateQueries({ queryKey: ["badges"] });
+      setPicked([]); setCatalogOpen(false);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const awardToClass = useMutation({
+    mutationFn: async () => {
+      if (!awardClass || !awardBadge) throw new Error(lang === "id" ? "Pilih kelas dan badge" : "Select class and badge");
+      const { data: enrolls, error: eErr } = await supabase
+        .from("class_enrollments").select("student_id").eq("class_id", awardClass);
+      if (eErr) throw eErr;
+      const ids = Array.from(new Set((enrolls ?? []).map((e: any) => e.student_id)));
+      if (ids.length === 0) throw new Error(lang === "id" ? "Kelas ini belum ada siswa." : "No students in this class.");
+      const { data: have } = await supabase
+        .from("user_badges").select("user_id").eq("badge_id", awardBadge).in("user_id", ids);
+      const already = new Set((have ?? []).map((r: any) => r.user_id));
+      const rows = ids.filter((id) => !already.has(id)).map((id) => ({ user_id: id, badge_id: awardBadge }));
+      if (rows.length === 0) throw new Error(t("alreadyHasBadge"));
+      const { error } = await supabase.from("user_badges").insert(rows);
+      if (error) throw error;
+      return rows.length;
+    },
+    onSuccess: (n) => {
+      toast.success(lang === "id" ? `Badge diberikan ke ${n} siswa` : `Badge awarded to ${n} students`);
+      qc.invalidateQueries({ queryKey: ["badge-awards"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  function togglePick(name: string) {
+    setPicked((prev) => (prev.includes(name) ? prev.filter((n) => n !== name) : [...prev, name]));
+  }
+  const activeGroup = BADGE_CATALOG.find((g) => g.key === catalogGroup) ?? BADGE_CATALOG[0];
+  const pickedItems = BADGE_CATALOG.flatMap((g) => g.badges).filter((b) => picked.includes(b.name));
+
+
   function openNew() { setForm(EMPTY_FORM); setOpen(true); }
   function openEdit(b: any) {
     setForm({ id: b.id, name: b.name, description: b.description ?? "", icon: b.icon ?? "🏅", xp_requirement: b.xp_requirement ?? 0 });
@@ -158,9 +227,14 @@ function GuruGamifikasiPage() {
 
       {/* Badge management */}
       <section className="mb-8">
-        <div className="mb-3 flex items-center justify-between gap-2">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <h2 className="font-display text-lg font-bold flex items-center gap-2"><Award className="size-5 text-coin" /> {t("manageBadges")}</h2>
-          <Button variant="guru" size="sm" onClick={openNew}><Plus className="size-4" /> {t("newBadge")}</Button>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" onClick={() => setCatalogOpen(true)}>
+              <LibraryBig className="size-4" /> {lang === "id" ? `Katalog Badge (${CATALOG_TOTAL})` : `Badge Catalog (${CATALOG_TOTAL})`}
+            </Button>
+            <Button variant="guru" size="sm" onClick={openNew}><Plus className="size-4" /> {t("newBadge")}</Button>
+          </div>
         </div>
         {badges.length === 0 ? <EmptyState message={t("empty")} /> : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -208,6 +282,22 @@ function GuruGamifikasiPage() {
               <Award className="size-4" /> {t("awardBadge")}
             </Button>
           </div>
+
+          <div className="mt-3 grid gap-3 rounded-2xl border-2 border-dashed border-border bg-muted/30 p-3 sm:grid-cols-[1fr,auto] sm:items-center">
+            <div className="grid gap-2 sm:grid-cols-[auto,1fr] sm:items-center">
+              <span className="inline-flex items-center gap-1.5 text-xs font-display font-bold uppercase tracking-wider text-muted-foreground">
+                <Users className="size-4" /> {lang === "id" ? "Beri ke satu kelas" : "Award to a class"}
+              </span>
+              <Select value={awardClass} onValueChange={setAwardClass}>
+                <SelectTrigger><SelectValue placeholder={lang === "id" ? "Pilih kelas" : "Select class"} /></SelectTrigger>
+                <SelectContent>{classes.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <Button variant="outline" disabled={!awardClass || !awardBadge || awardToClass.isPending} onClick={() => awardToClass.mutate()}>
+              <Sparkles className="size-4" /> {lang === "id" ? "Beri ke Semua Siswa Kelas" : "Award Whole Class"}
+            </Button>
+          </div>
+
 
           <div className="mt-4">
             <h3 className="mb-2 text-xs font-display font-bold uppercase tracking-wider text-muted-foreground">{t("recentAwards")}</h3>
@@ -313,6 +403,64 @@ function GuruGamifikasiPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Badge catalog dialog */}
+      <Dialog open={catalogOpen} onOpenChange={setCatalogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{lang === "id" ? "Katalog Badge Siap Pakai" : "Ready-made Badge Catalog"}</DialogTitle>
+          </DialogHeader>
+          <p className="text-xs text-muted-foreground">
+            {lang === "id"
+              ? "Pilih badge yang ingin dipakai, lalu tambahkan. Setelah ditambahkan, badge bisa diedit dan diberikan ke siswa atau satu kelas."
+              : "Pick the badges you want, then add them. Added badges can be edited and awarded to a student or a whole class."}
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {BADGE_CATALOG.map((g) => (
+              <button
+                key={g.key}
+                type="button"
+                onClick={() => setCatalogGroup(g.key)}
+                className={`rounded-full border-2 px-3 py-1 text-xs font-display font-bold transition-colors ${catalogGroup === g.key ? "border-guru bg-guru/15 text-guru" : "border-border bg-card text-muted-foreground hover:bg-muted"}`}
+              >
+                {g.label}
+              </button>
+            ))}
+          </div>
+          <div className="max-h-[45vh] space-y-2 overflow-y-auto pr-1">
+            {activeGroup.badges.map((b) => {
+              const exists = existingNames.has(b.name.toLowerCase().trim());
+              const isPicked = picked.includes(b.name);
+              return (
+                <button
+                  key={b.name}
+                  type="button"
+                  disabled={exists}
+                  onClick={() => togglePick(b.name)}
+                  className={`flex w-full items-center gap-3 rounded-2xl border-2 p-3 text-left transition-colors ${exists ? "border-border bg-muted/40 opacity-60" : isPicked ? "border-guru bg-guru/10" : "border-border bg-card hover:bg-muted/50"}`}
+                >
+                  <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-gradient-magic text-xl text-white">{b.icon}</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-display text-sm font-bold">{b.name}</span>
+                    <span className="block text-xs text-muted-foreground">{b.description}</span>
+                    {b.xp_requirement ? <span className="mt-0.5 block text-[10px] font-display font-bold text-xp">≥ {b.xp_requirement} XP (otomatis)</span> : null}
+                  </span>
+                  <span className="shrink-0 text-xs font-display font-bold text-muted-foreground">
+                    {exists ? (lang === "id" ? "Sudah ada" : "Added") : isPicked ? <Check className="size-4 text-guru" /> : "+"}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCatalogOpen(false)}>{t("cancel")}</Button>
+            <Button variant="guru" disabled={picked.length === 0 || importCatalog.isPending} onClick={() => importCatalog.mutate(pickedItems)}>
+              <Plus className="size-4" /> {lang === "id" ? `Tambahkan ${picked.length} Badge` : `Add ${picked.length} Badges`}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardShell>
+
   );
 }
