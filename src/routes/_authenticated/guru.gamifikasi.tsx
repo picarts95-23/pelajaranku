@@ -67,7 +67,14 @@ function GuruGamifikasiPage() {
     },
   });
 
+  const { data: classes = [] } = useQuery({
+    queryKey: ["gami-classes", user?.id], enabled: !!user,
+    queryFn: async () =>
+      (await supabase.from("classes").select("id, name").eq("teacher_id", user!.id).order("name")).data ?? [],
+  });
+
   const studentIds = students.map((s: any) => s.id);
+
 
   const { data: awards = [] } = useQuery({
     queryKey: ["badge-awards", studentIds.join(",")], enabled: studentIds.length > 0,
