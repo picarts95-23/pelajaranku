@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Award, Trophy, Crown, Star, Coins, Plus, Pencil, Trash2, Gift, X } from "lucide-react";
+import { Award, Trophy, Crown, Star, Coins, Plus, Pencil, Trash2, Gift, X, Sparkles, Users, Check, LibraryBig } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
