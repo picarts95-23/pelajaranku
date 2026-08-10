@@ -158,6 +158,63 @@ function GuruGamifikasiPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const existingNames = new Set((badges as any[]).map((b) => (b.name ?? "").toLowerCase().trim()));
+
+  const importCatalog = useMutation({
+    mutationFn: async (items: CatalogBadge[]) => {
+      const rows = items
+        .filter((it) => !existingNames.has(it.name.toLowerCase().trim()))
+        .map((it) => ({
+          code: slugCode(it.name),
+          name: it.name,
+          description: it.description,
+          icon: it.icon,
+          xp_requirement: it.xp_requirement ?? 0,
+        }));
+      if (rows.length === 0) throw new Error(lang === "id" ? "Semua badge terpilih sudah ada." : "All selected badges already exist.");
+      const { error } = await supabase.from("badges").insert(rows);
+      if (error) throw error;
+      return rows.length;
+    },
+    onSuccess: (n) => {
+      toast.success(lang === "id" ? `${n} badge ditambahkan dari katalog` : `${n} badges added from catalog`);
+      qc.invalidateQueries({ queryKey: ["badges"] });
+      setPicked([]); setCatalogOpen(false);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const awardToClass = useMutation({
+    mutationFn: async () => {
+      if (!awardClass || !awardBadge) throw new Error(lang === "id" ? "Pilih kelas dan badge" : "Select class and badge");
+      const { data: enrolls, error: eErr } = await supabase
+        .from("class_enrollments").select("student_id").eq("class_id", awardClass);
+      if (eErr) throw eErr;
+      const ids = Array.from(new Set((enrolls ?? []).map((e: any) => e.student_id)));
+      if (ids.length === 0) throw new Error(lang === "id" ? "Kelas ini belum ada siswa." : "No students in this class.");
+      const { data: have } = await supabase
+        .from("user_badges").select("user_id").eq("badge_id", awardBadge).in("user_id", ids);
+      const already = new Set((have ?? []).map((r: any) => r.user_id));
+      const rows = ids.filter((id) => !already.has(id)).map((id) => ({ user_id: id, badge_id: awardBadge }));
+      if (rows.length === 0) throw new Error(t("alreadyHasBadge"));
+      const { error } = await supabase.from("user_badges").insert(rows);
+      if (error) throw error;
+      return rows.length;
+    },
+    onSuccess: (n) => {
+      toast.success(lang === "id" ? `Badge diberikan ke ${n} siswa` : `Badge awarded to ${n} students`);
+      qc.invalidateQueries({ queryKey: ["badge-awards"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  function togglePick(name: string) {
+    setPicked((prev) => (prev.includes(name) ? prev.filter((n) => n !== name) : [...prev, name]));
+  }
+  const activeGroup = BADGE_CATALOG.find((g) => g.key === catalogGroup) ?? BADGE_CATALOG[0];
+  const pickedItems = BADGE_CATALOG.flatMap((g) => g.badges).filter((b) => picked.includes(b.name));
+
+
   function openNew() { setForm(EMPTY_FORM); setOpen(true); }
   function openEdit(b: any) {
     setForm({ id: b.id, name: b.name, description: b.description ?? "", icon: b.icon ?? "🏅", xp_requirement: b.xp_requirement ?? 0 });
