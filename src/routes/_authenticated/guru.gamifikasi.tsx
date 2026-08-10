@@ -403,6 +403,64 @@ function GuruGamifikasiPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Badge catalog dialog */}
+      <Dialog open={catalogOpen} onOpenChange={setCatalogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{lang === "id" ? "Katalog Badge Siap Pakai" : "Ready-made Badge Catalog"}</DialogTitle>
+          </DialogHeader>
+          <p className="text-xs text-muted-foreground">
+            {lang === "id"
+              ? "Pilih badge yang ingin dipakai, lalu tambahkan. Setelah ditambahkan, badge bisa diedit dan diberikan ke siswa atau satu kelas."
+              : "Pick the badges you want, then add them. Added badges can be edited and awarded to a student or a whole class."}
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {BADGE_CATALOG.map((g) => (
+              <button
+                key={g.key}
+                type="button"
+                onClick={() => setCatalogGroup(g.key)}
+                className={`rounded-full border-2 px-3 py-1 text-xs font-display font-bold transition-colors ${catalogGroup === g.key ? "border-guru bg-guru/15 text-guru" : "border-border bg-card text-muted-foreground hover:bg-muted"}`}
+              >
+                {g.label}
+              </button>
+            ))}
+          </div>
+          <div className="max-h-[45vh] space-y-2 overflow-y-auto pr-1">
+            {activeGroup.badges.map((b) => {
+              const exists = existingNames.has(b.name.toLowerCase().trim());
+              const isPicked = picked.includes(b.name);
+              return (
+                <button
+                  key={b.name}
+                  type="button"
+                  disabled={exists}
+                  onClick={() => togglePick(b.name)}
+                  className={`flex w-full items-center gap-3 rounded-2xl border-2 p-3 text-left transition-colors ${exists ? "border-border bg-muted/40 opacity-60" : isPicked ? "border-guru bg-guru/10" : "border-border bg-card hover:bg-muted/50"}`}
+                >
+                  <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-gradient-magic text-xl text-white">{b.icon}</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-display text-sm font-bold">{b.name}</span>
+                    <span className="block text-xs text-muted-foreground">{b.description}</span>
+                    {b.xp_requirement ? <span className="mt-0.5 block text-[10px] font-display font-bold text-xp">≥ {b.xp_requirement} XP (otomatis)</span> : null}
+                  </span>
+                  <span className="shrink-0 text-xs font-display font-bold text-muted-foreground">
+                    {exists ? (lang === "id" ? "Sudah ada" : "Added") : isPicked ? <Check className="size-4 text-guru" /> : "+"}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCatalogOpen(false)}>{t("cancel")}</Button>
+            <Button variant="guru" disabled={picked.length === 0 || importCatalog.isPending} onClick={() => importCatalog.mutate(pickedItems)}>
+              <Plus className="size-4" /> {lang === "id" ? `Tambahkan ${picked.length} Badge` : `Add ${picked.length} Badges`}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardShell>
+
   );
 }
