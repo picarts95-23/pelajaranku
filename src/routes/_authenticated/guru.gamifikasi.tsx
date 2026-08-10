@@ -227,9 +227,14 @@ function GuruGamifikasiPage() {
 
       {/* Badge management */}
       <section className="mb-8">
-        <div className="mb-3 flex items-center justify-between gap-2">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <h2 className="font-display text-lg font-bold flex items-center gap-2"><Award className="size-5 text-coin" /> {t("manageBadges")}</h2>
-          <Button variant="guru" size="sm" onClick={openNew}><Plus className="size-4" /> {t("newBadge")}</Button>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" onClick={() => setCatalogOpen(true)}>
+              <LibraryBig className="size-4" /> {lang === "id" ? `Katalog Badge (${CATALOG_TOTAL})` : `Badge Catalog (${CATALOG_TOTAL})`}
+            </Button>
+            <Button variant="guru" size="sm" onClick={openNew}><Plus className="size-4" /> {t("newBadge")}</Button>
+          </div>
         </div>
         {badges.length === 0 ? <EmptyState message={t("empty")} /> : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
