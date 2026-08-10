@@ -41,6 +41,10 @@ function GuruGamifikasiPage() {
   const [form, setForm] = useState<BadgeForm>(EMPTY_FORM);
   const [awardStudent, setAwardStudent] = useState("");
   const [awardBadge, setAwardBadge] = useState("");
+  const [awardClass, setAwardClass] = useState("");
+  const [catalogOpen, setCatalogOpen] = useState(false);
+  const [catalogGroup, setCatalogGroup] = useState<string>(BADGE_CATALOG[0].key);
+  const [picked, setPicked] = useState<string[]>([]);
 
   useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
 
