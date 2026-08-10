@@ -16,6 +16,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { BADGE_EMOJIS } from "@/lib/badge-emojis";
+import { BADGE_CATALOG, CATALOG_TOTAL, type CatalogBadge } from "@/lib/badge-catalog";
 
 export const Route = createFileRoute("/_authenticated/guru/gamifikasi")({
   head: () => ({ meta: [{ title: "Gamifikasi · Pelajaranku" }] }),
