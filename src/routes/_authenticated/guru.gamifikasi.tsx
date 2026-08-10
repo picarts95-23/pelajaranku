@@ -283,6 +283,22 @@ function GuruGamifikasiPage() {
             </Button>
           </div>
 
+          <div className="mt-3 grid gap-3 rounded-2xl border-2 border-dashed border-border bg-muted/30 p-3 sm:grid-cols-[1fr,auto] sm:items-center">
+            <div className="grid gap-2 sm:grid-cols-[auto,1fr] sm:items-center">
+              <span className="inline-flex items-center gap-1.5 text-xs font-display font-bold uppercase tracking-wider text-muted-foreground">
+                <Users className="size-4" /> {lang === "id" ? "Beri ke satu kelas" : "Award to a class"}
+              </span>
+              <Select value={awardClass} onValueChange={setAwardClass}>
+                <SelectTrigger><SelectValue placeholder={lang === "id" ? "Pilih kelas" : "Select class"} /></SelectTrigger>
+                <SelectContent>{classes.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <Button variant="outline" disabled={!awardClass || !awardBadge || awardToClass.isPending} onClick={() => awardToClass.mutate()}>
+              <Sparkles className="size-4" /> {lang === "id" ? "Beri ke Semua Siswa Kelas" : "Award Whole Class"}
+            </Button>
+          </div>
+
+
           <div className="mt-4">
             <h3 className="mb-2 text-xs font-display font-bold uppercase tracking-wider text-muted-foreground">{t("recentAwards")}</h3>
             {awards.length === 0 ? (
