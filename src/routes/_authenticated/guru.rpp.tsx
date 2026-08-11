@@ -64,6 +64,7 @@ function GuruRppPage() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<RForm>(emptyForm());
+  const [manualSubject, setManualSubject] = useState(false);
 
   useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
 
