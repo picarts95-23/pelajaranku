@@ -64,6 +64,7 @@ function GuruRppPage() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<RForm>(emptyForm());
+  const [manualSubject, setManualSubject] = useState(false);
 
   useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
 
@@ -213,13 +214,30 @@ function GuruRppPage() {
                     </Select>
                   </div>
                   <div><Label>{t("subject")}</Label>
-                    <Select value={form.subject} onValueChange={(v) => setForm({ ...form, subject: v })} disabled={!form.class_id}>
-                      <SelectTrigger><SelectValue placeholder={form.class_id ? (lang === "id" ? "Pilih mata pelajaran" : "Select subject") : t("selectClass")} /></SelectTrigger>
-                      <SelectContent>{classSubjects.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-                    </Select>
-                    {form.class_id && classSubjects.length === 0 && (
-                      <p className="mt-1 text-xs text-muted-foreground">{lang === "id" ? "Kelas ini belum punya mata pelajaran. Tambahkan di menu Kelas." : "This class has no subjects yet. Add them in Classes."}</p>
+                    {manualSubject || classSubjects.length === 0 ? (
+                      <Input
+                        placeholder={lang === "id" ? "Tulis mata pelajaran, cth. Halaqoh Tahfidz" : "Type a subject"}
+                        value={form.subject}
+                        onChange={(e) => setForm({ ...form, subject: e.target.value })}
+                      />
+                    ) : (
+                      <Select value={form.subject} onValueChange={(v) => setForm({ ...form, subject: v })}>
+                        <SelectTrigger><SelectValue placeholder={lang === "id" ? "Pilih mata pelajaran" : "Select subject"} /></SelectTrigger>
+                        <SelectContent>{classSubjects.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                      </Select>
                     )}
+                    <div className="mt-1 flex flex-wrap items-center gap-2">
+                      {classSubjects.length > 0 && (
+                        <Button type="button" size="sm" variant="ghost" onClick={() => setManualSubject((v) => !v)}>
+                          {manualSubject
+                            ? (lang === "id" ? "Pilih dari daftar" : "Pick from list")
+                            : (lang === "id" ? "Tulis manual" : "Type manually")}
+                        </Button>
+                      )}
+                      {classSubjects.length === 0 && (
+                        <p className="text-xs text-muted-foreground">{lang === "id" ? "Kelas ini belum punya daftar mapel — tulis manual saja." : "This class has no subject list — type it manually."}</p>
+                      )}
+                    </div>
                   </div>
                   <div><Label>{lang === "id" ? "Pekan / Judul" : "Week / Title"}</Label>
                     <Input placeholder={lang === "id" ? "cth. Pekan 1 — Aljabar Dasar" : "e.g. Week 1 — Basic Algebra"} value={form.week_label} onChange={(e) => setForm({ ...form, week_label: e.target.value })} />
