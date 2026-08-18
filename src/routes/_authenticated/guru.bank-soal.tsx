@@ -47,6 +47,9 @@ function GuruBankSoalPage() {
   const [filterGrade, setFilterGrade] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterType, setFilterType] = useState("all");
+  const [importOpen, setImportOpen] = useState(false);
+  const [importText, setImportText] = useState("");
+  const [importPreview, setImportPreview] = useState<{ questions: BQ[]; warnings: string[] } | null>(null);
 
   useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
 
