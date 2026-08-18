@@ -82,6 +82,30 @@ function GuruBankSoalPage() {
       return [...qs, emptyQ(type)];
     });
 
+  // ---- Import soal dari AI (Gemini/ChatGPT/dll) ----
+  const runParse = (text: string) => {
+    setImportText(text);
+    setImportPreview(text.trim() ? parseQuestions(text) : null);
+  };
+
+  const applyImport = () => {
+    const parsed = importPreview?.questions ?? [];
+    if (!parsed.length) return;
+    const capped = parsed.slice(0, MAX_QUESTIONS);
+    setEditId(null);
+    setQuestions(capped);
+    setImportOpen(false);
+    setImportText("");
+    setImportPreview(null);
+    setOpen(true);
+    toast.success(
+      lang === "id"
+        ? `${capped.length} soal berhasil dibaca — periksa lalu simpan.`
+        : `${capped.length} questions parsed — review then save.`,
+    );
+  };
+
+
 
   async function uploadImage(e: React.ChangeEvent<HTMLInputElement>, qi: number) {
     const raw = e.target.files?.[0];
