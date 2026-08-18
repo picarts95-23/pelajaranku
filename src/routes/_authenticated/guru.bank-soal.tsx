@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Database, Mic, Plus, Send, Trash2, X, BookOpenCheck, CheckCircle2, Pencil } from "lucide-react";
+import { Database, Mic, Plus, Send, Trash2, X, BookOpenCheck, CheckCircle2, Pencil, Sparkles, ClipboardPaste, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
