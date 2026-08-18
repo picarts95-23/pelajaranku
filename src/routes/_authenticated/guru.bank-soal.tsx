@@ -22,6 +22,8 @@ import {
   isHalaqohType, emptyQ, buildBankRows, mapBankToQuiz, bankRowToBQ,
   QuestionEditorList, EXAM_CATEGORIES, examCategoryLabel, normalizeHalaqohKind,
 } from "@/components/question-fields";
+import { Textarea } from "@/components/ui/textarea";
+import { parseQuestions, AI_PROMPT_TEMPLATE } from "@/lib/question-import";
 
 export const Route = createFileRoute("/_authenticated/guru/bank-soal")({
   head: () => ({ meta: [{ title: "Bank Soal · Pelajaranku" }] }),
