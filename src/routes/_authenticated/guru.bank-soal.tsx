@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Database, Mic, Plus, Send, Trash2, X, BookOpenCheck, CheckCircle2, Pencil } from "lucide-react";
+import { Database, Mic, Plus, Send, Trash2, X, BookOpenCheck, CheckCircle2, Pencil, Sparkles, ClipboardPaste, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,8 @@ import {
   isHalaqohType, emptyQ, buildBankRows, mapBankToQuiz, bankRowToBQ,
   QuestionEditorList, EXAM_CATEGORIES, examCategoryLabel, normalizeHalaqohKind,
 } from "@/components/question-fields";
+import { Textarea } from "@/components/ui/textarea";
+import { parseQuestions, AI_PROMPT_TEMPLATE } from "@/lib/question-import";
 
 export const Route = createFileRoute("/_authenticated/guru/bank-soal")({
   head: () => ({ meta: [{ title: "Bank Soal · Pelajaranku" }] }),
@@ -47,6 +49,9 @@ function GuruBankSoalPage() {
   const [filterGrade, setFilterGrade] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterType, setFilterType] = useState("all");
+  const [importOpen, setImportOpen] = useState(false);
+  const [importText, setImportText] = useState("");
+  const [importPreview, setImportPreview] = useState<{ questions: BQ[]; warnings: string[] } | null>(null);
 
   useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
 
@@ -78,6 +83,30 @@ function GuruBankSoalPage() {
       if (qs.length >= MAX_QUESTIONS) { toast.error(lang === "id" ? `Maksimal ${MAX_QUESTIONS} soal` : `Max ${MAX_QUESTIONS}`); return qs; }
       return [...qs, emptyQ(type)];
     });
+
+  // ---- Import soal dari AI (Gemini/ChatGPT/dll) ----
+  const runParse = (text: string) => {
+    setImportText(text);
+    setImportPreview(text.trim() ? parseQuestions(text) : null);
+  };
+
+  const applyImport = () => {
+    const parsed = importPreview?.questions ?? [];
+    if (!parsed.length) return;
+    const capped = parsed.slice(0, MAX_QUESTIONS);
+    setEditId(null);
+    setQuestions(capped);
+    setImportOpen(false);
+    setImportText("");
+    setImportPreview(null);
+    setOpen(true);
+    toast.success(
+      lang === "id"
+        ? `${capped.length} soal berhasil dibaca — periksa lalu simpan.`
+        : `${capped.length} questions parsed — review then save.`,
+    );
+  };
+
 
 
   async function uploadImage(e: React.ChangeEvent<HTMLInputElement>, qi: number) {
@@ -177,6 +206,115 @@ function GuruBankSoalPage() {
                 <Send className="size-4" /> {lang === "id" ? `Impor ke Tugas Baru (${selected.length})` : `Import into New Task (${selected.length})`}
               </Button>
             )}
+            {/* Impor soal dari AI: tempel hasil Gemini/ChatGPT → otomatis jadi soal terstruktur */}
+            <Dialog open={importOpen} onOpenChange={(o) => { setImportOpen(o); if (!o) { setImportText(""); setImportPreview(null); } }}>
+              <DialogTrigger asChild>
+                <Button variant="outline">
+                  <Sparkles className="size-4" /> {lang === "id" ? "Impor dari AI" : "Import from AI"}
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>{lang === "id" ? "Impor Soal dari AI (Gemini / ChatGPT / lainnya)" : "Import Questions from AI"}</DialogTitle>
+                </DialogHeader>
+
+                <div className="space-y-3">
+                  <div className="rounded-xl border-2 border-dashed border-border bg-muted/20 p-3 text-xs text-muted-foreground">
+                    {lang === "id"
+                      ? "Tempel langsung hasil soal dari AI. Format didukung: soal bernomor (1., 2., …) dengan pilihan A./B./C./D. dan baris \"Jawaban: B\", atau data JSON. Baris \"Tipe:\", \"Tingkat:\", dan \"Topik:\" opsional."
+                      : "Paste AI output directly. Supported: numbered questions with A./B./C./D. options and an \"Answer: B\" line, or JSON."}
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(AI_PROMPT_TEMPLATE);
+                          toast.success(lang === "id" ? "Perintah untuk AI disalin — tempel di Gemini/ChatGPT." : "AI prompt copied.");
+                        } catch {
+                          toast.error(lang === "id" ? "Gagal menyalin, salin manual dari kotak di bawah." : "Copy failed.");
+                        }
+                      }}
+                    >
+                      <Copy className="size-4" /> {lang === "id" ? "Salin perintah untuk AI" : "Copy AI prompt"}
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={async () => {
+                        try {
+                          const text = await navigator.clipboard.readText();
+                          if (!text.trim()) { toast.error(lang === "id" ? "Papan klip kosong." : "Clipboard empty."); return; }
+                          runParse(text);
+                        } catch {
+                          toast.error(lang === "id" ? "Tidak bisa membaca papan klip, tempel manual (Ctrl+V)." : "Cannot read clipboard, paste manually.");
+                        }
+                      }}
+                    >
+                      <ClipboardPaste className="size-4" /> {lang === "id" ? "Tempel dari papan klip" : "Paste from clipboard"}
+                    </Button>
+                  </div>
+
+                  <Textarea
+                    value={importText}
+                    onChange={(e) => runParse(e.target.value)}
+                    rows={10}
+                    className="font-mono text-xs"
+                    placeholder={"1. Apa ibu kota Indonesia?\nA. Bandung\nB. Jakarta\nC. Surabaya\nD. Medan\nJawaban: B\nTingkat: mudah"}
+                  />
+
+                  {importPreview && (
+                    <div className={`rounded-xl border-2 p-3 text-sm ${importPreview.questions.length ? "border-emerald-500/40 bg-emerald-500/5" : "border-destructive/40 bg-destructive/5"}`}>
+                      <div className="font-display font-bold">
+                        {importPreview.questions.length
+                          ? (lang === "id" ? `✅ Terbaca ${importPreview.questions.length} soal` : `✅ ${importPreview.questions.length} questions detected`)
+                          : (lang === "id" ? "⚠️ Belum ada soal yang terbaca — periksa formatnya." : "⚠️ No questions detected.")}
+                        {importPreview.questions.length > MAX_QUESTIONS && (
+                          <span className="ml-1 font-normal text-muted-foreground">
+                            {lang === "id" ? `(hanya ${MAX_QUESTIONS} pertama diambil)` : `(only first ${MAX_QUESTIONS} used)`}
+                          </span>
+                        )}
+                      </div>
+                      {importPreview.questions.length > 0 && (
+                        <ol className="mt-2 max-h-56 list-decimal space-y-1 overflow-y-auto pl-5 text-muted-foreground">
+                          {importPreview.questions.slice(0, MAX_QUESTIONS).map((q, i) => (
+                            <li key={i}>
+                              <span className="font-semibold text-foreground">{TYPE_LABEL(q.type, lang)}</span>{" · "}
+                              {q.question.slice(0, 70)}
+                              {q.options.filter(Boolean).length > 0 && (
+                                <span className="ml-1">
+                                  ({q.options.filter(Boolean).length} {lang === "id" ? "pilihan" : "options"}
+                                  {q.correctIndices.length || q.type === "true_false"
+                                    ? ` · ${lang === "id" ? "kunci" : "key"}: ${(q.correctIndices.length ? q.correctIndices : [q.correctIndex]).map((n) => String.fromCharCode(65 + n)).join(", ")}`
+                                    : ` · ${lang === "id" ? "kunci belum terbaca" : "no key"}`})
+                                </span>
+                              )}
+                            </li>
+                          ))}
+                        </ol>
+                      )}
+                      {importPreview.warnings.length > 0 && (
+                        <ul className="mt-2 list-disc space-y-0.5 pl-5 text-xs text-muted-foreground">
+                          {importPreview.warnings.map((w, i) => <li key={i}>{w}</li>)}
+                        </ul>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <DialogFooter>
+                  <Button variant="ghost" onClick={() => setImportOpen(false)}>{t("cancel")}</Button>
+                  <Button variant="guru" disabled={!importPreview?.questions.length} onClick={applyImport}>
+                    <Sparkles className="size-4" /> {lang === "id" ? "Masukkan ke Form Soal" : "Load into Form"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
             <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) resetForm(); }}>
               <DialogTrigger asChild><Button variant="guru" onClick={() => resetForm()}><Plus className="size-4" /> {lang === "id" ? "Buat Soal" : "Create Questions"}</Button></DialogTrigger>
               <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
