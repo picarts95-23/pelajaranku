@@ -325,6 +325,15 @@ export function stashProgramPrefill(target: PrefillTarget, data: ProgramPrefill)
   }
 }
 
+/** Peek without clearing (used to pick the right tab). */
+export function hasProgramPrefill(target: PrefillTarget): boolean {
+  try {
+    return !!sessionStorage.getItem(KEY(target));
+  } catch {
+    return false;
+  }
+}
+
 /** Read once and clear. */
 export function takeProgramPrefill(target: PrefillTarget): ProgramPrefill | null {
   try {

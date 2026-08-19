@@ -17,7 +17,7 @@ import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { ExportMenu } from "@/components/export-menu";
 import { ProgramPanel } from "@/components/program-docs";
-import { takeProgramPrefill } from "@/lib/program-templates";
+import { hasProgramPrefill, takeProgramPrefill } from "@/lib/program-templates";
 
 export const Route = createFileRoute("/_authenticated/guru/jurnal")({
   head: () => ({
@@ -76,6 +76,9 @@ function GuruDokumenPage() {
 
   useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
 
+  // Salinan RPP masuk ke tab Jurnal Guru, jadi buka tab itu langsung.
+  const [defaultTab] = useState(() => (hasProgramPrefill("jurnal") ? "jurnal" : "prota"));
+
   return (
     <DashboardShell accent="guru">
       <PageHeader
@@ -84,7 +87,7 @@ function GuruDokumenPage() {
           ? "Program Tahunan, Program Semester, dan Jurnal Guru — semua bisa diedit kembali."
           : "Annual program, semester program, and teaching journal — all editable anytime."}
       />
-      <Tabs defaultValue="prota">
+      <Tabs defaultValue={defaultTab}>
         <TabsList className="flex w-full flex-wrap">
           <TabsTrigger value="prota">{lang === "id" ? "Program Tahunan" : "Annual"}</TabsTrigger>
           <TabsTrigger value="prosem">{lang === "id" ? "Program Semester" : "Semester"}</TabsTrigger>
