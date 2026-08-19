@@ -17,6 +17,7 @@ import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { ExportMenu } from "@/components/export-menu";
 import { ProgramPanel } from "@/components/program-docs";
+import { takeProgramPrefill } from "@/lib/program-templates";
 
 export const Route = createFileRoute("/_authenticated/guru/jurnal")({
   head: () => ({
@@ -110,6 +111,22 @@ function JournalSection() {
     queryKey: ["classes-list", user?.id], enabled: !!user,
     queryFn: async () => (await supabase.from("classes").select("id, name").order("name")).data ?? [],
   });
+
+  // Prefill dari "Salin ke Jurnal" pada fitur RPP.
+  useEffect(() => {
+    const p = takeProgramPrefill("jurnal");
+    if (!p) return;
+    setForm({
+      class_id: p.class_id ?? "",
+      subject: p.subject ?? "",
+      student_id: ALL_STUDENTS,
+      date: (p.month && /^\d{4}-\d{2}-\d{2}$/.test(p.month) ? p.month : new Date().toISOString().slice(0, 10)),
+      topic: p.material,
+      notes: [p.sourceTitle, p.note].filter(Boolean).join("\n\n"),
+    });
+    setOpen(true);
+    toast.info(lang === "id" ? "Jurnal terisi otomatis dari RPP — silakan sesuaikan." : "Journal prefilled from the lesson plan.");
+  }, []);
 
   const { data: classStudents = [] } = useClassStudents(form.class_id);
   const { data: editStudents = [] } = useClassStudents(editForm.class_id);
