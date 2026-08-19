@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { NotebookPen, Plus, Trash2, CalendarRange, Pencil } from "lucide-react";
+import { NotebookPen, Plus, Trash2, CalendarRange, Pencil, Copy, BookOpen } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
@@ -15,7 +15,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { ExportMenu } from "@/components/export-menu";
-import { programItemDate, takeProgramPrefill } from "@/lib/program-templates";
+import { programItemDate, takeProgramPrefill, stashProgramPrefill } from "@/lib/program-templates";
 
 
 export const Route = createFileRoute("/_authenticated/guru/rpp")({
@@ -153,6 +153,47 @@ function GuruRppPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["lesson-plans"] }),
   });
 
+  // Salin RPP: buat salinan baru (bisa langsung diedit) di dashboard RPP.
+  const duplicateMut = useMutation({
+    mutationFn: async (p: any) => {
+      if (!user) throw new Error("no user");
+      const { error } = await (supabase as any).from("lesson_plans").insert({
+        teacher_id: user.id,
+        class_id: p.class_id,
+        subject: p.subject,
+        week_label: `${p.week_label ?? (lang === "id" ? "RPP Pekanan" : "Weekly Plan")} (${lang === "id" ? "salinan" : "copy"})`,
+        start_date: p.start_date,
+        end_date: p.end_date,
+        objectives: p.objectives,
+        materials: p.materials,
+        methods: p.methods,
+        media: p.media,
+        assessment: p.assessment,
+        notes: p.notes,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success(lang === "id" ? "RPP disalin — silakan edit salinannya." : "Plan duplicated — edit the copy.");
+      qc.invalidateQueries({ queryKey: ["lesson-plans"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  // Salin RPP ke Jurnal Guru (Dokumen Pembelajaran).
+  const copyToJournal = (p: any) => {
+    stashProgramPrefill("jurnal", {
+      class_id: p.class_id ?? null,
+      subject: p.subject ?? null,
+      material: p.week_label || p.objectives || (lang === "id" ? "RPP Pekanan" : "Weekly Plan"),
+      note: [p.objectives, p.materials, p.methods, p.assessment, p.notes].filter(Boolean).join("\n\n"),
+      sourceTitle: lang === "id" ? "Disalin dari RPP" : "Copied from lesson plan",
+      month: p.start_date ?? null,
+    });
+    toast.success(lang === "id" ? "Membuka Jurnal Guru dengan isi RPP ini…" : "Opening the journal prefilled…");
+    navigate({ to: "/guru/jurnal" });
+  };
+
   const openEdit = (p: any) => {
     setForm({
       id: p.id,
@@ -284,6 +325,8 @@ function GuruRppPage() {
                   </div>
                 </div>
                 <div className="flex shrink-0 gap-1">
+                  <Button size="sm" variant="ghost" title={lang === "id" ? "Salin RPP" : "Duplicate plan"} disabled={duplicateMut.isPending} onClick={() => duplicateMut.mutate(p)}><Copy className="size-4" /></Button>
+                  <Button size="sm" variant="ghost" title={lang === "id" ? "Salin ke Jurnal Guru" : "Copy to journal"} onClick={() => copyToJournal(p)}><BookOpen className="size-4" /></Button>
                   <Button size="sm" variant="ghost" onClick={() => openEdit(p)}><Pencil className="size-4" /></Button>
                   <Button size="sm" variant="ghost" onClick={() => { if (confirm(`${t("delete")}?`)) deleteMut.mutate(p.id); }}><Trash2 className="size-4 text-destructive" /></Button>
                 </div>
