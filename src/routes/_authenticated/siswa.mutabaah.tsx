@@ -6,6 +6,7 @@ import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-s
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
+import { SETORAN_TYPES, setoranLabel } from "@/lib/mutabaah";
 import { RecordCard } from "./guru.mutabaah";
 
 export const Route = createFileRoute("/_authenticated/siswa/mutabaah")({
