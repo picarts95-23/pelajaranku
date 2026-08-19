@@ -46,8 +46,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loadProfile = async (uid: string) => {
     // Best-effort: promote the fixed admin email to the admin role server-side.
     // Safe no-op for everyone else and when ADMIN_EMAIL is not configured.
+    // Only call it with a live, non-expired access token — a stale token makes
+    // the server middleware throw "Unauthorized: Invalid token".
     try {
-      await syncMyRole();
+      const { data: sess } = await supabase.auth.getSession();
+      const expMs = sess.session?.expires_at ? sess.session.expires_at * 1000 : 0;
+      if (sess.session?.access_token && expMs > Date.now() + 5000) {
+        await syncMyRole();
+      }
     } catch {
       /* ignore — never block profile loading on the admin sync */
     }
