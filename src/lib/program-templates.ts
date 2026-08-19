@@ -313,9 +313,11 @@ export type ProgramPrefill = {
   sourceTitle?: string | null;
 };
 
-const KEY = (target: "rpp" | "event") => `pelajaranku:prefill:${target}`;
+type PrefillTarget = "rpp" | "event" | "jurnal";
 
-export function stashProgramPrefill(target: "rpp" | "event", data: ProgramPrefill) {
+const KEY = (target: PrefillTarget) => `pelajaranku:prefill:${target}`;
+
+export function stashProgramPrefill(target: PrefillTarget, data: ProgramPrefill) {
   try {
     sessionStorage.setItem(KEY(target), JSON.stringify(data));
   } catch {
@@ -323,8 +325,17 @@ export function stashProgramPrefill(target: "rpp" | "event", data: ProgramPrefil
   }
 }
 
+/** Peek without clearing (used to pick the right tab). */
+export function hasProgramPrefill(target: PrefillTarget): boolean {
+  try {
+    return !!sessionStorage.getItem(KEY(target));
+  } catch {
+    return false;
+  }
+}
+
 /** Read once and clear. */
-export function takeProgramPrefill(target: "rpp" | "event"): ProgramPrefill | null {
+export function takeProgramPrefill(target: PrefillTarget): ProgramPrefill | null {
   try {
     const raw = sessionStorage.getItem(KEY(target));
     if (!raw) return null;
