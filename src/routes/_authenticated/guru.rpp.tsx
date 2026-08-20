@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { NotebookPen, Plus, Trash2, CalendarRange, Pencil, Copy, BookOpen } from "lucide-react";
+import { NotebookPen, Plus, Trash2, CalendarRange, Pencil, Copy, BookOpen, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
@@ -16,6 +16,8 @@ import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { ExportMenu } from "@/components/export-menu";
 import { programItemDate, takeProgramPrefill, stashProgramPrefill } from "@/lib/program-templates";
+import { AiPasteDialog } from "@/components/ai-paste-dialog";
+import { PROMPT_RPP, parseRppEntries, type ImportRppEntry } from "@/lib/doc-import";
 
 
 export const Route = createFileRoute("/_authenticated/guru/rpp")({
@@ -65,6 +67,9 @@ function GuruRppPage() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<RForm>(emptyForm());
   const [manualSubject, setManualSubject] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
+  const [aiClass, setAiClass] = useState("");
+  const [aiSubject, setAiSubject] = useState("");
 
   useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
 
