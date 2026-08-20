@@ -403,7 +403,7 @@ function GuruRppPage() {
           const { entries, warnings } = parseRppEntries(text);
           return { data: entries, warnings, lines: entries.map((e) => `${e.week_label} — ${e.objectives}`) };
         }}
-        onApply={(entries) => importMut.mutateAsync(entries).catch(() => undefined)}
+        onApply={async (entries) => { await importMut.mutateAsync(entries).catch(() => undefined); }}
         extra={
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
