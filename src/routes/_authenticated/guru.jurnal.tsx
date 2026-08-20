@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Copy, NotebookPen, Pencil, Plus, Trash2, User } from "lucide-react";
+import { Copy, NotebookPen, Pencil, Plus, Trash2, User, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
@@ -18,6 +18,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { ExportMenu } from "@/components/export-menu";
 import { ProgramPanel } from "@/components/program-docs";
 import { hasProgramPrefill, takeProgramPrefill } from "@/lib/program-templates";
+import { AiPasteDialog } from "@/components/ai-paste-dialog";
+import { PROMPT_JURNAL, parseJournalEntries, type ImportJournalEntry } from "@/lib/doc-import";
 
 export const Route = createFileRoute("/_authenticated/guru/jurnal")({
   head: () => ({
