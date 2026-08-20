@@ -411,9 +411,14 @@ export function ProgramPanel({ kind }: { kind: ProgramKind }) {
             <div className="space-y-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <Label>{lang === "id" ? "Rincian materi" : "Material rows"}</Label>
-                <Button type="button" size="sm" variant="outline" onClick={applyTemplate}>
-                  <Sparkles className="size-4" /> {lang === "id" ? "Isi otomatis (template)" : "Auto-fill template"}
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                  <Button type="button" size="sm" variant="outline" onClick={() => setAiOpen(true)}>
+                    <Wand2 className="size-4" /> {lang === "id" ? "Impor dari AI" : "Import from AI"}
+                  </Button>
+                  <Button type="button" size="sm" variant="outline" onClick={applyTemplate}>
+                    <Sparkles className="size-4" /> {lang === "id" ? "Isi otomatis (template)" : "Auto-fill template"}
+                  </Button>
+                </div>
               </div>
               <p className="text-xs text-muted-foreground">
                 {lang === "id"
