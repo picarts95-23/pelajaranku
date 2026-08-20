@@ -216,6 +216,34 @@ function JournalSection() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["journals"] }),
   });
 
+  // Impor jurnal dari hasil AI — setiap baris tetap bisa diedit/disalin setelah tersimpan.
+  const importMut = useMutation({
+    mutationFn: async (entries: ImportJournalEntry[]) => {
+      if (!user) throw new Error("no user");
+      if (!aiClass) throw new Error(lang === "id" ? "Pilih kelas tujuan" : "Choose a target class");
+      const today = new Date().toISOString().slice(0, 10);
+      const rows = entries.map((e) => ({
+        teacher_id: user.id,
+        class_id: aiClass,
+        subject: e.subject || aiSubject || null,
+        student_id: null,
+        date: e.date || today,
+        topic: e.topic,
+        notes: e.notes ?? null,
+      }));
+      const { error } = await supabase.from("journals").insert(rows);
+      if (error) throw error;
+      return rows.length;
+    },
+    onSuccess: (n) => {
+      toast.success(lang === "id" ? `${n} jurnal diimpor — silakan edit bila perlu.` : `${n} journals imported.`);
+      setAiOpen(false);
+      qc.invalidateQueries({ queryKey: ["journals"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+
   const exportColumns = [
     { key: "date", header: lang === "id" ? "Tanggal" : "Date" },
     { key: "class", header: lang === "id" ? "Kelas" : "Class" },
