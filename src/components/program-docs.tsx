@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { CalendarPlus, CalendarRange, Copy, FileSpreadsheet, NotebookPen, Pencil, Plus, Sparkles, Trash2, X } from "lucide-react";
+import { CalendarPlus, CalendarRange, Copy, FileSpreadsheet, NotebookPen, Pencil, Plus, Sparkles, Trash2, Wand2, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +21,8 @@ import {
   hasSubjectPreset,
   stashProgramPrefill,
 } from "@/lib/program-templates";
+import { AiPasteDialog } from "@/components/ai-paste-dialog";
+import { PROMPT_PROSEM, PROMPT_PROTA, parseProgramItems, type ImportProgramItem } from "@/lib/doc-import";
 
 
 export type ProgramKind = "annual" | "semester";
@@ -91,6 +93,7 @@ export function ProgramPanel({ kind }: { kind: ProgramKind }) {
   const isAnnual = kind === "annual";
 
   const [open, setOpen] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState<Form>(emptyForm(kind));
 
