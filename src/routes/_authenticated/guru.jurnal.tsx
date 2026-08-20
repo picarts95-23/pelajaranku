@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Copy, NotebookPen, Pencil, Plus, Trash2, User } from "lucide-react";
+import { Copy, NotebookPen, Pencil, Plus, Trash2, User, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
@@ -18,6 +18,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { ExportMenu } from "@/components/export-menu";
 import { ProgramPanel } from "@/components/program-docs";
 import { hasProgramPrefill, takeProgramPrefill } from "@/lib/program-templates";
+import { AiPasteDialog } from "@/components/ai-paste-dialog";
+import { PROMPT_JURNAL, parseJournalEntries, type ImportJournalEntry } from "@/lib/doc-import";
 
 export const Route = createFileRoute("/_authenticated/guru/jurnal")({
   head: () => ({
@@ -109,6 +111,9 @@ function JournalSection() {
   const [form, setForm] = useState<JForm>(emptyForm());
   const [editId, setEditId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<JForm>(emptyForm());
+  const [aiOpen, setAiOpen] = useState(false);
+  const [aiClass, setAiClass] = useState("");
+  const [aiSubject, setAiSubject] = useState("");
 
   const { data: classes = [] } = useQuery({
     queryKey: ["classes-list", user?.id], enabled: !!user,
@@ -211,6 +216,34 @@ function JournalSection() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["journals"] }),
   });
 
+  // Impor jurnal dari hasil AI — setiap baris tetap bisa diedit/disalin setelah tersimpan.
+  const importMut = useMutation({
+    mutationFn: async (entries: ImportJournalEntry[]) => {
+      if (!user) throw new Error("no user");
+      if (!aiClass) throw new Error(lang === "id" ? "Pilih kelas tujuan" : "Choose a target class");
+      const today = new Date().toISOString().slice(0, 10);
+      const rows = entries.map((e) => ({
+        teacher_id: user.id,
+        class_id: aiClass,
+        subject: e.subject || aiSubject || null,
+        student_id: null,
+        date: e.date || today,
+        topic: e.topic,
+        notes: e.notes ?? null,
+      }));
+      const { error } = await supabase.from("journals").insert(rows);
+      if (error) throw error;
+      return rows.length;
+    },
+    onSuccess: (n) => {
+      toast.success(lang === "id" ? `${n} jurnal diimpor — silakan edit bila perlu.` : `${n} journals imported.`);
+      setAiOpen(false);
+      qc.invalidateQueries({ queryKey: ["journals"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+
   const exportColumns = [
     { key: "date", header: lang === "id" ? "Tanggal" : "Date" },
     { key: "class", header: lang === "id" ? "Kelas" : "Class" },
@@ -238,6 +271,9 @@ function JournalSection() {
           {journals.length > 0 && (
             <ExportMenu filename="jurnal" title={lang === "id" ? "Jurnal Mengajar" : "Teaching Journal"} columns={exportColumns} rows={exportRows} />
           )}
+          <Button variant="outline" onClick={() => setAiOpen(true)}>
+            <Wand2 className="size-4" /> {lang === "id" ? "Impor dari AI" : "Import from AI"}
+          </Button>
           <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setForm(emptyForm()); }}>
             <DialogTrigger asChild><Button variant="guru" onClick={() => setForm(emptyForm())}><Plus className="size-4" /> {t("newJournal")}</Button></DialogTrigger>
             <DialogContent>
@@ -348,6 +384,38 @@ function JournalSection() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AiPasteDialog<ImportJournalEntry>
+        open={aiOpen}
+        onOpenChange={setAiOpen}
+        title={lang === "id" ? "Impor Jurnal Guru dari AI" : "Import journals from AI"}
+        promptTemplate={PROMPT_JURNAL}
+        applyLabel={lang === "id" ? "Simpan sebagai jurnal" : "Save as journals"}
+        parse={(text) => {
+          const { entries, warnings } = parseJournalEntries(text);
+          return { data: entries, warnings, lines: entries.map((e) => `${e.date ?? "—"} · ${e.topic}`) };
+        }}
+        onApply={async (entries) => { await importMut.mutateAsync(entries).catch(() => undefined); }}
+        extra={
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <Label>{t("navClasses")}</Label>
+              <Select value={aiClass} onValueChange={setAiClass}>
+                <SelectTrigger><SelectValue placeholder={t("selectClass")} /></SelectTrigger>
+                <SelectContent>{classes.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>{t("subject")}</Label>
+              <Input
+                value={aiSubject}
+                onChange={(e) => setAiSubject(e.target.value)}
+                placeholder={lang === "id" ? "cth. Matematika (opsional)" : "e.g. Math (optional)"}
+              />
+            </div>
+          </div>
+        }
+      />
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { NotebookPen, Plus, Trash2, CalendarRange, Pencil, Copy, BookOpen } from "lucide-react";
+import { NotebookPen, Plus, Trash2, CalendarRange, Pencil, Copy, BookOpen, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
@@ -16,6 +16,8 @@ import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { ExportMenu } from "@/components/export-menu";
 import { programItemDate, takeProgramPrefill, stashProgramPrefill } from "@/lib/program-templates";
+import { AiPasteDialog } from "@/components/ai-paste-dialog";
+import { PROMPT_RPP, parseRppEntries, type ImportRppEntry } from "@/lib/doc-import";
 
 
 export const Route = createFileRoute("/_authenticated/guru/rpp")({
@@ -65,6 +67,9 @@ function GuruRppPage() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<RForm>(emptyForm());
   const [manualSubject, setManualSubject] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
+  const [aiClass, setAiClass] = useState("");
+  const [aiSubject, setAiSubject] = useState("");
 
   useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
 
@@ -152,6 +157,47 @@ function GuruRppPage() {
     mutationFn: async (id: string) => { const { error } = await (supabase as any).from("lesson_plans").delete().eq("id", id); if (error) throw error; },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["lesson-plans"] }),
   });
+
+  // Impor RPP dari hasil AI (Gemini/ChatGPT/dll) — tersimpan sebagai draf yang tetap bisa diedit.
+  const importMut = useMutation({
+    mutationFn: async (entries: ImportRppEntry[]) => {
+      if (!user) throw new Error("no user");
+      if (!aiClass) throw new Error(lang === "id" ? "Pilih kelas tujuan" : "Choose a target class");
+      const today = new Date().toISOString().slice(0, 10);
+      const rows = entries.map((e) => {
+        const start = e.start_date || today;
+        const end = e.end_date || (() => {
+          const d = new Date(`${start}T00:00:00Z`);
+          d.setUTCDate(d.getUTCDate() + 6);
+          return d.toISOString().slice(0, 10);
+        })();
+        return {
+          teacher_id: user.id,
+          class_id: aiClass,
+          subject: e.subject || aiSubject || (lang === "id" ? "Umum" : "General"),
+          week_label: e.week_label || null,
+          start_date: start,
+          end_date: end,
+          objectives: e.objectives || e.materials || e.week_label,
+          materials: e.materials ?? null,
+          methods: e.methods ?? null,
+          media: e.media ?? null,
+          assessment: e.assessment ?? null,
+          notes: e.notes ?? null,
+        };
+      });
+      const { error } = await (supabase as any).from("lesson_plans").insert(rows);
+      if (error) throw error;
+      return rows.length;
+    },
+    onSuccess: (n) => {
+      toast.success(lang === "id" ? `${n} RPP diimpor — silakan edit bila perlu.` : `${n} plans imported — edit as needed.`);
+      setAiOpen(false);
+      qc.invalidateQueries({ queryKey: ["lesson-plans"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
 
   // Salin RPP: buat salinan baru (bisa langsung diedit) di dashboard RPP.
   const duplicateMut = useMutation({
@@ -243,6 +289,9 @@ function GuruRppPage() {
             {plans.length > 0 && (
               <ExportMenu filename="rpp-pekanan" title={lang === "id" ? "RPP Pekanan" : "Weekly Lesson Plans"} columns={exportColumns} rows={exportRows} />
             )}
+            <Button variant="outline" onClick={() => setAiOpen(true)}>
+              <Wand2 className="size-4" /> {lang === "id" ? "Impor dari AI" : "Import from AI"}
+            </Button>
             <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o && !form.id) setForm(emptyForm()); if (!o) setForm(emptyForm()); }}>
               <DialogTrigger asChild><Button variant="guru"><Plus className="size-4" /> {lang === "id" ? "RPP Baru" : "New Plan"}</Button></DialogTrigger>
               <DialogContent className="max-h-[90vh] overflow-y-auto">
@@ -343,6 +392,38 @@ function GuruRppPage() {
           ))}
         </div>
       )}
+
+      <AiPasteDialog<ImportRppEntry>
+        open={aiOpen}
+        onOpenChange={setAiOpen}
+        title={lang === "id" ? "Impor RPP dari AI" : "Import lesson plans from AI"}
+        promptTemplate={PROMPT_RPP}
+        applyLabel={lang === "id" ? "Simpan sebagai RPP" : "Save as plans"}
+        parse={(text) => {
+          const { entries, warnings } = parseRppEntries(text);
+          return { data: entries, warnings, lines: entries.map((e) => `${e.week_label} — ${e.objectives}`) };
+        }}
+        onApply={async (entries) => { await importMut.mutateAsync(entries).catch(() => undefined); }}
+        extra={
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <Label>{t("navClasses")}</Label>
+              <Select value={aiClass} onValueChange={setAiClass}>
+                <SelectTrigger><SelectValue placeholder={t("selectClass")} /></SelectTrigger>
+                <SelectContent>{(classes as any[]).map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>{t("subject")}</Label>
+              <Input
+                value={aiSubject}
+                onChange={(e) => setAiSubject(e.target.value)}
+                placeholder={lang === "id" ? "cth. Matematika (bila AI tidak menulisnya)" : "e.g. Math (fallback)"}
+              />
+            </div>
+          </div>
+        }
+      />
     </DashboardShell>
   );
 }
