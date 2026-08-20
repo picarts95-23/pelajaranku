@@ -271,6 +271,9 @@ function JournalSection() {
           {journals.length > 0 && (
             <ExportMenu filename="jurnal" title={lang === "id" ? "Jurnal Mengajar" : "Teaching Journal"} columns={exportColumns} rows={exportRows} />
           )}
+          <Button variant="outline" onClick={() => setAiOpen(true)}>
+            <Wand2 className="size-4" /> {lang === "id" ? "Impor dari AI" : "Import from AI"}
+          </Button>
           <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setForm(emptyForm()); }}>
             <DialogTrigger asChild><Button variant="guru" onClick={() => setForm(emptyForm())}><Plus className="size-4" /> {t("newJournal")}</Button></DialogTrigger>
             <DialogContent>
