@@ -384,6 +384,38 @@ function JournalSection() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AiPasteDialog<ImportJournalEntry>
+        open={aiOpen}
+        onOpenChange={setAiOpen}
+        title={lang === "id" ? "Impor Jurnal Guru dari AI" : "Import journals from AI"}
+        promptTemplate={PROMPT_JURNAL}
+        applyLabel={lang === "id" ? "Simpan sebagai jurnal" : "Save as journals"}
+        parse={(text) => {
+          const { entries, warnings } = parseJournalEntries(text);
+          return { data: entries, warnings, lines: entries.map((e) => `${e.date ?? "—"} · ${e.topic}`) };
+        }}
+        onApply={async (entries) => { await importMut.mutateAsync(entries).catch(() => undefined); }}
+        extra={
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <Label>{t("navClasses")}</Label>
+              <Select value={aiClass} onValueChange={setAiClass}>
+                <SelectTrigger><SelectValue placeholder={t("selectClass")} /></SelectTrigger>
+                <SelectContent>{classes.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>{t("subject")}</Label>
+              <Input
+                value={aiSubject}
+                onChange={(e) => setAiSubject(e.target.value)}
+                placeholder={lang === "id" ? "cth. Matematika (opsional)" : "e.g. Math (optional)"}
+              />
+            </div>
+          </div>
+        }
+      />
     </div>
   );
 }
