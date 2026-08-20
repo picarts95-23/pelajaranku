@@ -111,6 +111,9 @@ function JournalSection() {
   const [form, setForm] = useState<JForm>(emptyForm());
   const [editId, setEditId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<JForm>(emptyForm());
+  const [aiOpen, setAiOpen] = useState(false);
+  const [aiClass, setAiClass] = useState("");
+  const [aiSubject, setAiSubject] = useState("");
 
   const { data: classes = [] } = useQuery({
     queryKey: ["classes-list", user?.id], enabled: !!user,
