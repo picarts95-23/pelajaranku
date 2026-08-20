@@ -497,6 +497,31 @@ export function ProgramPanel({ kind }: { kind: ProgramKind }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AiPasteDialog<ImportProgramItem>
+        open={aiOpen}
+        onOpenChange={setAiOpen}
+        title={isAnnual ? "Impor Program Tahunan dari AI" : "Impor Program Semester dari AI"}
+        promptTemplate={isAnnual ? PROMPT_PROTA : PROMPT_PROSEM}
+        applyLabel={lang === "id" ? "Masukkan ke rincian materi" : "Fill material rows"}
+        parse={(text) => {
+          const { items, warnings } = parseProgramItems(text, kind);
+          return {
+            data: items,
+            warnings,
+            lines: items.map((it) =>
+              isAnnual
+                ? `Smt ${it.semester} · ${it.material}${it.hours ? ` · ${it.hours} jam` : ""}`
+                : `${it.month}${it.weeks ? ` pekan ${it.weeks}` : ""} · ${it.material}${it.hours ? ` · ${it.hours} jam` : ""}`,
+            ),
+          };
+        }}
+        onApply={(items) => {
+          setForm((f) => ({ ...f, items: items as ProgramItem[] }));
+          setAiOpen(false);
+          toast.success(lang === "id" ? "Data AI dimuat — silakan edit lalu simpan." : "AI data loaded — edit then save.");
+        }}
+      />
     </div>
   );
 }
