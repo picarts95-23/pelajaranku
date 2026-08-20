@@ -158,6 +158,47 @@ function GuruRppPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["lesson-plans"] }),
   });
 
+  // Impor RPP dari hasil AI (Gemini/ChatGPT/dll) — tersimpan sebagai draf yang tetap bisa diedit.
+  const importMut = useMutation({
+    mutationFn: async (entries: ImportRppEntry[]) => {
+      if (!user) throw new Error("no user");
+      if (!aiClass) throw new Error(lang === "id" ? "Pilih kelas tujuan" : "Choose a target class");
+      const today = new Date().toISOString().slice(0, 10);
+      const rows = entries.map((e) => {
+        const start = e.start_date || today;
+        const end = e.end_date || (() => {
+          const d = new Date(`${start}T00:00:00Z`);
+          d.setUTCDate(d.getUTCDate() + 6);
+          return d.toISOString().slice(0, 10);
+        })();
+        return {
+          teacher_id: user.id,
+          class_id: aiClass,
+          subject: e.subject || aiSubject || (lang === "id" ? "Umum" : "General"),
+          week_label: e.week_label || null,
+          start_date: start,
+          end_date: end,
+          objectives: e.objectives || e.materials || e.week_label,
+          materials: e.materials ?? null,
+          methods: e.methods ?? null,
+          media: e.media ?? null,
+          assessment: e.assessment ?? null,
+          notes: e.notes ?? null,
+        };
+      });
+      const { error } = await (supabase as any).from("lesson_plans").insert(rows);
+      if (error) throw error;
+      return rows.length;
+    },
+    onSuccess: (n) => {
+      toast.success(lang === "id" ? `${n} RPP diimpor — silakan edit bila perlu.` : `${n} plans imported — edit as needed.`);
+      setAiOpen(false);
+      qc.invalidateQueries({ queryKey: ["lesson-plans"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+
   // Salin RPP: buat salinan baru (bisa langsung diedit) di dashboard RPP.
   const duplicateMut = useMutation({
     mutationFn: async (p: any) => {
