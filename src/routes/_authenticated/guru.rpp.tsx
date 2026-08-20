@@ -289,6 +289,9 @@ function GuruRppPage() {
             {plans.length > 0 && (
               <ExportMenu filename="rpp-pekanan" title={lang === "id" ? "RPP Pekanan" : "Weekly Lesson Plans"} columns={exportColumns} rows={exportRows} />
             )}
+            <Button variant="outline" onClick={() => setAiOpen(true)}>
+              <Wand2 className="size-4" /> {lang === "id" ? "Impor dari AI" : "Import from AI"}
+            </Button>
             <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o && !form.id) setForm(emptyForm()); if (!o) setForm(emptyForm()); }}>
               <DialogTrigger asChild><Button variant="guru"><Plus className="size-4" /> {lang === "id" ? "RPP Baru" : "New Plan"}</Button></DialogTrigger>
               <DialogContent className="max-h-[90vh] overflow-y-auto">
