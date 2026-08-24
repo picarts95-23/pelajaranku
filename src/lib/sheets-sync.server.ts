@@ -409,9 +409,38 @@ async function buildTeacherTabs(teacherId: string): Promise<Tabs> {
   ];
 
   tabs["Materi"] = [
-    ["Judul", "Kelas", "Mata Pelajaran", "Deskripsi", "Dibuat"],
-    ...((materials ?? []) as any[]).map((m) => [cell(m.title), cName(m.class_id), cell(m.subject), cell(m.description), cell(m.created_at)]),
+    ["Judul", "Kelas", "Mata Pelajaran", "Deskripsi", "Isi Materi", "Link", "Lampiran", "Dibuat"],
+    ...((materials ?? []) as any[]).map((m) => [
+      cell(m.title), cName(m.class_id), cell(m.subject), cell(m.description),
+      cell(m.content), cell(m.link), cell(m.media_type), cell(m.created_at),
+    ]),
   ];
+
+  const programRows = (items: unknown) =>
+    Array.isArray(items)
+      ? (items as any[])
+          .map((it) => [it.month, it.weeks, it.semester, it.material, it.hours ? `${it.hours} JP` : "", it.note]
+            .filter((v) => v !== undefined && v !== null && String(v).trim() !== "")
+            .join(" · "))
+          .join("\n")
+      : cell(items);
+
+  tabs["Program Tahunan"] = [
+    ["Judul", "Kelas", "Mata Pelajaran", "Tahun Ajaran", "Rincian Materi", "Catatan", "Diperbarui"],
+    ...((annualPrograms ?? []) as any[]).map((p) => [
+      cell(p.title), cName(p.class_id), cell(p.subject), cell(p.academic_year),
+      programRows(p.items), cell(p.notes), cell(p.updated_at),
+    ]),
+  ];
+
+  tabs["Program Semester"] = [
+    ["Judul", "Kelas", "Mata Pelajaran", "Tahun Ajaran", "Semester", "Rincian Materi", "Catatan", "Diperbarui"],
+    ...((semesterPrograms ?? []) as any[]).map((p) => [
+      cell(p.title), cName(p.class_id), cell(p.subject), cell(p.academic_year), cell(p.semester),
+      programRows(p.items), cell(p.notes), cell(p.updated_at),
+    ]),
+  ];
+
 
   tabs["Jurnal"] = [
     ["Tanggal", "Kelas", "Mata Pelajaran", "Topik/Kegiatan", "Catatan", "Dibuat"],
