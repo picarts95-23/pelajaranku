@@ -131,17 +131,25 @@ function GuruMapelPage() {
       if (!user || !form.title.trim()) throw new Error(t("required"));
       if (!form.class_id) throw new Error(t("selectClass"));
       if (!form.subject) throw new Error(t("selectSubject"));
-      const { error } = await supabase.from("materials").insert({
-        teacher_id: user.id, class_id: form.class_id, subject: form.subject,
+      const payload = {
+        class_id: form.class_id, subject: form.subject,
         title: form.title.trim(), description: form.description.trim() || null,
         content: form.content.trim() || null, link: form.link.trim() || null,
         media_type: form.media_url ? form.media_type : null, media_url: form.media_url,
-      });
+      };
+      const { error } = editId
+        ? await supabase.from("materials").update(payload).eq("id", editId)
+        : await supabase.from("materials").insert({ teacher_id: user.id, ...payload });
       if (error) throw error;
     },
-    onSuccess: () => { toast.success(t("materialShared")); setOpen(false); setForm(emptyForm()); qc.invalidateQueries({ queryKey: ["materials-guru"] }); },
+    onSuccess: () => {
+      toast.success(editId ? (lang === "id" ? "Materi diperbarui" : "Material updated") : t("materialShared"));
+      setOpen(false); setEditId(null); setForm(emptyForm());
+      qc.invalidateQueries({ queryKey: ["materials-guru"] });
+    },
     onError: (e: Error) => toast.error(e.message),
   });
+
 
   const delMat = useMutation({
     mutationFn: async (id: string) => { const { error } = await supabase.from("materials").delete().eq("id", id); if (error) throw error; },
