@@ -33,7 +33,27 @@ function GuruMapelPage() {
   const { t, lang } = useLang();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState<MForm>(emptyForm());
+
+  const fillForm = (m: any): MForm => ({
+    class_id: m.class_id ?? "",
+    subject: m.subject ?? "",
+    title: m.title ?? "",
+    description: m.description ?? "",
+    content: m.content ?? "",
+    link: m.link ?? "",
+    media_type: m.media_type ?? null,
+    media_url: m.media_url ?? null,
+  });
+  const openCreate = () => { setEditId(null); setForm(emptyForm()); setOpen(true); };
+  const openEdit = (m: any) => { setEditId(m.id); setForm(fillForm(m)); setOpen(true); };
+  const openCopy = (m: any) => {
+    setEditId(null);
+    setForm({ ...fillForm(m), title: `${m.title} (${lang === "id" ? "salinan" : "copy"})` });
+    setOpen(true);
+  };
+
   const [newSubject, setNewSubject] = useState("");
   const [openClasses, setOpenClasses] = useState<Record<string, boolean>>({});
   const [openSubjects, setOpenSubjects] = useState<Record<string, boolean>>({});
