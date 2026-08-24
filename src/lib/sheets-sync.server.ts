@@ -209,7 +209,7 @@ async function buildTeacherTabs(teacherId: string): Promise<Tabs> {
   const { data: adab } = await supabaseAdmin
     .from("adab_scores").select("student_id, class_id, subject, score, updated_at").eq("teacher_id", teacherId);
   const { data: materials } = await supabaseAdmin
-    .from("materials").select("class_id, subject, title, description, created_at").eq("teacher_id", teacherId).order("created_at", { ascending: true });
+    .from("materials").select("class_id, subject, title, description, content, link, media_type, created_at").eq("teacher_id", teacherId).order("created_at", { ascending: true });
   const { data: mutabaah } = await supabaseAdmin
     .from("tahfidz_mutabaah")
     .select("student_id, class_id, session_date, session_type, setoran_kind, surah, juz, pages_count, tajwid_score, kelancaran_score, fashohah_score, total_score, predikat")
