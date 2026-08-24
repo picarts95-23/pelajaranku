@@ -327,6 +327,10 @@ function GuruRekapPage() {
       )}
       </>
       )}
+
+      {/* Backup semua data Dashboard guru ke Google Spreadsheet */}
+      <SheetBackupCard />
     </DashboardShell>
+
   );
 }
