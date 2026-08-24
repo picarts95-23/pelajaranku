@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BookMarked, GraduationCap, Plus, Trash2, ExternalLink, Library, Loader2, CheckCircle2, ChevronDown, ChevronRight, Folder, FolderOpen, BookOpen } from "lucide-react";
+import { BookMarked, GraduationCap, Plus, Trash2, ExternalLink, Library, Loader2, CheckCircle2, ChevronDown, ChevronRight, Folder, FolderOpen, BookOpen, Pencil, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
@@ -16,6 +16,7 @@ import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { useTeacherSubjects } from "@/components/subject-select";
 import { MediaInput, MediaViewer } from "@/components/media-input";
+import { ShareMenu } from "@/components/share-menu";
 
 export const Route = createFileRoute("/_authenticated/guru/mapel")({
   head: () => ({ meta: [{ title: "Mata Pelajaran · Pelajaranku" }] }),
@@ -25,13 +26,34 @@ export const Route = createFileRoute("/_authenticated/guru/mapel")({
 type MForm = { class_id: string; subject: string; title: string; description: string; content: string; link: string; media_type: string | null; media_url: string | null };
 const emptyForm = (): MForm => ({ class_id: "", subject: "", title: "", description: "", content: "", link: "", media_type: null, media_url: null });
 
+
 function GuruMapelPage() {
   const { user, role, loading } = useAuth();
   const navigate = useNavigate();
   const { t, lang } = useLang();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState<MForm>(emptyForm());
+
+  const fillForm = (m: any): MForm => ({
+    class_id: m.class_id ?? "",
+    subject: m.subject ?? "",
+    title: m.title ?? "",
+    description: m.description ?? "",
+    content: m.content ?? "",
+    link: m.link ?? "",
+    media_type: m.media_type ?? null,
+    media_url: m.media_url ?? null,
+  });
+  const openCreate = () => { setEditId(null); setForm(emptyForm()); setOpen(true); };
+  const openEdit = (m: any) => { setEditId(m.id); setForm(fillForm(m)); setOpen(true); };
+  const openCopy = (m: any) => {
+    setEditId(null);
+    setForm({ ...fillForm(m), title: `${m.title} (${lang === "id" ? "salinan" : "copy"})` });
+    setOpen(true);
+  };
+
   const [newSubject, setNewSubject] = useState("");
   const [openClasses, setOpenClasses] = useState<Record<string, boolean>>({});
   const [openSubjects, setOpenSubjects] = useState<Record<string, boolean>>({});
@@ -109,17 +131,25 @@ function GuruMapelPage() {
       if (!user || !form.title.trim()) throw new Error(t("required"));
       if (!form.class_id) throw new Error(t("selectClass"));
       if (!form.subject) throw new Error(t("selectSubject"));
-      const { error } = await supabase.from("materials").insert({
-        teacher_id: user.id, class_id: form.class_id, subject: form.subject,
+      const payload = {
+        class_id: form.class_id, subject: form.subject,
         title: form.title.trim(), description: form.description.trim() || null,
         content: form.content.trim() || null, link: form.link.trim() || null,
         media_type: form.media_url ? form.media_type : null, media_url: form.media_url,
-      });
+      };
+      const { error } = editId
+        ? await supabase.from("materials").update(payload).eq("id", editId)
+        : await supabase.from("materials").insert({ teacher_id: user.id, ...payload });
       if (error) throw error;
     },
-    onSuccess: () => { toast.success(t("materialShared")); setOpen(false); setForm(emptyForm()); qc.invalidateQueries({ queryKey: ["materials-guru"] }); },
+    onSuccess: () => {
+      toast.success(editId ? (lang === "id" ? "Materi diperbarui" : "Material updated") : t("materialShared"));
+      setOpen(false); setEditId(null); setForm(emptyForm());
+      qc.invalidateQueries({ queryKey: ["materials-guru"] });
+    },
     onError: (e: Error) => toast.error(e.message),
   });
+
 
   const delMat = useMutation({
     mutationFn: async (id: string) => { const { error } = await supabase.from("materials").delete().eq("id", id); if (error) throw error; },
@@ -132,10 +162,11 @@ function GuruMapelPage() {
         title={t("navSubjects")}
         subtitle={t("manageSubjects")}
         actions={
-          <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o) setForm(emptyForm()); }}>
-            <DialogTrigger asChild><Button variant="guru"><Plus className="size-4" /> {t("shareMaterial")}</Button></DialogTrigger>
+          <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setEditId(null); setForm(emptyForm()); } }}>
+            <DialogTrigger asChild><Button variant="guru" onClick={openCreate}><Plus className="size-4" /> {t("shareMaterial")}</Button></DialogTrigger>
             <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-              <DialogHeader><DialogTitle>{t("newMaterial")}</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle>{editId ? (lang === "id" ? "Edit Materi" : "Edit Material") : t("newMaterial")}</DialogTitle></DialogHeader>
+
               <div className="space-y-3">
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div>
@@ -204,6 +235,14 @@ function GuruMapelPage() {
         const renderMaterial = (m: any) => {
           const readers = (reads as any[]).filter((r) => r.material_id === m.id);
           const total = enrollCounts[m.class_id] ?? 0;
+          const shareMessage = [
+            `📚 ${lang === "id" ? "Materi Pembelajaran" : "Learning Material"}: ${m.title}`,
+            m.classes?.name ? `${lang === "id" ? "Kelas" : "Class"}: ${m.classes.name}` : "",
+            m.subject ? `${lang === "id" ? "Mata Pelajaran" : "Subject"}: ${m.subject}` : "",
+            m.description ? `\n${m.description}` : "",
+            m.content ? `\n${m.content}` : "",
+          ].filter(Boolean).join("\n");
+
           return (
             <div key={m.id} className="rounded-2xl border-2 border-border bg-card p-4 shadow-card-rpg">
               <div className="flex items-start justify-between gap-2">
@@ -245,7 +284,17 @@ function GuruMapelPage() {
                     )}
                   </div>
                 </div>
-                <Button size="sm" variant="ghost" onClick={() => { if (confirm(`${t("delete")}?`)) delMat.mutate(m.id); }}><Trash2 className="size-4 text-destructive" /></Button>
+                <div className="flex shrink-0 flex-wrap items-center justify-end gap-0.5">
+                  <ShareMenu
+                    message={shareMessage}
+                    subject={`${lang === "id" ? "Materi" : "Material"}: ${m.title}`}
+                    {...(m.link ? { url: m.link } : {})}
+                  />
+                  <Button size="sm" variant="ghost" title={lang === "id" ? "Edit materi" : "Edit material"} onClick={() => openEdit(m)}><Pencil className="size-4 text-guru" /></Button>
+                  <Button size="sm" variant="ghost" title={lang === "id" ? "Salin materi" : "Duplicate material"} onClick={() => openCopy(m)}><Copy className="size-4 text-quest" /></Button>
+                  <Button size="sm" variant="ghost" onClick={() => { if (confirm(`${t("delete")}?`)) delMat.mutate(m.id); }}><Trash2 className="size-4 text-destructive" /></Button>
+                </div>
+
               </div>
             </div>
           );

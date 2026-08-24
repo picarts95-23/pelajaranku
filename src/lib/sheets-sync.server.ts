@@ -23,13 +23,17 @@ const TAB_TITLES = [
   "Nilai Adab",
   "Mutaba'ah",
   "Materi",
+  "Program Tahunan",
+  "Program Semester",
   "Jurnal",
   "RPP Pekanan",
   "Pengumuman",
   "Event Kelas",
   "Bank Soal",
   "Badge Siswa",
+  "Permintaan Tugas",
 ] as const;
+
 
 function gatewayHeaders() {
   const lovableKey = process.env.LOVABLE_API_KEY;
@@ -205,7 +209,7 @@ async function buildTeacherTabs(teacherId: string): Promise<Tabs> {
   const { data: adab } = await supabaseAdmin
     .from("adab_scores").select("student_id, class_id, subject, score, updated_at").eq("teacher_id", teacherId);
   const { data: materials } = await supabaseAdmin
-    .from("materials").select("class_id, subject, title, description, created_at").eq("teacher_id", teacherId).order("created_at", { ascending: true });
+    .from("materials").select("class_id, subject, title, description, content, link, media_type, created_at").eq("teacher_id", teacherId).order("created_at", { ascending: true });
   const { data: mutabaah } = await supabaseAdmin
     .from("tahfidz_mutabaah")
     .select("student_id, class_id, session_date, session_type, setoran_kind, surah, juz, pages_count, tajwid_score, kelancaran_score, fashohah_score, total_score, predikat")
@@ -220,6 +224,24 @@ async function buildTeacherTabs(teacherId: string): Promise<Tabs> {
     .from("lesson_plans")
     .select("week_label, class_id, subject, start_date, end_date, objectives, materials, methods, media, assessment, notes, created_at")
     .eq("teacher_id", teacherId).order("start_date", { ascending: true });
+
+  // Learning documents: Program Tahunan (Prota) & Program Semester (Prosem).
+  const { data: annualPrograms } = await supabaseAdmin
+    .from("annual_programs")
+    .select("title, class_id, subject, academic_year, items, notes, updated_at")
+    .eq("teacher_id", teacherId).order("updated_at", { ascending: false });
+  const { data: semesterPrograms } = await supabaseAdmin
+    .from("semester_programs")
+    .select("title, class_id, subject, academic_year, semester, items, notes, updated_at")
+    .eq("teacher_id", teacherId).order("updated_at", { ascending: false });
+
+  // Student-initiated task requests handled by this teacher.
+  const { data: taskRequests } = await supabaseAdmin
+    .from("task_requests")
+    .select("student_id, class_id, subject, title, description, desired_due_at, status, teacher_note, created_at, responded_at")
+    .eq("teacher_id", teacherId).order("created_at", { ascending: false });
+
+
 
   // Announcements, events, question bank, badges earned by enrolled students.
   const { data: announcements } = await supabaseAdmin
@@ -387,9 +409,38 @@ async function buildTeacherTabs(teacherId: string): Promise<Tabs> {
   ];
 
   tabs["Materi"] = [
-    ["Judul", "Kelas", "Mata Pelajaran", "Deskripsi", "Dibuat"],
-    ...((materials ?? []) as any[]).map((m) => [cell(m.title), cName(m.class_id), cell(m.subject), cell(m.description), cell(m.created_at)]),
+    ["Judul", "Kelas", "Mata Pelajaran", "Deskripsi", "Isi Materi", "Link", "Lampiran", "Dibuat"],
+    ...((materials ?? []) as any[]).map((m) => [
+      cell(m.title), cName(m.class_id), cell(m.subject), cell(m.description),
+      cell(m.content), cell(m.link), cell(m.media_type), cell(m.created_at),
+    ]),
   ];
+
+  const programRows = (items: unknown) =>
+    Array.isArray(items)
+      ? (items as any[])
+          .map((it) => [it.month, it.weeks, it.semester, it.material, it.hours ? `${it.hours} JP` : "", it.note]
+            .filter((v) => v !== undefined && v !== null && String(v).trim() !== "")
+            .join(" · "))
+          .join("\n")
+      : cell(items);
+
+  tabs["Program Tahunan"] = [
+    ["Judul", "Kelas", "Mata Pelajaran", "Tahun Ajaran", "Rincian Materi", "Catatan", "Diperbarui"],
+    ...((annualPrograms ?? []) as any[]).map((p) => [
+      cell(p.title), cName(p.class_id), cell(p.subject), cell(p.academic_year),
+      programRows(p.items), cell(p.notes), cell(p.updated_at),
+    ]),
+  ];
+
+  tabs["Program Semester"] = [
+    ["Judul", "Kelas", "Mata Pelajaran", "Tahun Ajaran", "Semester", "Rincian Materi", "Catatan", "Diperbarui"],
+    ...((semesterPrograms ?? []) as any[]).map((p) => [
+      cell(p.title), cName(p.class_id), cell(p.subject), cell(p.academic_year), cell(p.semester),
+      programRows(p.items), cell(p.notes), cell(p.updated_at),
+    ]),
+  ];
+
 
   tabs["Jurnal"] = [
     ["Tanggal", "Kelas", "Mata Pelajaran", "Topik/Kegiatan", "Catatan", "Dibuat"],
@@ -433,6 +484,19 @@ async function buildTeacherTabs(teacherId: string): Promise<Tabs> {
       return [cell(ub.earned_at), s.nis, s.name, cell(b.name), cell(b.description), cell(b.icon), cell(b.xp_requirement)];
     }),
   ];
+
+  tabs["Permintaan Tugas"] = [
+    ["Dibuat", "NIS", "Nama Siswa", "Kelas", "Mata Pelajaran", "Judul", "Deskripsi", "Tenggat Diminta", "Status", "Catatan Guru", "Ditanggapi"],
+    ...((taskRequests ?? []) as any[]).map((r) => {
+      const s = sMeta(r.student_id);
+      return [
+        cell(r.created_at), s.nis, s.name, cName(r.class_id), cell(r.subject), cell(r.title),
+        cell(r.description), cell(r.desired_due_at), cell(r.status), cell(r.teacher_note), cell(r.responded_at),
+      ];
+    }),
+  ];
+
+
 
   return tabs;
 }

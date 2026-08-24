@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ExportMenu } from "@/components/export-menu";
+import { SheetBackupCard } from "@/components/sheet-backup-card";
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
@@ -327,6 +328,10 @@ function GuruRekapPage() {
       )}
       </>
       )}
+
+      {/* Backup semua data Dashboard guru ke Google Spreadsheet */}
+      <SheetBackupCard />
     </DashboardShell>
+
   );
 }
