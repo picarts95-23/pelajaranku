@@ -225,6 +225,24 @@ async function buildTeacherTabs(teacherId: string): Promise<Tabs> {
     .select("week_label, class_id, subject, start_date, end_date, objectives, materials, methods, media, assessment, notes, created_at")
     .eq("teacher_id", teacherId).order("start_date", { ascending: true });
 
+  // Learning documents: Program Tahunan (Prota) & Program Semester (Prosem).
+  const { data: annualPrograms } = await supabaseAdmin
+    .from("annual_programs")
+    .select("title, class_id, subject, academic_year, items, notes, updated_at")
+    .eq("teacher_id", teacherId).order("updated_at", { ascending: false });
+  const { data: semesterPrograms } = await supabaseAdmin
+    .from("semester_programs")
+    .select("title, class_id, subject, academic_year, semester, items, notes, updated_at")
+    .eq("teacher_id", teacherId).order("updated_at", { ascending: false });
+
+  // Student-initiated task requests handled by this teacher.
+  const { data: taskRequests } = await supabaseAdmin
+    .from("task_requests")
+    .select("student_id, class_id, subject, title, description, desired_due_at, status, teacher_note, created_at, responded_at")
+    .eq("teacher_id", teacherId).order("created_at", { ascending: false });
+
+
+
   // Announcements, events, question bank, badges earned by enrolled students.
   const { data: announcements } = await supabaseAdmin
     .from("announcements")
