@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BookMarked, GraduationCap, Plus, Trash2, ExternalLink, Library, Loader2, CheckCircle2, ChevronDown, ChevronRight, Folder, FolderOpen, BookOpen } from "lucide-react";
+import { BookMarked, GraduationCap, Plus, Trash2, ExternalLink, Library, Loader2, CheckCircle2, ChevronDown, ChevronRight, Folder, FolderOpen, BookOpen, Pencil, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
@@ -16,6 +16,7 @@ import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { useTeacherSubjects } from "@/components/subject-select";
 import { MediaInput, MediaViewer } from "@/components/media-input";
+import { ShareMenu } from "@/components/share-menu";
 
 export const Route = createFileRoute("/_authenticated/guru/mapel")({
   head: () => ({ meta: [{ title: "Mata Pelajaran · Pelajaranku" }] }),
@@ -24,6 +25,7 @@ export const Route = createFileRoute("/_authenticated/guru/mapel")({
 
 type MForm = { class_id: string; subject: string; title: string; description: string; content: string; link: string; media_type: string | null; media_url: string | null };
 const emptyForm = (): MForm => ({ class_id: "", subject: "", title: "", description: "", content: "", link: "", media_type: null, media_url: null });
+
 
 function GuruMapelPage() {
   const { user, role, loading } = useAuth();
