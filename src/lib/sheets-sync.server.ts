@@ -485,6 +485,19 @@ async function buildTeacherTabs(teacherId: string): Promise<Tabs> {
     }),
   ];
 
+  tabs["Permintaan Tugas"] = [
+    ["Dibuat", "NIS", "Nama Siswa", "Kelas", "Mata Pelajaran", "Judul", "Deskripsi", "Tenggat Diminta", "Status", "Catatan Guru", "Ditanggapi"],
+    ...((taskRequests ?? []) as any[]).map((r) => {
+      const s = sMeta(r.student_id);
+      return [
+        cell(r.created_at), s.nis, s.name, cName(r.class_id), cell(r.subject), cell(r.title),
+        cell(r.description), cell(r.desired_due_at), cell(r.status), cell(r.teacher_note), cell(r.responded_at),
+      ];
+    }),
+  ];
+
+
+
   return tabs;
 }
 
