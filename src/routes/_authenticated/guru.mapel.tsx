@@ -235,6 +235,14 @@ function GuruMapelPage() {
         const renderMaterial = (m: any) => {
           const readers = (reads as any[]).filter((r) => r.material_id === m.id);
           const total = enrollCounts[m.class_id] ?? 0;
+          const shareMessage = [
+            `📚 ${lang === "id" ? "Materi Pembelajaran" : "Learning Material"}: ${m.title}`,
+            m.classes?.name ? `${lang === "id" ? "Kelas" : "Class"}: ${m.classes.name}` : "",
+            m.subject ? `${lang === "id" ? "Mata Pelajaran" : "Subject"}: ${m.subject}` : "",
+            m.description ? `\n${m.description}` : "",
+            m.content ? `\n${m.content}` : "",
+          ].filter(Boolean).join("\n");
+
           return (
             <div key={m.id} className="rounded-2xl border-2 border-border bg-card p-4 shadow-card-rpg">
               <div className="flex items-start justify-between gap-2">
