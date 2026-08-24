@@ -284,7 +284,17 @@ function GuruMapelPage() {
                     )}
                   </div>
                 </div>
-                <Button size="sm" variant="ghost" onClick={() => { if (confirm(`${t("delete")}?`)) delMat.mutate(m.id); }}><Trash2 className="size-4 text-destructive" /></Button>
+                <div className="flex shrink-0 flex-wrap items-center justify-end gap-0.5">
+                  <ShareMenu
+                    message={shareMessage}
+                    subject={`${lang === "id" ? "Materi" : "Material"}: ${m.title}`}
+                    {...(m.link ? { url: m.link } : {})}
+                  />
+                  <Button size="sm" variant="ghost" title={lang === "id" ? "Edit materi" : "Edit material"} onClick={() => openEdit(m)}><Pencil className="size-4 text-guru" /></Button>
+                  <Button size="sm" variant="ghost" title={lang === "id" ? "Salin materi" : "Duplicate material"} onClick={() => openCopy(m)}><Copy className="size-4 text-quest" /></Button>
+                  <Button size="sm" variant="ghost" onClick={() => { if (confirm(`${t("delete")}?`)) delMat.mutate(m.id); }}><Trash2 className="size-4 text-destructive" /></Button>
+                </div>
+
               </div>
             </div>
           );
