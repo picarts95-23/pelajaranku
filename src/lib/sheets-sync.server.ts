@@ -23,13 +23,17 @@ const TAB_TITLES = [
   "Nilai Adab",
   "Mutaba'ah",
   "Materi",
+  "Program Tahunan",
+  "Program Semester",
   "Jurnal",
   "RPP Pekanan",
   "Pengumuman",
   "Event Kelas",
   "Bank Soal",
   "Badge Siswa",
+  "Permintaan Tugas",
 ] as const;
+
 
 function gatewayHeaders() {
   const lovableKey = process.env.LOVABLE_API_KEY;
