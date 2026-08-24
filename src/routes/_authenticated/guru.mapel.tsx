@@ -162,10 +162,11 @@ function GuruMapelPage() {
         title={t("navSubjects")}
         subtitle={t("manageSubjects")}
         actions={
-          <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o) setForm(emptyForm()); }}>
-            <DialogTrigger asChild><Button variant="guru"><Plus className="size-4" /> {t("shareMaterial")}</Button></DialogTrigger>
+          <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setEditId(null); setForm(emptyForm()); } }}>
+            <DialogTrigger asChild><Button variant="guru" onClick={openCreate}><Plus className="size-4" /> {t("shareMaterial")}</Button></DialogTrigger>
             <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-              <DialogHeader><DialogTitle>{t("newMaterial")}</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle>{editId ? (lang === "id" ? "Edit Materi" : "Edit Material") : t("newMaterial")}</DialogTitle></DialogHeader>
+
               <div className="space-y-3">
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div>
