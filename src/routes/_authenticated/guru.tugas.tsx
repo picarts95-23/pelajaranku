@@ -26,6 +26,8 @@ import { QuizTabs } from "@/components/quiz-tabs";
 import { QuizGradeDialog } from "@/components/quiz-grade-dialog";
 import { signAnswerFile } from "@/lib/transcribe.functions";
 import { parseAnswerFiles } from "@/lib/answer-files";
+import { ShareMenu } from "@/components/share-menu";
+
 
 export const Route = createFileRoute("/_authenticated/guru/tugas")({
   head: () => ({ meta: [{ title: "Tugas · Pelajaranku" }] }),
@@ -635,7 +637,21 @@ function AssignmentDetail({ assignment, onDelete, onEdited, onDuplicated }: { as
           <AssignmentFileLink attachmentUrl={assignment.attachment_url} attachmentName={assignment.attachment_name} />
         </div>
         <div className="flex shrink-0 items-center gap-1">
+          <ShareMenu
+            subject={`${lang === "id" ? "Tugas" : "Assignment"}: ${assignment.title}`}
+            url={assignment.quiz_link || assignment.game_link || undefined}
+            message={[
+              lang === "id" ? "📝 *Info Tugas*" : "📝 *Assignment Info*",
+              `${lang === "id" ? "Judul" : "Title"}: ${assignment.title}`,
+              `${lang === "id" ? "Kelas" : "Class"}: ${assignment.assigned_student_id ? (assignment.assignee?.full_name ?? (lang === "id" ? "Personal" : "Personal")) : (assignment.classes?.name ?? "-")}`,
+              `${lang === "id" ? "Mapel" : "Subject"}: ${assignment.subject || (lang === "id" ? "Umum" : "General")}`,
+              `${lang === "id" ? "Tenggat" : "Deadline"}: ${assignment.due_at ? format(new Date(assignment.due_at), "dd MMM yyyy HH:mm") : "-"}`,
+              assignment.description ? `\n${assignment.description}` : "",
+              `\n${lang === "id" ? "Kerjakan di aplikasi Pelajaranku ya 🌟" : "Complete it in the Pelajaranku app 🌟"}`,
+            ].filter(Boolean).join("\n")}
+          />
           <Button size="sm" variant="ghost" onClick={() => setEditOpen(true)} title={lang === "id" ? "Edit" : "Edit"}><Pencil className="size-4 text-guru" /></Button>
+
           <Button size="sm" variant="ghost" onClick={() => dupMut.mutate()} disabled={dupMut.isPending} title={lang === "id" ? "Duplikat tugas serupa" : "Duplicate similar assignment"}><Copy className="size-4 text-guru" /></Button>
           <Button size="sm" variant="ghost" onClick={onDelete}><Trash2 className="size-4 text-destructive" /></Button>
         </div>
