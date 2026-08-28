@@ -337,3 +337,73 @@ export function parseJournalEntries(text: string): { entries: ImportJournalEntry
   if (!entries.length) warnings.push('Tidak ada jurnal terbaca. Gunakan label "Tanggal:", "Topik:", "Catatan:" seperti contoh prompt.');
   return { entries, warnings };
 }
+
+/* --------------------------------------------------------------- Materi */
+
+export type ImportMaterialEntry = {
+  title: string;
+  description?: string;
+  content?: string;
+  link?: string;
+  subject?: string;
+};
+
+export const PROMPT_MATERI = `Buatkan [JUMLAH] materi pelajaran [MATA PELAJARAN] kelas [KELAS].
+Balas HANYA daftar berlabel, pisahkan tiap materi dengan garis "---":
+
+Judul: ...
+Mata Pelajaran: ...
+Deskripsi: ... (1 kalimat singkat)
+Isi: ... (uraian materi, boleh beberapa baris)
+Link: ... (opsional, kosongkan jika tidak ada)
+---
+Judul: ...`;
+
+const MATERI_LABELS = /^(judul|title|materi|topik|topic|mata pelajaran|mapel|subject|deskripsi|description|ringkasan|isi|content|uraian|penjelasan|link|tautan|url)$/i;
+
+export function parseMaterialEntries(text: string): { entries: ImportMaterialEntry[]; warnings: string[] } {
+  const warnings: string[] = [];
+  const json = tryJson(text);
+
+  const fromRecord = (o: Record<string, string>): ImportMaterialEntry | null => {
+    const title = pick(o, /judul|title|^materi$|topik|topic/);
+    const content = pick(o, /isi|content|uraian|penjelasan/);
+    const description = pick(o, /deskripsi|description|ringkasan/);
+    if (!title && !content) return null;
+    const link = pick(o, /link|tautan|url/);
+    return {
+      title: title || content.slice(0, 60),
+      description: description || undefined,
+      content: content || undefined,
+      link: /^https?:\/\//i.test(link) ? link : undefined,
+      subject: pick(o, /mata pelajaran|mapel|subject/) || undefined,
+    };
+  };
+
+  let entries: ImportMaterialEntry[] = json
+    ? (json
+        .map((r: any) => {
+          const flat: Record<string, string> = {};
+          Object.entries(r ?? {}).forEach(([k, v]) => { flat[k.toLowerCase()] = String(v ?? ""); });
+          return fromRecord(flat);
+        })
+        .filter(Boolean) as ImportMaterialEntry[])
+    : (labelBlocks(text, MATERI_LABELS).map(fromRecord).filter(Boolean) as ImportMaterialEntry[]);
+
+  // Fallback: table rows "Judul | Deskripsi | Isi".
+  if (!entries.length) {
+    entries = text
+      .split(/\r?\n/)
+      .map((l) => cells(l.trim()))
+      .filter((c) => c.length >= 1 && c[0] && !isHeaderRow(c))
+      .map((c) => ({
+        title: c[0],
+        description: c[1] || undefined,
+        content: c[2] || c[1] || undefined,
+      }))
+      .filter((e) => e.title);
+  }
+
+  if (!entries.length) warnings.push('Tidak ada materi terbaca. Gunakan label "Judul:", "Deskripsi:", "Isi:" seperti contoh prompt.');
+  return { entries, warnings };
+}
