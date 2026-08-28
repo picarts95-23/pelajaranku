@@ -817,6 +817,9 @@ export type Database = {
       }
       materials: {
         Row: {
+          attachment_name: string | null
+          attachment_type: string | null
+          attachment_url: string | null
           class_id: string | null
           content: string | null
           created_at: string
@@ -832,6 +835,9 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          attachment_name?: string | null
+          attachment_type?: string | null
+          attachment_url?: string | null
           class_id?: string | null
           content?: string | null
           created_at?: string
@@ -847,6 +853,9 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          attachment_name?: string | null
+          attachment_type?: string | null
+          attachment_url?: string | null
           class_id?: string | null
           content?: string | null
           created_at?: string
