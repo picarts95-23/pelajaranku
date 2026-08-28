@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BookMarked, GraduationCap, Plus, Trash2, ExternalLink, Library, Loader2, CheckCircle2, ChevronDown, ChevronRight, Folder, FolderOpen, BookOpen, Pencil, Copy } from "lucide-react";
+import { BookMarked, GraduationCap, Sparkles, Plus, Trash2, ExternalLink, Library, Loader2, CheckCircle2, ChevronDown, ChevronRight, Folder, FolderOpen, BookOpen, Pencil, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
@@ -17,14 +17,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { useTeacherSubjects } from "@/components/subject-select";
 import { MediaInput, MediaViewer } from "@/components/media-input";
 import { ShareMenu } from "@/components/share-menu";
+import { AssignmentFileInput, AssignmentFileLink, emptyAttachment, type AttachmentValue } from "@/components/assignment-file-input";
+import { AiPasteDialog } from "@/components/ai-paste-dialog";
+import { PROMPT_MATERI, parseMaterialEntries, type ImportMaterialEntry } from "@/lib/doc-import";
 
 export const Route = createFileRoute("/_authenticated/guru/mapel")({
   head: () => ({ meta: [{ title: "Mata Pelajaran · Pelajaranku" }] }),
   component: GuruMapelPage,
 });
 
-type MForm = { class_id: string; subject: string; title: string; description: string; content: string; link: string; media_type: string | null; media_url: string | null };
-const emptyForm = (): MForm => ({ class_id: "", subject: "", title: "", description: "", content: "", link: "", media_type: null, media_url: null });
+type MForm = { class_id: string; subject: string; title: string; description: string; content: string; link: string; media_type: string | null; media_url: string | null } & AttachmentValue;
+const emptyForm = (): MForm => ({ class_id: "", subject: "", title: "", description: "", content: "", link: "", media_type: null, media_url: null, ...emptyAttachment() });
 
 
 function GuruMapelPage() {
@@ -45,6 +48,9 @@ function GuruMapelPage() {
     link: m.link ?? "",
     media_type: m.media_type ?? null,
     media_url: m.media_url ?? null,
+    attachment_url: m.attachment_url ?? null,
+    attachment_name: m.attachment_name ?? null,
+    attachment_type: m.attachment_type ?? null,
   });
   const openCreate = () => { setEditId(null); setForm(emptyForm()); setOpen(true); };
   const openEdit = (m: any) => { setEditId(m.id); setForm(fillForm(m)); setOpen(true); };
@@ -54,6 +60,9 @@ function GuruMapelPage() {
     setOpen(true);
   };
 
+  const [importOpen, setImportOpen] = useState(false);
+  const [importClass, setImportClass] = useState("");
+  const [importSubject, setImportSubject] = useState("");
   const [newSubject, setNewSubject] = useState("");
   const [openClasses, setOpenClasses] = useState<Record<string, boolean>>({});
   const [openSubjects, setOpenSubjects] = useState<Record<string, boolean>>({});
@@ -136,6 +145,7 @@ function GuruMapelPage() {
         title: form.title.trim(), description: form.description.trim() || null,
         content: form.content.trim() || null, link: form.link.trim() || null,
         media_type: form.media_url ? form.media_type : null, media_url: form.media_url,
+        attachment_url: form.attachment_url, attachment_name: form.attachment_name, attachment_type: form.attachment_type,
       };
       const { error } = editId
         ? await supabase.from("materials").update(payload).eq("id", editId)
@@ -151,6 +161,30 @@ function GuruMapelPage() {
   });
 
 
+  const importMats = useMutation({
+    mutationFn: async (rows: ImportMaterialEntry[]) => {
+      if (!user) throw new Error(t("required"));
+      if (!importClass) throw new Error(t("selectClass"));
+      const payload = rows.map((r) => ({
+        teacher_id: user.id,
+        class_id: importClass,
+        subject: r.subject || importSubject || null,
+        title: r.title,
+        description: r.description ?? null,
+        content: r.content ?? null,
+        link: r.link ?? null,
+      }));
+      const { error } = await supabase.from("materials").insert(payload);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success(lang === "id" ? "Materi berhasil diimpor — bisa diedit kapan saja ✅" : "Materials imported ✅");
+      setImportOpen(false);
+      qc.invalidateQueries({ queryKey: ["materials-guru"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const delMat = useMutation({
     mutationFn: async (id: string) => { const { error } = await supabase.from("materials").delete().eq("id", id); if (error) throw error; },
     onSuccess: () => { toast.success(t("materialDeleted")); qc.invalidateQueries({ queryKey: ["materials-guru"] }); },
@@ -162,6 +196,10 @@ function GuruMapelPage() {
         title={t("navSubjects")}
         subtitle={t("manageSubjects")}
         actions={
+          <>
+          <Button variant="outline" onClick={() => setImportOpen(true)}>
+            <Sparkles className="size-4" /> {lang === "id" ? "Impor dari AI" : "Import from AI"}
+          </Button>
           <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setEditId(null); setForm(emptyForm()); } }}>
             <DialogTrigger asChild><Button variant="guru" onClick={openCreate}><Plus className="size-4" /> {t("shareMaterial")}</Button></DialogTrigger>
             <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
@@ -192,6 +230,14 @@ function GuruMapelPage() {
                 <div><Label>{t("description")}</Label><Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
                 <div><Label>{t("content")}</Label><Textarea rows={5} value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} placeholder={lang === "id" ? "Tulis ringkasan / isi materi…" : "Write material content…"} /></div>
                 {user && <MediaInput userId={user.id} value={{ media_type: form.media_type, media_url: form.media_url }} onChange={(v) => setForm({ ...form, media_type: v.media_type, media_url: v.media_url })} />}
+                {user && (
+                  <AssignmentFileInput
+                    userId={user.id}
+                    folder="materi"
+                    value={{ attachment_url: form.attachment_url, attachment_name: form.attachment_name, attachment_type: form.attachment_type }}
+                    onChange={(v) => setForm({ ...form, ...v })}
+                  />
+                )}
                 <div><Label>{t("link")}</Label><Input value={form.link} onChange={(e) => setForm({ ...form, link: e.target.value })} placeholder="https://…" /></div>
               </div>
               <DialogFooter>
@@ -200,6 +246,38 @@ function GuruMapelPage() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          </>
+        }
+      />
+
+      <AiPasteDialog<ImportMaterialEntry>
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        title={lang === "id" ? "Impor Materi dari AI" : "Import Materials from AI"}
+        promptTemplate={PROMPT_MATERI}
+        parse={(text) => {
+          const { entries, warnings } = parseMaterialEntries(text);
+          return { data: entries, warnings, lines: entries.map((e) => `${e.title}${e.subject ? ` · ${e.subject}` : ""}`) };
+        }}
+        onApply={(rows) => importMats.mutateAsync(rows)}
+        applyLabel={lang === "id" ? "Simpan Materi" : "Save Materials"}
+        extra={
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <Label>{t("navClasses")} <span className="text-destructive">*</span></Label>
+              <Select value={importClass} onValueChange={setImportClass}>
+                <SelectTrigger><SelectValue placeholder={t("selectClass")} /></SelectTrigger>
+                <SelectContent>{(classes as any[]).map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>{t("subject")}</Label>
+              <Select value={importSubject} onValueChange={setImportSubject}>
+                <SelectTrigger><SelectValue placeholder={t("selectSubject")} /></SelectTrigger>
+                <SelectContent>{subjects.map((s) => <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+          </div>
         }
       />
 
@@ -255,6 +333,7 @@ function GuruMapelPage() {
                   {m.description && <p className="text-sm text-muted-foreground">{m.description}</p>}
                   {m.content && <p className="mt-2 whitespace-pre-wrap text-sm">{m.content}</p>}
                   <MediaViewer mediaType={m.media_type} mediaUrl={m.media_url} />
+                  <AssignmentFileLink attachmentUrl={m.attachment_url} attachmentName={m.attachment_name} />
                   {m.link && (
                     <a href={m.link} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-quest/10 px-2.5 py-1 text-xs font-display font-bold text-quest hover:bg-quest/20">
                       <ExternalLink className="size-3.5" /> {t("openLink")}

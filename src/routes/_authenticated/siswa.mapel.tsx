@@ -13,6 +13,7 @@ import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { MediaViewer } from "@/components/media-input";
+import { AssignmentFileLink } from "@/components/assignment-file-input";
 import { useMarkSeen } from "@/lib/notifications";
 
 export const Route = createFileRoute("/_authenticated/siswa/mapel")({
@@ -181,6 +182,7 @@ function SiswaMapelPage() {
                 {openMaterial.description && <p className="text-sm text-muted-foreground">{openMaterial.description}</p>}
                 {openMaterial.content && <p className="whitespace-pre-wrap text-sm leading-relaxed">{openMaterial.content}</p>}
                 <MediaViewer mediaType={openMaterial.media_type} mediaUrl={openMaterial.media_url} />
+                <AssignmentFileLink attachmentUrl={openMaterial.attachment_url} attachmentName={openMaterial.attachment_name} />
                 {openMaterial.link && (
                   <a href={openMaterial.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-lg bg-siswa/10 px-3 py-1.5 text-xs font-display font-bold text-siswa hover:bg-siswa/20">
                     <ExternalLink className="size-3.5" /> {t("openLink")}
