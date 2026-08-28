@@ -21,15 +21,19 @@ export const emptyAttachment = (): AttachmentValue => ({
   attachment_type: null,
 });
 
-/** Guru: unggah berkas tugas (Word/PDF/Excel/PowerPoint/gambar/zip) ke lesson-media. */
+/** Guru: unggah berkas tugas/materi (Word/PDF/Excel/PowerPoint/gambar/zip) ke lesson-media. */
 export function AssignmentFileInput({
   userId,
   value,
   onChange,
+  folder = "tugas",
+  label,
 }: {
   userId: string;
   value: AttachmentValue;
   onChange: (v: AttachmentValue) => void;
+  folder?: string;
+  label?: string;
 }) {
   const { lang } = useLang();
   const [uploading, setUploading] = useState(false);
