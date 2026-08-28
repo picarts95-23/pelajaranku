@@ -21,15 +21,19 @@ export const emptyAttachment = (): AttachmentValue => ({
   attachment_type: null,
 });
 
-/** Guru: unggah berkas tugas (Word/PDF/Excel/PowerPoint/gambar/zip) ke lesson-media. */
+/** Guru: unggah berkas tugas/materi (Word/PDF/Excel/PowerPoint/gambar/zip) ke lesson-media. */
 export function AssignmentFileInput({
   userId,
   value,
   onChange,
+  folder = "tugas",
+  label,
 }: {
   userId: string;
   value: AttachmentValue;
   onChange: (v: AttachmentValue) => void;
+  folder?: string;
+  label?: string;
 }) {
   const { lang } = useLang();
   const [uploading, setUploading] = useState(false);
@@ -53,7 +57,7 @@ export function AssignmentFileInput({
     setUploading(true);
     try {
       const ext = file.name.split(".").pop() || "bin";
-      const path = `${userId}/tugas/${crypto.randomUUID()}.${ext}`;
+      const path = `${userId}/${folder}/${crypto.randomUUID()}.${ext}`;
       const { error } = await supabase.storage
         .from(BUCKET)
         .upload(path, file, { contentType: file.type || "application/octet-stream" });
@@ -75,7 +79,7 @@ export function AssignmentFileInput({
     <div className="rounded-xl border-2 border-dashed border-border p-3 space-y-2">
       <Label className="flex items-center gap-1.5 text-xs">
         <Paperclip className="size-3.5 text-guru" />
-        {lang === "id" ? "Lampiran Berkas (Word/PDF/Gambar, maks 20 MB)" : "File attachment (Word/PDF/Image, max 20 MB)"}
+        {label ?? (lang === "id" ? "Lampiran Berkas (Word/PDF/PPT/Excel/Gambar, maks 20 MB)" : "File attachment (Word/PDF/PPT/Excel/Image, max 20 MB)")}
       </Label>
 
       {value.attachment_url ? (
@@ -91,7 +95,7 @@ export function AssignmentFileInput({
       ) : (
         <input
           type="file"
-          accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.rtf,.zip,image/*,application/pdf"
+          accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.odt,.odp,.ods,.txt,.csv,.rtf,.zip,image/*,application/pdf"
           onChange={onFile}
           disabled={uploading}
           className="block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-guru file:px-3 file:py-1.5 file:text-white"
