@@ -253,7 +253,7 @@ export function QuizGradeDialog({
             const ans = studentAnswers[i];
             const key = (answerKey as any[])[i];
             const verdict = evalAnswer(q, ans, key);
-            const objective = q.type === "multiple_choice" || q.type === "true_false" || q.type === "short_answer";
+            const objective = q.type === "multiple_choice" || q.type === "complex_multiple_choice" || q.type === "true_false" || q.type === "short_answer";
             return (
               <div key={i} className="rounded-xl border-2 border-border bg-muted/20 p-3 text-sm">
                 <div className="flex items-start justify-between gap-2">
