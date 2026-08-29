@@ -533,6 +533,20 @@ function TransferDialog({ open, onOpenChange, items, onDone }: { open: boolean; 
   const [gradeLevel, setGradeLevel] = useState("");
   const [category, setCategory] = useState("harian");
   const [dueAt, setDueAt] = useState("");
+  const [reviewOpen, setReviewOpen] = useState(false);
+
+  // Mapped preview so the teacher can review the exact questions & keys that
+  // will be created — identical to what the insert mutation sends.
+  const mapped = useMemo(() => {
+    const questions: any[] = [];
+    const keys: any[] = [];
+    items.slice(0, MAX_QUESTIONS).forEach((b) => {
+      const { question, key } = mapBankToQuiz(b);
+      questions.push(question);
+      keys.push(key);
+    });
+    return { questions, keys };
+  }, [items]);
 
   // Are any selected items Halaqoh? Then the task must be a Halaqoh task so it
   // accumulates into Mutaba'ah.
