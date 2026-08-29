@@ -205,13 +205,32 @@ export function buildBankRows(
 }
 
 // Map a bank row to a quiz question + answer-key entry for the assignments feature.
+// The mapping is loss-less: the question type, options, and answer key stay exactly
+// as configured in Bank Soal (including complex multiple choice with >1 correct option).
 // Halaqoh metadata is preserved on the question so grading can auto-record to Mutaba'ah.
 export function mapBankToQuiz(b: any): { question: any; key: any } {
   const opts: string[] = Array.isArray(b.options) ? b.options : [];
+  // Metadata carried along so the teacher review step & grading panel can show it.
+  const meta = {
+    q: b.question,
+    image_url: b.image_url ?? null,
+    topic: b.topic ?? null,
+    difficulty: b.difficulty ?? null,
+  };
+  // Resolve answer text(s) stored in Bank Soal back to option indices.
+  const answerIndices = (): number[] => {
+    const parts = String(b.answer ?? "")
+      .split(",")
+      .map((s) => s.trim().toLowerCase())
+      .filter(Boolean);
+    return opts
+      .map((o, i) => (parts.includes(String(o).trim().toLowerCase()) ? i : -1))
+      .filter((i) => i >= 0);
+  };
   if (b.halaqoh_kind || b.type === "voice") {
     return {
       question: {
-        type: "voice", q: b.question, image_url: b.image_url ?? null,
+        type: "voice", ...meta,
         halaqoh_kind: b.halaqoh_kind ?? null,
         setoran_kind: b.setoran_kind ?? null,
         surah: b.topic ?? null,
@@ -222,23 +241,32 @@ export function mapBankToQuiz(b: any): { question: any; key: any } {
     };
   }
   if (b.type === "multiple_choice") {
-    const idx = Math.max(0, opts.findIndex((o) => o.trim().toLowerCase() === String(b.answer ?? "").split(",")[0].trim().toLowerCase()));
-    return { question: { type: "multiple_choice", q: b.question, options: opts.length ? opts : ["", ""], image_url: b.image_url ?? null }, key: idx };
+    const idx = answerIndices();
+    return { question: { type: "multiple_choice", ...meta, options: opts.length ? opts : ["", ""] }, key: idx[0] ?? 0 };
+  }
+  if (b.type === "complex_multiple_choice") {
+    const idx = answerIndices();
+    // Key is a sorted, comma-joined index list so autograding can compare it as text.
+    return {
+      question: { type: "complex_multiple_choice", ...meta, options: opts.length ? opts : ["", ""] },
+      key: idx.slice().sort((a, z) => a - z).join(","),
+    };
   }
   if (b.type === "true_false") {
     const a = String(b.answer ?? "").trim().toLowerCase();
     const truthy = ["true", "benar", "b", "ya", "yes", "1"].includes(a);
-    return { question: { type: "true_false", q: b.question, options: ["Benar", "Salah"], image_url: b.image_url ?? null }, key: truthy ? "true" : "false" };
+    return { question: { type: "true_false", ...meta, options: ["Benar", "Salah"] }, key: truthy ? "true" : "false" };
   }
   if (b.type === "short_answer") {
-    return { question: { type: "short_answer", q: b.question, image_url: b.image_url ?? null }, key: String(b.answer ?? "").trim() };
+    return { question: { type: "short_answer", ...meta }, key: String(b.answer ?? "").trim() };
   }
   if (b.type === "image") {
-    return { question: { type: "image", q: b.question, image_url: b.image_url ?? null }, key: null };
+    return { question: { type: "image", ...meta }, key: null };
   }
-  // essay / complex / others -> manual essay
-  return { question: { type: "essay", q: b.question, image_url: b.image_url ?? null }, key: null };
+  // essay & anything unknown -> manual essay
+  return { question: { type: "essay", ...meta }, key: null };
 }
+
 
 // Reconstruct an editable BQ from a stored question_bank row.
 export function bankRowToBQ(row: any): BQ {

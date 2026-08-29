@@ -24,6 +24,7 @@ import { ANSWER_FORMATS, JUZ_LIST, SURAHS, type AnswerFormat } from "@/lib/quran
 import { isHalaqohSubject, SETORAN_TYPES } from "@/lib/mutabaah";
 import { QuizTabs } from "@/components/quiz-tabs";
 import { QuizGradeDialog } from "@/components/quiz-grade-dialog";
+import { QuizReviewDialog } from "@/components/quiz-review";
 import { signAnswerFile } from "@/lib/transcribe.functions";
 import { parseAnswerFiles } from "@/lib/answer-files";
 import { ShareMenu } from "@/components/share-menu";
@@ -476,6 +477,7 @@ function AssignmentDetail({ assignment, onDelete, onEdited, onDuplicated }: { as
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "submitted" | "graded">("all");
   const [editOpen, setEditOpen] = useState(false);
+  const [reviewOpen, setReviewOpen] = useState(false);
 
   const { data: answerKey } = useQuery({
     queryKey: ["answer-key", assignment.id],
@@ -484,6 +486,18 @@ function AssignmentDetail({ assignment, onDelete, onEdited, onDuplicated }: { as
       return data?.answer_key ?? null;
     },
   });
+
+  // Answer key of a quiz task is stored as a JSON array (one entry per question).
+  const parsedKey = useMemo(() => {
+    if (!answerKey) return [];
+    try {
+      const p = JSON.parse(answerKey);
+      return Array.isArray(p) ? p : [];
+    } catch {
+      return [];
+    }
+  }, [answerKey]);
+
 
   const { data: subs = [] } = useQuery({
     queryKey: ["submissions", assignment.id],
@@ -666,10 +680,25 @@ function AssignmentDetail({ assignment, onDelete, onEdited, onDuplicated }: { as
 
       {isQuiz && Array.isArray(assignment.questions) && (
         <div className="mb-3 rounded-xl border border-accent/30 bg-accent/5 p-3 text-sm">
-          <div className="font-display font-bold text-accent">📝 {assignment.questions.length} {lang === "id" ? "soal · koreksi otomatis + audio" : "questions · auto-grade + audio"}</div>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="font-display font-bold text-accent">📝 {assignment.questions.length} {lang === "id" ? "soal · koreksi otomatis + audio" : "questions · auto-grade + audio"}</div>
+            <Button size="sm" variant="outline" className="h-7" onClick={() => setReviewOpen(true)}>
+              <Search className="size-3.5" /> {lang === "id" ? "Tinjau soal" : "Review questions"}
+            </Button>
+          </div>
           <p className="mt-1 text-xs text-muted-foreground">{lang === "id" ? "Soal objektif dinilai otomatis. Buka penilaian untuk mendengar & meninjau jawaban audio/gambar, lalu beri nilai tiap jawaban." : "Objective questions auto-scored. Open grading to listen to & review audio/image answers, then score each one."}</p>
         </div>
       )}
+      {reviewOpen && (
+        <QuizReviewDialog
+          open={reviewOpen}
+          onOpenChange={setReviewOpen}
+          title={assignment.title}
+          questions={Array.isArray(assignment.questions) ? assignment.questions : []}
+          answerKey={parsedKey}
+        />
+      )}
+
 
       <div className="mt-4 mb-2 flex items-center justify-between">
         <h3 className="font-display font-bold text-sm">📋 {t("submissions")} ({subs.length})</h3>

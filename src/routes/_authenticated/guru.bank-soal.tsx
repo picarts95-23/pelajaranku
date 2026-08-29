@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Database, Mic, Plus, Send, Trash2, X, BookOpenCheck, CheckCircle2, Pencil, Sparkles, ClipboardPaste, Copy } from "lucide-react";
 import { toast } from "sonner";
@@ -24,6 +24,7 @@ import {
 } from "@/components/question-fields";
 import { Textarea } from "@/components/ui/textarea";
 import { parseQuestions, AI_PROMPT_TEMPLATE } from "@/lib/question-import";
+import { QuizReviewDialog } from "@/components/quiz-review";
 
 export const Route = createFileRoute("/_authenticated/guru/bank-soal")({
   head: () => ({ meta: [{ title: "Bank Soal · Pelajaranku" }] }),
@@ -533,6 +534,20 @@ function TransferDialog({ open, onOpenChange, items, onDone }: { open: boolean; 
   const [gradeLevel, setGradeLevel] = useState("");
   const [category, setCategory] = useState("harian");
   const [dueAt, setDueAt] = useState("");
+  const [reviewOpen, setReviewOpen] = useState(false);
+
+  // Mapped preview so the teacher can review the exact questions & keys that
+  // will be created — identical to what the insert mutation sends.
+  const mapped = useMemo(() => {
+    const questions: any[] = [];
+    const keys: any[] = [];
+    items.slice(0, MAX_QUESTIONS).forEach((b) => {
+      const { question, key } = mapBankToQuiz(b);
+      questions.push(question);
+      keys.push(key);
+    });
+    return { questions, keys };
+  }, [items]);
 
   // Are any selected items Halaqoh? Then the task must be a Halaqoh task so it
   // accumulates into Mutaba'ah.
@@ -693,9 +708,18 @@ function TransferDialog({ open, onOpenChange, items, onDone }: { open: boolean; 
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>{lang === "id" ? "Batal" : "Cancel"}</Button>
+          <Button variant="outline" onClick={() => setReviewOpen(true)}>{lang === "id" ? "Tinjau soal" : "Review questions"}</Button>
           <Button variant="quest" disabled={mut.isPending} onClick={() => mut.mutate()}>{mut.isPending ? "…" : (lang === "id" ? "Kirim" : "Send")}</Button>
         </DialogFooter>
+        <QuizReviewDialog
+          open={reviewOpen}
+          onOpenChange={setReviewOpen}
+          title={title || (lang === "id" ? "Tugas baru" : "New task")}
+          questions={mapped.questions}
+          answerKey={mapped.keys}
+        />
       </DialogContent>
+
     </Dialog>
   );
 }

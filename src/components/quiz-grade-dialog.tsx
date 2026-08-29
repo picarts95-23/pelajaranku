@@ -41,6 +41,7 @@ export function evalAnswer(q: any, ans: any, key: any): Verdict {
   if (!has) return "empty";
   if (key === undefined || key === null || String(key).trim() === "") return "manual";
   if (q.type === "multiple_choice") return Number(ans) === Number(key) ? "correct" : "wrong";
+  if (q.type === "complex_multiple_choice") return normIdxList(ans) === normIdxList(key) ? "correct" : "wrong";
   if (q.type === "true_false") return String(ans).toLowerCase() === String(key).toLowerCase() ? "correct" : "wrong";
   if (q.type === "short_answer") {
     const accepted = String(key).split("|").map((s) => s.trim().toLowerCase()).filter(Boolean);
@@ -49,13 +50,36 @@ export function evalAnswer(q: any, ans: any, key: any): Verdict {
   return "manual";
 }
 
+/** Normalize a "0,2" style index list so order/spacing never changes the verdict. */
+export function normIdxList(v: any): string {
+  return String(v ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => s !== "")
+    .map(Number)
+    .filter((n) => Number.isFinite(n))
+    .sort((a, b) => a - b)
+    .join(",");
+}
+
+/** Render an index list ("0,2") as readable option text. */
+export function idxListText(q: any, v: any): string {
+  const idx = normIdxList(v).split(",").filter(Boolean).map(Number);
+  if (!idx.length) return "—";
+  return idx
+    .map((i) => `${String.fromCharCode(65 + i)}. ${Array.isArray(q.options) && q.options[i] != null ? q.options[i] : ""}`.trim())
+    .join(" · ");
+}
+
 // Human-readable correct answer for the grading panel.
 export function keyText(q: any, key: any, lang: string): string {
   if (key === undefined || key === null || String(key).trim() === "") return "—";
   if (q.type === "multiple_choice") return Array.isArray(q.options) && q.options[Number(key)] != null ? q.options[Number(key)] : `#${key}`;
+  if (q.type === "complex_multiple_choice") return idxListText(q, key);
   if (q.type === "true_false") return String(key).toLowerCase() === "true" ? (lang === "id" ? "Benar" : "True") : (lang === "id" ? "Salah" : "False");
   return String(key).split("|").map((s) => s.trim()).filter(Boolean).join(" / ");
 }
+
 
 /**
  * Unified grading dialog for quiz-format assignments. Auto-corrects objective
@@ -229,7 +253,7 @@ export function QuizGradeDialog({
             const ans = studentAnswers[i];
             const key = (answerKey as any[])[i];
             const verdict = evalAnswer(q, ans, key);
-            const objective = q.type === "multiple_choice" || q.type === "true_false" || q.type === "short_answer";
+            const objective = q.type === "multiple_choice" || q.type === "complex_multiple_choice" || q.type === "true_false" || q.type === "short_answer";
             return (
               <div key={i} className="rounded-xl border-2 border-border bg-muted/20 p-3 text-sm">
                 <div className="flex items-start justify-between gap-2">
@@ -254,6 +278,8 @@ export function QuizGradeDialog({
                         <span className="text-muted-foreground">{ans ? (lang === "id" ? "(memuat gambar…)" : "(loading image…)") : (lang === "id" ? "(tidak ada gambar)" : "(no image)")}</span>
                       )}
                     </div>
+                  ) : q.type === "complex_multiple_choice" ? (
+                    <span>{lang === "id" ? "Jawaban:" : "Answer:"} {idxListText(q, ans)}</span>
                   ) : q.type === "multiple_choice" ? (
                     <span>{lang === "id" ? "Jawaban:" : "Answer:"} {Array.isArray(q.options) && q.options[Number(ans)] != null ? q.options[Number(ans)] : "—"}</span>
                   ) : q.type === "true_false" ? (
