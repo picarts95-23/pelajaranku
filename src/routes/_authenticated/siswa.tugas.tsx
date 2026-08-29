@@ -521,6 +521,30 @@ function QuizCard({ quiz }: { quiz: any }) {
                         </div>
                       )}
 
+                      {type === "complex_multiple_choice" && (
+                        <div className="mt-2 space-y-1.5">
+                          <p className="text-xs font-semibold text-muted-foreground">{lang === "id" ? "Pilih semua jawaban yang benar (boleh lebih dari satu)." : "Select all correct answers (more than one allowed)."}</p>
+                          {(qq.options ?? []).map((opt: string, oi: number) => {
+                            const chosen = String(answers[qi] ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+                            const selected = chosen.includes(String(oi));
+                            return (
+                              <button key={oi} type="button"
+                                onClick={() => {
+                                  const next = selected ? chosen.filter((c) => c !== String(oi)) : [...chosen, String(oi)];
+                                  setAns(qi, next.map(Number).sort((a, b) => a - b).join(","));
+                                }}
+                                className={`flex w-full items-center gap-2 rounded-lg border-2 px-3 py-2 text-left text-sm transition-colors ${selected ? "border-siswa bg-siswa/10 font-semibold" : "border-border hover:bg-muted"}`}>
+                                <span className={`grid size-5 shrink-0 place-items-center rounded-md border-2 ${selected ? "border-siswa bg-siswa text-white" : "border-muted-foreground/40"}`}>
+                                  {selected && <CheckCircle2 className="size-3.5" />}
+                                </span>
+                                <span className="font-display text-xs font-bold text-muted-foreground">{String.fromCharCode(65 + oi)}</span>
+                                <span>{opt}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+
                       {type === "true_false" && (
                         <div className="mt-2 flex gap-2">
                           {[["true", lang === "id" ? "Benar" : "True"], ["false", lang === "id" ? "Salah" : "False"]].map(([val, label]) => {
