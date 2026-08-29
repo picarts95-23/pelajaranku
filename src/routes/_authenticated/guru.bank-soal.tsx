@@ -693,9 +693,18 @@ function TransferDialog({ open, onOpenChange, items, onDone }: { open: boolean; 
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>{lang === "id" ? "Batal" : "Cancel"}</Button>
+          <Button variant="outline" onClick={() => setReviewOpen(true)}>{lang === "id" ? "Tinjau soal" : "Review questions"}</Button>
           <Button variant="quest" disabled={mut.isPending} onClick={() => mut.mutate()}>{mut.isPending ? "…" : (lang === "id" ? "Kirim" : "Send")}</Button>
         </DialogFooter>
+        <QuizReviewDialog
+          open={reviewOpen}
+          onOpenChange={setReviewOpen}
+          title={title || (lang === "id" ? "Tugas baru" : "New task")}
+          questions={mapped.questions}
+          answerKey={mapped.keys}
+        />
       </DialogContent>
+
     </Dialog>
   );
 }
