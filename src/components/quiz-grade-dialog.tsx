@@ -278,6 +278,8 @@ export function QuizGradeDialog({
                         <span className="text-muted-foreground">{ans ? (lang === "id" ? "(memuat gambar…)" : "(loading image…)") : (lang === "id" ? "(tidak ada gambar)" : "(no image)")}</span>
                       )}
                     </div>
+                  ) : q.type === "complex_multiple_choice" ? (
+                    <span>{lang === "id" ? "Jawaban:" : "Answer:"} {idxListText(q, ans)}</span>
                   ) : q.type === "multiple_choice" ? (
                     <span>{lang === "id" ? "Jawaban:" : "Answer:"} {Array.isArray(q.options) && q.options[Number(ans)] != null ? q.options[Number(ans)] : "—"}</span>
                   ) : q.type === "true_false" ? (
