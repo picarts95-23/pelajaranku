@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Database, Mic, Plus, Send, Trash2, X, BookOpenCheck, CheckCircle2, Pencil, Sparkles, ClipboardPaste, Copy } from "lucide-react";
 import { toast } from "sonner";
@@ -24,6 +24,7 @@ import {
 } from "@/components/question-fields";
 import { Textarea } from "@/components/ui/textarea";
 import { parseQuestions, AI_PROMPT_TEMPLATE } from "@/lib/question-import";
+import { QuizReviewDialog } from "@/components/quiz-review";
 
 export const Route = createFileRoute("/_authenticated/guru/bank-soal")({
   head: () => ({ meta: [{ title: "Bank Soal · Pelajaranku" }] }),
