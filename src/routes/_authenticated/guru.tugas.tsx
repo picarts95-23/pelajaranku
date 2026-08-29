@@ -24,6 +24,7 @@ import { ANSWER_FORMATS, JUZ_LIST, SURAHS, type AnswerFormat } from "@/lib/quran
 import { isHalaqohSubject, SETORAN_TYPES } from "@/lib/mutabaah";
 import { QuizTabs } from "@/components/quiz-tabs";
 import { QuizGradeDialog } from "@/components/quiz-grade-dialog";
+import { QuizReviewDialog } from "@/components/quiz-review";
 import { signAnswerFile } from "@/lib/transcribe.functions";
 import { parseAnswerFiles } from "@/lib/answer-files";
 import { ShareMenu } from "@/components/share-menu";
