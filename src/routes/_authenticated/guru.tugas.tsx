@@ -486,6 +486,18 @@ function AssignmentDetail({ assignment, onDelete, onEdited, onDuplicated }: { as
     },
   });
 
+  // Answer key of a quiz task is stored as a JSON array (one entry per question).
+  const parsedKey = useMemo(() => {
+    if (!answerKey) return [];
+    try {
+      const p = JSON.parse(answerKey);
+      return Array.isArray(p) ? p : [];
+    } catch {
+      return [];
+    }
+  }, [answerKey]);
+
+
   const { data: subs = [] } = useQuery({
     queryKey: ["submissions", assignment.id],
     queryFn: async () => {
