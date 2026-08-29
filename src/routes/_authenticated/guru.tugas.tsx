@@ -666,10 +666,25 @@ function AssignmentDetail({ assignment, onDelete, onEdited, onDuplicated }: { as
 
       {isQuiz && Array.isArray(assignment.questions) && (
         <div className="mb-3 rounded-xl border border-accent/30 bg-accent/5 p-3 text-sm">
-          <div className="font-display font-bold text-accent">📝 {assignment.questions.length} {lang === "id" ? "soal · koreksi otomatis + audio" : "questions · auto-grade + audio"}</div>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="font-display font-bold text-accent">📝 {assignment.questions.length} {lang === "id" ? "soal · koreksi otomatis + audio" : "questions · auto-grade + audio"}</div>
+            <Button size="sm" variant="outline" className="h-7" onClick={() => setReviewOpen(true)}>
+              <Search className="size-3.5" /> {lang === "id" ? "Tinjau soal" : "Review questions"}
+            </Button>
+          </div>
           <p className="mt-1 text-xs text-muted-foreground">{lang === "id" ? "Soal objektif dinilai otomatis. Buka penilaian untuk mendengar & meninjau jawaban audio/gambar, lalu beri nilai tiap jawaban." : "Objective questions auto-scored. Open grading to listen to & review audio/image answers, then score each one."}</p>
         </div>
       )}
+      {reviewOpen && (
+        <QuizReviewDialog
+          open={reviewOpen}
+          onOpenChange={setReviewOpen}
+          title={assignment.title}
+          questions={Array.isArray(assignment.questions) ? assignment.questions : []}
+          answerKey={parsedKey}
+        />
+      )}
+
 
       <div className="mt-4 mb-2 flex items-center justify-between">
         <h3 className="font-display font-bold text-sm">📋 {t("submissions")} ({subs.length})</h3>
