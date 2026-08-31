@@ -6,6 +6,7 @@ import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianG
 import { format } from "date-fns";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
 import { MediaViewer } from "@/components/media-input";
+import { RekapNilaiSiswa } from "@/components/rekap-nilai-siswa";
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
