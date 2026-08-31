@@ -45,6 +45,10 @@ function SiswaNilaiPage() {
     <DashboardShell accent="siswa">
       <PageHeader title={t("navGrades")} subtitle={lang === "id" ? "Riwayat nilai dan progres XP kamu" : "Your grade history and XP progress"} />
 
+      <div className="mb-6">
+        <RekapNilaiSiswa />
+      </div>
+
       {chartData.length > 0 && (
         <div className="mb-6 rounded-2xl border-2 border-border bg-card p-5 shadow-card-rpg">
           <h3 className="mb-3 font-display text-lg font-bold flex items-center gap-2"><Sparkles className="size-5 text-xp" /> {t("xpHistory")}</h3>
