@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, Award, BookOpen, BookOpenCheck, CalendarDays, ClipboardList, Coins, Flame, GraduationCap, Heart, Megaphone, MessageCircle, ScrollText, Sparkles, Star, Sword, Trophy, UserCircle2 } from "lucide-react";
 import type { ComponentType, ReactNode } from "react";
 import { DashboardShell, StatCard } from "@/components/dashboard-shell";
+import { RekapNilaiSiswa } from "@/components/rekap-nilai-siswa";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
@@ -152,6 +153,13 @@ function SiswaDashboard() {
               })}
             </ul>
           )}
+        </div>
+      </section>
+
+      <section className="mt-6">
+        <RekapNilaiSiswa compact />
+        <div className="mt-3 flex justify-end">
+          <Link to="/siswa/nilai"><Button size="sm" variant="ghost">{lang === "id" ? "Lihat rekap lengkap" : "View full recap"} →</Button></Link>
         </div>
       </section>
 

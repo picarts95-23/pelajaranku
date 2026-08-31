@@ -6,6 +6,7 @@ import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianG
 import { format } from "date-fns";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
 import { MediaViewer } from "@/components/media-input";
+import { RekapNilaiSiswa } from "@/components/rekap-nilai-siswa";
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
@@ -44,6 +45,10 @@ function SiswaNilaiPage() {
   return (
     <DashboardShell accent="siswa">
       <PageHeader title={t("navGrades")} subtitle={lang === "id" ? "Riwayat nilai dan progres XP kamu" : "Your grade history and XP progress"} />
+
+      <div className="mb-6">
+        <RekapNilaiSiswa />
+      </div>
 
       {chartData.length > 0 && (
         <div className="mb-6 rounded-2xl border-2 border-border bg-card p-5 shadow-card-rpg">
