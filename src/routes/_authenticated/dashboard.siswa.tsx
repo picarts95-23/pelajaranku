@@ -155,6 +155,13 @@ function SiswaDashboard() {
         </div>
       </section>
 
+      <section className="mt-6">
+        <RekapNilaiSiswa compact />
+        <div className="mt-3 flex justify-end">
+          <Link to="/siswa/nilai"><Button size="sm" variant="ghost">{lang === "id" ? "Lihat rekap lengkap" : "View full recap"} →</Button></Link>
+        </div>
+      </section>
+
       <section className="mt-8">
         <div className="mb-4 flex items-end justify-between gap-3">
           <div>
