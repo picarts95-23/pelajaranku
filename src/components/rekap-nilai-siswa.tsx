@@ -46,7 +46,7 @@ export function RekapNilaiSiswa({ compact = false }: { compact?: boolean }) {
         supabase.from("classes").select("id, name, subjects, subject").in("id", classIds),
         supabase
           .from("assignments")
-          .select("id, class_id, subject, exam_type, max_score, submissions(student_id, score, status)")
+          .select("id, class_id, subject, exam_type, halaqoh_kind, max_score, submissions(student_id, score, status)")
           .in("class_id", classIds),
         supabase.from("attendance").select("class_id, status").eq("student_id", user!.id),
         supabase.from("adab_scores").select("class_id, subject, score").eq("student_id", user!.id),
@@ -95,15 +95,41 @@ export function RekapNilaiSiswa({ compact = false }: { compact?: boolean }) {
         const halaqoh = isHalaqohSubject(subject);
         let harian = avgPct("harian");
         if (halaqoh) {
-          const recs = (data.mutabaah as any[]).filter((m) => m.class_id === cls.id);
-          const avgOf = (kind: string) => {
-            const list = recs.filter((m) => (m.session_type ?? "").toLowerCase().startsWith(kind));
-            return list.length ? list.reduce((n, m) => n + Number(m.total_score ?? 0), 0) / list.length : 0;
+          // Same sources as the server RPC halaqoh_daily_scores: manual
+          // Mutaba'ah records + graded Halaqoh assignments, per kind.
+          const buckets: Record<"ziyadah" | "murojaah" | "tilawah", number[]> = {
+            ziyadah: [], murojaah: [], tilawah: [],
           };
-          const ziyadah = avgOf("ziyadah");
-          const murojaah = avgOf("muroj");
-          const tilawah = avgOf("tilawah");
-          harian = ziyadah * HALAQOH_WEIGHTS.ziyadah + murojaah * HALAQOH_WEIGHTS.murojaah + tilawah * HALAQOH_WEIGHTS.tilawah;
+          const normKind = (raw: string): "ziyadah" | "murojaah" | "tilawah" | null => {
+            const v = (raw ?? "").toLowerCase();
+            if (v.startsWith("ziyadah")) return "ziyadah";
+            if (v.startsWith("muroj") || v.startsWith("muraj")) return "murojaah";
+            if (v.startsWith("tilawah")) return "tilawah";
+            return null;
+          };
+          (data.mutabaah as any[])
+            .filter((m) => m.class_id === cls.id)
+            .forEach((m) => {
+              const k = normKind(m.session_type ?? "") ?? "ziyadah";
+              buckets[k].push(Number(m.total_score ?? 0));
+            });
+          clsAssignments.forEach((a) => {
+            const k = normKind(a.halaqoh_kind ?? "");
+            if (!k) return;
+            const sub = (a.submissions ?? []).find(
+              (s: any) => s.student_id === user.id && s.status === "graded" && s.score != null,
+            );
+            if (sub) buckets[k].push(a.max_score ? (sub.score / a.max_score) * 100 : 0);
+          });
+          const avgOf = (k: "ziyadah" | "murojaah" | "tilawah") =>
+            buckets[k].length ? buckets[k].reduce((n, v) => n + v, 0) / buckets[k].length : null;
+          const parts = (["ziyadah", "murojaah", "tilawah"] as const)
+            .map((k) => ({ value: avgOf(k), weight: HALAQOH_WEIGHTS[k] }))
+            .filter((p) => p.value != null);
+          const totalWeight = parts.reduce((n, p) => n + p.weight, 0);
+          harian = totalWeight
+            ? parts.reduce((n, p) => n + (p.value as number) * p.weight, 0) / totalWeight
+            : 0;
         }
 
         const adabRow = (data.adab as any[]).find((a) => a.class_id === cls.id && a.subject === subject);
