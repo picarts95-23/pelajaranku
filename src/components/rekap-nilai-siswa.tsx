@@ -46,7 +46,7 @@ export function RekapNilaiSiswa({ compact = false }: { compact?: boolean }) {
         supabase.from("classes").select("id, name, subjects, subject").in("id", classIds),
         supabase
           .from("assignments")
-          .select("id, class_id, subject, exam_type, max_score, submissions(student_id, score, status)")
+          .select("id, class_id, subject, exam_type, halaqoh_kind, max_score, submissions(student_id, score, status)")
           .in("class_id", classIds),
         supabase.from("attendance").select("class_id, status").eq("student_id", user!.id),
         supabase.from("adab_scores").select("class_id, subject, score").eq("student_id", user!.id),
