@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BookOpenCheck, Plus, Trash2, AlertTriangle, CheckCircle2, Search, Filter } from "lucide-react";
+import { BookOpenCheck, Plus, Trash2, AlertTriangle, CheckCircle2, Search, Filter, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
