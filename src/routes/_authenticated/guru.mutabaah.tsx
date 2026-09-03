@@ -219,8 +219,8 @@ function GuruMutabaahPage() {
   const createMut = useMutation({
     mutationFn: async () => { await saveOne(); },
     onSuccess: () => {
-      toast.success(lang === "id" ? "Penilaian tersimpan" : "Saved");
-      setOpen(false); setForm(emptyForm());
+      toast.success(editingId ? (lang === "id" ? "Revisi penilaian tersimpan" : "Revision saved") : (lang === "id" ? "Penilaian tersimpan" : "Saved"));
+      setOpen(false); setEditingId(null); setForm(emptyForm());
       qc.invalidateQueries({ queryKey: ["mutabaah"] });
       qc.invalidateQueries({ queryKey: ["mutabaah-accum"] });
     },
