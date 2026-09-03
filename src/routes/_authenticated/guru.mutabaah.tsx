@@ -82,6 +82,7 @@ function GuruMutabaahPage() {
   const { lang } = useLang();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<MForm>(emptyForm());
   const [viewClass, setViewClass] = useState("");
 
