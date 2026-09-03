@@ -655,7 +655,7 @@ function materialLabel(r: any): string {
   return s;
 }
 
-export function RecordCard({ r, lang, onDelete, showStudent }: { r: any; lang: string; onDelete?: () => void; showStudent?: boolean }) {
+export function RecordCard({ r, lang, onEdit, onDelete, showStudent }: { r: any; lang: string; onEdit?: () => void; onDelete?: () => void; showStudent?: boolean }) {
   const tajwidOver = r.tajwid_errors > TAJWID_TOLERANCE;
   const helpsOver = r.kelancaran_helps > HELP_TOLERANCE;
   const isIqro = (r.session_type ?? "").toLowerCase().startsWith("iqro");
