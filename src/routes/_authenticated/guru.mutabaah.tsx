@@ -156,7 +156,7 @@ function GuruMutabaahPage() {
       if (!form.surah) throw new Error(lang === "id" ? "Pilih surah" : "Select a surah");
     }
     const t = computeTotal(form.tajwid_score, form.kelancaran_score, form.fashohah_score);
-    const { error } = await (supabase as any).from("tahfidz_mutabaah").insert({
+    const payload = {
       teacher_id: user.id,
       student_id: form.student_id,
       class_id: form.class_id,
