@@ -697,7 +697,12 @@ export function RecordCard({ r, lang, onEdit, onDelete, showStudent }: { r: any;
             <div className="font-display text-2xl font-bold text-primary">{r.total_score}</div>
             <div className="text-xs font-semibold text-muted-foreground">{r.predikat ?? "—"}</div>
           </div>
-          {onDelete && <Button size="icon" variant="ghost" onClick={onDelete}><Trash2 className="size-4 text-destructive" /></Button>}
+          {onEdit && (
+            <Button size="icon" variant="ghost" onClick={onEdit} title={lang === "id" ? "Revisi penilaian" : "Revise"}>
+              <Pencil className="size-4 text-guru" />
+            </Button>
+          )}
+          {onDelete && <Button size="icon" variant="ghost" onClick={onDelete} title={lang === "id" ? "Hapus" : "Delete"}><Trash2 className="size-4 text-destructive" /></Button>}
         </div>
       </div>
       <div className="mt-3 grid grid-cols-3 gap-2 text-center text-xs">
