@@ -580,7 +580,7 @@ function GuruMutabaahPage() {
                 <span className="text-xs text-muted-foreground">{rows.length} {lang === "id" ? "setoran" : "sessions"}</span>
               </div>
               <div className="space-y-2">
-                {rows.map((r: any) => <RecordCard key={r.id} r={r} lang={lang} onDelete={() => deleteMut.mutate(r.id)} showStudent />)}
+                {rows.map((r: any) => <RecordCard key={r.id} r={r} lang={lang} onEdit={() => startEdit(r)} onDelete={() => deleteMut.mutate(r.id)} showStudent />)}
               </div>
             </section>
           ))}
