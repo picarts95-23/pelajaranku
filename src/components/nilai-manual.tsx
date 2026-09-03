@@ -155,7 +155,7 @@ export function NilaiManual({ classId, subject, students }: { classId: string; s
         className="flex w-full items-center gap-2 px-4 py-3 text-left font-display font-bold text-guru"
       >
         <ClipboardPen className="size-5" />
-        {lang === "id" ? "Input Nilai Tatap Muka (Manual)" : "Manual Face-to-Face Grades"}
+        {lang === "id" ? "Input Nilai Manual (Harian · UTS · UAS)" : "Manual Grades (Daily · Midterm · Final)"}
         <span className="ml-auto text-xs font-normal text-muted-foreground">
           {sessions.length > 0 && `${sessions.length} ${lang === "id" ? "penilaian" : "sessions"} · `}{open ? "▾" : "▸"}
         </span>
