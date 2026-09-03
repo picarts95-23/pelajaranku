@@ -181,9 +181,40 @@ function GuruMutabaahPage() {
       total_score: t,
       predikat: predikatOf(t, "id"),
       notes: form.notes.trim() || null,
-    });
+    };
+    // Revisi: catatan yang sudah tersimpan bisa diperbarui, bukan hanya dibuat baru.
+    const { error } = editingId
+      ? await (supabase as any).from("tahfidz_mutabaah").update(payload).eq("id", editingId)
+      : await (supabase as any).from("tahfidz_mutabaah").insert(payload);
     if (error) throw error;
   };
+
+  function startEdit(r: any) {
+    setEditingId(r.id);
+    setForm({
+      class_id: r.class_id ?? "",
+      student_id: r.student_id ?? "",
+      session_date: r.session_date ?? new Date().toISOString().slice(0, 10),
+      session_type: (r.setoran_kind ?? r.session_type ?? "ziyadah") as string,
+      surah: r.surah ?? "",
+      ayat_from: r.ayat_from != null ? String(r.ayat_from) : "",
+      ayat_to: r.ayat_to != null ? String(r.ayat_to) : "",
+      juz: r.juz != null ? String(r.juz) : "",
+      iqro_jilid: r.iqro_jilid != null ? String(r.iqro_jilid) : "",
+      iqro_page: r.iqro_page != null ? String(r.iqro_page) : "",
+      iqro_letters: (r.iqro_letters ?? []) as string[],
+      tajwid_score: r.tajwid_score ?? 90,
+      tajwid_errors: r.tajwid_errors ?? 0,
+      kelancaran_score: r.kelancaran_score ?? 90,
+      kelancaran_helps: r.kelancaran_helps ?? 0,
+      fashohah_score: r.fashohah_score ?? 90,
+      adab_aurat: !!r.adab_aurat,
+      adab_focus: !!r.adab_focus,
+      adab_etika: !!r.adab_etika,
+      notes: r.notes ?? "",
+    });
+    setOpen(true);
+  }
 
   const createMut = useMutation({
     mutationFn: async () => { await saveOne(); },
