@@ -312,7 +312,7 @@ function GuruMutabaahPage() {
             <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setEditingId(null); setForm(emptyForm()); } }}>
               <DialogTrigger asChild><Button variant="guru" onClick={() => { setEditingId(null); setForm(emptyForm()); }}><Plus className="size-4" /> {lang === "id" ? "Nilai Setoran" : "New Assessment"}</Button></DialogTrigger>
               <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-                <DialogHeader><DialogTitle>{lang === "id" ? "Penilaian Mutaba'ah" : "Mutaba'ah Assessment"}</DialogTitle></DialogHeader>
+                <DialogHeader><DialogTitle>{editingId ? (lang === "id" ? "Revisi Penilaian Mutaba'ah" : "Revise Mutaba'ah Assessment") : (lang === "id" ? "Penilaian Mutaba'ah" : "Mutaba'ah Assessment")}</DialogTitle></DialogHeader>
                 <div className="space-y-3">
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div><Label>{lang === "id" ? "Kelas" : "Class"} <span className="text-destructive">*</span></Label>
