@@ -453,10 +453,14 @@ function GuruMutabaahPage() {
                 </div>
                 <DialogFooter className="flex-col-reverse gap-2 sm:flex-row">
                   <Button variant="ghost" onClick={() => setOpen(false)}>{lang === "id" ? "Batal" : "Cancel"}</Button>
-                  <Button variant="outline" disabled={saveNextMut.isPending} onClick={() => saveNextMut.mutate()}>
-                    {lang === "id" ? "Simpan & Siswa Berikutnya" : "Save & Next"}
+                  {!editingId && (
+                    <Button variant="outline" disabled={saveNextMut.isPending} onClick={() => saveNextMut.mutate()}>
+                      {lang === "id" ? "Simpan & Siswa Berikutnya" : "Save & Next"}
+                    </Button>
+                  )}
+                  <Button variant="guru" disabled={createMut.isPending} onClick={() => createMut.mutate()}>
+                    {editingId ? (lang === "id" ? "Simpan Revisi" : "Save revision") : (lang === "id" ? "Simpan" : "Save")}
                   </Button>
-                  <Button variant="guru" disabled={createMut.isPending} onClick={() => createMut.mutate()}>{lang === "id" ? "Simpan" : "Save"}</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
