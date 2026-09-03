@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BookOpenCheck, Plus, Trash2, AlertTriangle, CheckCircle2, Search, Filter } from "lucide-react";
+import { BookOpenCheck, Plus, Trash2, AlertTriangle, CheckCircle2, Search, Filter, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
@@ -82,6 +82,7 @@ function GuruMutabaahPage() {
   const { lang } = useLang();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<MForm>(emptyForm());
   const [viewClass, setViewClass] = useState("");
 
@@ -155,7 +156,7 @@ function GuruMutabaahPage() {
       if (!form.surah) throw new Error(lang === "id" ? "Pilih surah" : "Select a surah");
     }
     const t = computeTotal(form.tajwid_score, form.kelancaran_score, form.fashohah_score);
-    const { error } = await (supabase as any).from("tahfidz_mutabaah").insert({
+    const payload = {
       teacher_id: user.id,
       student_id: form.student_id,
       class_id: form.class_id,
@@ -180,15 +181,46 @@ function GuruMutabaahPage() {
       total_score: t,
       predikat: predikatOf(t, "id"),
       notes: form.notes.trim() || null,
-    });
+    };
+    // Revisi: catatan yang sudah tersimpan bisa diperbarui, bukan hanya dibuat baru.
+    const { error } = editingId
+      ? await (supabase as any).from("tahfidz_mutabaah").update(payload).eq("id", editingId)
+      : await (supabase as any).from("tahfidz_mutabaah").insert(payload);
     if (error) throw error;
   };
+
+  function startEdit(r: any) {
+    setEditingId(r.id);
+    setForm({
+      class_id: r.class_id ?? "",
+      student_id: r.student_id ?? "",
+      session_date: r.session_date ?? new Date().toISOString().slice(0, 10),
+      session_type: (r.setoran_kind ?? r.session_type ?? "ziyadah") as string,
+      surah: r.surah ?? "",
+      ayat_from: r.ayat_from != null ? String(r.ayat_from) : "",
+      ayat_to: r.ayat_to != null ? String(r.ayat_to) : "",
+      juz: r.juz != null ? String(r.juz) : "",
+      iqro_jilid: r.iqro_jilid != null ? String(r.iqro_jilid) : "",
+      iqro_page: r.iqro_page != null ? String(r.iqro_page) : "",
+      iqro_letters: (r.iqro_letters ?? []) as string[],
+      tajwid_score: r.tajwid_score ?? 90,
+      tajwid_errors: r.tajwid_errors ?? 0,
+      kelancaran_score: r.kelancaran_score ?? 90,
+      kelancaran_helps: r.kelancaran_helps ?? 0,
+      fashohah_score: r.fashohah_score ?? 90,
+      adab_aurat: !!r.adab_aurat,
+      adab_focus: !!r.adab_focus,
+      adab_etika: !!r.adab_etika,
+      notes: r.notes ?? "",
+    });
+    setOpen(true);
+  }
 
   const createMut = useMutation({
     mutationFn: async () => { await saveOne(); },
     onSuccess: () => {
-      toast.success(lang === "id" ? "Penilaian tersimpan" : "Saved");
-      setOpen(false); setForm(emptyForm());
+      toast.success(editingId ? (lang === "id" ? "Revisi penilaian tersimpan" : "Revision saved") : (lang === "id" ? "Penilaian tersimpan" : "Saved"));
+      setOpen(false); setEditingId(null); setForm(emptyForm());
       qc.invalidateQueries({ queryKey: ["mutabaah"] });
       qc.invalidateQueries({ queryKey: ["mutabaah-accum"] });
     },
@@ -277,10 +309,10 @@ function GuruMutabaahPage() {
             {totalCount > 0 && (
               <ExportMenu filename="mutabaah-tahfidz" title="Mutaba'ah Tahfidz" columns={exportColumns} rows={exportRows} />
             )}
-            <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o) setForm(emptyForm()); }}>
-              <DialogTrigger asChild><Button variant="guru"><Plus className="size-4" /> {lang === "id" ? "Nilai Setoran" : "New Assessment"}</Button></DialogTrigger>
+            <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setEditingId(null); setForm(emptyForm()); } }}>
+              <DialogTrigger asChild><Button variant="guru" onClick={() => { setEditingId(null); setForm(emptyForm()); }}><Plus className="size-4" /> {lang === "id" ? "Nilai Setoran" : "New Assessment"}</Button></DialogTrigger>
               <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-                <DialogHeader><DialogTitle>{lang === "id" ? "Penilaian Mutaba'ah" : "Mutaba'ah Assessment"}</DialogTitle></DialogHeader>
+                <DialogHeader><DialogTitle>{editingId ? (lang === "id" ? "Revisi Penilaian Mutaba'ah" : "Revise Mutaba'ah Assessment") : (lang === "id" ? "Penilaian Mutaba'ah" : "Mutaba'ah Assessment")}</DialogTitle></DialogHeader>
                 <div className="space-y-3">
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div><Label>{lang === "id" ? "Kelas" : "Class"} <span className="text-destructive">*</span></Label>
@@ -421,10 +453,14 @@ function GuruMutabaahPage() {
                 </div>
                 <DialogFooter className="flex-col-reverse gap-2 sm:flex-row">
                   <Button variant="ghost" onClick={() => setOpen(false)}>{lang === "id" ? "Batal" : "Cancel"}</Button>
-                  <Button variant="outline" disabled={saveNextMut.isPending} onClick={() => saveNextMut.mutate()}>
-                    {lang === "id" ? "Simpan & Siswa Berikutnya" : "Save & Next"}
+                  {!editingId && (
+                    <Button variant="outline" disabled={saveNextMut.isPending} onClick={() => saveNextMut.mutate()}>
+                      {lang === "id" ? "Simpan & Siswa Berikutnya" : "Save & Next"}
+                    </Button>
+                  )}
+                  <Button variant="guru" disabled={createMut.isPending} onClick={() => createMut.mutate()}>
+                    {editingId ? (lang === "id" ? "Simpan Revisi" : "Save revision") : (lang === "id" ? "Simpan" : "Save")}
                   </Button>
-                  <Button variant="guru" disabled={createMut.isPending} onClick={() => createMut.mutate()}>{lang === "id" ? "Simpan" : "Save"}</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -544,7 +580,7 @@ function GuruMutabaahPage() {
                 <span className="text-xs text-muted-foreground">{rows.length} {lang === "id" ? "setoran" : "sessions"}</span>
               </div>
               <div className="space-y-2">
-                {rows.map((r: any) => <RecordCard key={r.id} r={r} lang={lang} onDelete={() => deleteMut.mutate(r.id)} showStudent />)}
+                {rows.map((r: any) => <RecordCard key={r.id} r={r} lang={lang} onEdit={() => startEdit(r)} onDelete={() => deleteMut.mutate(r.id)} showStudent />)}
               </div>
             </section>
           ))}
@@ -619,7 +655,7 @@ function materialLabel(r: any): string {
   return s;
 }
 
-export function RecordCard({ r, lang, onDelete, showStudent }: { r: any; lang: string; onDelete?: () => void; showStudent?: boolean }) {
+export function RecordCard({ r, lang, onEdit, onDelete, showStudent }: { r: any; lang: string; onEdit?: () => void; onDelete?: () => void; showStudent?: boolean }) {
   const tajwidOver = r.tajwid_errors > TAJWID_TOLERANCE;
   const helpsOver = r.kelancaran_helps > HELP_TOLERANCE;
   const isIqro = (r.session_type ?? "").toLowerCase().startsWith("iqro");
@@ -661,7 +697,12 @@ export function RecordCard({ r, lang, onDelete, showStudent }: { r: any; lang: s
             <div className="font-display text-2xl font-bold text-primary">{r.total_score}</div>
             <div className="text-xs font-semibold text-muted-foreground">{r.predikat ?? "—"}</div>
           </div>
-          {onDelete && <Button size="icon" variant="ghost" onClick={onDelete}><Trash2 className="size-4 text-destructive" /></Button>}
+          {onEdit && (
+            <Button size="icon" variant="ghost" onClick={onEdit} title={lang === "id" ? "Revisi penilaian" : "Revise"}>
+              <Pencil className="size-4 text-guru" />
+            </Button>
+          )}
+          {onDelete && <Button size="icon" variant="ghost" onClick={onDelete} title={lang === "id" ? "Hapus" : "Delete"}><Trash2 className="size-4 text-destructive" /></Button>}
         </div>
       </div>
       <div className="mt-3 grid grid-cols-3 gap-2 text-center text-xs">

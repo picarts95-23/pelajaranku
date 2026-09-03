@@ -155,7 +155,7 @@ export function NilaiManual({ classId, subject, students }: { classId: string; s
         className="flex w-full items-center gap-2 px-4 py-3 text-left font-display font-bold text-guru"
       >
         <ClipboardPen className="size-5" />
-        {lang === "id" ? "Input Nilai Tatap Muka (Manual)" : "Manual Face-to-Face Grades"}
+        {lang === "id" ? "Input Nilai Manual (Harian · UTS · UAS)" : "Manual Grades (Daily · Midterm · Final)"}
         <span className="ml-auto text-xs font-normal text-muted-foreground">
           {sessions.length > 0 && `${sessions.length} ${lang === "id" ? "penilaian" : "sessions"} · `}{open ? "▾" : "▸"}
         </span>
@@ -168,6 +168,26 @@ export function NilaiManual({ classId, subject, students }: { classId: string; s
               ? "Nilai yang diinput di sini langsung masuk ke rekap nilai, laporan progres, dan ekspor — sama seperti tugas dari aplikasi."
               : "Scores entered here flow into the grade recap, progress report and exports just like in-app tasks."}
           </p>
+
+          {/* Pintasan jenis penilaian — memudahkan guru langsung membuat UTS/UAS. */}
+          <div className="flex flex-wrap gap-2">
+            {EXAM_TYPES.map((x) => {
+              const label = x === "harian" ? (lang === "id" ? "Harian (20%)" : "Daily (20%)") : x === "uts" ? "UTS (20%)" : "UAS (30%)";
+              const count = (sessions as any[]).filter((s) => s.exam_type === x).length;
+              return (
+                <button
+                  key={x}
+                  type="button"
+                  onClick={() => { resetNew(); setExamType(x); setTitle(x === "harian" ? "" : x.toUpperCase()); }}
+                  className={`rounded-full border-2 px-3 py-1.5 text-xs font-display font-bold transition ${
+                    examType === x ? "border-guru bg-guru text-white" : "border-guru/40 bg-card text-guru hover:bg-guru/10"
+                  }`}
+                >
+                  {lang === "id" ? "Input " : "New "}{label}{count > 0 ? ` · ${count}` : ""}
+                </button>
+              );
+            })}
+          </div>
 
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <div className="sm:col-span-2">
