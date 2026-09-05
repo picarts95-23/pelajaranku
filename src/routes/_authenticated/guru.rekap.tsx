@@ -7,6 +7,7 @@ import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-s
 import { LaporanProgres } from "@/components/laporan-progres";
 import { NilaiManual } from "@/components/nilai-manual";
 import { NilaiKelompok } from "@/components/nilai-kelompok";
+import { RekapHalaqoh } from "@/components/rekap-halaqoh";
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
@@ -246,6 +247,12 @@ function GuruRekapPage() {
           </Select>
         </div>
       </div>
+
+      {classId && halaqoh && (
+        <div className="mb-6">
+          <RekapHalaqoh classId={classId} students={students as any[]} />
+        </div>
+      )}
 
       {classId && subject && (
         <div className="mb-6 space-y-4">
