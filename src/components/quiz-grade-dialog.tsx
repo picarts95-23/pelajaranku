@@ -13,19 +13,23 @@ import { useLang } from "@/lib/i18n";
 import { computeTotal, predikatOf, TAJWID_TOLERANCE, HELP_TOLERANCE } from "@/lib/mutabaah";
 import { signAnswerFile } from "@/lib/transcribe.functions";
 
-export type QType = "multiple_choice" | "true_false" | "short_answer" | "essay" | "voice" | "image";
+export type QType = "multiple_choice" | "complex_multiple_choice" | "true_false" | "short_answer" | "essay" | "voice" | "image";
 
-export const Q_TYPE_LABEL = (type: QType, lang: string): string => {
-  const map: Record<QType, [string, string]> = {
+export const Q_TYPE_LABEL = (type: QType | string | null | undefined, lang: string): string => {
+  const map: Record<string, [string, string]> = {
     multiple_choice: ["Pilihan Ganda", "Multiple Choice"],
+    complex_multiple_choice: ["Pilihan Ganda Kompleks", "Complex Multiple Choice"],
     true_false: ["Benar / Salah", "True / False"],
     short_answer: ["Isian Singkat", "Short Answer"],
     essay: ["Esai (manual)", "Essay (manual)"],
     voice: ["Jawaban Audio (manual)", "Audio Answer (manual)"],
     image: ["Jawaban Foto/Gambar (manual)", "Photo/Image Answer (manual)"],
   };
-  return lang === "id" ? map[type][0] : map[type][1];
+  // Jenis soal yang belum dikenal tidak boleh membuat panel penilaian gagal.
+  const pair = map[String(type ?? "")] ?? [String(type ?? "-"), String(type ?? "-")];
+  return lang === "id" ? pair[0] : pair[1];
 };
+
 
 const isHalaqoh = (subject?: string | null) => !!subject && /halaqoh/i.test(subject);
 
