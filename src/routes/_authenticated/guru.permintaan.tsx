@@ -43,7 +43,7 @@ function GuruPermintaanPage() {
   const [respondFor, setRespondFor] = useState<Req | null>(null);
   const [note, setNote] = useState("");
 
-  useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
+  useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: role === "admin" ? "/admin" : "/dashboard/siswa" }); }, [role, loading, navigate]);
 
   const { data: requests = [] } = useQuery({
     queryKey: ["teacher-task-requests", user?.id],

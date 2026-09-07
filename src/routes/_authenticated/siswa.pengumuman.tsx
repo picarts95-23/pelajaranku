@@ -24,7 +24,7 @@ function SiswaPengumumanPage() {
   const { t, lang } = useLang();
   const qc = useQueryClient();
 
-  useEffect(() => { if (!loading && role && role !== "siswa") navigate({ to: "/dashboard/guru" }); }, [role, loading, navigate]);
+  useEffect(() => { if (!loading && role && role !== "siswa") navigate({ to: role === "admin" ? "/admin" : "/dashboard/guru" }); }, [role, loading, navigate]);
 
   const { data: items = [] } = useQuery({
     queryKey: ["siswa-announcements", user?.id], enabled: !!user,

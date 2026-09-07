@@ -32,7 +32,7 @@ function SiswaStatusPage() {
   const [content, setContent] = useState("");
   const [mood, setMood] = useState<string | null>(null);
 
-  useEffect(() => { if (!loading && role && role !== "siswa") navigate({ to: "/dashboard/guru" }); }, [role, loading, navigate]);
+  useEffect(() => { if (!loading && role && role !== "siswa") navigate({ to: role === "admin" ? "/admin" : "/dashboard/guru" }); }, [role, loading, navigate]);
 
   const { data: feed = [] } = useQuery({
     queryKey: ["status-feed"], enabled: !!user,

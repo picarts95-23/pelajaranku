@@ -69,7 +69,7 @@ function GuruMapelPage() {
   const toggleClass = (id: string) => setOpenClasses((s) => ({ ...s, [id]: !s[id] }));
   const toggleSubject = (key: string) => setOpenSubjects((s) => ({ ...s, [key]: !s[key] }));
 
-  useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
+  useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: role === "admin" ? "/admin" : "/dashboard/siswa" }); }, [role, loading, navigate]);
 
   const { data: subjects = [] } = useTeacherSubjects();
 

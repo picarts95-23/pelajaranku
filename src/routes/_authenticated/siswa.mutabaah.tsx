@@ -19,7 +19,7 @@ function SiswaMutabaahPage() {
   const navigate = useNavigate();
   const { lang } = useLang();
 
-  useEffect(() => { if (!loading && role && role !== "siswa") navigate({ to: "/dashboard/guru" }); }, [role, loading, navigate]);
+  useEffect(() => { if (!loading && role && role !== "siswa") navigate({ to: role === "admin" ? "/admin" : "/dashboard/guru" }); }, [role, loading, navigate]);
 
   const { data: records = [] } = useQuery({
     queryKey: ["siswa-mutabaah", user?.id], enabled: !!user,

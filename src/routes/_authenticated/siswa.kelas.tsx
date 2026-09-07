@@ -25,7 +25,7 @@ function SiswaKelasPage() {
   const [open, setOpen] = useState(false);
   const [code, setCode] = useState("");
 
-  useEffect(() => { if (!loading && role && role !== "siswa") navigate({ to: "/dashboard/guru" }); }, [role, loading, navigate]);
+  useEffect(() => { if (!loading && role && role !== "siswa") navigate({ to: role === "admin" ? "/admin" : "/dashboard/guru" }); }, [role, loading, navigate]);
 
   const { data: enrollments = [] } = useQuery({
     queryKey: ["my-classes", user?.id], enabled: !!user,

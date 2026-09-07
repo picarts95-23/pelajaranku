@@ -118,7 +118,9 @@ export function DashboardShell({
                 <img src={avatarSrc} alt={profile?.full_name ?? "Avatar"} width={40} height={40} className="size-full object-cover" loading="lazy" />
               </div>
               <div className="leading-tight">
-                <div className="text-xs text-muted-foreground">{role === "guru" ? t("guru") : t("siswa")}</div>
+                <div className="text-xs text-muted-foreground">
+                  {(role ?? accent) === "guru" ? t("guru") : t("siswa")}
+                </div>
                 <div className="font-display text-sm font-semibold">{profile?.full_name ?? "—"}</div>
               </div>
             </div>

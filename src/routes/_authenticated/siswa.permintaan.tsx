@@ -43,7 +43,7 @@ function SiswaPermintaanPage() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ title: "", description: "", subject: "", class_id: "", desired_due_at: "" });
 
-  useEffect(() => { if (!loading && role && role !== "siswa") navigate({ to: "/dashboard/guru" }); }, [role, loading, navigate]);
+  useEffect(() => { if (!loading && role && role !== "siswa") navigate({ to: role === "admin" ? "/admin" : "/dashboard/guru" }); }, [role, loading, navigate]);
 
   const { data: myRequests = [] } = useQuery({
     queryKey: ["my-task-requests", user?.id],
