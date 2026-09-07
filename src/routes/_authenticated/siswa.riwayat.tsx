@@ -27,7 +27,7 @@ function SiswaHistoryPage() {
   const navigate = useNavigate();
   const { t, lang } = useLang();
 
-  useEffect(() => { if (!loading && role && role !== "siswa") navigate({ to: "/dashboard/guru" }); }, [role, loading, navigate]);
+  useEffect(() => { if (!loading && role && role !== "siswa") navigate({ to: role === "admin" ? "/admin" : "/dashboard/guru" }); }, [role, loading, navigate]);
 
   const { data: txs = [] } = useQuery({
     queryKey: ["xp-history", user?.id], enabled: !!user,

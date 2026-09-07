@@ -21,7 +21,7 @@ function SiswaLeaderboardPage() {
   const { t, lang } = useLang();
   const qc = useQueryClient();
 
-  useEffect(() => { if (!loading && role && role !== "siswa") navigate({ to: "/dashboard/guru" }); }, [role, loading, navigate]);
+  useEffect(() => { if (!loading && role && role !== "siswa") navigate({ to: role === "admin" ? "/admin" : "/dashboard/guru" }); }, [role, loading, navigate]);
 
   const { data: top = [] } = useQuery({
     queryKey: ["siswa-leaderboard", user?.id], enabled: !!user,

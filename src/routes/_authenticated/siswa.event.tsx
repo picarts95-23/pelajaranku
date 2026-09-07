@@ -23,7 +23,7 @@ function SiswaEventPage() {
   const { lang } = useLang();
 
   useEffect(() => {
-    if (!loading && role && role !== "siswa") navigate({ to: "/dashboard/guru" });
+    if (!loading && role && role !== "siswa") navigate({ to: role === "admin" ? "/admin" : "/dashboard/guru" });
   }, [role, loading, navigate]);
 
   const { data: events = [] } = useQuery({

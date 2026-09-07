@@ -24,7 +24,7 @@ function SiswaDashboard() {
   const { t, lang } = useLang();
 
   useEffect(() => {
-    if (!loading && role && role !== "siswa") navigate({ to: "/dashboard/guru" });
+    if (!loading && role && role !== "siswa") navigate({ to: role === "admin" ? "/admin" : "/dashboard/guru" });
   }, [role, loading, navigate]);
 
   const xp = profile?.xp ?? 0;

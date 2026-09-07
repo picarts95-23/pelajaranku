@@ -44,7 +44,7 @@ function GuruRekapPage() {
   const [adabDraft, setAdabDraft] = useState<Record<string, number>>({});
   const [view, setView] = useState<"rekap" | "laporan">("rekap");
 
-  useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
+  useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: role === "admin" ? "/admin" : "/dashboard/siswa" }); }, [role, loading, navigate]);
 
   const { data: classes = [] } = useQuery({
     queryKey: ["classes-list", user?.id], enabled: !!user,

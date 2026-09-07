@@ -21,7 +21,7 @@ function SiswaNilaiPage() {
   const navigate = useNavigate();
   const { t, lang } = useLang();
 
-  useEffect(() => { if (!loading && role && role !== "siswa") navigate({ to: "/dashboard/guru" }); }, [role, loading, navigate]);
+  useEffect(() => { if (!loading && role && role !== "siswa") navigate({ to: role === "admin" ? "/admin" : "/dashboard/guru" }); }, [role, loading, navigate]);
 
   const { data: graded = [] } = useQuery({
     queryKey: ["my-grades", user?.id], enabled: !!user,

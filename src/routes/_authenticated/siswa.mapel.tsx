@@ -32,7 +32,7 @@ function SiswaMapelPage() {
   const [openMaterial, setOpenMaterial] = useState<any | null>(null);
   const [noteDraft, setNoteDraft] = useState("");
 
-  useEffect(() => { if (!loading && role && role !== "siswa") navigate({ to: "/dashboard/guru" }); }, [role, loading, navigate]);
+  useEffect(() => { if (!loading && role && role !== "siswa") navigate({ to: role === "admin" ? "/admin" : "/dashboard/guru" }); }, [role, loading, navigate]);
 
   const { data: materials = [] } = useQuery({
     queryKey: ["materials-siswa", user?.id], enabled: !!user,

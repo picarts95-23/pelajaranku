@@ -36,7 +36,7 @@ function GuruEventPage() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ class_id: "", title: "", description: "", location: "", start_at: "", end_at: "", quiz_link: "", game_link: "" });
 
-  useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
+  useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: role === "admin" ? "/admin" : "/dashboard/siswa" }); }, [role, loading, navigate]);
 
   // Prefill from a Prota/Prosem row ("Jadwalkan ke Kegiatan").
   useEffect(() => {

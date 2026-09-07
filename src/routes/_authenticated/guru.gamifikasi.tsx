@@ -46,7 +46,7 @@ function GuruGamifikasiPage() {
   const [catalogGroup, setCatalogGroup] = useState<string>(BADGE_CATALOG[0].key);
   const [picked, setPicked] = useState<string[]>([]);
 
-  useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
+  useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: role === "admin" ? "/admin" : "/dashboard/siswa" }); }, [role, loading, navigate]);
 
   const { data: badges = [] } = useQuery({
     queryKey: ["badges"], queryFn: async () => (await supabase.from("badges").select("*").order("xp_requirement")).data ?? [],

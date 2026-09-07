@@ -117,7 +117,7 @@ function GuruPresensiPage() {
   }
 
   useEffect(() => {
-    if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" });
+    if (!loading && role && role !== "guru") navigate({ to: role === "admin" ? "/admin" : "/dashboard/siswa" });
   }, [role, loading, navigate]);
 
   const { data: classes = [] } = useQuery({

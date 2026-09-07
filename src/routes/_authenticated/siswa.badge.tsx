@@ -17,7 +17,7 @@ function SiswaBadgePage() {
   const navigate = useNavigate();
   const { t, lang } = useLang();
 
-  useEffect(() => { if (!loading && role && role !== "siswa") navigate({ to: "/dashboard/guru" }); }, [role, loading, navigate]);
+  useEffect(() => { if (!loading && role && role !== "siswa") navigate({ to: role === "admin" ? "/admin" : "/dashboard/guru" }); }, [role, loading, navigate]);
 
   const { data: badges = [] } = useQuery({
     queryKey: ["badges-all"], queryFn: async () => (await supabase.from("badges").select("*").order("xp_requirement")).data ?? [],

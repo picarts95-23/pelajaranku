@@ -54,7 +54,7 @@ function GuruBankSoalPage() {
   const [importText, setImportText] = useState("");
   const [importPreview, setImportPreview] = useState<{ questions: BQ[]; warnings: string[] } | null>(null);
 
-  useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
+  useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: role === "admin" ? "/admin" : "/dashboard/siswa" }); }, [role, loading, navigate]);
 
   const { data: items = [] } = useQuery({
     queryKey: ["qb", user?.id], enabled: !!user,

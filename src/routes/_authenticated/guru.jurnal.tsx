@@ -76,7 +76,7 @@ function GuruDokumenPage() {
   const navigate = useNavigate();
   const { lang } = useLang();
 
-  useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: "/dashboard/siswa" }); }, [role, loading, navigate]);
+  useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: role === "admin" ? "/admin" : "/dashboard/siswa" }); }, [role, loading, navigate]);
 
   // Salinan RPP masuk ke tab Jurnal Guru, jadi buka tab itu langsung.
   const [defaultTab] = useState(() => (hasProgramPrefill("jurnal") ? "jurnal" : "prota"));
