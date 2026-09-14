@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarDays, Plus, Trash2, MapPin, Copy, Check, ExternalLink, List, LayoutGrid, RefreshCw, CheckCircle2, AlertCircle } from "lucide-react";
+import { CalendarDays, Plus, Trash2, MapPin, Copy, Check, ExternalLink, List, LayoutGrid, RefreshCw, CheckCircle2, AlertCircle, Pencil } from "lucide-react";
 import { MonthCalendar } from "@/components/month-calendar";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
@@ -21,7 +22,6 @@ import { LinkFields, LinkBadges } from "@/components/link-fields";
 import { gcalTemplateUrl } from "@/lib/google-calendar";
 import { getCalendarFeedUrl } from "@/lib/google-calendar.functions";
 import { programItemDate, takeProgramPrefill } from "@/lib/program-templates";
-
 
 export const Route = createFileRoute("/_authenticated/guru/event")({
   head: () => ({ meta: [{ title: "Kegiatan · Pelajaranku" }] }),
@@ -34,7 +34,33 @@ function GuruEventPage() {
   const { t, lang } = useLang();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState({ class_id: "", title: "", description: "", location: "", start_at: "", end_at: "", quiz_link: "", game_link: "" });
+
+  const emptyForm = () => ({ class_id: "", title: "", description: "", location: "", start_at: "", end_at: "", quiz_link: "", game_link: "" });
+  const toLocalDateTime = (value?: string | null) => value ? format(new Date(value), "yyyy-MM-dd'T'HH:mm") : "";
+
+  const openNew = () => {
+    setEditingId(null);
+    setForm(emptyForm());
+    setOpen(true);
+  };
+
+  const openEdit = (event: any) => {
+    setEditingId(event.id);
+    setForm({
+      class_id: event.class_id,
+      title: event.title,
+      description: event.description ?? "",
+      location: event.location ?? "",
+      start_at: toLocalDateTime(event.start_at),
+      end_at: toLocalDateTime(event.end_at),
+      quiz_link: event.quiz_link ?? "",
+      game_link: event.game_link ?? "",
+    });
+    setOpen(true);
+  };
 
   useEffect(() => { if (!loading && role && role !== "guru") navigate({ to: role === "admin" ? "/admin" : "/dashboard/siswa" }); }, [role, loading, navigate]);
 
@@ -42,6 +68,7 @@ function GuruEventPage() {
   useEffect(() => {
     const p = takeProgramPrefill("event");
     if (!p) return;
+    setEditingId(null);
     const date = programItemDate({ month: p.month, weeks: p.weeks, academic_year: p.academic_year });
     setForm({
       class_id: p.class_id ?? "",
@@ -68,29 +95,53 @@ function GuruEventPage() {
     queryFn: async () => (await supabase.from("events").select("*, classes(name)").order("start_at", { ascending: true })).data ?? [],
   });
 
-  const createMut = useMutation({
+  const saveMut = useMutation({
     mutationFn: async () => {
       if (!user || !form.class_id || !form.title || !form.start_at) throw new Error(t("required"));
-      const { error } = await supabase.from("events").insert({
-        teacher_id: user.id, class_id: form.class_id, title: form.title,
+      const values = {
+        class_id: form.class_id, title: form.title,
         description: form.description || null, location: form.location || null,
         start_at: new Date(form.start_at).toISOString(),
         end_at: form.end_at ? new Date(form.end_at).toISOString() : null,
         quiz_link: form.quiz_link.trim() || null, game_link: form.game_link.trim() || null,
-      });
+      };
+      const result = editingId
+        ? await supabase.from("events").update(values).eq("id", editingId).eq("teacher_id", user.id)
+        : await supabase.from("events").insert({ ...values, teacher_id: user.id });
+      const { error } = result;
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success(lang === "id" ? "Kegiatan dibuat" : "Event created");
-      setOpen(false); setForm({ class_id: "", title: "", description: "", location: "", start_at: "", end_at: "", quiz_link: "", game_link: "" });
+      toast.success(editingId ? (lang === "id" ? "Kegiatan diperbarui" : "Event updated") : (lang === "id" ? "Kegiatan dibuat" : "Event created"));
+      setOpen(false);
+      setEditingId(null);
+      setForm(emptyForm());
       qc.invalidateQueries({ queryKey: ["events"] });
+      qc.invalidateQueries({ queryKey: ["siswa-events"] });
+      qc.invalidateQueries({ queryKey: ["gcal-sync-status"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
 
   const deleteMut = useMutation({
-    mutationFn: async (id: string) => { const { error } = await supabase.from("events").delete().eq("id", id); if (error) throw error; },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["events"] }),
+    mutationFn: async (id: string) => {
+      if (!user) throw new Error(lang === "id" ? "Sesi guru tidak ditemukan." : "Teacher session not found.");
+      const { error } = await supabase.from("events").delete().eq("id", id).eq("teacher_id", user.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success(lang === "id" ? "Kegiatan dihapus" : "Event deleted");
+      setDeleteId(null);
+      if (editingId) {
+        setOpen(false);
+        setEditingId(null);
+        setForm(emptyForm());
+      }
+      qc.invalidateQueries({ queryKey: ["events"] });
+      qc.invalidateQueries({ queryKey: ["siswa-events"] });
+      qc.invalidateQueries({ queryKey: ["gcal-sync-status"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
   });
 
   // Langganan kalender (satu URL, tempel ke Google Kalender — tanpa OAuth)
@@ -128,10 +179,10 @@ function GuruEventPage() {
     <DashboardShell accent="guru">
       <PageHeader title={t("navEvents")} subtitle={lang === "id" ? "Agenda dan kegiatan kelas" : "Class agenda and events"}
         actions={
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild><Button variant="guru"><Plus className="size-4" /> {t("newEvent")}</Button></DialogTrigger>
+          <Dialog open={open} onOpenChange={(next) => { setOpen(next); if (!next && !saveMut.isPending) setEditingId(null); }}>
+            <DialogTrigger asChild><Button variant="guru" onClick={openNew}><Plus className="size-4" /> {t("newEvent")}</Button></DialogTrigger>
             <DialogContent>
-              <DialogHeader><DialogTitle>{t("newEvent")}</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle>{editingId ? (lang === "id" ? "Edit Kegiatan" : "Edit Event") : t("newEvent")}</DialogTitle></DialogHeader>
               <div className="space-y-3">
                 <div><Label>{t("navClasses")}</Label>
                   <Select value={form.class_id} onValueChange={(v) => setForm({ ...form, class_id: v })}>
@@ -149,8 +200,13 @@ function GuruEventPage() {
                 <LinkFields quizLink={form.quiz_link} gameLink={form.game_link} onQuiz={(v) => setForm({ ...form, quiz_link: v })} onGame={(v) => setForm({ ...form, game_link: v })} />
               </div>
               <DialogFooter>
+                {editingId && (
+                  <Button variant="destructive" className="sm:mr-auto" disabled={saveMut.isPending || deleteMut.isPending} onClick={() => setDeleteId(editingId)}>
+                    <Trash2 className="size-4" /> {t("delete")}
+                  </Button>
+                )}
                 <Button variant="ghost" onClick={() => setOpen(false)}>{t("cancel")}</Button>
-                <Button variant="guru" disabled={createMut.isPending} onClick={() => createMut.mutate()}>{t("save")}</Button>
+                <Button variant="guru" disabled={saveMut.isPending} onClick={() => saveMut.mutate()}>{t("save")}</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -202,6 +258,10 @@ function GuruEventPage() {
         <TabsContent value="calendar" className="mt-0">
           <MonthCalendar
             lang={lang}
+            onSelectEvent={(id) => {
+              const event = events.find((item: any) => item.id === id);
+              if (event) openEdit(event);
+            }}
             events={events.map((e: any) => ({
               id: e.id, title: e.title, start_at: e.start_at, end_at: e.end_at, className: e.classes?.name ?? null,
             }))}
@@ -222,7 +282,14 @@ function GuruEventPage() {
                         {e.location && <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><MapPin className="size-3" />{e.location}</div>}
                       </div>
                     </div>
-                    <Button size="sm" variant="ghost" onClick={() => { if (confirm(`${t("delete")}?`)) deleteMut.mutate(e.id); }}><Trash2 className="size-4 text-destructive" /></Button>
+                    <div className="flex shrink-0 items-center gap-1">
+                      <Button size="icon" variant="ghost" onClick={() => openEdit(e)} aria-label={lang === "id" ? `Edit ${e.title}` : `Edit ${e.title}`} title={lang === "id" ? "Edit kegiatan" : "Edit event"}>
+                        <Pencil className="size-4" />
+                      </Button>
+                      <Button size="icon" variant="ghost" onClick={() => setDeleteId(e.id)} aria-label={lang === "id" ? `Hapus ${e.title}` : `Delete ${e.title}`} title={lang === "id" ? "Hapus kegiatan" : "Delete event"}>
+                        <Trash2 className="size-4 text-destructive" />
+                      </Button>
+                    </div>
                   </div>
                   {e.description && <p className="mt-3 text-sm text-foreground/80">{e.description}</p>}
                   <LinkBadges quizLink={e.quiz_link} gameLink={e.game_link} />
@@ -242,6 +309,30 @@ function GuruEventPage() {
           )}
         </TabsContent>
       </Tabs>
+
+      <AlertDialog open={!!deleteId} onOpenChange={(next) => { if (!next && !deleteMut.isPending) setDeleteId(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{lang === "id" ? "Hapus kegiatan?" : "Delete event?"}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {lang === "id" ? "Kegiatan akan dihapus dari daftar dan kalender. Tindakan ini tidak dapat dibatalkan." : "The event will be removed from the list and calendar. This action cannot be undone."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteMut.isPending}>{t("cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleteMut.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={(event) => {
+                event.preventDefault();
+                if (deleteId) deleteMut.mutate(deleteId);
+              }}
+            >
+              <Trash2 className="mr-2 size-4" /> {deleteMut.isPending ? (lang === "id" ? "Menghapus…" : "Deleting…") : t("delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardShell>
   );
 }
