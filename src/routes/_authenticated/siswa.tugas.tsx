@@ -475,6 +475,8 @@ function QuizCard({ quiz }: { quiz: any }) {
         <div className="mt-4 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm font-display font-bold text-destructive">
           ⛔ {lang === "id" ? "Tenggat sudah lewat — kuis ini tidak dikerjakan." : "Deadline passed — this quiz was not completed."}
         </div>
+      ) : quiz.interactive_mode ? (
+        <InteractiveQuizDialog quiz={quiz} questions={questions} onFinished={() => qc.invalidateQueries({ queryKey: ["quizzes"] })} />
       ) : (
         <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o) { setAnswers(questions.map(() => null)); setVoiceBlobs({}); setResult(null); } }}>
           <DialogTrigger asChild>
@@ -780,9 +782,7 @@ function HowToDialog() {
   const { lang } = useLang();
   const [open, setOpen] = useState(false);
   return (
-      {quiz.interactive_mode ? (
-        <InteractiveQuizDialog quiz={quiz} questions={questions} onFinished={() => qc.invalidateQueries({ queryKey: ["quizzes"] })} />
-      ) : <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm" variant="quest"><HelpCircle className="size-4" /> {lang === "id" ? "Panduan Kirim" : "How to Submit"}</Button>
       </DialogTrigger>
@@ -817,7 +817,7 @@ function HowToDialog() {
           <Button variant="siswa" onClick={() => setOpen(false)}>{lang === "id" ? "Siap!" : "Got it!"}</Button>
         </DialogFooter>
       </DialogContent>
-      </Dialog>}
+    </Dialog>
   );
 }
 
