@@ -279,11 +279,13 @@ export type Database = {
           game_link: string | null
           halaqoh_kind: string | null
           id: string
+          interactive_mode: boolean
           max_score: number
           muroja_ayat: string | null
           muroja_juz: string | null
           muroja_surah: string | null
           options: Json | null
+          question_time_limit: number | null
           questions: Json | null
           quiz_link: string | null
           subject: string | null
@@ -307,11 +309,13 @@ export type Database = {
           game_link?: string | null
           halaqoh_kind?: string | null
           id?: string
+          interactive_mode?: boolean
           max_score?: number
           muroja_ayat?: string | null
           muroja_juz?: string | null
           muroja_surah?: string | null
           options?: Json | null
+          question_time_limit?: number | null
           questions?: Json | null
           quiz_link?: string | null
           subject?: string | null
@@ -335,11 +339,13 @@ export type Database = {
           game_link?: string | null
           halaqoh_kind?: string | null
           id?: string
+          interactive_mode?: boolean
           max_score?: number
           muroja_ayat?: string | null
           muroja_juz?: string | null
           muroja_surah?: string | null
           options?: Json | null
+          question_time_limit?: number | null
           questions?: Json | null
           quiz_link?: string | null
           subject?: string | null
