@@ -25,6 +25,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { parseQuestions, AI_PROMPT_TEMPLATE } from "@/lib/question-import";
 import { QuizReviewDialog } from "@/components/quiz-review";
+import { Switch } from "@/components/ui/switch";
 
 export const Route = createFileRoute("/_authenticated/guru/bank-soal")({
   head: () => ({ meta: [{ title: "Bank Soal · Pelajaranku" }] }),
@@ -535,6 +536,8 @@ function TransferDialog({ open, onOpenChange, items, onDone }: { open: boolean; 
   const [category, setCategory] = useState("harian");
   const [dueAt, setDueAt] = useState("");
   const [reviewOpen, setReviewOpen] = useState(false);
+  const [interactiveMode, setInteractiveMode] = useState(true);
+  const [questionTimeLimit, setQuestionTimeLimit] = useState(30);
 
   // Mapped preview so the teacher can review the exact questions & keys that
   // will be created — identical to what the insert mutation sends.
@@ -564,6 +567,8 @@ function TransferDialog({ open, onOpenChange, items, onDone }: { open: boolean; 
       setGradeLevel(items.find((i) => i.grade_level)?.grade_level ?? "");
       setCategory(items.find((i) => i.halaqoh_kind) ? "halaqoh" : (items.find((i) => i.exam_category)?.exam_category ?? "harian"));
       setDueAt("");
+      setInteractiveMode(true);
+      setQuestionTimeLimit(30);
     }
   }, [open, items]);
 
@@ -613,6 +618,8 @@ function TransferDialog({ open, onOpenChange, items, onDone }: { open: boolean; 
           due_at: dueAt ? new Date(dueAt).toISOString() : null,
           max_score: 100, xp_reward: 50, coin_reward: 10,
           answer_format: "quiz", questions: questionsPublic as any,
+          interactive_mode: interactiveMode,
+          question_time_limit: interactiveMode ? questionTimeLimit : null,
         } as any)
         .select("id")
         .single();
@@ -669,6 +676,17 @@ function TransferDialog({ open, onOpenChange, items, onDone }: { open: boolean; 
                 </SelectContent>
               </Select>
             )}
+          </div>
+
+          <div className="rounded-lg border-2 border-border bg-muted/30 p-3">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <Label htmlFor="interactive-quiz">{lang === "id" ? "Mode Interaktif" : "Interactive Mode"}</Label>
+                <p className="mt-0.5 text-xs text-muted-foreground">{lang === "id" ? "Satu soal per layar dengan timer dan progres." : "One question per screen with timer and progress."}</p>
+              </div>
+              <Switch id="interactive-quiz" checked={interactiveMode} onCheckedChange={setInteractiveMode} />
+            </div>
+            {interactiveMode && <div className="mt-3"><Label htmlFor="question-time-limit">{lang === "id" ? "Waktu per soal (detik)" : "Time per question (seconds)"}</Label><Input id="question-time-limit" type="number" min={10} max={300} value={questionTimeLimit} onChange={(e) => setQuestionTimeLimit(Math.max(10, Math.min(300, Number(e.target.value) || 30)))} /></div>}
           </div>
 
           <div>

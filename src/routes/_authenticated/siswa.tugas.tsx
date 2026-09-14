@@ -24,6 +24,7 @@ import { compressImage } from "@/lib/compress-image";
 import { MAX_ANSWER_PHOTOS, joinAnswerFiles, parseAnswerFiles } from "@/lib/answer-files";
 
 import { assertMediaSize } from "@/lib/media-limits";
+import { InteractiveQuizDialog } from "@/components/interactive-quiz-player";
 
 export const Route = createFileRoute("/_authenticated/siswa/tugas")({
   head: () => ({ meta: [{ title: "Tugas & Latihan · Pelajaranku" }] }),
@@ -474,6 +475,8 @@ function QuizCard({ quiz }: { quiz: any }) {
         <div className="mt-4 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm font-display font-bold text-destructive">
           ⛔ {lang === "id" ? "Tenggat sudah lewat — kuis ini tidak dikerjakan." : "Deadline passed — this quiz was not completed."}
         </div>
+      ) : quiz.interactive_mode ? (
+        <InteractiveQuizDialog quiz={quiz} questions={questions} onFinished={() => qc.invalidateQueries({ queryKey: ["quizzes"] })} />
       ) : (
         <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o) { setAnswers(questions.map(() => null)); setVoiceBlobs({}); setResult(null); } }}>
           <DialogTrigger asChild>

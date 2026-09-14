@@ -28,6 +28,7 @@ import { QuizReviewDialog } from "@/components/quiz-review";
 import { signAnswerFile } from "@/lib/transcribe.functions";
 import { parseAnswerFiles } from "@/lib/answer-files";
 import { ShareMenu } from "@/components/share-menu";
+import { Switch } from "@/components/ui/switch";
 
 
 export const Route = createFileRoute("/_authenticated/guru/tugas")({
@@ -585,6 +586,8 @@ function AssignmentDetail({ assignment, onDelete, onEdited, onDuplicated }: { as
         answer_format: src.answer_format ?? "descriptive",
         options: src.options ?? null,
         questions: src.questions ?? null,
+        interactive_mode: src.interactive_mode ?? false,
+        question_time_limit: src.question_time_limit ?? null,
         muroja_juz: src.muroja_juz ?? null,
         muroja_surah: src.muroja_surah ?? null,
         muroja_ayat: src.muroja_ayat ?? null,
@@ -1027,6 +1030,8 @@ function AssignmentEditDialog({ assignment, initialAnswerKey, onClose, onSaved }
   const [gameLink, setGameLink] = useState<string>(assignment.game_link ?? "");
   const [answerKey, setAnswerKey] = useState<string>(initialAnswerKey);
   const [examType, setExamType] = useState<string>(assignment.exam_type ?? "harian");
+  const [interactiveMode, setInteractiveMode] = useState<boolean>(assignment.interactive_mode ?? false);
+  const [questionTimeLimit, setQuestionTimeLimit] = useState<number>(assignment.question_time_limit ?? 30);
   const [attachment, setAttachment] = useState<AttachmentValue>({
     attachment_url: assignment.attachment_url ?? null,
     attachment_name: assignment.attachment_name ?? null,
@@ -1051,6 +1056,8 @@ function AssignmentEditDialog({ assignment, initialAnswerKey, onClose, onSaved }
         attachment_url: attachment.attachment_url,
         attachment_name: attachment.attachment_name,
         attachment_type: attachment.attachment_type,
+        interactive_mode: assignment.answer_format === "quiz" ? interactiveMode : false,
+        question_time_limit: assignment.answer_format === "quiz" && interactiveMode ? questionTimeLimit : null,
       }).eq("id", assignment.id);
       if (error) throw error;
       // Upsert answer key (delete + insert if provided, otherwise delete)
@@ -1086,6 +1093,7 @@ function AssignmentEditDialog({ assignment, initialAnswerKey, onClose, onSaved }
           </div>
           <div><Label>{t("description")}</Label>
             <Textarea value={description} onChange={(e) => setDescription(e.target.value)} /></div>
+          {assignment.answer_format === "quiz" && <div className="rounded-lg border-2 border-border bg-muted/30 p-3"><div className="flex items-center justify-between gap-3"><div><Label htmlFor="edit-interactive-quiz">{lang === "id" ? "Mode Interaktif" : "Interactive Mode"}</Label><p className="mt-0.5 text-xs text-muted-foreground">{lang === "id" ? "Tampilkan satu soal per layar." : "Show one question per screen."}</p></div><Switch id="edit-interactive-quiz" checked={interactiveMode} onCheckedChange={setInteractiveMode} /></div>{interactiveMode && <div className="mt-3"><Label htmlFor="edit-question-time-limit">{lang === "id" ? "Waktu per soal (detik)" : "Time per question (seconds)"}</Label><Input id="edit-question-time-limit" type="number" min={10} max={300} value={questionTimeLimit} onChange={(e) => setQuestionTimeLimit(Math.max(10, Math.min(300, Number(e.target.value) || 30)))} /></div>}</div>}
           <div>
             <Label className="flex items-center gap-1.5"><KeyRound className="size-3.5 text-guru" /> {lang === "id" ? "Kunci Jawaban (rahasia)" : "Answer Key (secret)"}</Label>
             <Textarea value={answerKey} onChange={(e) => setAnswerKey(e.target.value)} placeholder={lang === "id" ? "Hanya guru yang dapat melihat ini" : "Only teachers can see this"} />
