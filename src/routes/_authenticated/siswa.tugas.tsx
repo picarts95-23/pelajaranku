@@ -24,6 +24,7 @@ import { compressImage } from "@/lib/compress-image";
 import { MAX_ANSWER_PHOTOS, joinAnswerFiles, parseAnswerFiles } from "@/lib/answer-files";
 
 import { assertMediaSize } from "@/lib/media-limits";
+import { InteractiveQuizDialog } from "@/components/interactive-quiz-player";
 
 export const Route = createFileRoute("/_authenticated/siswa/tugas")({
   head: () => ({ meta: [{ title: "Tugas & Latihan · Pelajaranku" }] }),
@@ -779,7 +780,9 @@ function HowToDialog() {
   const { lang } = useLang();
   const [open, setOpen] = useState(false);
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+      {quiz.interactive_mode ? (
+        <InteractiveQuizDialog quiz={quiz} questions={questions} onFinished={() => qc.invalidateQueries({ queryKey: ["quizzes"] })} />
+      ) : <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm" variant="quest"><HelpCircle className="size-4" /> {lang === "id" ? "Panduan Kirim" : "How to Submit"}</Button>
       </DialogTrigger>
@@ -814,7 +817,7 @@ function HowToDialog() {
           <Button variant="siswa" onClick={() => setOpen(false)}>{lang === "id" ? "Siap!" : "Got it!"}</Button>
         </DialogFooter>
       </DialogContent>
-    </Dialog>
+      </Dialog>}
   );
 }
 

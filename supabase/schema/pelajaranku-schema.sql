@@ -112,7 +112,10 @@ CREATE TABLE IF NOT EXISTS public.assignments (
   halaqoh_kind text,
   attachment_url text,
   attachment_name text,
-  attachment_type text
+  attachment_type text,
+  interactive_mode boolean DEFAULT false NOT NULL,
+  question_time_limit integer,
+  CONSTRAINT assignments_question_time_limit_check CHECK ((question_time_limit IS NULL) OR ((question_time_limit >= 10) AND (question_time_limit <= 300)))
 );
 CREATE TABLE IF NOT EXISTS public.attendance (
   id uuid DEFAULT gen_random_uuid() NOT NULL,
