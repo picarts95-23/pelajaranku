@@ -305,7 +305,11 @@ CREATE TABLE IF NOT EXISTS public.question_bank (
   halaqoh_kind text,
   setoran_kind text,
   min_pages integer,
-  exam_category text DEFAULT 'harian'::text NOT NULL
+  exam_category text DEFAULT 'harian'::text NOT NULL,
+  stimulus text,
+  points numeric,
+  time_limit_seconds integer,
+  indicator text
 );
 CREATE TABLE IF NOT EXISTS public.semester_programs (
   id uuid DEFAULT gen_random_uuid() NOT NULL,
@@ -657,8 +661,9 @@ DECLARE
   _total int;
   _auto_correct int := 0;
   _manual_pending int := 0;
-  _points numeric := 0;
-  _per numeric;
+  _earned_weight numeric := 0;
+  _total_weight numeric := 0;
+  _question_weight numeric;
   _score int;
   _status submission_status;
   _i int;
@@ -666,6 +671,10 @@ DECLARE
   _stud text;
   _accepted text;
   _ok boolean;
+  _indicator text;
+  _breakdown jsonb := '{}'::jsonb;
+  _bucket jsonb;
+  _breakdown_array jsonb;
   _uid uuid := auth.uid();
 BEGIN
   IF _uid IS NULL THEN RAISE EXCEPTION 'NOT_AUTHENTICATED'; END IF;
@@ -693,13 +702,26 @@ BEGIN
 
   _total := jsonb_array_length(_a.questions);
   IF _total IS NULL OR _total = 0 THEN RAISE EXCEPTION 'NO_QUESTIONS'; END IF;
-  _per := _a.max_score::numeric / _total;
+
+  FOR _i IN 0.._total - 1 LOOP
+    _question_weight := COALESCE(NULLIF(_a.questions -> _i ->> 'points', '')::numeric, 1);
+    IF _question_weight <= 0 THEN _question_weight := 1; END IF;
+    _total_weight := _total_weight + _question_weight;
+  END LOOP;
 
   FOR _i IN 0.._total - 1 LOOP
     _type := COALESCE(_a.questions -> _i ->> 'type', 'multiple_choice');
+    _question_weight := COALESCE(NULLIF(_a.questions -> _i ->> 'points', '')::numeric, 1);
+    IF _question_weight <= 0 THEN _question_weight := 1; END IF;
+    _indicator := COALESCE(NULLIF(btrim(_a.questions -> _i ->> 'indicator'), ''), 'Umum');
+    _bucket := COALESCE(_breakdown -> _indicator, jsonb_build_object('indicator', _indicator, 'correct', 0, 'total', 0, 'earned_points', 0, 'max_points', 0, 'manual_pending', 0));
+    _bucket := jsonb_set(_bucket, '{total}', to_jsonb(COALESCE((_bucket ->> 'total')::int, 0) + 1));
+    _bucket := jsonb_set(_bucket, '{max_points}', to_jsonb(COALESCE((_bucket ->> 'max_points')::numeric, 0) + _question_weight));
 
     IF _type IN ('essay', 'voice', 'image') THEN
       _manual_pending := _manual_pending + 1;
+      _bucket := jsonb_set(_bucket, '{manual_pending}', to_jsonb(COALESCE((_bucket ->> 'manual_pending')::int, 0) + 1));
+      _breakdown := jsonb_set(_breakdown, ARRAY[_indicator], _bucket, true);
       CONTINUE;
     END IF;
 
@@ -722,17 +744,21 @@ BEGIN
 
     IF _ok THEN
       _auto_correct := _auto_correct + 1;
-      _points := _points + _per;
+      _earned_weight := _earned_weight + _question_weight;
+      _bucket := jsonb_set(_bucket, '{correct}', to_jsonb(COALESCE((_bucket ->> 'correct')::int, 0) + 1));
+      _bucket := jsonb_set(_bucket, '{earned_points}', to_jsonb(COALESCE((_bucket ->> 'earned_points')::numeric, 0) + _question_weight));
     END IF;
+    _breakdown := jsonb_set(_breakdown, ARRAY[_indicator], _bucket, true);
   END LOOP;
 
-  _score := round(_points);
+  SELECT COALESCE(jsonb_agg(value ORDER BY key), '[]'::jsonb) INTO _breakdown_array FROM jsonb_each(_breakdown);
+  _score := CASE WHEN _total_weight > 0 THEN round((_earned_weight / _total_weight) * _a.max_score) ELSE 0 END;
   _status := CASE WHEN _manual_pending > 0 THEN 'submitted'::submission_status ELSE 'graded'::submission_status END;
 
   PERFORM set_config('app.autograde', '1', true);
 
-  INSERT INTO public.submissions (assignment_id, student_id, content, status, score, submitted_at)
-  VALUES (_assignment_id, _uid, _answers::text, _status, _score, now());
+  INSERT INTO public.submissions (assignment_id, student_id, content, status, score, score_breakdown, submitted_at)
+  VALUES (_assignment_id, _uid, _answers::text, _status, _score, _breakdown_array, now());
 
   IF _manual_pending = 0 THEN
     UPDATE public.submissions
@@ -746,7 +772,8 @@ BEGIN
     'manual_pending', _manual_pending,
     'score', _score,
     'max_score', _a.max_score,
-    'status', _status
+    'status', _status,
+    'breakdown', _breakdown_array
   );
 END;
 $function$
