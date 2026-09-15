@@ -1013,13 +1013,17 @@ export type Database = {
           halaqoh_kind: string | null
           id: string
           image_url: string | null
+          indicator: string | null
           min_pages: number | null
           options: Json | null
+          points: number | null
           question: string
           quiz_link: string | null
           setoran_kind: string | null
+          stimulus: string | null
           subject: string | null
           teacher_id: string
+          time_limit_seconds: number | null
           topic: string | null
           type: Database["public"]["Enums"]["question_type"]
           updated_at: string
@@ -1034,13 +1038,17 @@ export type Database = {
           halaqoh_kind?: string | null
           id?: string
           image_url?: string | null
+          indicator?: string | null
           min_pages?: number | null
           options?: Json | null
+          points?: number | null
           question: string
           quiz_link?: string | null
           setoran_kind?: string | null
+          stimulus?: string | null
           subject?: string | null
           teacher_id: string
+          time_limit_seconds?: number | null
           topic?: string | null
           type?: Database["public"]["Enums"]["question_type"]
           updated_at?: string
@@ -1055,13 +1063,17 @@ export type Database = {
           halaqoh_kind?: string | null
           id?: string
           image_url?: string | null
+          indicator?: string | null
           min_pages?: number | null
           options?: Json | null
+          points?: number | null
           question?: string
           quiz_link?: string | null
           setoran_kind?: string | null
+          stimulus?: string | null
           subject?: string | null
           teacher_id?: string
+          time_limit_seconds?: number | null
           topic?: string | null
           type?: Database["public"]["Enums"]["question_type"]
           updated_at?: string
@@ -1297,6 +1309,7 @@ export type Database = {
           id: string
           reward_granted: boolean
           score: number | null
+          score_breakdown: Json | null
           status: Database["public"]["Enums"]["submission_status"]
           student_id: string
           submitted_at: string
@@ -1315,6 +1328,7 @@ export type Database = {
           id?: string
           reward_granted?: boolean
           score?: number | null
+          score_breakdown?: Json | null
           status?: Database["public"]["Enums"]["submission_status"]
           student_id: string
           submitted_at?: string
@@ -1333,6 +1347,7 @@ export type Database = {
           id?: string
           reward_granted?: boolean
           score?: number | null
+          score_breakdown?: Json | null
           status?: Database["public"]["Enums"]["submission_status"]
           student_id?: string
           submitted_at?: string
