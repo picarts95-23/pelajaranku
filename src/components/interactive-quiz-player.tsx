@@ -43,7 +43,7 @@ export function InteractiveQuizDialog({ quiz, questions, onFinished }: { quiz: a
       if (!raw) return;
       const saved = JSON.parse(raw) as SavedRun;
       if (!Array.isArray(saved.answers) || saved.answers.length !== questions.length) return;
-      setAnswers(saved.answers);
+      setAnswers(saved.answers.map((answer) => answer === "pending-upload" ? null : answer));
       setCurrent(Math.min(Math.max(0, saved.current || 0), Math.max(0, questions.length - 1)));
       setDeadline(saved.deadline ?? null);
       setStage("playing");
@@ -123,7 +123,7 @@ export function InteractiveQuizDialog({ quiz, questions, onFinished }: { quiz: a
 
   const advance = () => {
     if (current >= questions.length - 1) {
-      submit();
+      setStage("review");
       return;
     }
     beginQuestion(current + 1);
@@ -134,7 +134,10 @@ export function InteractiveQuizDialog({ quiz, questions, onFinished }: { quiz: a
     const tick = () => {
       const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
       setSecondsLeft(remaining);
-      if (remaining === 0) advance();
+      if (remaining === 0) {
+        if (current >= questions.length - 1) submit();
+        else advance();
+      }
     };
     tick();
     const timer = window.setInterval(tick, 250);
