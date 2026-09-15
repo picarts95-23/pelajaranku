@@ -382,7 +382,8 @@ CREATE TABLE IF NOT EXISTS public.submissions (
   created_at timestamp with time zone DEFAULT now() NOT NULL,
   updated_at timestamp with time zone DEFAULT now() NOT NULL,
   feedback_media_type text,
-  feedback_media_url text
+  feedback_media_url text,
+  score_breakdown jsonb
 );
 CREATE TABLE IF NOT EXISTS public.tahfidz_mutabaah (
   id uuid DEFAULT gen_random_uuid() NOT NULL,
@@ -546,6 +547,8 @@ DO $$ BEGIN EXECUTE 'ALTER TABLE public.app_settings ADD CONSTRAINT app_settings
 DO $$ BEGIN EXECUTE 'ALTER TABLE public.assignments ADD CONSTRAINT assignments_exam_type_check CHECK ((exam_type = ANY (ARRAY[''harian''::text, ''uts''::text, ''uas''::text])))'; EXCEPTION WHEN duplicate_table THEN NULL; WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 DO $$ BEGIN EXECUTE 'ALTER TABLE public.assignments ADD CONSTRAINT assignments_target_check CHECK (((class_id IS NOT NULL) OR (assigned_student_id IS NOT NULL)))'; EXCEPTION WHEN duplicate_table THEN NULL; WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 DO $$ BEGIN EXECUTE 'ALTER TABLE public.question_bank ADD CONSTRAINT question_bank_exam_category_check CHECK ((exam_category = ANY (ARRAY[''harian''::text, ''uts''::text, ''uas''::text, ''halaqoh''::text])))'; EXCEPTION WHEN duplicate_table THEN NULL; WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
+DO $$ BEGIN EXECUTE 'ALTER TABLE public.question_bank ADD CONSTRAINT question_bank_points_check CHECK (points IS NULL OR (points > 0 AND points <= 1000))'; EXCEPTION WHEN duplicate_table THEN NULL; WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
+DO $$ BEGIN EXECUTE 'ALTER TABLE public.question_bank ADD CONSTRAINT question_bank_time_limit_seconds_check CHECK (time_limit_seconds IS NULL OR (time_limit_seconds >= 10 AND time_limit_seconds <= 600))'; EXCEPTION WHEN duplicate_table THEN NULL; WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 DO $$ BEGIN EXECUTE 'ALTER TABLE public.sheet_sync_state ADD CONSTRAINT sheet_sync_singleton CHECK ((id = 1))'; EXCEPTION WHEN duplicate_table THEN NULL; WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 DO $$ BEGIN EXECUTE 'ALTER TABLE public.adab_scores ADD CONSTRAINT adab_scores_class_id_fkey FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE'; EXCEPTION WHEN duplicate_table THEN NULL; WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 DO $$ BEGIN EXECUTE 'ALTER TABLE public.adab_scores ADD CONSTRAINT adab_scores_student_id_fkey FOREIGN KEY (student_id) REFERENCES auth.users(id) ON DELETE CASCADE'; EXCEPTION WHEN duplicate_table THEN NULL; WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
