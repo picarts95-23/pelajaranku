@@ -31,6 +31,12 @@ export function QuizReviewList({ questions, answerKey }: { questions: any[]; ans
                 {TYPE_LABEL(type, lang)}
               </span>
             </div>
+            <div className="mt-1 flex flex-wrap gap-1.5 text-[11px] text-muted-foreground">
+              <span>{Number(q?.points) || 1} {lang === "id" ? "poin" : "pts"}</span>
+              <span>· {Number(q?.time_limit_seconds) || 30} {lang === "id" ? "detik" : "sec"}</span>
+              <span>· {q?.indicator || (lang === "id" ? "Umum" : "General")}</span>
+            </div>
+            {q?.stimulus && <div className="mt-2 rounded-lg border-l-4 border-primary bg-primary/5 p-2 text-xs"><span className="font-bold">{lang === "id" ? "Stimulus:" : "Stimulus:"}</span> <span className="whitespace-pre-wrap">{q.stimulus}</span></div>}
             {Array.isArray(q?.options) && q.options.length > 0 && (
               <div className="mt-2 space-y-1">
                 {q.options.map((o: string, oi: number) => (

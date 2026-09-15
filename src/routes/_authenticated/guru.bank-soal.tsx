@@ -600,6 +600,7 @@ function TransferDialog({ open, onOpenChange, items, onDone }: { open: boolean; 
         questionsPublic.push(question);
         answerKey.push(key);
       });
+      const totalPoints = questionsPublic.reduce((sum, question) => sum + (Number(question?.points) > 0 ? Number(question.points) : 1), 0);
       // Halaqoh tasks keep exam_type 'harian' but carry a halaqoh_kind so the
       // graded result flows into the Mutaba'ah daily accumulation (30/40/30).
       const effCategory = hasHalaqoh ? "halaqoh" : category;
@@ -616,7 +617,7 @@ function TransferDialog({ open, onOpenChange, items, onDone }: { open: boolean; 
           halaqoh_kind: halaqohKind,
           description: gradeLevel ? (lang === "id" ? `Jenjang: ${gradeLevel}` : `Grade: ${gradeLevel}`) : null,
           due_at: dueAt ? new Date(dueAt).toISOString() : null,
-          max_score: 100, xp_reward: 50, coin_reward: 10,
+          max_score: Math.max(1, Math.round(totalPoints)), xp_reward: 50, coin_reward: 10,
           answer_format: "quiz", questions: questionsPublic as any,
           interactive_mode: interactiveMode,
           question_time_limit: interactiveMode ? questionTimeLimit : null,

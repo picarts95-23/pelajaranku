@@ -29,6 +29,7 @@ import { signAnswerFile } from "@/lib/transcribe.functions";
 import { parseAnswerFiles } from "@/lib/answer-files";
 import { ShareMenu } from "@/components/share-menu";
 import { Switch } from "@/components/ui/switch";
+import { ScoreBreakdown, type ScoreBreakdownItem } from "@/components/quiz-score-breakdown";
 
 
 export const Route = createFileRoute("/_authenticated/guru/tugas")({
@@ -734,13 +735,16 @@ function AssignmentDetail({ assignment, onDelete, onEdited, onDuplicated }: { as
           ) : isQuiz ? (
             <div className="space-y-1">
               {filteredSubs.map((s: any) => (
-                <div key={s.id} className="flex items-center justify-between gap-2 rounded-lg bg-muted/30 px-3 py-2 text-sm">
-                  <span className="truncate font-display font-semibold">👤 {s.profile?.full_name ?? "—"}</span>
-                  <div className="flex items-center gap-2">
+                <div key={s.id} className="rounded-lg bg-muted/30 px-3 py-2 text-sm">
+                  <div className="flex items-center justify-between gap-2">
+                   <span className="truncate font-display font-semibold">👤 {s.profile?.full_name ?? "—"}</span>
+                   <div className="flex shrink-0 items-center gap-2">
                     {s.status === "submitted" && <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-bold text-amber-700">{lang === "id" ? "perlu nilai" : "to grade"}</span>}
                     <span className="font-display font-bold text-primary">{s.score ?? 0}<span className="text-xs text-muted-foreground">/{assignment.max_score}</span></span>
                     <Button size="sm" variant="outline" className="h-7" onClick={() => setGrading(s)}>{lang === "id" ? "Nilai" : "Grade"}</Button>
                   </div>
+                  </div>
+                  <div className="mt-2"><ScoreBreakdown items={(Array.isArray(s.score_breakdown) ? s.score_breakdown : []) as ScoreBreakdownItem[]} lang={lang} /></div>
                 </div>
               ))}
             </div>

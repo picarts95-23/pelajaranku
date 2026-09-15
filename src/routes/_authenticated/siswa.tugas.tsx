@@ -25,6 +25,7 @@ import { MAX_ANSWER_PHOTOS, joinAnswerFiles, parseAnswerFiles } from "@/lib/answ
 
 import { assertMediaSize } from "@/lib/media-limits";
 import { InteractiveQuizDialog } from "@/components/interactive-quiz-player";
+import { ScoreBreakdown, questionPoints, type ScoreBreakdownItem } from "@/components/quiz-score-breakdown";
 
 export const Route = createFileRoute("/_authenticated/siswa/tugas")({
   head: () => ({ meta: [{ title: "Tugas & Latihan · Pelajaranku" }] }),
@@ -374,7 +375,7 @@ function QuestCard({ a }: { a: any }) {
   );
 }
 
-type QResult = { auto_correct: number; total: number; manual_pending: number; score: number; max_score: number; status: string };
+type QResult = { auto_correct: number; total: number; manual_pending: number; score: number; max_score: number; status: string; breakdown?: ScoreBreakdownItem[] };
 
 function QuizCard({ quiz }: { quiz: any }) {
   const { user } = useAuth();
@@ -489,14 +490,9 @@ function QuizCard({ quiz }: { quiz: any }) {
             {result ? (
               <div className="space-y-4 py-4 text-center">
                 <div className="text-5xl">{result.manual_pending > 0 ? "📝" : "🎉"}</div>
-                {result.manual_pending > 0 ? (
-                  <p className="text-sm text-muted-foreground">{lang === "id" ? "Jawabanmu terkirim. Sebagian soal dinilai guru secara manual." : "Submitted. Some answers will be graded by your teacher."}</p>
-                ) : (
-                  <>
-                    <div className="font-display text-3xl font-bold text-primary">{result.score}<span className="text-lg text-muted-foreground">/{result.max_score}</span></div>
-                    <p className="text-sm text-muted-foreground">{lang === "id" ? `Benar ${result.auto_correct} dari ${result.total} soal` : `${result.auto_correct} of ${result.total} correct`}</p>
-                  </>
-                )}
+                 <div className="font-display text-3xl font-bold text-primary">{result.score}<span className="text-lg text-muted-foreground">/{result.max_score}</span></div>
+                 <p className="text-sm text-muted-foreground">{result.manual_pending > 0 ? (lang === "id" ? "Nilai sementara. Sebagian soal dinilai guru secara manual." : "Provisional score. Some answers await teacher grading.") : (lang === "id" ? `Benar ${result.auto_correct} dari ${result.total} soal` : `${result.auto_correct} of ${result.total} correct`)}</p>
+                 <ScoreBreakdown items={result.breakdown ?? []} lang={lang} />
               </div>
             ) : (
               <div className="space-y-4">
@@ -504,6 +500,9 @@ function QuizCard({ quiz }: { quiz: any }) {
                   const type = qq.type ?? "multiple_choice";
                   return (
                     <div key={qi} className="rounded-xl border-2 border-border bg-muted/20 p-3">
+                      <div className="mb-2 flex flex-wrap gap-1.5 text-[11px] font-semibold text-muted-foreground"><span>{questionPoints(qq)} {lang === "id" ? "poin" : "pts"}</span><span>· {qq.indicator || (lang === "id" ? "Umum" : "General")}</span></div>
+                      {qq.stimulus && <div className="mb-3 rounded-lg border-l-4 border-siswa bg-siswa/5 p-2 text-xs"><span className="font-bold">Stimulus:</span> <span className="whitespace-pre-wrap">{qq.stimulus}</span></div>}
+                      {qq.image_url && <img src={qq.image_url} alt={lang === "id" ? "Gambar soal" : "Question image"} className="mb-3 max-h-64 w-full rounded-lg border border-border object-contain" />}
                       <p className="font-display text-sm font-bold">{qi + 1}. {qq.q}</p>
 
                       {type === "multiple_choice" && (

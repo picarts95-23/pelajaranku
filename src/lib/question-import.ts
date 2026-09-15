@@ -28,7 +28,8 @@ Catatan format:
 - Baris "Jawaban:" wajib untuk pilihan ganda (boleh lebih dari satu huruf, mis. "Jawaban: A, C").
 - Untuk soal isian singkat tulis "Tipe: isian" dan "Jawaban: <jawaban benar>".
 - Untuk esai tulis "Tipe: esai".
-- Baris "Tingkat:" opsional (mudah / sedang / sulit).`;
+- Baris "Tingkat:" opsional (mudah / sedang / sulit).
+- Agar penilaian lebih rinci, JSON boleh menyertakan "stimulus", "poin", "waktu", dan "indikator" pada setiap soal.`;
 
 const DIFF_MAP: Record<string, string> = {
   mudah: "easy", easy: "easy", ringan: "easy",
@@ -82,6 +83,10 @@ function makeQ(input: {
   type?: string;
   difficulty?: string;
   topic?: string;
+  stimulus?: string;
+  points?: number | string;
+  timeLimit?: number | string;
+  indicator?: string;
 }): BQ | null {
   const question = (input.question ?? "").trim();
   const options = (input.options ?? []).map((o) => String(o ?? "").trim()).filter(Boolean);
@@ -96,6 +101,10 @@ function makeQ(input: {
   q.question = question;
   q.topic = (input.topic ?? "").trim();
   q.difficulty = normDifficulty(input.difficulty);
+  q.stimulus = (input.stimulus ?? "").trim();
+  q.points = String(input.points ?? 10);
+  q.timeLimit = String(input.timeLimit ?? 30);
+  q.indicator = (input.indicator ?? "Umum").trim() || "Umum";
 
   if (type === "true_false") {
     q.options = ["Benar", "Salah"];
@@ -142,6 +151,10 @@ function parseJson(text: string): ParseResult | null {
       type: item?.type ?? item?.tipe ?? "",
       difficulty: item?.difficulty ?? item?.tingkat ?? item?.kesulitan ?? "",
       topic: item?.topic ?? item?.topik ?? "",
+      stimulus: item?.stimulus ?? item?.bacaan ?? item?.teks_stimulus ?? "",
+      points: item?.points ?? item?.poin ?? 10,
+      timeLimit: item?.time_limit_seconds ?? item?.waktu ?? 30,
+      indicator: item?.indicator ?? item?.indikator ?? item?.category ?? item?.kategori ?? "Umum",
     });
     if (q) questions.push(q);
     else warnings.push(`Item ${i + 1} dilewati (tanpa teks soal).`);
@@ -155,9 +168,13 @@ const ANS_RE = /^\s*(?:jawaban|jawapan|answer|kunci(?:\s*jawaban)?)\s*[:.-]\s*(.
 const TYPE_RE = /^\s*(?:tipe|type|jenis)\s*[:.-]\s*(.*)$/i;
 const DIFF_RE = /^\s*(?:tingkat|difficulty|level|kesulitan)\s*[:.-]\s*(.*)$/i;
 const TOPIC_RE = /^\s*(?:topik|topic|materi)\s*[:.-]\s*(.*)$/i;
+const STIMULUS_RE = /^\s*(?:stimulus|bacaan|teks\s*stimulus)\s*[:.-]\s*(.*)$/i;
+const POINTS_RE = /^\s*(?:poin|points?|bobot)\s*[:.-]\s*(.*)$/i;
+const TIME_RE = /^\s*(?:waktu|time|durasi)\s*[:.-]\s*(.*)$/i;
+const INDICATOR_RE = /^\s*(?:indikator|indicator|kategori|category)\s*[:.-]\s*(.*)$/i;
 
-type Draft = { question: string; options: string[]; answer: string; type: string; difficulty: string; topic: string };
-const newDraft = (question: string): Draft => ({ question, options: [], answer: "", type: "", difficulty: "", topic: "" });
+type Draft = { question: string; options: string[]; answer: string; type: string; difficulty: string; topic: string; stimulus: string; points: string; timeLimit: string; indicator: string };
+const newDraft = (question: string): Draft => ({ question, options: [], answer: "", type: "", difficulty: "", topic: "", stimulus: "", points: "10", timeLimit: "30", indicator: "Umum" });
 
 function parseText(text: string): ParseResult {
   const lines = text.replace(/\r/g, "").split("\n");
@@ -190,6 +207,14 @@ function parseText(text: string): ParseResult {
     if (df) { cur.difficulty = (df[1] ?? "").trim(); continue; }
     const tp = line.match(TOPIC_RE);
     if (tp) { cur.topic = (tp[1] ?? "").trim(); continue; }
+    const stimulus = line.match(STIMULUS_RE);
+    if (stimulus) { cur.stimulus = (stimulus[1] ?? "").trim(); continue; }
+    const points = line.match(POINTS_RE);
+    if (points) { cur.points = (points[1] ?? "10").replace(/[^0-9.]/g, ""); continue; }
+    const time = line.match(TIME_RE);
+    if (time) { cur.timeLimit = (time[1] ?? "30").replace(/[^0-9]/g, ""); continue; }
+    const indicator = line.match(INDICATOR_RE);
+    if (indicator) { cur.indicator = (indicator[1] ?? "Umum").trim(); continue; }
 
     const opt = line.match(OPT_RE);
     if (opt) {
