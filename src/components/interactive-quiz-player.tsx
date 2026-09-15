@@ -13,8 +13,10 @@ import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { assertMediaSize } from "@/lib/media-limits";
 import { supabase } from "@/integrations/supabase/client";
+import { MediaViewer } from "@/components/media-input";
+import { ScoreBreakdown, questionPoints, questionSeconds, type ScoreBreakdownItem } from "@/components/quiz-score-breakdown";
 
-type QResult = { auto_correct: number; total: number; manual_pending: number; score: number; max_score: number; status: string };
+type QResult = { auto_correct: number; total: number; manual_pending: number; score: number; max_score: number; status: string; breakdown?: ScoreBreakdownItem[] };
 type SavedRun = { answers: unknown[]; current: number; deadline: number | null };
 
 export function InteractiveQuizDialog({ quiz, questions, onFinished }: { quiz: any; questions: any[]; onFinished: () => void }) {
@@ -27,11 +29,13 @@ export function InteractiveQuizDialog({ quiz, questions, onFinished }: { quiz: a
   const [voiceBlobs, setVoiceBlobs] = useState<Record<number, Blob | null>>({});
   const [imageFiles, setImageFiles] = useState<Record<number, File | null>>({});
   const [deadline, setDeadline] = useState<number | null>(null);
-  const [secondsLeft, setSecondsLeft] = useState(quiz.question_time_limit ?? 30);
+  const defaultLimit = Math.max(10, Math.min(600, Number(quiz.question_time_limit) || 30));
+  const [secondsLeft, setSecondsLeft] = useState(defaultLimit);
   const [result, setResult] = useState<QResult | null>(null);
   const submittingRef = useRef(false);
   const storageKey = user ? `pelajaranku-quiz-${user.id}-${quiz.id}` : null;
-  const limit = Math.max(10, Math.min(300, Number(quiz.question_time_limit) || 30));
+  const limit = questionSeconds(questions[current], defaultLimit);
+  const totalPoints = questions.reduce((sum, question) => sum + questionPoints(question), 0);
 
   const answeredCount = useMemo(() => answers.filter((answer) => answer !== null && answer !== undefined && String(answer).trim() !== "").length, [answers]);
   const currentQuestion = questions[current];
@@ -116,8 +120,9 @@ export function InteractiveQuizDialog({ quiz, questions, onFinished }: { quiz: a
 
   const beginQuestion = (index: number) => {
     setCurrent(index);
-    setDeadline(Date.now() + limit * 1000);
-    setSecondsLeft(limit);
+    const nextLimit = questionSeconds(questions[index], defaultLimit);
+    setDeadline(Date.now() + nextLimit * 1000);
+    setSecondsLeft(nextLimit);
     setStage("playing");
   };
 
@@ -166,7 +171,7 @@ export function InteractiveQuizDialog({ quiz, questions, onFinished }: { quiz: a
           {stage === "intro" && (
             <div className="mx-auto max-w-md space-y-5 py-4 text-center">
               <div className="mx-auto grid size-20 place-items-center rounded-full bg-siswa/15"><Trophy className="size-10 text-siswa" /></div>
-              <div><h3 className="font-display text-2xl font-bold">{lang === "id" ? "Siap mengerjakan?" : "Ready to begin?"}</h3><p className="mt-2 text-sm text-muted-foreground">{questions.length} {lang === "id" ? `soal · ${limit} detik per soal` : `questions · ${limit} seconds each`}</p></div>
+               <div><h3 className="font-display text-2xl font-bold">{lang === "id" ? "Siap mengerjakan?" : "Ready to begin?"}</h3><p className="mt-2 text-sm text-muted-foreground">{questions.length} {lang === "id" ? `soal · ${totalPoints} poin` : `questions · ${totalPoints} points`}</p></div>
               <div className="rounded-xl border-2 border-border bg-muted/30 p-4 text-left text-sm">
                 <p>• {lang === "id" ? "Soal tampil satu per satu." : "Questions appear one at a time."}</p>
                 <p>• {lang === "id" ? "Saat waktu habis, soal berikutnya terbuka otomatis." : "When time runs out, the next question opens automatically."}</p>
@@ -180,7 +185,10 @@ export function InteractiveQuizDialog({ quiz, questions, onFinished }: { quiz: a
             <div className="mx-auto max-w-xl">
               <div className="mb-4 flex items-center justify-between text-xs font-bold text-muted-foreground"><span>{lang === "id" ? `Soal ${current + 1} dari ${questions.length}` : `Question ${current + 1} of ${questions.length}`}</span><span>{answeredCount}/{questions.length} {lang === "id" ? "terjawab" : "answered"}</span></div>
               <Progress value={timerPercent} className={`mb-5 h-1.5 ${secondsLeft <= 10 ? "[&>div]:bg-destructive" : ""}`} />
-              <h3 className="font-display text-xl font-bold sm:text-2xl">{currentQuestion.q}</h3>
+               <div className="mb-3 flex flex-wrap gap-2 text-xs font-semibold text-muted-foreground"><span>{questionPoints(currentQuestion)} {lang === "id" ? "poin" : "pts"}</span><span>· {currentQuestion.indicator || (lang === "id" ? "Umum" : "General")}</span></div>
+               {currentQuestion.stimulus && <div className="mb-4 rounded-lg border-l-4 border-primary bg-primary/5 p-3"><p className="mb-1 text-xs font-bold text-primary">{lang === "id" ? "Stimulus / Bacaan" : "Stimulus / Passage"}</p><p className="whitespace-pre-wrap text-sm leading-relaxed">{currentQuestion.stimulus}</p></div>}
+               {currentQuestion.image_url && <MediaViewer mediaType="image" mediaUrl={currentQuestion.image_url} />}
+               <h3 className="mt-4 font-display text-xl font-bold sm:text-2xl">{currentQuestion.q}</h3>
               <QuestionAnswer question={currentQuestion} value={answers[current]} onChange={setAnswer} lang={lang} onVoice={(blob) => setVoiceBlobs((all) => ({ ...all, [current]: blob }))} onImage={(file) => setImageFiles((all) => ({ ...all, [current]: file }))} />
             </div>
           )}
@@ -194,7 +202,7 @@ export function InteractiveQuizDialog({ quiz, questions, onFinished }: { quiz: a
           )}
 
           {stage === "result" && result && (
-            <div className="mx-auto max-w-md space-y-4 py-8 text-center"><div className="text-6xl">{result.manual_pending > 0 ? "📝" : "🏆"}</div><h3 className="font-display text-2xl font-bold">{lang === "id" ? "Kuis selesai" : "Quiz complete"}</h3>{result.manual_pending > 0 ? <p className="text-muted-foreground">{lang === "id" ? "Sebagian jawaban menunggu penilaian guru." : "Some answers are awaiting teacher grading."}</p> : <><div className="font-display text-4xl font-bold text-primary">{result.score}<span className="text-xl text-muted-foreground">/{result.max_score}</span></div><p className="text-sm text-muted-foreground">{lang === "id" ? `${result.auto_correct} dari ${result.total} jawaban benar` : `${result.auto_correct} of ${result.total} correct`}</p></>}</div>
+             <div className="mx-auto max-w-md space-y-4 py-8 text-center"><div className="text-6xl">{result.manual_pending > 0 ? "📝" : "🏆"}</div><h3 className="font-display text-2xl font-bold">{lang === "id" ? "Kuis selesai" : "Quiz complete"}</h3><div className="font-display text-4xl font-bold text-primary">{result.score}<span className="text-xl text-muted-foreground">/{result.max_score}</span></div><p className="text-sm text-muted-foreground">{result.manual_pending > 0 ? (lang === "id" ? "Nilai sementara; sebagian jawaban menunggu penilaian guru." : "Provisional score; some answers await teacher review.") : (lang === "id" ? `${result.auto_correct} dari ${result.total} jawaban benar` : `${result.auto_correct} of ${result.total} correct`)}</p><ScoreBreakdown items={result.breakdown ?? []} lang={lang} /></div>
           )}
         </div>
 

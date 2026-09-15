@@ -12,6 +12,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/lib/i18n";
 import { computeTotal, predikatOf, TAJWID_TOLERANCE, HELP_TOLERANCE } from "@/lib/mutabaah";
 import { signAnswerFile } from "@/lib/transcribe.functions";
+import { MediaViewer } from "@/components/media-input";
+import { ScoreBreakdown, questionPoints, type ScoreBreakdownItem } from "@/components/quiz-score-breakdown";
 
 export type QType = "multiple_choice" | "complex_multiple_choice" | "true_false" | "short_answer" | "essay" | "voice" | "image";
 
@@ -116,25 +118,41 @@ export function QuizGradeDialog({
     },
   });
 
-  // Automatic scoring: each question is worth an equal share of max_score.
   const auto = useMemo(() => {
-    let correct = 0, objective = 0, manual = 0;
+    let correct = 0, objective = 0, manual = 0, earned = 0;
+    const totalWeight = questions.reduce((sum, q) => sum + questionPoints(q), 0);
     questions.forEach((q, i) => {
       const v = evalAnswer(q, studentAnswers[i], (answerKey as any[])[i]);
       if (v === "manual") manual++;
-      else { objective++; if (v === "correct") correct++; }
+      else { objective++; if (v === "correct") { correct++; earned += questionPoints(q); } }
     });
-    const per = questions.length ? quiz.max_score / questions.length : 0;
-    return { correct, objective, manual, per, autoScore: Math.round(correct * per) };
+    return { correct, objective, manual, totalWeight, earned, autoScore: totalWeight ? Math.round((earned / totalWeight) * quiz.max_score) : 0 };
   }, [questions, studentAnswers, answerKey, quiz.max_score]);
 
-  // Round per-question point value (each question is an equal share of max_score)
-  // and the running total of manually-scored answers (essay/voice/image).
-  const perQuestion = questions.length ? Math.round(quiz.max_score / questions.length) : 0;
   const manualTotal = useMemo(
     () => Object.values(manualScores).reduce((sum, v) => sum + (Number.isFinite(v) ? v : 0), 0),
     [manualScores],
   );
+  const rawEarned = auto.earned + manualTotal;
+  const calculatedScore = auto.totalWeight ? Math.round((rawEarned / auto.totalWeight) * quiz.max_score) : 0;
+  const breakdown = useMemo<ScoreBreakdownItem[]>(() => {
+    const buckets = new Map<string, ScoreBreakdownItem>();
+    questions.forEach((q, i) => {
+      const indicator = String(q?.indicator || (lang === "id" ? "Umum" : "General"));
+      const points = questionPoints(q);
+      const verdict = evalAnswer(q, studentAnswers[i], (answerKey as any[])[i]);
+      const bucket = buckets.get(indicator) ?? { indicator, correct: 0, total: 0, earned_points: 0, max_points: 0, manual_pending: 0 };
+      bucket.total += 1;
+      bucket.max_points += points;
+      if (verdict === "correct") { bucket.correct += 1; bucket.earned_points += points; }
+      if (verdict === "manual") {
+        bucket.earned_points += manualScores[i] ?? 0;
+        if (manualScores[i] === undefined) bucket.manual_pending = (bucket.manual_pending ?? 0) + 1;
+      }
+      buckets.set(indicator, bucket);
+    });
+    return Array.from(buckets.values());
+  }, [questions, studentAnswers, answerKey, manualScores, lang]);
 
 
   // Pre-fill the final score from the automatic rule when not yet graded.
@@ -146,9 +164,9 @@ export function QuizGradeDialog({
   // the teacher overrides the final value directly.
   useEffect(() => {
     if (!scoreTouched && submission.status !== "graded") {
-      setScore(Math.min(quiz.max_score, auto.autoScore + manualTotal));
+      setScore(Math.min(quiz.max_score, calculatedScore));
     }
-  }, [auto.autoScore, manualTotal, scoreTouched, submission.status, quiz.max_score]);
+  }, [calculatedScore, scoreTouched, submission.status, quiz.max_score]);
 
   const halaqoh = isHalaqoh(quiz.subject);
   const halaqohMeta = useMemo(() => {
@@ -199,7 +217,7 @@ export function QuizGradeDialog({
     mutationFn: async () => {
       const { error } = await supabase
         .from("submissions")
-        .update({ score, feedback: feedback.trim() || null, status: "graded" })
+        .update({ score, score_breakdown: breakdown as any, feedback: feedback.trim() || null, status: "graded" })
         .eq("id", submission.id);
       if (error) throw error;
 
@@ -248,9 +266,9 @@ export function QuizGradeDialog({
               <span className="text-primary">{lang === "id" ? "Skor" : "Scoring"}:</span>
               {auto.objective > 0 && <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-emerald-700">✓ {auto.correct}/{auto.objective} {lang === "id" ? "benar (otomatis)" : "correct (auto)"} · {auto.autoScore} {lang === "id" ? "poin" : "pts"}</span>}
               {auto.manual > 0 && <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-amber-700">✍️ {Object.keys(manualScores).length}/{auto.manual} {lang === "id" ? "jawaban dinilai" : "answers scored"} · {manualTotal} {lang === "id" ? "poin" : "pts"}</span>}
-              <span className="rounded-full bg-primary/15 px-2 py-0.5 text-primary">{lang === "id" ? "total" : "total"}: {Math.min(quiz.max_score, auto.autoScore + manualTotal)}/{quiz.max_score}</span>
-              <span className="w-full text-[11px] font-normal text-muted-foreground">{lang === "id" ? `Aturan: tiap soal bernilai ${perQuestion} poin. Nilai tiap jawaban audio/gambar/esai secara terpisah di bawah.` : `Rule: each question = ${perQuestion} pts. Score each audio/image/essay answer separately below.`}</span>
-              <Button type="button" size="sm" variant="outline" className="h-6 px-2" onClick={() => { setScore(Math.min(quiz.max_score, auto.autoScore + manualTotal)); setScoreTouched(true); }}>{lang === "id" ? "Terapkan total" : "Apply total"}</Button>
+               <span className="rounded-full bg-primary/15 px-2 py-0.5 text-primary">{lang === "id" ? "total" : "total"}: {Math.min(quiz.max_score, calculatedScore)}/{quiz.max_score}</span>
+               <span className="w-full text-[11px] font-normal text-muted-foreground">{lang === "id" ? "Poin setiap soal mengikuti pengaturan guru. Jawaban audio, gambar, dan esai dinilai terpisah." : "Each question uses its configured points. Audio, image, and essay answers are scored separately."}</span>
+               <Button type="button" size="sm" variant="outline" className="h-6 px-2" onClick={() => { setScore(Math.min(quiz.max_score, calculatedScore)); setScoreTouched(true); }}>{lang === "id" ? "Terapkan total" : "Apply total"}</Button>
             </div>
           )}
           {questions.map((q, i) => {
@@ -260,13 +278,16 @@ export function QuizGradeDialog({
             const objective = q.type === "multiple_choice" || q.type === "complex_multiple_choice" || q.type === "true_false" || q.type === "short_answer";
             return (
               <div key={i} className="rounded-xl border-2 border-border bg-muted/20 p-3 text-sm">
-                <div className="flex items-start justify-between gap-2">
+                 <div className="flex items-start justify-between gap-2">
                   <p className="font-display font-bold">{i + 1}. {q.q} <span className="ml-1 rounded bg-muted px-1.5 py-0.5 text-xs font-normal text-muted-foreground">{Q_TYPE_LABEL(q.type, lang)}</span></p>
                   {verdict === "correct" && <span className="shrink-0 rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-bold text-emerald-700">✓ {lang === "id" ? "Benar" : "Correct"}</span>}
                   {verdict === "wrong" && <span className="shrink-0 rounded-full bg-destructive/15 px-2 py-0.5 text-xs font-bold text-destructive">✗ {lang === "id" ? "Salah" : "Wrong"}</span>}
                   {verdict === "manual" && <span className="shrink-0 rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-bold text-amber-700">✍️ {lang === "id" ? "Manual" : "Manual"}</span>}
                   {verdict === "empty" && <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-bold text-muted-foreground">{lang === "id" ? "Kosong" : "Empty"}</span>}
                 </div>
+                 <p className="mt-1 text-[11px] text-muted-foreground">{questionPoints(q)} {lang === "id" ? "poin" : "pts"} · {q.indicator || (lang === "id" ? "Umum" : "General")}</p>
+                 {q.stimulus && <div className="mt-2 rounded-lg border-l-4 border-primary bg-primary/5 p-2 text-xs"><span className="font-bold">Stimulus:</span> <span className="whitespace-pre-wrap">{q.stimulus}</span></div>}
+                 {q.image_url && <MediaViewer mediaType="image" mediaUrl={q.image_url} />}
                 <div className="mt-1.5 text-foreground/80">
                   {q.type === "voice" ? (
                     <div className="space-y-2">
@@ -301,23 +322,25 @@ export function QuizGradeDialog({
                     <Input
                       type="number"
                       min={0}
-                      max={perQuestion}
+                       max={questionPoints(q)}
                       value={manualScores[i] ?? ""}
                       placeholder="0"
                       className="h-8 w-24"
                       onChange={(e) => {
-                        const raw = e.target.value === "" ? 0 : Math.min(perQuestion, Math.max(0, Number(e.target.value)));
+                         const raw = e.target.value === "" ? 0 : Math.min(questionPoints(q), Math.max(0, Number(e.target.value)));
                         setManualScores((m) => ({ ...m, [i]: raw }));
                         setScoreTouched(false);
                       }}
                     />
-                    <span className="text-xs text-muted-foreground">/ {perQuestion} {lang === "id" ? "poin" : "pts"}</span>
+                     <span className="text-xs text-muted-foreground">/ {questionPoints(q)} {lang === "id" ? "poin" : "pts"}</span>
                   </div>
                 )}
 
               </div>
             );
           })}
+
+          <ScoreBreakdown items={breakdown} lang={lang} />
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div><Label>{lang === "id" ? "Nilai Akhir" : "Final Score"} (/{quiz.max_score})</Label><Input type="number" min={0} max={quiz.max_score} value={score} onChange={(e) => { setScore(Number(e.target.value)); setScoreTouched(true); }} /></div>

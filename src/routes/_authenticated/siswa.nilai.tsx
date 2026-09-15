@@ -10,6 +10,7 @@ import { RekapNilaiSiswa } from "@/components/rekap-nilai-siswa";
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
+import { ScoreBreakdown, type ScoreBreakdownItem } from "@/components/quiz-score-breakdown";
 
 export const Route = createFileRoute("/_authenticated/siswa/nilai")({
   head: () => ({ meta: [{ title: "Nilai Saya · Pelajaranku" }] }),
@@ -83,6 +84,7 @@ function SiswaNilaiPage() {
                     {s.score}<span className="text-sm text-muted-foreground">/{s.assignments?.max_score}</span>
                   </div>
                 </div>
+                <div className="mt-3"><ScoreBreakdown items={(Array.isArray(s.score_breakdown) ? s.score_breakdown : []) as ScoreBreakdownItem[]} lang={lang} /></div>
                 {s.feedback && <div className="mt-3 flex items-start gap-2 rounded-xl bg-muted/40 p-3 text-sm"><MessageCircle className="size-4 shrink-0 text-primary mt-0.5" /><span>{s.feedback}</span></div>}
                 {s.feedback_media_url && (
                   <div className="mt-3 rounded-xl bg-muted/40 p-3">
