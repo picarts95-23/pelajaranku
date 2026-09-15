@@ -87,6 +87,10 @@ export type BQ = {
   target: string;
   setoranKind: string;
   minPages: string;
+  stimulus: string;
+  points: string;
+  timeLimit: string;
+  indicator: string;
 };
 
 // Setoran kinds for Halaqoh setoran / tilawah items.
@@ -114,6 +118,10 @@ export const emptyQ = (type: BType = "multiple_choice"): BQ => ({
   target: "",
   setoranKind: type === "halaqoh_tilawah" ? "tilawah_harian" : type === "halaqoh_setoran" ? "ziyadah" : "",
   minPages: type === "halaqoh_tilawah" ? "1" : "",
+  stimulus: "",
+  points: "10",
+  timeLimit: "30",
+  indicator: "Umum",
 });
 
 // Build DB rows from the form, collecting ALL validation errors (never throws).
@@ -139,6 +147,11 @@ export function buildBankRows(
   questions.forEach((q, i) => {
     const at = (lang === "id" ? "Soal " : "Q ") + (i + 1);
     const prompt = q.question.trim();
+    const points = Number(q.points);
+    const timeLimit = Number(q.timeLimit);
+
+    if (!Number.isFinite(points) || points <= 0 || points > 1000) errors.push(`${at}: ${lang === "id" ? "poin harus 1–1000." : "points must be 1–1000."}`);
+    if (!Number.isFinite(timeLimit) || timeLimit < 10 || timeLimit > 600) errors.push(`${at}: ${lang === "id" ? "waktu harus 10–600 detik." : "time must be 10–600 seconds."}`);
 
     if (isHalaqohType(q.type)) {
       if (!q.surah.trim() && !prompt) {
@@ -163,6 +176,8 @@ export function buildBankRows(
         exam_category: "halaqoh",
         setoran_kind: isSetoranLike ? (q.setoranKind || null) : null,
         min_pages: q.minPages.trim() ? Number(q.minPages.trim()) : null,
+        stimulus: q.stimulus.trim() || null, points, time_limit_seconds: timeLimit,
+        indicator: q.indicator.trim() || "Umum",
       });
       return;
     }
@@ -198,6 +213,8 @@ export function buildBankRows(
       halaqoh_kind: null, options: opts, answer, difficulty: q.difficulty as any,
       image_url: q.image_url || null,
       exam_category: examCategory || "harian",
+      stimulus: q.stimulus.trim() || null, points, time_limit_seconds: timeLimit,
+      indicator: q.indicator.trim() || "Umum",
     });
   });
 
@@ -216,6 +233,10 @@ export function mapBankToQuiz(b: any): { question: any; key: any } {
     image_url: b.image_url ?? null,
     topic: b.topic ?? null,
     difficulty: b.difficulty ?? null,
+    stimulus: b.stimulus ?? null,
+    points: Number(b.points) > 0 ? Number(b.points) : 1,
+    time_limit_seconds: Number(b.time_limit_seconds) >= 10 ? Number(b.time_limit_seconds) : null,
+    indicator: b.indicator ?? "Umum",
   };
   // Resolve answer text(s) stored in Bank Soal back to option indices.
   const answerIndices = (): number[] => {
@@ -279,6 +300,8 @@ export function bankRowToBQ(row: any): BQ {
       setoranKind: row.setoran_kind ?? (t === "halaqoh_tilawah" ? "tilawah_harian" : t === "halaqoh_setoran" ? "ziyadah" : ""),
       minPages: row.min_pages != null ? String(row.min_pages) : "",
       difficulty: row.difficulty ?? "medium", image_url: row.image_url ?? null,
+      stimulus: row.stimulus ?? "", points: String(row.points ?? 10),
+      timeLimit: String(row.time_limit_seconds ?? 30), indicator: row.indicator ?? "Umum",
     };
   }
   const opts: string[] = Array.isArray(row.options) ? row.options : ["", "", "", ""];
@@ -286,6 +309,8 @@ export function bankRowToBQ(row: any): BQ {
     ...base, type: (row.type as BType) ?? "multiple_choice", topic: row.topic ?? "",
     question: row.question ?? "", options: opts.length ? opts : ["", "", "", ""],
     answer: row.answer ?? "", difficulty: row.difficulty ?? "medium", image_url: row.image_url ?? null,
+    stimulus: row.stimulus ?? "", points: String(row.points ?? 10),
+    timeLimit: String(row.time_limit_seconds ?? 30), indicator: row.indicator ?? "Umum",
   };
   if (out.type === "multiple_choice") {
     const idx = opts.findIndex((o) => String(o).trim().toLowerCase() === String(row.answer ?? "").trim().toLowerCase());
@@ -300,6 +325,7 @@ export function bankRowToBQ(row: any): BQ {
 // Reconstruct an editable BQ from a quiz/assignment question object + its answer-key entry.
 export function quizQuestionToBQ(q: any, key: any): BQ {
   const base = emptyQ();
+  const meta = { stimulus: q?.stimulus ?? "", points: String(q?.points ?? 10), timeLimit: String(q?.time_limit_seconds ?? 30), indicator: q?.indicator ?? "Umum" };
   if (q?.halaqoh_kind) {
     const t = HALAQOH_KIND[q.halaqoh_kind] ?? "halaqoh_setoran";
     return {
@@ -307,26 +333,26 @@ export function quizQuestionToBQ(q: any, key: any): BQ {
       surah: q.surah ?? "", target: q.target ?? "",
       setoranKind: q.setoran_kind ?? (t === "halaqoh_tilawah" ? "tilawah_harian" : t === "halaqoh_setoran" ? "ziyadah" : ""),
       minPages: q.min_pages != null ? String(q.min_pages) : "",
-      image_url: q.image_url ?? null,
+      image_url: q.image_url ?? null, ...meta,
     };
   }
   if (q?.type === "multiple_choice") {
     const opts: string[] = Array.isArray(q.options) ? q.options : ["", "", "", ""];
-    return { ...base, type: "multiple_choice", question: q.q ?? "", options: opts.length ? opts : ["", "", "", ""], correctIndex: Number(key) || 0, image_url: q.image_url ?? null };
+    return { ...base, ...meta, type: "multiple_choice", question: q.q ?? "", options: opts.length ? opts : ["", "", "", ""], correctIndex: Number(key) || 0, image_url: q.image_url ?? null };
   }
   if (q?.type === "true_false") {
-    return { ...base, type: "true_false", question: q.q ?? "", answer: String(key) === "true" ? "Benar" : "Salah", image_url: q.image_url ?? null };
+    return { ...base, ...meta, type: "true_false", question: q.q ?? "", answer: String(key) === "true" ? "Benar" : "Salah", image_url: q.image_url ?? null };
   }
   if (q?.type === "short_answer") {
-    return { ...base, type: "short_answer", question: q.q ?? "", answer: String(key ?? ""), image_url: q.image_url ?? null };
+    return { ...base, ...meta, type: "short_answer", question: q.q ?? "", answer: String(key ?? ""), image_url: q.image_url ?? null };
   }
   if (q?.type === "voice") {
-    return { ...base, type: "voice", question: q.q ?? "", image_url: q.image_url ?? null };
+    return { ...base, ...meta, type: "voice", question: q.q ?? "", image_url: q.image_url ?? null };
   }
   if (q?.type === "image") {
-    return { ...base, type: "image", question: q.q ?? "", image_url: q.image_url ?? null };
+    return { ...base, ...meta, type: "image", question: q.q ?? "", image_url: q.image_url ?? null };
   }
-  return { ...base, type: "essay", question: q?.q ?? "", image_url: q?.image_url ?? null };
+  return { ...base, ...meta, type: "essay", question: q?.q ?? "", image_url: q?.image_url ?? null };
 }
 
 // Shared, fully self-contained editor for a list of questions.
@@ -379,6 +405,12 @@ export function QuestionEditorList({
             </div>
           </div>
 
+          <div className="mt-3 grid gap-2 sm:grid-cols-3">
+            <div><Label className="text-xs">{lang === "id" ? "Poin soal" : "Points"}</Label><Input type="number" min={1} max={1000} value={q.points} onChange={(e) => setQ(qi, { points: e.target.value })} /></div>
+            <div><Label className="text-xs">{lang === "id" ? "Waktu (detik)" : "Time (seconds)"}</Label><Input type="number" min={10} max={600} value={q.timeLimit} onChange={(e) => setQ(qi, { timeLimit: e.target.value })} /></div>
+            <div><Label className="text-xs">{lang === "id" ? "Kategori / indikator" : "Category / indicator"}</Label><Input value={q.indicator} onChange={(e) => setQ(qi, { indicator: e.target.value })} placeholder={lang === "id" ? "mis. Pemahaman konsep" : "e.g. Concept mastery"} /></div>
+          </div>
+
           {isHalaqohType(q.type) ? (
             <div className="mt-2 space-y-2">
               <div className="rounded-lg bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-700">
@@ -410,14 +442,17 @@ export function QuestionEditorList({
             </div>
           ) : (
             <>
-              <Textarea rows={2} className="mt-2" value={q.question} onChange={(e) => setQ(qi, { question: e.target.value })} placeholder={lang === "id" ? "Tulis pertanyaan…" : "Write the question…"} />
+              <div className="mt-2 space-y-2">
+                <div><Label className="text-xs">{lang === "id" ? "Teks stimulus / bacaan (opsional)" : "Stimulus / passage (optional)"}</Label><Textarea rows={3} value={q.stimulus} onChange={(e) => setQ(qi, { stimulus: e.target.value })} placeholder={lang === "id" ? "Masukkan bacaan, kasus, atau informasi pendukung…" : "Add a passage, case, or supporting information…"} /></div>
+                <div><Label className="text-xs">{lang === "id" ? "Pertanyaan" : "Question"}</Label><Textarea rows={2} value={q.question} onChange={(e) => setQ(qi, { question: e.target.value })} placeholder={lang === "id" ? "Tulis pertanyaan…" : "Write the question…"} /></div>
+              </div>
 
               {uploadImage && (
                 <div className="mt-2">
                   <input type="file" accept="image/*" onChange={(e) => uploadImage(e, qi)} disabled={uploadingIdx === qi}
                     className="block w-full text-xs file:mr-3 file:rounded-lg file:border-0 file:bg-guru file:px-3 file:py-1.5 file:text-white" />
                   {uploadingIdx === qi && <p className="mt-1 text-xs text-muted-foreground">{lang === "id" ? "Mengunggah…" : "Uploading…"}</p>}
-                  {q.image_url && <p className="mt-1 text-xs text-emerald-600">✅ {lang === "id" ? "Gambar siap" : "Image attached"}</p>}
+                   {q.image_url && <p className="mt-1 text-xs text-emerald-600">✅ {lang === "id" ? "Gambar soal siap" : "Question image attached"}</p>}
                 </div>
               )}
 

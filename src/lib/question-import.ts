@@ -82,6 +82,10 @@ function makeQ(input: {
   type?: string;
   difficulty?: string;
   topic?: string;
+  stimulus?: string;
+  points?: number | string;
+  timeLimit?: number | string;
+  indicator?: string;
 }): BQ | null {
   const question = (input.question ?? "").trim();
   const options = (input.options ?? []).map((o) => String(o ?? "").trim()).filter(Boolean);
@@ -96,6 +100,10 @@ function makeQ(input: {
   q.question = question;
   q.topic = (input.topic ?? "").trim();
   q.difficulty = normDifficulty(input.difficulty);
+  q.stimulus = (input.stimulus ?? "").trim();
+  q.points = String(input.points ?? 10);
+  q.timeLimit = String(input.timeLimit ?? 30);
+  q.indicator = (input.indicator ?? "Umum").trim() || "Umum";
 
   if (type === "true_false") {
     q.options = ["Benar", "Salah"];
@@ -142,6 +150,10 @@ function parseJson(text: string): ParseResult | null {
       type: item?.type ?? item?.tipe ?? "",
       difficulty: item?.difficulty ?? item?.tingkat ?? item?.kesulitan ?? "",
       topic: item?.topic ?? item?.topik ?? "",
+      stimulus: item?.stimulus ?? item?.bacaan ?? item?.teks_stimulus ?? "",
+      points: item?.points ?? item?.poin ?? 10,
+      timeLimit: item?.time_limit_seconds ?? item?.waktu ?? 30,
+      indicator: item?.indicator ?? item?.indikator ?? item?.category ?? item?.kategori ?? "Umum",
     });
     if (q) questions.push(q);
     else warnings.push(`Item ${i + 1} dilewati (tanpa teks soal).`);
