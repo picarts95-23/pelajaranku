@@ -1,4 +1,4 @@
-import { Check, Mic, Plus, Trash2, X, BookOpenCheck } from "lucide-react";
+import { ArrowDown, ArrowUp, Check, Mic, Plus, Trash2, X, BookOpenCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -381,14 +381,30 @@ export function QuestionEditorList({
     }));
   const removeQuestion = (i: number) =>
     setQuestions((qs) => (qs.length > 1 ? qs.filter((_, idx) => idx !== i) : qs));
+  const moveQuestion = (i: number, direction: -1 | 1) =>
+    setQuestions((qs) => {
+      const nextIndex = i + direction;
+      if (nextIndex < 0 || nextIndex >= qs.length) return qs;
+      const next = [...qs];
+      [next[i], next[nextIndex]] = [next[nextIndex], next[i]];
+      return next;
+    });
 
   return (
     <div className="space-y-3">
       {questions.map((q, qi) => (
         <div key={qi} className="rounded-xl border-2 border-border bg-muted/20 p-3">
-          <div className="flex items-center justify-between gap-2">
-            <span className="font-display text-sm font-bold">{lang === "id" ? "Soal" : "Q"} {qi + 1}</span>
-            <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-1">
+              <span className="mr-1 font-display text-sm font-bold">{lang === "id" ? "Soal" : "Q"} {qi + 1}</span>
+              {questions.length > 1 && (
+                <>
+                  <Button type="button" size="icon" variant="ghost" className="size-8" disabled={qi === 0} onClick={() => moveQuestion(qi, -1)} title={lang === "id" ? "Naikkan urutan soal" : "Move question up"} aria-label={lang === "id" ? `Naikkan soal ${qi + 1}` : `Move question ${qi + 1} up`}><ArrowUp /></Button>
+                  <Button type="button" size="icon" variant="ghost" className="size-8" disabled={qi === questions.length - 1} onClick={() => moveQuestion(qi, 1)} title={lang === "id" ? "Turunkan urutan soal" : "Move question down"} aria-label={lang === "id" ? `Turunkan soal ${qi + 1}` : `Move question ${qi + 1} down`}><ArrowDown /></Button>
+                </>
+              )}
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
               <Select value={q.type} onValueChange={(v) => setQ(qi, { type: v as BType })}>
                 <SelectTrigger className="h-8 w-auto text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>{ALL_TYPES.map((tp) => <SelectItem key={tp} value={tp}>{TYPE_LABEL(tp, lang)}</SelectItem>)}</SelectContent>
