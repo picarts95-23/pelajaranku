@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Database, Mic, Plus, Send, Trash2, X, BookOpenCheck, CheckCircle2, Pencil, Sparkles, ClipboardPaste, Copy } from "lucide-react";
+import { ArrowDown, ArrowUp, Database, Mic, Plus, Send, Trash2, X, BookOpenCheck, CheckCircle2, Pencil, Sparkles, ClipboardPaste, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
@@ -514,7 +514,7 @@ function GuruBankSoalPage() {
       <TransferDialog
         open={transferOpen}
         onOpenChange={setTransferOpen}
-        items={(items as any[]).filter((q) => selected.includes(q.id))}
+        items={selected.map((id) => (items as any[]).find((q) => q.id === id)).filter(Boolean)}
         onDone={() => { setSelected([]); setTransferOpen(false); }}
       />
     </DashboardShell>
@@ -538,23 +538,34 @@ function TransferDialog({ open, onOpenChange, items, onDone }: { open: boolean; 
   const [reviewOpen, setReviewOpen] = useState(false);
   const [interactiveMode, setInteractiveMode] = useState(true);
   const [questionTimeLimit, setQuestionTimeLimit] = useState(30);
+  const [orderedItems, setOrderedItems] = useState<any[]>([]);
+
+  const moveItem = (index: number, direction: -1 | 1) => {
+    setOrderedItems((current) => {
+      const nextIndex = index + direction;
+      if (nextIndex < 0 || nextIndex >= current.length) return current;
+      const next = [...current];
+      [next[index], next[nextIndex]] = [next[nextIndex], next[index]];
+      return next;
+    });
+  };
 
   // Mapped preview so the teacher can review the exact questions & keys that
   // will be created — identical to what the insert mutation sends.
   const mapped = useMemo(() => {
     const questions: any[] = [];
     const keys: any[] = [];
-    items.slice(0, MAX_QUESTIONS).forEach((b) => {
+    orderedItems.slice(0, MAX_QUESTIONS).forEach((b) => {
       const { question, key } = mapBankToQuiz(b);
       questions.push(question);
       keys.push(key);
     });
     return { questions, keys };
-  }, [items]);
+  }, [orderedItems]);
 
   // Are any selected items Halaqoh? Then the task must be a Halaqoh task so it
   // accumulates into Mutaba'ah.
-  const halaqohItem = items.find((i) => i.halaqoh_kind);
+  const halaqohItem = orderedItems.find((i) => i.halaqoh_kind);
   const hasHalaqoh = !!halaqohItem;
 
   useEffect(() => {
@@ -569,6 +580,7 @@ function TransferDialog({ open, onOpenChange, items, onDone }: { open: boolean; 
       setDueAt("");
       setInteractiveMode(true);
       setQuestionTimeLimit(30);
+      setOrderedItems(items.slice(0, MAX_QUESTIONS));
     }
   }, [open, items]);
 
@@ -592,10 +604,10 @@ function TransferDialog({ open, onOpenChange, items, onDone }: { open: boolean; 
       if (!title.trim()) throw new Error(lang === "id" ? "Judul wajib diisi" : "Title required");
       if (target === "class" && !classId) throw new Error(lang === "id" ? "Pilih kelas tujuan" : "Select a class");
       if (target === "student" && !studentId) throw new Error(lang === "id" ? "Pilih siswa tujuan" : "Select a student");
-      if (items.length === 0) throw new Error(lang === "id" ? "Tidak ada soal terpilih" : "No questions selected");
+       if (orderedItems.length === 0) throw new Error(lang === "id" ? "Tidak ada soal terpilih" : "No questions selected");
       const questionsPublic: any[] = [];
       const answerKey: any[] = [];
-      items.slice(0, MAX_QUESTIONS).forEach((b) => {
+      orderedItems.slice(0, MAX_QUESTIONS).forEach((b) => {
         const { question, key } = mapBankToQuiz(b);
         questionsPublic.push(question);
         answerKey.push(key);
@@ -644,7 +656,21 @@ function TransferDialog({ open, onOpenChange, items, onDone }: { open: boolean; 
       <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
         <DialogHeader><DialogTitle>{lang === "id" ? "Impor ke Tugas Baru" : "Import into New Task"}</DialogTitle></DialogHeader>
         <div className="space-y-3">
-          <p className="text-sm text-muted-foreground">{lang === "id" ? `${items.length} soal akan dikirim sebagai satu tugas/kuis.` : `${items.length} questions will be sent as one assignment.`}</p>
+          <p className="text-sm text-muted-foreground">{lang === "id" ? `${orderedItems.length} soal akan dikirim sebagai satu tugas/kuis.` : `${orderedItems.length} questions will be sent as one assignment.`}</p>
+          <div>
+            <Label>{lang === "id" ? "Nomor urut soal" : "Question order"}</Label>
+            <p className="mt-0.5 text-xs text-muted-foreground">{lang === "id" ? "Gunakan tombol panah untuk mengatur urutan sebelum dibagikan." : "Use the arrow buttons to set the order before sharing."}</p>
+            <ol className="mt-2 space-y-2">
+              {orderedItems.map((item, index) => (
+                <li key={item.id} className="flex min-w-0 items-center gap-2 rounded-lg border border-border bg-muted/20 p-2">
+                  <span className="grid size-7 shrink-0 place-items-center rounded-md bg-quest/15 font-display text-xs font-bold text-quest">{index + 1}</span>
+                  <span className="min-w-0 flex-1 truncate text-sm" title={item.question}>{item.question}</span>
+                  <Button type="button" size="icon" variant="ghost" className="size-8" disabled={index === 0} onClick={() => moveItem(index, -1)} title={lang === "id" ? "Naikkan" : "Move up"} aria-label={lang === "id" ? `Naikkan soal ${index + 1}` : `Move question ${index + 1} up`}><ArrowUp /></Button>
+                  <Button type="button" size="icon" variant="ghost" className="size-8" disabled={index === orderedItems.length - 1} onClick={() => moveItem(index, 1)} title={lang === "id" ? "Turunkan" : "Move down"} aria-label={lang === "id" ? `Turunkan soal ${index + 1}` : `Move question ${index + 1} down`}><ArrowDown /></Button>
+                </li>
+              ))}
+            </ol>
+          </div>
           <div>
             <Label>{lang === "id" ? "Judul Tugas" : "Title"} <span className="text-destructive">*</span></Label>
             <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={lang === "id" ? "mis. Latihan Bab 1" : "e.g. Practice Ch.1"} />
