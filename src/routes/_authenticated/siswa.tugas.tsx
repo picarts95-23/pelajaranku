@@ -477,7 +477,7 @@ function QuizCard({ quiz }: { quiz: any }) {
           ⛔ {lang === "id" ? "Tenggat sudah lewat — kuis ini tidak dikerjakan." : "Deadline passed — this quiz was not completed."}
         </div>
       ) : quiz.interactive_mode ? (
-        <InteractiveQuizDialog quiz={quiz} questions={questions} onFinished={() => qc.invalidateQueries({ queryKey: ["quizzes"] })} />
+        <InteractiveQuizDialog quiz={quiz} questions={questions} onFinished={() => qc.invalidateQueries({ queryKey: ["siswa-quizzes"] })} />
       ) : (
         <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o) { setAnswers(questions.map(() => null)); setVoiceBlobs({}); setResult(null); } }}>
           <DialogTrigger asChild>

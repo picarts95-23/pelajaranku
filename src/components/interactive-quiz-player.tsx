@@ -47,14 +47,17 @@ export function InteractiveQuizDialog({ quiz, questions, onFinished }: { quiz: a
       if (!raw) return;
       const saved = JSON.parse(raw) as SavedRun;
       if (!Array.isArray(saved.answers) || saved.answers.length !== questions.length) return;
+      const savedCurrent = Math.min(Math.max(0, saved.current || 0), Math.max(0, questions.length - 1));
+      const resumedLimit = questionSeconds(questions[savedCurrent], defaultLimit);
       setAnswers(saved.answers.map((answer) => answer === "pending-upload" ? null : answer));
-      setCurrent(Math.min(Math.max(0, saved.current || 0), Math.max(0, questions.length - 1)));
-      setDeadline(saved.deadline ?? null);
+      setCurrent(savedCurrent);
+      setDeadline(Date.now() + resumedLimit * 1000);
+      setSecondsLeft(resumedLimit);
       setStage("playing");
     } catch {
       window.localStorage.removeItem(storageKey);
     }
-  }, [open, questions.length, storageKey]);
+  }, [open, questions, defaultLimit, storageKey]);
 
   useEffect(() => {
     if (stage !== "playing" || !storageKey) return;
