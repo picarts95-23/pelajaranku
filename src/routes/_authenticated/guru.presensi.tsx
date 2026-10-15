@@ -56,7 +56,10 @@ function GuruPresensiPage() {
   const { t, lang } = useLang();
   const qc = useQueryClient();
   const [classId, setClassId] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  });
   const [marks, setMarks] = useState<Record<string, AttStatus>>({});
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [weights, setWeights] = useState<Record<AttStatus, number>>(DEFAULT_WEIGHTS);
@@ -74,11 +77,13 @@ function GuruPresensiPage() {
   const { data: dbWeights } = useQuery({
     queryKey: ["attendance-weights", user?.id], enabled: !!user,
     queryFn: async () => {
-      const { data } = await supabase
+      if (!user) throw new Error("Sesi masuk tidak ditemukan.");
+      const { data, error } = await supabase
         .from("attendance_settings")
         .select("hadir, izin, sakit, alpa")
-        .eq("teacher_id", user!.id)
+        .eq("teacher_id", user.id)
         .maybeSingle();
+      if (error) throw error;
       return data;
     },
   });
@@ -125,13 +130,15 @@ function GuruPresensiPage() {
     queryFn: async () => (await supabase.from("classes").select("id, name").order("name")).data ?? [],
   });
 
-  const { data: students = EMPTY } = useQuery({
+  const { data: students = EMPTY, isFetching: studentsFetching, isError: studentsError } = useQuery({
     queryKey: ["enrolls", classId], enabled: !!classId,
     queryFn: async () => {
-      const { data: enrolls } = await supabase.from("class_enrollments").select("student_id").eq("class_id", classId);
+      const { data: enrolls, error: enrollmentError } = await supabase.from("class_enrollments").select("student_id").eq("class_id", classId);
+      if (enrollmentError) throw enrollmentError;
       const ids = (enrolls ?? []).map((e) => e.student_id);
       if (ids.length === 0) return [];
-      const { data: profs } = await supabase.from("profiles").select("id, full_name").in("id", ids);
+      const { data: profs, error: profileError } = await supabase.from("profiles").select("id, full_name").in("id", ids);
+      if (profileError) throw profileError;
       // Sort alphabetically by name (berdasarkan abjad).
       return (profs ?? []).sort((a: any, b: any) =>
         (a.full_name ?? "").localeCompare(b.full_name ?? "", "id", { sensitivity: "base" }),
@@ -139,10 +146,11 @@ function GuruPresensiPage() {
     },
   });
 
-  const { data: existing = EMPTY } = useQuery({
+  const { data: existing = EMPTY, isFetching: attendanceFetching, isError: attendanceError } = useQuery({
     queryKey: ["att", classId, date], enabled: !!classId && !!date,
     queryFn: async () => {
-      const { data } = await supabase.from("attendance").select("*").eq("class_id", classId).eq("date", date);
+      const { data, error } = await supabase.from("attendance").select("*").eq("class_id", classId).eq("date", date);
+      if (error) throw error;
       return data ?? [];
     },
   });
@@ -188,7 +196,9 @@ function GuruPresensiPage() {
 
   const saveMut = useMutation({
     mutationFn: async () => {
-      if (!user || !classId) return;
+      if (!user || !classId || !date || students.length === 0 || studentsFetching || attendanceFetching || studentsError || attendanceError) {
+        throw new Error(lang === "id" ? "Data presensi belum siap. Pilih kelas dan tanggal, lalu tunggu data dimuat." : "Attendance is not ready. Choose a class and date, then wait for the data to load.");
+      }
       if (isWeekend) throw new Error(lang === "id" ? "Hari sekolah aktif hanya Senin–Jumat" : "School days are Monday–Friday only");
       const rows = students.map((s: any) => ({
         class_id: classId, student_id: s.id, date, status: marks[s.id] ?? "hadir",
@@ -201,6 +211,8 @@ function GuruPresensiPage() {
       toast.success(lang === "id" ? "Presensi disimpan" : "Attendance saved");
       qc.invalidateQueries({ queryKey: ["att", classId, date] });
       qc.invalidateQueries({ queryKey: ["att-all", classId] });
+      qc.invalidateQueries({ queryKey: ["rekap-att"] });
+      qc.invalidateQueries({ queryKey: ["siswa-rekap-att"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -223,7 +235,7 @@ function GuruPresensiPage() {
         <Button variant="outline" onClick={() => setShowSettings((v) => !v)}>
           <SlidersHorizontal className="size-4" /> {t("scoreSettings")}
         </Button>
-        <Button variant="guru" disabled={!classId || students.length === 0 || isWeekend || saveMut.isPending} onClick={() => saveMut.mutate()}>
+        <Button variant="guru" disabled={!classId || !date || students.length === 0 || studentsFetching || attendanceFetching || studentsError || attendanceError || isWeekend || saveMut.isPending} onClick={() => saveMut.mutate()}>
           <Save className="size-4" /> {t("save")}
         </Button>
       </div>
@@ -269,7 +281,7 @@ function GuruPresensiPage() {
       )}
 
 
-      {!classId ? <EmptyState message={t("selectClass")} /> : students.length === 0 ? <EmptyState message={t("empty")} /> : (
+      {!classId ? <EmptyState message={t("selectClass")} /> : studentsError || attendanceError ? <EmptyState message={lang === "id" ? "Data presensi gagal dimuat. Periksa koneksi dan pilih ulang kelas." : "Attendance could not be loaded. Check your connection and select the class again."} /> : studentsFetching || attendanceFetching ? <EmptyState message={lang === "id" ? "Memuat presensi…" : "Loading attendance…"} /> : students.length === 0 ? <EmptyState message={t("empty")} /> : (
         <>
           <div className="mb-2 text-xs text-muted-foreground">
             {t("totalMeetings")}: <span className="font-display font-bold text-foreground">{recap.totalMeetings}</span>
