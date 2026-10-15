@@ -9,92 +9,61 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as VerifyRoleRouteImport } from './routes/verify-role'
-import { Route as UndanganRouteImport } from './routes/undangan'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as SetupRouteImport } from './routes/setup'
-import { Route as ResetPasswordRouteImport } from './routes/reset-password'
-import { Route as LoadingRouteImport } from './routes/loading'
-import { Route as DemoRouteImport } from './routes/demo'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AktivasiRouteImport } from './routes/aktivasi'
-import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthenticatedPanduanRouteImport } from './routes/_authenticated/panduan'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AktivasiRouteImport } from './routes/aktivasi'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as DemoRouteImport } from './routes/demo'
+import { Route as LoadingRouteImport } from './routes/loading'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as SetupRouteImport } from './routes/setup'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as UndanganRouteImport } from './routes/undangan'
+import { Route as VerifyRoleRouteImport } from './routes/verify-role'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
-import { Route as AuthenticatedSiswaTugasRouteImport } from './routes/_authenticated/siswa.tugas'
-import { Route as AuthenticatedSiswaStatusRouteImport } from './routes/_authenticated/siswa.status'
-import { Route as AuthenticatedSiswaRiwayatRouteImport } from './routes/_authenticated/siswa.riwayat'
-import { Route as AuthenticatedSiswaProfilRouteImport } from './routes/_authenticated/siswa.profil'
-import { Route as AuthenticatedSiswaPermintaanRouteImport } from './routes/_authenticated/siswa.permintaan'
-import { Route as AuthenticatedSiswaPengumumanRouteImport } from './routes/_authenticated/siswa.pengumuman'
-import { Route as AuthenticatedSiswaNilaiRouteImport } from './routes/_authenticated/siswa.nilai'
-import { Route as AuthenticatedSiswaMutabaahRouteImport } from './routes/_authenticated/siswa.mutabaah'
-import { Route as AuthenticatedSiswaMapelRouteImport } from './routes/_authenticated/siswa.mapel'
-import { Route as AuthenticatedSiswaLeaderboardRouteImport } from './routes/_authenticated/siswa.leaderboard'
-import { Route as AuthenticatedSiswaKelasRouteImport } from './routes/_authenticated/siswa.kelas'
-import { Route as AuthenticatedSiswaEventRouteImport } from './routes/_authenticated/siswa.event'
-import { Route as AuthenticatedSiswaBadgeRouteImport } from './routes/_authenticated/siswa.badge'
-import { Route as AuthenticatedGuruTugasRouteImport } from './routes/_authenticated/guru.tugas'
-import { Route as AuthenticatedGuruSiswaRouteImport } from './routes/_authenticated/guru.siswa'
-import { Route as AuthenticatedGuruRppRouteImport } from './routes/_authenticated/guru.rpp'
-import { Route as AuthenticatedGuruRekapRouteImport } from './routes/_authenticated/guru.rekap'
-import { Route as AuthenticatedGuruPresensiRouteImport } from './routes/_authenticated/guru.presensi'
-import { Route as AuthenticatedGuruPermintaanRouteImport } from './routes/_authenticated/guru.permintaan'
-import { Route as AuthenticatedGuruPengumumanRouteImport } from './routes/_authenticated/guru.pengumuman'
-import { Route as AuthenticatedGuruMutabaahRouteImport } from './routes/_authenticated/guru.mutabaah'
-import { Route as AuthenticatedGuruMapelRouteImport } from './routes/_authenticated/guru.mapel'
-import { Route as AuthenticatedGuruKuisRouteImport } from './routes/_authenticated/guru.kuis'
-import { Route as AuthenticatedGuruKelasRouteImport } from './routes/_authenticated/guru.kelas'
-import { Route as AuthenticatedGuruJurnalRouteImport } from './routes/_authenticated/guru.jurnal'
-import { Route as AuthenticatedGuruGamifikasiRouteImport } from './routes/_authenticated/guru.gamifikasi'
-import { Route as AuthenticatedGuruEventRouteImport } from './routes/_authenticated/guru.event'
-import { Route as AuthenticatedGuruBankSoalRouteImport } from './routes/_authenticated/guru.bank-soal'
-import { Route as AuthenticatedDashboardSiswaRouteImport } from './routes/_authenticated/dashboard.siswa'
+import { Route as AuthenticatedPanduanRouteImport } from './routes/_authenticated/panduan'
 import { Route as AuthenticatedDashboardGuruRouteImport } from './routes/_authenticated/dashboard.guru'
-import { Route as ApiPublicHooksSyncSheetsRouteImport } from './routes/api/public/hooks/sync-sheets'
+import { Route as AuthenticatedDashboardSiswaRouteImport } from './routes/_authenticated/dashboard.siswa'
+import { Route as AuthenticatedGuruBankSoalRouteImport } from './routes/_authenticated/guru.bank-soal'
+import { Route as AuthenticatedGuruEventRouteImport } from './routes/_authenticated/guru.event'
+import { Route as AuthenticatedGuruGamifikasiRouteImport } from './routes/_authenticated/guru.gamifikasi'
+import { Route as AuthenticatedGuruJurnalRouteImport } from './routes/_authenticated/guru.jurnal'
+import { Route as AuthenticatedGuruKelasRouteImport } from './routes/_authenticated/guru.kelas'
+import { Route as AuthenticatedGuruKuisRouteImport } from './routes/_authenticated/guru.kuis'
+import { Route as AuthenticatedGuruMapelRouteImport } from './routes/_authenticated/guru.mapel'
+import { Route as AuthenticatedGuruMutabaahRouteImport } from './routes/_authenticated/guru.mutabaah'
+import { Route as AuthenticatedGuruPengumumanRouteImport } from './routes/_authenticated/guru.pengumuman'
+import { Route as AuthenticatedGuruPermintaanRouteImport } from './routes/_authenticated/guru.permintaan'
+import { Route as AuthenticatedGuruPresensiRouteImport } from './routes/_authenticated/guru.presensi'
+import { Route as AuthenticatedGuruRekapRouteImport } from './routes/_authenticated/guru.rekap'
+import { Route as AuthenticatedGuruRppRouteImport } from './routes/_authenticated/guru.rpp'
+import { Route as AuthenticatedGuruSiswaRouteImport } from './routes/_authenticated/guru.siswa'
+import { Route as AuthenticatedGuruTugasRouteImport } from './routes/_authenticated/guru.tugas'
+import { Route as AuthenticatedSiswaBadgeRouteImport } from './routes/_authenticated/siswa.badge'
+import { Route as AuthenticatedSiswaEventRouteImport } from './routes/_authenticated/siswa.event'
+import { Route as AuthenticatedSiswaKelasRouteImport } from './routes/_authenticated/siswa.kelas'
+import { Route as AuthenticatedSiswaLeaderboardRouteImport } from './routes/_authenticated/siswa.leaderboard'
+import { Route as AuthenticatedSiswaMapelRouteImport } from './routes/_authenticated/siswa.mapel'
+import { Route as AuthenticatedSiswaMutabaahRouteImport } from './routes/_authenticated/siswa.mutabaah'
+import { Route as AuthenticatedSiswaNilaiRouteImport } from './routes/_authenticated/siswa.nilai'
+import { Route as AuthenticatedSiswaPengumumanRouteImport } from './routes/_authenticated/siswa.pengumuman'
+import { Route as AuthenticatedSiswaPermintaanRouteImport } from './routes/_authenticated/siswa.permintaan'
+import { Route as AuthenticatedSiswaProfilRouteImport } from './routes/_authenticated/siswa.profil'
+import { Route as AuthenticatedSiswaRiwayatRouteImport } from './routes/_authenticated/siswa.riwayat'
+import { Route as AuthenticatedSiswaStatusRouteImport } from './routes/_authenticated/siswa.status'
+import { Route as AuthenticatedSiswaTugasRouteImport } from './routes/_authenticated/siswa.tugas'
 import { Route as AuthenticatedSiswaProfilEditRouteImport } from './routes/_authenticated/siswa.profil_.edit'
-import { Route as ApiPublicGoogleCalendarCallbackRouteImport } from './routes/api/public/google.calendar.callback'
+import { Route as ApiPublicHooksSyncSheetsRouteImport } from './routes/api/public/hooks/sync-sheets'
 import { Route as ApiPublicCalendarTokenIcsRouteImport } from './routes/api/public/calendar.$token.ics'
+import { Route as ApiPublicGoogleCalendarCallbackRouteImport } from './routes/api/public/google.calendar.callback'
 
-const VerifyRoleRoute = VerifyRoleRouteImport.update({
-  id: '/verify-role',
-  path: '/verify-role',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const UndanganRoute = UndanganRouteImport.update({
-  id: '/undangan',
-  path: '/undangan',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SetupRoute = SetupRouteImport.update({
-  id: '/setup',
-  path: '/setup',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ResetPasswordRoute = ResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoadingRoute = LoadingRouteImport.update({
-  id: '/loading',
-  path: '/loading',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemoRoute = DemoRouteImport.update({
-  id: '/demo',
-  path: '/demo',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AktivasiRoute = AktivasiRouteImport.update({
@@ -102,176 +71,60 @@ const AktivasiRoute = AktivasiRouteImport.update({
   path: '/aktivasi',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
-  id: '/_authenticated',
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const DemoRoute = DemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedPanduanRoute = AuthenticatedPanduanRouteImport.update({
-  id: '/panduan',
-  path: '/panduan',
-  getParentRoute: () => AuthenticatedRouteRoute,
+const LoadingRoute = LoadingRouteImport.update({
+  id: '/loading',
+  path: '/loading',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SetupRoute = SetupRouteImport.update({
+  id: '/setup',
+  path: '/setup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UndanganRoute = UndanganRouteImport.update({
+  id: '/undangan',
+  path: '/undangan',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VerifyRoleRoute = VerifyRoleRouteImport.update({
+  id: '/verify-role',
+  path: '/verify-role',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedSiswaTugasRoute = AuthenticatedSiswaTugasRouteImport.update({
-  id: '/siswa/tugas',
-  path: '/siswa/tugas',
+const AuthenticatedPanduanRoute = AuthenticatedPanduanRouteImport.update({
+  id: '/panduan',
+  path: '/panduan',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedSiswaStatusRoute =
-  AuthenticatedSiswaStatusRouteImport.update({
-    id: '/siswa/status',
-    path: '/siswa/status',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedSiswaRiwayatRoute =
-  AuthenticatedSiswaRiwayatRouteImport.update({
-    id: '/siswa/riwayat',
-    path: '/siswa/riwayat',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedSiswaProfilRoute =
-  AuthenticatedSiswaProfilRouteImport.update({
-    id: '/siswa/profil',
-    path: '/siswa/profil',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedSiswaPermintaanRoute =
-  AuthenticatedSiswaPermintaanRouteImport.update({
-    id: '/siswa/permintaan',
-    path: '/siswa/permintaan',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedSiswaPengumumanRoute =
-  AuthenticatedSiswaPengumumanRouteImport.update({
-    id: '/siswa/pengumuman',
-    path: '/siswa/pengumuman',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedSiswaNilaiRoute = AuthenticatedSiswaNilaiRouteImport.update({
-  id: '/siswa/nilai',
-  path: '/siswa/nilai',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedSiswaMutabaahRoute =
-  AuthenticatedSiswaMutabaahRouteImport.update({
-    id: '/siswa/mutabaah',
-    path: '/siswa/mutabaah',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedSiswaMapelRoute = AuthenticatedSiswaMapelRouteImport.update({
-  id: '/siswa/mapel',
-  path: '/siswa/mapel',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedSiswaLeaderboardRoute =
-  AuthenticatedSiswaLeaderboardRouteImport.update({
-    id: '/siswa/leaderboard',
-    path: '/siswa/leaderboard',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedSiswaKelasRoute = AuthenticatedSiswaKelasRouteImport.update({
-  id: '/siswa/kelas',
-  path: '/siswa/kelas',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedSiswaEventRoute = AuthenticatedSiswaEventRouteImport.update({
-  id: '/siswa/event',
-  path: '/siswa/event',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedSiswaBadgeRoute = AuthenticatedSiswaBadgeRouteImport.update({
-  id: '/siswa/badge',
-  path: '/siswa/badge',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedGuruTugasRoute = AuthenticatedGuruTugasRouteImport.update({
-  id: '/guru/tugas',
-  path: '/guru/tugas',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedGuruSiswaRoute = AuthenticatedGuruSiswaRouteImport.update({
-  id: '/guru/siswa',
-  path: '/guru/siswa',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedGuruRppRoute = AuthenticatedGuruRppRouteImport.update({
-  id: '/guru/rpp',
-  path: '/guru/rpp',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedGuruRekapRoute = AuthenticatedGuruRekapRouteImport.update({
-  id: '/guru/rekap',
-  path: '/guru/rekap',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedGuruPresensiRoute =
-  AuthenticatedGuruPresensiRouteImport.update({
-    id: '/guru/presensi',
-    path: '/guru/presensi',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedGuruPermintaanRoute =
-  AuthenticatedGuruPermintaanRouteImport.update({
-    id: '/guru/permintaan',
-    path: '/guru/permintaan',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedGuruPengumumanRoute =
-  AuthenticatedGuruPengumumanRouteImport.update({
-    id: '/guru/pengumuman',
-    path: '/guru/pengumuman',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedGuruMutabaahRoute =
-  AuthenticatedGuruMutabaahRouteImport.update({
-    id: '/guru/mutabaah',
-    path: '/guru/mutabaah',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedGuruMapelRoute = AuthenticatedGuruMapelRouteImport.update({
-  id: '/guru/mapel',
-  path: '/guru/mapel',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedGuruKuisRoute = AuthenticatedGuruKuisRouteImport.update({
-  id: '/guru/kuis',
-  path: '/guru/kuis',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedGuruKelasRoute = AuthenticatedGuruKelasRouteImport.update({
-  id: '/guru/kelas',
-  path: '/guru/kelas',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedGuruJurnalRoute = AuthenticatedGuruJurnalRouteImport.update({
-  id: '/guru/jurnal',
-  path: '/guru/jurnal',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedGuruGamifikasiRoute =
-  AuthenticatedGuruGamifikasiRouteImport.update({
-    id: '/guru/gamifikasi',
-    path: '/guru/gamifikasi',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedGuruEventRoute = AuthenticatedGuruEventRouteImport.update({
-  id: '/guru/event',
-  path: '/guru/event',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedGuruBankSoalRoute =
-  AuthenticatedGuruBankSoalRouteImport.update({
-    id: '/guru/bank-soal',
-    path: '/guru/bank-soal',
+const AuthenticatedDashboardGuruRoute =
+  AuthenticatedDashboardGuruRouteImport.update({
+    id: '/dashboard/guru',
+    path: '/dashboard/guru',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedDashboardSiswaRoute =
@@ -280,10 +133,163 @@ const AuthenticatedDashboardSiswaRoute =
     path: '/dashboard/siswa',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedDashboardGuruRoute =
-  AuthenticatedDashboardGuruRouteImport.update({
-    id: '/dashboard/guru',
-    path: '/dashboard/guru',
+const AuthenticatedGuruBankSoalRoute =
+  AuthenticatedGuruBankSoalRouteImport.update({
+    id: '/guru/bank-soal',
+    path: '/guru/bank-soal',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedGuruEventRoute = AuthenticatedGuruEventRouteImport.update({
+  id: '/guru/event',
+  path: '/guru/event',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedGuruGamifikasiRoute =
+  AuthenticatedGuruGamifikasiRouteImport.update({
+    id: '/guru/gamifikasi',
+    path: '/guru/gamifikasi',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedGuruJurnalRoute = AuthenticatedGuruJurnalRouteImport.update({
+  id: '/guru/jurnal',
+  path: '/guru/jurnal',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedGuruKelasRoute = AuthenticatedGuruKelasRouteImport.update({
+  id: '/guru/kelas',
+  path: '/guru/kelas',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedGuruKuisRoute = AuthenticatedGuruKuisRouteImport.update({
+  id: '/guru/kuis',
+  path: '/guru/kuis',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedGuruMapelRoute = AuthenticatedGuruMapelRouteImport.update({
+  id: '/guru/mapel',
+  path: '/guru/mapel',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedGuruMutabaahRoute =
+  AuthenticatedGuruMutabaahRouteImport.update({
+    id: '/guru/mutabaah',
+    path: '/guru/mutabaah',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedGuruPengumumanRoute =
+  AuthenticatedGuruPengumumanRouteImport.update({
+    id: '/guru/pengumuman',
+    path: '/guru/pengumuman',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedGuruPermintaanRoute =
+  AuthenticatedGuruPermintaanRouteImport.update({
+    id: '/guru/permintaan',
+    path: '/guru/permintaan',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedGuruPresensiRoute =
+  AuthenticatedGuruPresensiRouteImport.update({
+    id: '/guru/presensi',
+    path: '/guru/presensi',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedGuruRekapRoute = AuthenticatedGuruRekapRouteImport.update({
+  id: '/guru/rekap',
+  path: '/guru/rekap',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedGuruRppRoute = AuthenticatedGuruRppRouteImport.update({
+  id: '/guru/rpp',
+  path: '/guru/rpp',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedGuruSiswaRoute = AuthenticatedGuruSiswaRouteImport.update({
+  id: '/guru/siswa',
+  path: '/guru/siswa',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedGuruTugasRoute = AuthenticatedGuruTugasRouteImport.update({
+  id: '/guru/tugas',
+  path: '/guru/tugas',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSiswaBadgeRoute = AuthenticatedSiswaBadgeRouteImport.update({
+  id: '/siswa/badge',
+  path: '/siswa/badge',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSiswaEventRoute = AuthenticatedSiswaEventRouteImport.update({
+  id: '/siswa/event',
+  path: '/siswa/event',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSiswaKelasRoute = AuthenticatedSiswaKelasRouteImport.update({
+  id: '/siswa/kelas',
+  path: '/siswa/kelas',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSiswaLeaderboardRoute =
+  AuthenticatedSiswaLeaderboardRouteImport.update({
+    id: '/siswa/leaderboard',
+    path: '/siswa/leaderboard',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSiswaMapelRoute = AuthenticatedSiswaMapelRouteImport.update({
+  id: '/siswa/mapel',
+  path: '/siswa/mapel',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSiswaMutabaahRoute =
+  AuthenticatedSiswaMutabaahRouteImport.update({
+    id: '/siswa/mutabaah',
+    path: '/siswa/mutabaah',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSiswaNilaiRoute = AuthenticatedSiswaNilaiRouteImport.update({
+  id: '/siswa/nilai',
+  path: '/siswa/nilai',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSiswaPengumumanRoute =
+  AuthenticatedSiswaPengumumanRouteImport.update({
+    id: '/siswa/pengumuman',
+    path: '/siswa/pengumuman',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSiswaPermintaanRoute =
+  AuthenticatedSiswaPermintaanRouteImport.update({
+    id: '/siswa/permintaan',
+    path: '/siswa/permintaan',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSiswaProfilRoute =
+  AuthenticatedSiswaProfilRouteImport.update({
+    id: '/siswa/profil',
+    path: '/siswa/profil',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSiswaRiwayatRoute =
+  AuthenticatedSiswaRiwayatRouteImport.update({
+    id: '/siswa/riwayat',
+    path: '/siswa/riwayat',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSiswaStatusRoute =
+  AuthenticatedSiswaStatusRouteImport.update({
+    id: '/siswa/status',
+    path: '/siswa/status',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSiswaTugasRoute = AuthenticatedSiswaTugasRouteImport.update({
+  id: '/siswa/tugas',
+  path: '/siswa/tugas',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSiswaProfilEditRoute =
+  AuthenticatedSiswaProfilEditRouteImport.update({
+    id: '/siswa/profil_/edit',
+    path: '/siswa/profil/edit',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const ApiPublicHooksSyncSheetsRoute =
@@ -292,22 +298,16 @@ const ApiPublicHooksSyncSheetsRoute =
     path: '/api/public/hooks/sync-sheets',
     getParentRoute: () => rootRouteImport,
   } as any)
-const AuthenticatedSiswaProfilEditRoute =
-  AuthenticatedSiswaProfilEditRouteImport.update({
-    id: '/siswa/profil_/edit',
-    path: '/siswa/profil/edit',
-    getParentRoute: () => AuthenticatedRouteRoute,
+const ApiPublicCalendarTokenIcsRoute =
+  ApiPublicCalendarTokenIcsRouteImport.update({
+    id: '/api/public/calendar/$token/ics',
+    path: '/api/public/calendar/$token/ics',
+    getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicGoogleCalendarCallbackRoute =
   ApiPublicGoogleCalendarCallbackRouteImport.update({
     id: '/api/public/google/calendar/callback',
     path: '/api/public/google/calendar/callback',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicCalendarTokenIcsRoute =
-  ApiPublicCalendarTokenIcsRouteImport.update({
-    id: '/api/public/calendar/$token/ics',
-    path: '/api/public/calendar/$token/ics',
     getParentRoute: () => rootRouteImport,
   } as any)
 
@@ -624,67 +624,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/verify-role': {
-      id: '/verify-role'
-      path: '/verify-role'
-      fullPath: '/verify-role'
-      preLoaderRoute: typeof VerifyRoleRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/undangan': {
-      id: '/undangan'
-      path: '/undangan'
-      fullPath: '/undangan'
-      preLoaderRoute: typeof UndanganRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/setup': {
-      id: '/setup'
-      path: '/setup'
-      fullPath: '/setup'
-      preLoaderRoute: typeof SetupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/reset-password': {
-      id: '/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof ResetPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/loading': {
-      id: '/loading'
-      path: '/loading'
-      fullPath: '/loading'
-      preLoaderRoute: typeof LoadingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo': {
-      id: '/demo'
-      path: '/demo'
-      fullPath: '/demo'
-      preLoaderRoute: typeof DemoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/aktivasi': {
-      id: '/aktivasi'
-      path: '/aktivasi'
-      fullPath: '/aktivasi'
-      preLoaderRoute: typeof AktivasiRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -694,19 +638,68 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/aktivasi': {
+      id: '/aktivasi'
+      path: '/aktivasi'
+      fullPath: '/aktivasi'
+      preLoaderRoute: typeof AktivasiRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/panduan': {
-      id: '/_authenticated/panduan'
-      path: '/panduan'
-      fullPath: '/panduan'
-      preLoaderRoute: typeof AuthenticatedPanduanRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo': {
+      id: '/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof DemoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/loading': {
+      id: '/loading'
+      path: '/loading'
+      fullPath: '/loading'
+      preLoaderRoute: typeof LoadingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/setup': {
+      id: '/setup'
+      path: '/setup'
+      fullPath: '/setup'
+      preLoaderRoute: typeof SetupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/undangan': {
+      id: '/undangan'
+      path: '/undangan'
+      fullPath: '/undangan'
+      preLoaderRoute: typeof UndanganRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/verify-role': {
+      id: '/verify-role'
+      path: '/verify-role'
+      fullPath: '/verify-role'
+      preLoaderRoute: typeof VerifyRoleRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin': {
       id: '/_authenticated/admin'
@@ -715,207 +708,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/siswa/tugas': {
-      id: '/_authenticated/siswa/tugas'
-      path: '/siswa/tugas'
-      fullPath: '/siswa/tugas'
-      preLoaderRoute: typeof AuthenticatedSiswaTugasRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/siswa/status': {
-      id: '/_authenticated/siswa/status'
-      path: '/siswa/status'
-      fullPath: '/siswa/status'
-      preLoaderRoute: typeof AuthenticatedSiswaStatusRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/siswa/riwayat': {
-      id: '/_authenticated/siswa/riwayat'
-      path: '/siswa/riwayat'
-      fullPath: '/siswa/riwayat'
-      preLoaderRoute: typeof AuthenticatedSiswaRiwayatRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/siswa/profil': {
-      id: '/_authenticated/siswa/profil'
-      path: '/siswa/profil'
-      fullPath: '/siswa/profil'
-      preLoaderRoute: typeof AuthenticatedSiswaProfilRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/siswa/permintaan': {
-      id: '/_authenticated/siswa/permintaan'
-      path: '/siswa/permintaan'
-      fullPath: '/siswa/permintaan'
-      preLoaderRoute: typeof AuthenticatedSiswaPermintaanRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/siswa/pengumuman': {
-      id: '/_authenticated/siswa/pengumuman'
-      path: '/siswa/pengumuman'
-      fullPath: '/siswa/pengumuman'
-      preLoaderRoute: typeof AuthenticatedSiswaPengumumanRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/siswa/nilai': {
-      id: '/_authenticated/siswa/nilai'
-      path: '/siswa/nilai'
-      fullPath: '/siswa/nilai'
-      preLoaderRoute: typeof AuthenticatedSiswaNilaiRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/siswa/mutabaah': {
-      id: '/_authenticated/siswa/mutabaah'
-      path: '/siswa/mutabaah'
-      fullPath: '/siswa/mutabaah'
-      preLoaderRoute: typeof AuthenticatedSiswaMutabaahRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/siswa/mapel': {
-      id: '/_authenticated/siswa/mapel'
-      path: '/siswa/mapel'
-      fullPath: '/siswa/mapel'
-      preLoaderRoute: typeof AuthenticatedSiswaMapelRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/siswa/leaderboard': {
-      id: '/_authenticated/siswa/leaderboard'
-      path: '/siswa/leaderboard'
-      fullPath: '/siswa/leaderboard'
-      preLoaderRoute: typeof AuthenticatedSiswaLeaderboardRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/siswa/kelas': {
-      id: '/_authenticated/siswa/kelas'
-      path: '/siswa/kelas'
-      fullPath: '/siswa/kelas'
-      preLoaderRoute: typeof AuthenticatedSiswaKelasRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/siswa/event': {
-      id: '/_authenticated/siswa/event'
-      path: '/siswa/event'
-      fullPath: '/siswa/event'
-      preLoaderRoute: typeof AuthenticatedSiswaEventRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/siswa/badge': {
-      id: '/_authenticated/siswa/badge'
-      path: '/siswa/badge'
-      fullPath: '/siswa/badge'
-      preLoaderRoute: typeof AuthenticatedSiswaBadgeRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/guru/tugas': {
-      id: '/_authenticated/guru/tugas'
-      path: '/guru/tugas'
-      fullPath: '/guru/tugas'
-      preLoaderRoute: typeof AuthenticatedGuruTugasRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/guru/siswa': {
-      id: '/_authenticated/guru/siswa'
-      path: '/guru/siswa'
-      fullPath: '/guru/siswa'
-      preLoaderRoute: typeof AuthenticatedGuruSiswaRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/guru/rpp': {
-      id: '/_authenticated/guru/rpp'
-      path: '/guru/rpp'
-      fullPath: '/guru/rpp'
-      preLoaderRoute: typeof AuthenticatedGuruRppRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/guru/rekap': {
-      id: '/_authenticated/guru/rekap'
-      path: '/guru/rekap'
-      fullPath: '/guru/rekap'
-      preLoaderRoute: typeof AuthenticatedGuruRekapRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/guru/presensi': {
-      id: '/_authenticated/guru/presensi'
-      path: '/guru/presensi'
-      fullPath: '/guru/presensi'
-      preLoaderRoute: typeof AuthenticatedGuruPresensiRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/guru/permintaan': {
-      id: '/_authenticated/guru/permintaan'
-      path: '/guru/permintaan'
-      fullPath: '/guru/permintaan'
-      preLoaderRoute: typeof AuthenticatedGuruPermintaanRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/guru/pengumuman': {
-      id: '/_authenticated/guru/pengumuman'
-      path: '/guru/pengumuman'
-      fullPath: '/guru/pengumuman'
-      preLoaderRoute: typeof AuthenticatedGuruPengumumanRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/guru/mutabaah': {
-      id: '/_authenticated/guru/mutabaah'
-      path: '/guru/mutabaah'
-      fullPath: '/guru/mutabaah'
-      preLoaderRoute: typeof AuthenticatedGuruMutabaahRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/guru/mapel': {
-      id: '/_authenticated/guru/mapel'
-      path: '/guru/mapel'
-      fullPath: '/guru/mapel'
-      preLoaderRoute: typeof AuthenticatedGuruMapelRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/guru/kuis': {
-      id: '/_authenticated/guru/kuis'
-      path: '/guru/kuis'
-      fullPath: '/guru/kuis'
-      preLoaderRoute: typeof AuthenticatedGuruKuisRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/guru/kelas': {
-      id: '/_authenticated/guru/kelas'
-      path: '/guru/kelas'
-      fullPath: '/guru/kelas'
-      preLoaderRoute: typeof AuthenticatedGuruKelasRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/guru/jurnal': {
-      id: '/_authenticated/guru/jurnal'
-      path: '/guru/jurnal'
-      fullPath: '/guru/jurnal'
-      preLoaderRoute: typeof AuthenticatedGuruJurnalRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/guru/gamifikasi': {
-      id: '/_authenticated/guru/gamifikasi'
-      path: '/guru/gamifikasi'
-      fullPath: '/guru/gamifikasi'
-      preLoaderRoute: typeof AuthenticatedGuruGamifikasiRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/guru/event': {
-      id: '/_authenticated/guru/event'
-      path: '/guru/event'
-      fullPath: '/guru/event'
-      preLoaderRoute: typeof AuthenticatedGuruEventRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/guru/bank-soal': {
-      id: '/_authenticated/guru/bank-soal'
-      path: '/guru/bank-soal'
-      fullPath: '/guru/bank-soal'
-      preLoaderRoute: typeof AuthenticatedGuruBankSoalRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/dashboard/siswa': {
-      id: '/_authenticated/dashboard/siswa'
-      path: '/dashboard/siswa'
-      fullPath: '/dashboard/siswa'
-      preLoaderRoute: typeof AuthenticatedDashboardSiswaRouteImport
+    '/_authenticated/panduan': {
+      id: '/_authenticated/panduan'
+      path: '/panduan'
+      fullPath: '/panduan'
+      preLoaderRoute: typeof AuthenticatedPanduanRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard/guru': {
@@ -925,12 +722,208 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardGuruRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/api/public/hooks/sync-sheets': {
-      id: '/api/public/hooks/sync-sheets'
-      path: '/api/public/hooks/sync-sheets'
-      fullPath: '/api/public/hooks/sync-sheets'
-      preLoaderRoute: typeof ApiPublicHooksSyncSheetsRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_authenticated/dashboard/siswa': {
+      id: '/_authenticated/dashboard/siswa'
+      path: '/dashboard/siswa'
+      fullPath: '/dashboard/siswa'
+      preLoaderRoute: typeof AuthenticatedDashboardSiswaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/guru/bank-soal': {
+      id: '/_authenticated/guru/bank-soal'
+      path: '/guru/bank-soal'
+      fullPath: '/guru/bank-soal'
+      preLoaderRoute: typeof AuthenticatedGuruBankSoalRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/guru/event': {
+      id: '/_authenticated/guru/event'
+      path: '/guru/event'
+      fullPath: '/guru/event'
+      preLoaderRoute: typeof AuthenticatedGuruEventRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/guru/gamifikasi': {
+      id: '/_authenticated/guru/gamifikasi'
+      path: '/guru/gamifikasi'
+      fullPath: '/guru/gamifikasi'
+      preLoaderRoute: typeof AuthenticatedGuruGamifikasiRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/guru/jurnal': {
+      id: '/_authenticated/guru/jurnal'
+      path: '/guru/jurnal'
+      fullPath: '/guru/jurnal'
+      preLoaderRoute: typeof AuthenticatedGuruJurnalRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/guru/kelas': {
+      id: '/_authenticated/guru/kelas'
+      path: '/guru/kelas'
+      fullPath: '/guru/kelas'
+      preLoaderRoute: typeof AuthenticatedGuruKelasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/guru/kuis': {
+      id: '/_authenticated/guru/kuis'
+      path: '/guru/kuis'
+      fullPath: '/guru/kuis'
+      preLoaderRoute: typeof AuthenticatedGuruKuisRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/guru/mapel': {
+      id: '/_authenticated/guru/mapel'
+      path: '/guru/mapel'
+      fullPath: '/guru/mapel'
+      preLoaderRoute: typeof AuthenticatedGuruMapelRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/guru/mutabaah': {
+      id: '/_authenticated/guru/mutabaah'
+      path: '/guru/mutabaah'
+      fullPath: '/guru/mutabaah'
+      preLoaderRoute: typeof AuthenticatedGuruMutabaahRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/guru/pengumuman': {
+      id: '/_authenticated/guru/pengumuman'
+      path: '/guru/pengumuman'
+      fullPath: '/guru/pengumuman'
+      preLoaderRoute: typeof AuthenticatedGuruPengumumanRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/guru/permintaan': {
+      id: '/_authenticated/guru/permintaan'
+      path: '/guru/permintaan'
+      fullPath: '/guru/permintaan'
+      preLoaderRoute: typeof AuthenticatedGuruPermintaanRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/guru/presensi': {
+      id: '/_authenticated/guru/presensi'
+      path: '/guru/presensi'
+      fullPath: '/guru/presensi'
+      preLoaderRoute: typeof AuthenticatedGuruPresensiRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/guru/rekap': {
+      id: '/_authenticated/guru/rekap'
+      path: '/guru/rekap'
+      fullPath: '/guru/rekap'
+      preLoaderRoute: typeof AuthenticatedGuruRekapRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/guru/rpp': {
+      id: '/_authenticated/guru/rpp'
+      path: '/guru/rpp'
+      fullPath: '/guru/rpp'
+      preLoaderRoute: typeof AuthenticatedGuruRppRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/guru/siswa': {
+      id: '/_authenticated/guru/siswa'
+      path: '/guru/siswa'
+      fullPath: '/guru/siswa'
+      preLoaderRoute: typeof AuthenticatedGuruSiswaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/guru/tugas': {
+      id: '/_authenticated/guru/tugas'
+      path: '/guru/tugas'
+      fullPath: '/guru/tugas'
+      preLoaderRoute: typeof AuthenticatedGuruTugasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/siswa/badge': {
+      id: '/_authenticated/siswa/badge'
+      path: '/siswa/badge'
+      fullPath: '/siswa/badge'
+      preLoaderRoute: typeof AuthenticatedSiswaBadgeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/siswa/event': {
+      id: '/_authenticated/siswa/event'
+      path: '/siswa/event'
+      fullPath: '/siswa/event'
+      preLoaderRoute: typeof AuthenticatedSiswaEventRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/siswa/kelas': {
+      id: '/_authenticated/siswa/kelas'
+      path: '/siswa/kelas'
+      fullPath: '/siswa/kelas'
+      preLoaderRoute: typeof AuthenticatedSiswaKelasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/siswa/leaderboard': {
+      id: '/_authenticated/siswa/leaderboard'
+      path: '/siswa/leaderboard'
+      fullPath: '/siswa/leaderboard'
+      preLoaderRoute: typeof AuthenticatedSiswaLeaderboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/siswa/mapel': {
+      id: '/_authenticated/siswa/mapel'
+      path: '/siswa/mapel'
+      fullPath: '/siswa/mapel'
+      preLoaderRoute: typeof AuthenticatedSiswaMapelRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/siswa/mutabaah': {
+      id: '/_authenticated/siswa/mutabaah'
+      path: '/siswa/mutabaah'
+      fullPath: '/siswa/mutabaah'
+      preLoaderRoute: typeof AuthenticatedSiswaMutabaahRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/siswa/nilai': {
+      id: '/_authenticated/siswa/nilai'
+      path: '/siswa/nilai'
+      fullPath: '/siswa/nilai'
+      preLoaderRoute: typeof AuthenticatedSiswaNilaiRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/siswa/pengumuman': {
+      id: '/_authenticated/siswa/pengumuman'
+      path: '/siswa/pengumuman'
+      fullPath: '/siswa/pengumuman'
+      preLoaderRoute: typeof AuthenticatedSiswaPengumumanRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/siswa/permintaan': {
+      id: '/_authenticated/siswa/permintaan'
+      path: '/siswa/permintaan'
+      fullPath: '/siswa/permintaan'
+      preLoaderRoute: typeof AuthenticatedSiswaPermintaanRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/siswa/profil': {
+      id: '/_authenticated/siswa/profil'
+      path: '/siswa/profil'
+      fullPath: '/siswa/profil'
+      preLoaderRoute: typeof AuthenticatedSiswaProfilRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/siswa/riwayat': {
+      id: '/_authenticated/siswa/riwayat'
+      path: '/siswa/riwayat'
+      fullPath: '/siswa/riwayat'
+      preLoaderRoute: typeof AuthenticatedSiswaRiwayatRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/siswa/status': {
+      id: '/_authenticated/siswa/status'
+      path: '/siswa/status'
+      fullPath: '/siswa/status'
+      preLoaderRoute: typeof AuthenticatedSiswaStatusRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/siswa/tugas': {
+      id: '/_authenticated/siswa/tugas'
+      path: '/siswa/tugas'
+      fullPath: '/siswa/tugas'
+      preLoaderRoute: typeof AuthenticatedSiswaTugasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/siswa/profil_/edit': {
       id: '/_authenticated/siswa/profil_/edit'
@@ -939,11 +932,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSiswaProfilEditRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/api/public/google/calendar/callback': {
-      id: '/api/public/google/calendar/callback'
-      path: '/api/public/google/calendar/callback'
-      fullPath: '/api/public/google/calendar/callback'
-      preLoaderRoute: typeof ApiPublicGoogleCalendarCallbackRouteImport
+    '/api/public/hooks/sync-sheets': {
+      id: '/api/public/hooks/sync-sheets'
+      path: '/api/public/hooks/sync-sheets'
+      fullPath: '/api/public/hooks/sync-sheets'
+      preLoaderRoute: typeof ApiPublicHooksSyncSheetsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/calendar/$token/ics': {
@@ -951,6 +944,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/calendar/$token/ics'
       fullPath: '/api/public/calendar/$token/ics'
       preLoaderRoute: typeof ApiPublicCalendarTokenIcsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/google/calendar/callback': {
+      id: '/api/public/google/calendar/callback'
+      path: '/api/public/google/calendar/callback'
+      fullPath: '/api/public/google/calendar/callback'
+      preLoaderRoute: typeof ApiPublicGoogleCalendarCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
