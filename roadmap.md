@@ -7,5 +7,5 @@
 - [x] Let teachers arrange question numbers before sharing ordinary or interactive quizzes.
 - [x] Resume an interrupted interactive quiz without an expired timer skipping or submitting it.
 - [x] Refresh the student quiz card immediately after an interactive submission.
-- [ ] Audit current runtime errors and signed-in teacher workflows; repair verified defects.
-- [ ] Verify role redirects, affected workflows, and package security update.
+- [x] Audit current runtime errors and signed-in teacher workflows; repair verified defects.
+- [x] Verify role redirects, affected workflows, and package security update.
