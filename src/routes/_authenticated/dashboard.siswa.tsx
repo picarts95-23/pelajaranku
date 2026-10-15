@@ -53,17 +53,9 @@ function SiswaDashboard() {
     queryKey: ["siswa-leaderboard-mini", user?.id], enabled: !!user && !loading && role === "siswa",
     queryFn: async () => {
       if (!user) return [];
-      const { data: myCls, error: classError } = await supabase.from("class_enrollments").select("class_id").eq("student_id", user.id);
-      if (classError) throw classError;
-      const classIds = (myCls ?? []).map((e) => e.class_id);
-      if (classIds.length === 0) return [];
-      const { data: peers, error: peersError } = await supabase.from("class_enrollments").select("student_id").in("class_id", classIds);
-      if (peersError) throw peersError;
-      const ids = Array.from(new Set((peers ?? []).map((e) => e.student_id)));
-      if (!ids.length) return [];
-      const { data: profs, error: profilesError } = await supabase.from("profiles").select("id, full_name, xp").in("id", ids).is("archived_at", null).order("xp", { ascending: false }).order("id");
-      if (profilesError) throw profilesError;
-      return profs ?? [];
+      const { data, error } = await supabase.rpc("student_class_leaderboard");
+      if (error) throw error;
+      return data ?? [];
     },
   });
 
