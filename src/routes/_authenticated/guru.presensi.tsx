@@ -211,8 +211,8 @@ function GuruPresensiPage() {
       toast.success(lang === "id" ? "Presensi disimpan" : "Attendance saved");
       qc.invalidateQueries({ queryKey: ["att", classId, date] });
       qc.invalidateQueries({ queryKey: ["att-all", classId] });
-      qc.invalidateQueries({ queryKey: ["rekap-att"] });
-      qc.invalidateQueries({ queryKey: ["siswa-rekap-att"] });
+      qc.invalidateQueries({ queryKey: ["rekap-attendance", classId] });
+      qc.invalidateQueries({ queryKey: ["siswa-rekap-mapel"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
