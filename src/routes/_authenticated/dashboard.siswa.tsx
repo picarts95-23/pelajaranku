@@ -34,7 +34,7 @@ function SiswaDashboard() {
   const pct = Math.min(100, Math.round(((xp % 100) / 100) * 100));
 
   const { data: activeQuests = [] } = useQuery({
-    queryKey: ["siswa-active", user?.id], enabled: !!user,
+    queryKey: ["siswa-active", user?.id], enabled: !!user && !loading && role === "siswa",
     queryFn: async () => {
       const { data } = await supabase.from("assignments").select("*, classes(name), submissions(status, student_id)").order("due_at", { ascending: true, nullsFirst: false }).limit(5);
       return (data ?? []).filter((a: any) => !a.submissions?.find((s: any) => s.student_id === user!.id && s.status === "graded"));
@@ -42,7 +42,7 @@ function SiswaDashboard() {
   });
 
   const { data: leaderboard = [] } = useQuery({
-    queryKey: ["siswa-leaderboard-mini", user?.id], enabled: !!user,
+    queryKey: ["siswa-leaderboard-mini", user?.id], enabled: !!user && !loading && role === "siswa",
     queryFn: async () => {
       const { data: myCls } = await supabase.from("class_enrollments").select("class_id").eq("student_id", user!.id);
       const classIds = (myCls ?? []).map((e) => e.class_id);
@@ -55,6 +55,10 @@ function SiswaDashboard() {
   });
 
   const rank = leaderboard.findIndex((p: any) => p.id === user?.id) + 1;
+
+  if (loading || role !== "siswa") {
+    return <div className="grid min-h-screen place-items-center bg-background text-muted-foreground" role="status">{lang === "id" ? "Memuat akun…" : "Loading account…"}</div>;
+  }
 
   return (
     <DashboardShell accent="siswa">

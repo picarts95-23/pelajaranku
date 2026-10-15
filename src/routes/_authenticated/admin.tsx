@@ -163,7 +163,11 @@ function AdminPage() {
     archived: users.filter((u) => u.archived_at).length,
   }), [users]);
 
-  if (!loading && role !== "admin") {
+  if (loading) {
+    return <div className="grid min-h-screen place-items-center bg-background" role="status"><Loader2 className="size-6 animate-spin text-primary" aria-label="Memuat akun…" /></div>;
+  }
+
+  if (role !== "admin") {
     return (
       <div className="grid min-h-screen place-items-center bg-gradient-sunset px-6 text-center">
         <div className="max-w-md rounded-3xl border-2 border-border bg-card p-8 shadow-magic">
