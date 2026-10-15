@@ -13,7 +13,13 @@ import { LinkBadges } from "@/components/link-fields";
 import { gcalTemplateUrl } from "@/lib/google-calendar";
 
 export const Route = createFileRoute("/_authenticated/siswa/event")({
-  head: () => ({ meta: [{ title: "Kegiatan · Pelajaranku" }] }),
+  head: () => ({ meta: [{ title: "Kegiatan Siswa · Pelajaranku" },
+      { name: "description", content: "Kegiatan Siswa untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:title", content: "Kegiatan Siswa · Pelajaranku" },
+      { property: "og:description", content: "Kegiatan Siswa untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ] }),
   component: SiswaEventPage,
 });
 

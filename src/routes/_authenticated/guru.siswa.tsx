@@ -15,7 +15,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { resolveAvatar } from "@/lib/character-roster";
 
 export const Route = createFileRoute("/_authenticated/guru/siswa")({
-  head: () => ({ meta: [{ title: "Siswa · Pelajaranku" }] }),
+  head: () => ({ meta: [{ title: "Siswa Guru · Pelajaranku" },
+      { name: "description", content: "Siswa Guru untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:title", content: "Siswa Guru · Pelajaranku" },
+      { property: "og:description", content: "Siswa Guru untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ] }),
   component: GuruSiswaPage,
 });
 

@@ -99,8 +99,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Pelajaranku — Pertualangan Mencari Ilmu" },
       { name: "twitter:description", content: "Aplikasi pembelajaran interaktif bernuansa islami untuk guru dan siswi. Naik tingkat ilmu, tunaikan misi, dan kuasai pelajaran." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/4ce8fa9d-e9e8-4101-9d3d-f9a83216e4f1" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/4ce8fa9d-e9e8-4101-9d3d-f9a83216e4f1" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

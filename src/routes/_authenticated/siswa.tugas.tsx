@@ -28,7 +28,13 @@ import { InteractiveQuizDialog } from "@/components/interactive-quiz-player";
 import { ScoreBreakdown, questionPoints, type ScoreBreakdownItem } from "@/components/quiz-score-breakdown";
 
 export const Route = createFileRoute("/_authenticated/siswa/tugas")({
-  head: () => ({ meta: [{ title: "Tugas & Latihan · Pelajaranku" }] }),
+  head: () => ({ meta: [{ title: "Tugas & Latihan Siswa · Pelajaranku" },
+      { name: "description", content: "Tugas & Latihan Siswa untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:title", content: "Tugas & Latihan Siswa · Pelajaranku" },
+      { property: "og:description", content: "Tugas & Latihan Siswa untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ] }),
   component: SiswaTugasPage,
 });
 

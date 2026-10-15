@@ -24,7 +24,13 @@ import { getCalendarFeedUrl } from "@/lib/google-calendar.functions";
 import { programItemDate, takeProgramPrefill } from "@/lib/program-templates";
 
 export const Route = createFileRoute("/_authenticated/guru/event")({
-  head: () => ({ meta: [{ title: "Kegiatan · Pelajaranku" }] }),
+  head: () => ({ meta: [{ title: "Kegiatan Guru · Pelajaranku" },
+      { name: "description", content: "Kegiatan Guru untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:title", content: "Kegiatan Guru · Pelajaranku" },
+      { property: "og:description", content: "Kegiatan Guru untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ] }),
   component: GuruEventPage,
 });
 

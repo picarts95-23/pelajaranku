@@ -12,7 +12,13 @@ import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/guru/presensi")({
-  head: () => ({ meta: [{ title: "Presensi · Pelajaranku" }] }),
+  head: () => ({ meta: [{ title: "Presensi Guru · Pelajaranku" },
+      { name: "description", content: "Presensi Guru untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:title", content: "Presensi Guru · Pelajaranku" },
+      { property: "og:description", content: "Presensi Guru untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ] }),
   component: GuruPresensiPage,
 });
 

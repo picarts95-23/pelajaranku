@@ -8,7 +8,13 @@ import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/siswa/badge")({
-  head: () => ({ meta: [{ title: "Badge · Pelajaranku" }] }),
+  head: () => ({ meta: [{ title: "Badge Siswa · Pelajaranku" },
+      { name: "description", content: "Badge Siswa untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:title", content: "Badge Siswa · Pelajaranku" },
+      { property: "og:description", content: "Badge Siswa untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ] }),
   component: SiswaBadgePage,
 });
 

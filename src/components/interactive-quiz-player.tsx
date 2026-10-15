@@ -56,7 +56,7 @@ export function InteractiveQuizDialog({ quiz, questions, onFinished }: { quiz: a
       setSecondsLeft(resumedLimit);
       setStage("playing");
     } catch {
-      window.localStorage.removeItem(storageKey);
+      try { window.localStorage.removeItem(storageKey); } catch { /* ignore unavailable storage */ }
     }
   };
 

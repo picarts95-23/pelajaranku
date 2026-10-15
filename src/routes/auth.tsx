@@ -33,6 +33,8 @@ export const Route = createFileRoute("/auth")({
       { property: "og:title", content: "Masuk atau Daftar · Pelajaranku" },
       { property: "og:description", content: "Masuk atau daftar sebagai guru atau siswi untuk memulai perjalanan menuntut ilmu." },
       { property: "og:url", content: "https://pelajaranku.lovable.app/auth" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [{ rel: "canonical", href: "https://pelajaranku.lovable.app/auth" }],
   }),

@@ -14,7 +14,13 @@ import { resolveAvatar } from "@/lib/character-roster";
 import { format } from "date-fns";
 
 export const Route = createFileRoute("/_authenticated/dashboard/siswa")({
-  head: () => ({ meta: [{ title: "Dashboard Siswa · Pelajaranku" }] }),
+  head: () => ({ meta: [{ title: "Dashboard Siswa · Pelajaranku" },
+      { name: "description", content: "Dashboard Siswa untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:title", content: "Dashboard Siswa · Pelajaranku" },
+      { property: "og:description", content: "Dashboard Siswa untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ] }),
   component: SiswaDashboard,
 });
 

@@ -8,3 +8,6 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Use the shared service-worker context check for registration and offline status so preview and unsupported contexts never promise offline readiness.
+- Restore interactive quiz progress only when the dialog opens, and pause its timer while closed, so background refetches cannot restart or submit an attempt.

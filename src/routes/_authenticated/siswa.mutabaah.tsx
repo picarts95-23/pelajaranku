@@ -10,7 +10,13 @@ import { SETORAN_TYPES, setoranLabel } from "@/lib/mutabaah";
 import { RecordCard } from "./guru.mutabaah";
 
 export const Route = createFileRoute("/_authenticated/siswa/mutabaah")({
-  head: () => ({ meta: [{ title: "Mutaba'ah Tahfidz · Pelajaranku" }] }),
+  head: () => ({ meta: [{ title: "Mutaba'ah Tahfidz Siswa · Pelajaranku" },
+      { name: "description", content: "Mutaba'ah Tahfidz Siswa untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:title", content: "Mutaba'ah Tahfidz Siswa · Pelajaranku" },
+      { property: "og:description", content: "Mutaba'ah Tahfidz Siswa untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ] }),
   component: SiswaMutabaahPage,
 });
 

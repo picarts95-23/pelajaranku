@@ -9,7 +9,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/siswa/leaderboard")({
-  head: () => ({ meta: [{ title: "Papan Peringkat · Pelajaranku" }] }),
+  head: () => ({ meta: [{ title: "Papan Peringkat Siswa · Pelajaranku" },
+      { name: "description", content: "Papan Peringkat Siswa untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:title", content: "Papan Peringkat Siswa · Pelajaranku" },
+      { property: "og:description", content: "Papan Peringkat Siswa untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ] }),
   component: SiswaLeaderboardPage,
 });
 

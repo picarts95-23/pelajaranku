@@ -17,7 +17,13 @@ import { AssignmentFileLink } from "@/components/assignment-file-input";
 import { useMarkSeen } from "@/lib/notifications";
 
 export const Route = createFileRoute("/_authenticated/siswa/mapel")({
-  head: () => ({ meta: [{ title: "Mata Pelajaran · Pelajaranku" }] }),
+  head: () => ({ meta: [{ title: "Mata Pelajaran Siswa · Pelajaranku" },
+      { name: "description", content: "Mata Pelajaran Siswa untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:title", content: "Mata Pelajaran Siswa · Pelajaranku" },
+      { property: "og:description", content: "Mata Pelajaran Siswa untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ] }),
   component: SiswaMapelPage,
 });
 

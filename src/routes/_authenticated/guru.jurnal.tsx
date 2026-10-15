@@ -24,12 +24,13 @@ import { PROMPT_JURNAL, parseJournalEntries, type ImportJournalEntry } from "@/l
 export const Route = createFileRoute("/_authenticated/guru/jurnal")({
   head: () => ({
     meta: [
-      { title: "Dokumen Pembelajaran · Pelajaranku" },
+      { title: "Dokumen Pembelajaran Guru · Pelajaranku" },
       { name: "description", content: "Kelola Program Tahunan, Program Semester, dan Jurnal Guru dalam satu tempat." },
       { property: "og:title", content: "Dokumen Pembelajaran · Pelajaranku" },
       { property: "og:description", content: "Program Tahunan, Program Semester, dan Jurnal Guru yang bisa diedit kapan saja." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+
     ],
   }),
   component: GuruDokumenPage,

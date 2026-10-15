@@ -19,7 +19,13 @@ import { SISWA_CHARACTERS, GURU_CHARACTERS, getCharacterByKey } from "@/lib/char
 import { getIslamicAvatar } from "@/lib/islamic-avatar";
 
 export const Route = createFileRoute("/_authenticated/siswa/profil_/edit")({
-  head: () => ({ meta: [{ title: "Atur Profil & Karakter · Pelajaranku" }] }),
+  head: () => ({ meta: [{ title: "Atur Profil & Karakter Siswa · Pelajaranku" },
+      { name: "description", content: "Atur Profil & Karakter Siswa untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:title", content: "Atur Profil & Karakter Siswa · Pelajaranku" },
+      { property: "og:description", content: "Atur Profil & Karakter Siswa untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ] }),
   component: EditProfil,
 });
 

@@ -23,7 +23,13 @@ import {
 } from "@/lib/mutabaah";
 
 export const Route = createFileRoute("/_authenticated/guru/mutabaah")({
-  head: () => ({ meta: [{ title: "Mutaba'ah Tahfidz · Pelajaranku" }] }),
+  head: () => ({ meta: [{ title: "Mutaba'ah Tahfidz Guru · Pelajaranku" },
+      { name: "description", content: "Mutaba'ah Tahfidz Guru untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:title", content: "Mutaba'ah Tahfidz Guru · Pelajaranku" },
+      { property: "og:description", content: "Mutaba'ah Tahfidz Guru untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ] }),
   component: GuruMutabaahPage,
 });
 

@@ -37,6 +37,11 @@ export const Route = createFileRoute("/_authenticated/admin")({
     meta: [
       { title: "Panel Admin · Pelajaranku" },
       { name: "robots", content: "noindex" },
+      { name: "description", content: "Panel Admin untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:title", content: "Panel Admin · Pelajaranku" },
+      { property: "og:description", content: "Panel Admin untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: AdminPage,

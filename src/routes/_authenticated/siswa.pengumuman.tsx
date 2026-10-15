@@ -12,7 +12,13 @@ import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/siswa/pengumuman")({
-  head: () => ({ meta: [{ title: "Papan Pengumuman · Pelajaranku" }] }),
+  head: () => ({ meta: [{ title: "Papan Pengumuman Siswa · Pelajaranku" },
+      { name: "description", content: "Papan Pengumuman Siswa untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:title", content: "Papan Pengumuman Siswa · Pelajaranku" },
+      { property: "og:description", content: "Papan Pengumuman Siswa untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ] }),
   component: SiswaPengumumanPage,
 });
 

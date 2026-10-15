@@ -19,7 +19,13 @@ import { BADGE_EMOJIS } from "@/lib/badge-emojis";
 import { BADGE_CATALOG, CATALOG_TOTAL, type CatalogBadge } from "@/lib/badge-catalog";
 
 export const Route = createFileRoute("/_authenticated/guru/gamifikasi")({
-  head: () => ({ meta: [{ title: "Gamifikasi · Pelajaranku" }] }),
+  head: () => ({ meta: [{ title: "Gamifikasi Guru · Pelajaranku" },
+      { name: "description", content: "Gamifikasi Guru untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:title", content: "Gamifikasi Guru · Pelajaranku" },
+      { property: "og:description", content: "Gamifikasi Guru untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ] }),
   component: GuruGamifikasiPage,
 });
 

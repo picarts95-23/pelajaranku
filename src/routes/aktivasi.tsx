@@ -15,6 +15,10 @@ export const Route = createFileRoute("/aktivasi")({
     meta: [
       { title: "Aktivasi Lisensi — Pelajaranku" },
       { name: "description", content: "Aktifkan lisensi Pelajaranku Anda untuk memulai penggunaan aplikasi." },
+      { property: "og:title", content: "Aktivasi Lisensi — Pelajaranku" },
+      { property: "og:description", content: "Aktifkan lisensi Pelajaranku Anda untuk memulai penggunaan aplikasi." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
 });

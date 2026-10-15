@@ -19,6 +19,8 @@ export const Route = createFileRoute("/setup")({
       { property: "og:title", content: "Wizard Setup Supabase · Pelajaranku" },
       { property: "og:description", content: "Wizard interaktif untuk pemilik aplikasi: tempel URL & key, uji koneksi, dapatkan file .env siap pakai." },
       { name: "robots", content: "noindex" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: SetupWizard,
