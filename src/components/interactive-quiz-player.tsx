@@ -40,8 +40,9 @@ export function InteractiveQuizDialog({ quiz, questions, onFinished }: { quiz: a
   const answeredCount = useMemo(() => answers.filter((answer) => answer !== null && answer !== undefined && String(answer).trim() !== "").length, [answers]);
   const currentQuestion = questions[current];
 
-  useEffect(() => {
-    if (!open || !storageKey) return;
+  const changeOpen = (nextOpen: boolean) => {
+    setOpen(nextOpen);
+    if (!nextOpen || stage === "result" || !storageKey) return;
     try {
       const raw = window.localStorage.getItem(storageKey);
       if (!raw) return;
@@ -57,12 +58,14 @@ export function InteractiveQuizDialog({ quiz, questions, onFinished }: { quiz: a
     } catch {
       window.localStorage.removeItem(storageKey);
     }
-  }, [open, questions, defaultLimit, storageKey]);
+  };
 
   useEffect(() => {
-    if (stage !== "playing" || !storageKey) return;
-    window.localStorage.setItem(storageKey, JSON.stringify({ answers, current, deadline } satisfies SavedRun));
-  }, [answers, current, deadline, stage, storageKey]);
+    if (!open || (stage !== "playing" && stage !== "review") || !storageKey) return;
+    try {
+      window.localStorage.setItem(storageKey, JSON.stringify({ answers, current, deadline } satisfies SavedRun));
+    } catch { /* Private browsing or a full device must not interrupt the quiz. */ }
+  }, [answers, current, deadline, stage, storageKey, open]);
 
   const submitMut = useMutation({
     mutationFn: async () => {
@@ -98,7 +101,9 @@ export function InteractiveQuizDialog({ quiz, questions, onFinished }: { quiz: a
     },
     onSuccess: (data) => {
       submittingRef.current = false;
-      if (storageKey) window.localStorage.removeItem(storageKey);
+      if (storageKey) {
+        try { window.localStorage.removeItem(storageKey); } catch { /* ignore unavailable storage */ }
+      }
       setResult(data);
       setStage("result");
       onFinished();
@@ -138,7 +143,7 @@ export function InteractiveQuizDialog({ quiz, questions, onFinished }: { quiz: a
   };
 
   useEffect(() => {
-    if (stage !== "playing" || !deadline || submitMut.isPending) return;
+    if (!open || stage !== "playing" || !deadline || submitMut.isPending) return;
     const tick = () => {
       const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
       setSecondsLeft(remaining);
@@ -150,14 +155,14 @@ export function InteractiveQuizDialog({ quiz, questions, onFinished }: { quiz: a
     tick();
     const timer = window.setInterval(tick, 250);
     return () => window.clearInterval(timer);
-  }, [deadline, stage, current, submitMut.isPending]);
+  }, [deadline, stage, current, submitMut.isPending, open]);
 
   const setAnswer = (value: unknown) => setAnswers((all) => all.map((answer, index) => index === current ? value : answer));
   const progress = questions.length ? ((current + 1) / questions.length) * 100 : 0;
   const timerPercent = (secondsLeft / limit) * 100;
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={changeOpen}>
       <DialogTrigger asChild>
         <Button variant="siswa" className="mt-4 w-full"><FileQuestion className="size-4" /> {lang === "id" ? "Mulai Kuis Interaktif" : "Start Interactive Quiz"}</Button>
       </DialogTrigger>

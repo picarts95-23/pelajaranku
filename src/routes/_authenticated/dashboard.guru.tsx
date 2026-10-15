@@ -148,6 +148,10 @@ function GuruDashboard() {
     },
   });
 
+  if (loading || role !== "guru") {
+    return <div className="grid min-h-screen place-items-center bg-background text-muted-foreground" role="status">{lang === "id" ? "Memuat akun…" : "Loading account…"}</div>;
+  }
+
   return (
     <DashboardShell accent="guru">
       <motion.section
