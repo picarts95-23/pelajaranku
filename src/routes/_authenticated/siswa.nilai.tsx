@@ -13,7 +13,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { ScoreBreakdown, type ScoreBreakdownItem } from "@/components/quiz-score-breakdown";
 
 export const Route = createFileRoute("/_authenticated/siswa/nilai")({
-  head: () => ({ meta: [{ title: "Nilai Saya · Pelajaranku" }] }),
+  head: () => ({ meta: [{ title: "Nilai Saya Siswa · Pelajaranku" },
+      { name: "description", content: "Nilai Saya Siswa untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:title", content: "Nilai Saya Siswa · Pelajaranku" },
+      { property: "og:description", content: "Nilai Saya Siswa untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ] }),
   component: SiswaNilaiPage,
 });
 

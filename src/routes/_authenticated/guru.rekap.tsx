@@ -20,7 +20,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { isHalaqohSubject, type HalaqohDaily } from "@/lib/mutabaah";
 
 export const Route = createFileRoute("/_authenticated/guru/rekap")({
-  head: () => ({ meta: [{ title: "Rekap Nilai · Pelajaranku" }] }),
+  head: () => ({ meta: [{ title: "Rekap Nilai Guru · Pelajaranku" },
+      { name: "description", content: "Rekap Nilai Guru untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:title", content: "Rekap Nilai Guru · Pelajaranku" },
+      { property: "og:description", content: "Rekap Nilai Guru untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ] }),
   component: GuruRekapPage,
 });
 

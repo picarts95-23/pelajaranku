@@ -22,7 +22,13 @@ import { AiPasteDialog } from "@/components/ai-paste-dialog";
 import { PROMPT_MATERI, parseMaterialEntries, type ImportMaterialEntry } from "@/lib/doc-import";
 
 export const Route = createFileRoute("/_authenticated/guru/mapel")({
-  head: () => ({ meta: [{ title: "Mata Pelajaran · Pelajaranku" }] }),
+  head: () => ({ meta: [{ title: "Mata Pelajaran Guru · Pelajaranku" },
+      { name: "description", content: "Mata Pelajaran Guru untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:title", content: "Mata Pelajaran Guru · Pelajaranku" },
+      { property: "og:description", content: "Mata Pelajaran Guru untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ] }),
   component: GuruMapelPage,
 });
 

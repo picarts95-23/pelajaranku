@@ -22,6 +22,8 @@ export const Route = createFileRoute("/undangan")({
       { property: "og:title", content: "Aktivasi Undangan Guru · Pelajaranku" },
       { property: "og:description", content: "Masukkan kode undangan Anda dan mulai mengajar di Pelajaranku." },
       { name: "robots", content: "noindex" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: InviteActivation,

@@ -18,6 +18,7 @@ export const Route = createFileRoute("/")({
       { property: "og:description", content: "Belajar terasa bermakna. Naik tingkat ilmu setiap hari dengan misi, kuis, dan hadiah." },
       { property: "og:url", content: "https://pelajaranku.lovable.app/" },
       { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [{ rel: "canonical", href: "https://pelajaranku.lovable.app/" }],
     scripts: [

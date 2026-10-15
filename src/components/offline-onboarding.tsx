@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { isRefusedContext } from "@/lib/register-sw";
 
 const SEEN_KEY = "pelajaranku:onboarding-offline-seen-v1";
 
@@ -50,7 +51,7 @@ export function OfflineOnboarding() {
 
   useEffect(() => {
     if (typeof navigator === "undefined") return;
-    if (!("serviceWorker" in navigator)) {
+    if (isRefusedContext() || !("serviceWorker" in navigator)) {
       setReady("unavailable");
       return;
     }
@@ -125,7 +126,7 @@ export function OfflineOnboarding() {
         ) : online ? (
           <>
             <Wifi className="size-3.5" aria-hidden />
-            <span>Menyiapkan offline…</span>
+            <span>{ready === "unavailable" ? "Offline belum tersedia" : "Menyiapkan offline…"}</span>
           </>
         ) : (
           <>

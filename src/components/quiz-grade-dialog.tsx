@@ -102,7 +102,10 @@ export function QuizGradeDialog({
   const qc = useQueryClient();
   const questions: any[] = Array.isArray(quiz.questions) ? quiz.questions : [];
   const studentAnswers: any[] = useMemo(() => {
-    try { return JSON.parse(submission.content ?? "[]"); } catch { return []; }
+    try {
+      const parsed: unknown = JSON.parse(submission.content ?? "[]");
+      return Array.isArray(parsed) ? parsed : [];
+    } catch { return []; }
   }, [submission.content]);
   const [feedback, setFeedback] = useState<string>(submission.feedback ?? "");
   const [voiceUrls, setVoiceUrls] = useState<Record<number, string>>({});
@@ -327,8 +330,13 @@ export function QuizGradeDialog({
                       placeholder="0"
                       className="h-8 w-24"
                       onChange={(e) => {
-                         const raw = e.target.value === "" ? 0 : Math.min(questionPoints(q), Math.max(0, Number(e.target.value)));
-                        setManualScores((m) => ({ ...m, [i]: raw }));
+                        const value = e.target.value;
+                        setManualScores((m) => {
+                          const next = { ...m };
+                          if (value === "") delete next[i];
+                          else next[i] = Math.min(questionPoints(q), Math.max(0, Number(value)));
+                          return next;
+                        });
                         setScoreTouched(false);
                       }}
                     />

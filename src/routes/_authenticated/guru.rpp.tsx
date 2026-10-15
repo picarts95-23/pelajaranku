@@ -21,7 +21,13 @@ import { PROMPT_RPP, parseRppEntries, type ImportRppEntry } from "@/lib/doc-impo
 
 
 export const Route = createFileRoute("/_authenticated/guru/rpp")({
-  head: () => ({ meta: [{ title: "RPP Pekanan · Pelajaranku" }] }),
+  head: () => ({ meta: [{ title: "RPP Pekanan Guru · Pelajaranku" },
+      { name: "description", content: "RPP Pekanan Guru untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:title", content: "RPP Pekanan Guru · Pelajaranku" },
+      { property: "og:description", content: "RPP Pekanan Guru untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ] }),
   component: GuruRppPage,
 });
 

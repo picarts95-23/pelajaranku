@@ -28,7 +28,13 @@ import { QuizReviewDialog } from "@/components/quiz-review";
 import { Switch } from "@/components/ui/switch";
 
 export const Route = createFileRoute("/_authenticated/guru/bank-soal")({
-  head: () => ({ meta: [{ title: "Bank Soal · Pelajaranku" }] }),
+  head: () => ({ meta: [{ title: "Bank Soal Guru · Pelajaranku" },
+      { name: "description", content: "Bank Soal Guru untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:title", content: "Bank Soal Guru · Pelajaranku" },
+      { property: "og:description", content: "Bank Soal Guru untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ] }),
   component: GuruBankSoalPage,
 });
 

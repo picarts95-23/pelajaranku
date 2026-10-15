@@ -37,6 +37,11 @@ export const Route = createFileRoute("/_authenticated/admin")({
     meta: [
       { title: "Panel Admin · Pelajaranku" },
       { name: "robots", content: "noindex" },
+      { name: "description", content: "Panel Admin untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:title", content: "Panel Admin · Pelajaranku" },
+      { property: "og:description", content: "Panel Admin untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: AdminPage,
@@ -163,7 +168,11 @@ function AdminPage() {
     archived: users.filter((u) => u.archived_at).length,
   }), [users]);
 
-  if (!loading && role !== "admin") {
+  if (loading) {
+    return <div className="grid min-h-screen place-items-center bg-background" role="status"><Loader2 className="size-6 animate-spin text-primary" aria-label="Memuat akun…" /></div>;
+  }
+
+  if (role !== "admin") {
     return (
       <div className="grid min-h-screen place-items-center bg-gradient-sunset px-6 text-center">
         <div className="max-w-md rounded-3xl border-2 border-border bg-card p-8 shadow-magic">

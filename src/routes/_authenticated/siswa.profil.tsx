@@ -13,7 +13,13 @@ import { getCharacterByKey } from "@/lib/character-roster";
 import { format } from "date-fns";
 
 export const Route = createFileRoute("/_authenticated/siswa/profil")({
-  head: () => ({ meta: [{ title: "Profil Siswi · Pelajaranku" }] }),
+  head: () => ({ meta: [{ title: "Profil Siswi Siswa · Pelajaranku" },
+      { name: "description", content: "Profil Siswi Siswa untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:title", content: "Profil Siswi Siswa · Pelajaranku" },
+      { property: "og:description", content: "Profil Siswi Siswa untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ] }),
   component: SiswaProfil,
 });
 

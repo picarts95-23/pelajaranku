@@ -13,7 +13,13 @@ import { SheetBackupCard } from "@/components/sheet-backup-card";
 import { format } from "date-fns";
 
 export const Route = createFileRoute("/_authenticated/dashboard/guru")({
-  head: () => ({ meta: [{ title: "Dashboard Guru · Pelajaranku" }] }),
+  head: () => ({ meta: [{ title: "Dashboard Guru · Pelajaranku" },
+      { name: "description", content: "Dashboard Guru untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:title", content: "Dashboard Guru · Pelajaranku" },
+      { property: "og:description", content: "Dashboard Guru untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ] }),
   component: GuruDashboard,
 });
 
@@ -147,6 +153,10 @@ function GuruDashboard() {
       return rows;
     },
   });
+
+  if (loading || role !== "guru") {
+    return <div className="grid min-h-screen place-items-center bg-background text-muted-foreground" role="status">{lang === "id" ? "Memuat akun…" : "Loading account…"}</div>;
+  }
 
   return (
     <DashboardShell accent="guru">

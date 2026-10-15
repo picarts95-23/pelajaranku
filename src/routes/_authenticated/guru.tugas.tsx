@@ -33,7 +33,13 @@ import { ScoreBreakdown, type ScoreBreakdownItem } from "@/components/quiz-score
 
 
 export const Route = createFileRoute("/_authenticated/guru/tugas")({
-  head: () => ({ meta: [{ title: "Tugas · Pelajaranku" }] }),
+  head: () => ({ meta: [{ title: "Tugas Guru · Pelajaranku" },
+      { name: "description", content: "Tugas Guru untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:title", content: "Tugas Guru · Pelajaranku" },
+      { property: "og:description", content: "Tugas Guru untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ] }),
   component: GuruTugasPage,
 });
 

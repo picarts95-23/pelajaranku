@@ -4,7 +4,7 @@
 
 const SW_URL = "/sw.js";
 
-function isRefusedContext(): boolean {
+export function isRefusedContext(): boolean {
   if (typeof window === "undefined") return true;
   if (!import.meta.env.PROD) return true;
   try {
@@ -52,9 +52,11 @@ export function registerServiceWorker() {
     return;
   }
   if (!("serviceWorker" in navigator)) return;
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register(SW_URL, { scope: "/" }).catch(() => {
+  const register = () => {
+    void navigator.serviceWorker.register(SW_URL, { scope: "/" }).catch(() => {
       /* ignore */
     });
-  });
+  };
+  if (document.readyState === "complete") register();
+  else window.addEventListener("load", register, { once: true });
 }

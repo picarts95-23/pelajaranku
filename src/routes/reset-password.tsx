@@ -25,6 +25,11 @@ export const Route = createFileRoute("/reset-password")({
     meta: [
       { title: "Atur Ulang Kata Sandi · Pelajaranku" },
       { name: "robots", content: "noindex" },
+      { name: "description", content: "Atur Ulang Kata Sandi untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:title", content: "Atur Ulang Kata Sandi · Pelajaranku" },
+      { property: "og:description", content: "Atur Ulang Kata Sandi untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: ResetPasswordPage,

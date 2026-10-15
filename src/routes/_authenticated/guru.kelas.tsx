@@ -15,7 +15,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { MultiSubjectSelect } from "@/components/subject-select";
 
 export const Route = createFileRoute("/_authenticated/guru/kelas")({
-  head: () => ({ meta: [{ title: "Kelas · Pelajaranku" }] }),
+  head: () => ({ meta: [{ title: "Kelas Guru · Pelajaranku" },
+      { name: "description", content: "Kelas Guru untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:title", content: "Kelas Guru · Pelajaranku" },
+      { property: "og:description", content: "Kelas Guru untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ] }),
   component: GuruKelasPage,
 });
 

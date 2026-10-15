@@ -14,7 +14,13 @@ import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/guru/permintaan")({
-  head: () => ({ meta: [{ title: "Permintaan Tugas · Pelajaranku" }] }),
+  head: () => ({ meta: [{ title: "Permintaan Tugas Guru · Pelajaranku" },
+      { name: "description", content: "Permintaan Tugas Guru untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:title", content: "Permintaan Tugas Guru · Pelajaranku" },
+      { property: "og:description", content: "Permintaan Tugas Guru untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ] }),
   component: GuruPermintaanPage,
 });
 

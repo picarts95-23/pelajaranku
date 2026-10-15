@@ -15,7 +15,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { resolveAvatar } from "@/lib/character-roster";
 
 export const Route = createFileRoute("/_authenticated/siswa/status")({
-  head: () => ({ meta: [{ title: "Status & Komentar · Pelajaranku" }] }),
+  head: () => ({ meta: [{ title: "Status & Komentar Siswa · Pelajaranku" },
+      { name: "description", content: "Status & Komentar Siswa untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:title", content: "Status & Komentar Siswa · Pelajaranku" },
+      { property: "og:description", content: "Status & Komentar Siswa untuk mengelola dan memantau pembelajaran di Pelajaranku." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ] }),
   component: SiswaStatusPage,
 });
 
