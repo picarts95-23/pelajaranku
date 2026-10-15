@@ -39,28 +39,31 @@ function SiswaDashboard() {
   const nextLevelXp = level * 100;
   const pct = Math.min(100, Math.round(((xp % 100) / 100) * 100));
 
-  const { data: activeQuests = [] } = useQuery({
+  const { data: activeQuests = [], isPending: questsPending, isError: questsError, refetch: retryQuests } = useQuery({
     queryKey: ["siswa-active", user?.id], enabled: !!user && !loading && role === "siswa",
     queryFn: async () => {
-      const { data } = await supabase.from("assignments").select("*, classes(name), submissions(status, student_id)").order("due_at", { ascending: true, nullsFirst: false }).limit(5);
-      return (data ?? []).filter((a: any) => !a.submissions?.find((s: any) => s.student_id === user!.id && s.status === "graded"));
+      if (!user) return [];
+      const { data, error } = await supabase.from("assignments").select("*, classes(name), submissions(status, student_id)").order("due_at", { ascending: true, nullsFirst: false });
+      if (error) throw error;
+      return (data ?? []).filter((a) => (!a.due_at || new Date(a.due_at).getTime() > Date.now()) && !a.submissions?.some((s) => s.student_id === user.id && (s.status === "graded" || s.status === "submitted")));
     },
   });
 
-  const { data: leaderboard = [] } = useQuery({
+  const { data: leaderboard = [], isPending: leaderboardPending, isError: leaderboardError, refetch: retryLeaderboard } = useQuery({
     queryKey: ["siswa-leaderboard-mini", user?.id], enabled: !!user && !loading && role === "siswa",
     queryFn: async () => {
-      const { data: myCls } = await supabase.from("class_enrollments").select("class_id").eq("student_id", user!.id);
-      const classIds = (myCls ?? []).map((e) => e.class_id);
-      if (classIds.length === 0) return [];
-      const { data: peers } = await supabase.from("class_enrollments").select("student_id").in("class_id", classIds);
-      const ids = Array.from(new Set((peers ?? []).map((e) => e.student_id)));
-      const { data: profs } = await supabase.from("profiles").select("id, full_name, xp").in("id", ids).order("xp", { ascending: false }).limit(5);
-      return profs ?? [];
+      if (!user) return [];
+      const { data, error } = await supabase.rpc("student_class_leaderboard");
+      if (error) throw error;
+      return data ?? [];
     },
   });
 
   const rank = leaderboard.findIndex((p: any) => p.id === user?.id) + 1;
+
+  if (!loading && !role) {
+    return <div className="grid min-h-screen place-items-center bg-background text-center"><div><p>{lang === "id" ? "Peran akun belum dapat dimuat." : "Account role could not be loaded."}</p><Button asChild className="mt-4"><Link to="/loading">{lang === "id" ? "Coba lagi" : "Try again"}</Link></Button></div></div>;
+  }
 
   if (loading || role !== "siswa") {
     return <div className="grid min-h-screen place-items-center bg-background text-muted-foreground" role="status">{lang === "id" ? "Memuat akun…" : "Loading account…"}</div>;
@@ -120,8 +123,8 @@ function SiswaDashboard() {
       <section className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard icon={<Star className="size-6" />} label={t("level")} value={level} tint="bg-gradient-magic" sub={`${xp} ${t("xp")} total`} />
         <StatCard icon={<Coins className="size-6" />} label={t("coins")} value={coins.toLocaleString()} tint="bg-coin" />
-        <StatCard icon={<Flame className="size-6" />} label={t("navMyQuests")} value={activeQuests.length} tint="bg-destructive" sub={lang === "id" ? "aktif" : "active"} />
-        <StatCard icon={<Trophy className="size-6" />} label={t("leaderboard")} value={rank > 0 ? `#${rank}` : "—"} tint="bg-quest" />
+        <StatCard icon={<Flame className="size-6" />} label={t("navMyQuests")} value={questsPending || questsError ? "—" : activeQuests.length} tint="bg-destructive" sub={lang === "id" ? "aktif" : "active"} />
+        <StatCard icon={<Trophy className="size-6" />} label={t("leaderboard")} value={!leaderboardError && rank > 0 ? `#${rank}` : "—"} tint="bg-quest" />
       </section>
 
       <section className="mt-6 grid gap-6 lg:grid-cols-3">
@@ -130,7 +133,7 @@ function SiswaDashboard() {
             <h2 className="font-display text-xl font-bold flex items-center gap-2"><ScrollText className="size-5 text-accent" /> {t("myQuests")}</h2>
             <Link to="/siswa/tugas"><Button size="sm" variant="ghost">{lang === "id" ? "Lihat semua" : "View all"} →</Button></Link>
           </div>
-          {activeQuests.length === 0 ? <div className="text-center py-8 text-sm text-muted-foreground">{lang === "id" ? "Tidak ada misi aktif" : "No active missions"}</div> : (
+          {questsError ? <div role="alert" className="py-8 text-center text-sm text-destructive"><p>{lang === "id" ? "Tugas gagal dimuat." : "Could not load tasks."}</p><Button variant="outline" className="mt-3" onClick={() => void retryQuests()}>{lang === "id" ? "Coba lagi" : "Try again"}</Button></div> : questsPending ? <div role="status" className="py-8 text-center text-sm text-muted-foreground">{lang === "id" ? "Memuat tugas…" : "Loading tasks…"}</div> : activeQuests.length === 0 ? <div className="text-center py-8 text-sm text-muted-foreground">{lang === "id" ? "Tidak ada misi aktif" : "No active missions"}</div> : (
             <ul className="space-y-3">
               {activeQuests.slice(0, 5).map((q: any, i: number) => (
                 <motion.li key={q.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.08 }}
@@ -149,9 +152,9 @@ function SiswaDashboard() {
 
         <div className="rounded-3xl border-2 border-border bg-card p-6 shadow-card-rpg">
           <h2 className="mb-4 font-display text-xl font-bold flex items-center gap-2"><Trophy className="size-5 text-coin" /> {t("leaderboard")}</h2>
-          {leaderboard.length === 0 ? <div className="text-center py-8 text-sm text-muted-foreground">{t("empty")}</div> : (
+          {leaderboardError ? <div role="alert" className="py-8 text-center text-sm text-destructive"><p>{lang === "id" ? "Peringkat gagal dimuat." : "Could not load ranking."}</p><Button variant="outline" className="mt-3" onClick={() => void retryLeaderboard()}>{lang === "id" ? "Coba lagi" : "Try again"}</Button></div> : leaderboardPending ? <div role="status" className="py-8 text-center text-sm text-muted-foreground">{lang === "id" ? "Memuat peringkat…" : "Loading ranking…"}</div> : leaderboard.length === 0 ? <div className="text-center py-8 text-sm text-muted-foreground">{t("empty")}</div> : (
             <ul className="space-y-2">
-              {leaderboard.map((p: any, i: number) => {
+              {leaderboard.slice(0, 5).map((p: any, i: number) => {
                 const you = p.id === user?.id;
                 return (
                   <li key={p.id} className={`flex items-center gap-3 rounded-xl border-2 p-3 ${you ? "border-accent bg-accent/10" : "border-transparent bg-muted/30"}`}>

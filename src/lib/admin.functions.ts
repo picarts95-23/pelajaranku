@@ -59,20 +59,36 @@ export const listAllUsers = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<AdminUserRow[]> => {
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const [{ data: profiles }, { data: roles }, authList] = await Promise.all([
-      supabaseAdmin
-        .from("profiles")
-        .select("id, full_name, class_name, subject, avatar_url, archived_at, created_at"),
-      supabaseAdmin.from("user_roles").select("user_id, role"),
-      supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 }),
-    ]);
-    const emailById = new Map(
-      (authList.data?.users ?? []).map((u) => [u.id, u.email ?? null]),
-    );
-    const roleById = new Map(
-      (roles ?? []).map((r: { user_id: string; role: string }) => [r.user_id, r.role]),
-    );
-    return (profiles ?? [])
+    const emailById = new Map<string, string | null>();
+    const roleById = new Map<string, AdminUserRow["role"]>();
+    const profiles: Record<string, any>[] = [];
+    const pageSize = 500;
+    for (let page = 1; ; page++) {
+      const { data, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: pageSize });
+      if (error) throw error;
+      const batch = data.users;
+      for (const account of batch) emailById.set(account.id, account.email ?? null);
+      if (batch.length < pageSize) break;
+    }
+    for (let offset = 0; ; offset += pageSize) {
+      const { data, error } = await supabaseAdmin.from("profiles")
+        .select("id, full_name, class_name, subject, avatar_url, archived_at, created_at")
+        .order("id").range(offset, offset + pageSize - 1);
+      if (error) throw error;
+      profiles.push(...(data ?? []));
+      if ((data ?? []).length < pageSize) break;
+    }
+    for (let offset = 0; ; offset += pageSize) {
+      const { data, error } = await supabaseAdmin.from("user_roles").select("user_id, role")
+        .order("id").range(offset, offset + pageSize - 1);
+      if (error) throw error;
+      for (const row of data ?? []) {
+        const previous = roleById.get(row.user_id);
+        if (previous !== "admin" && (previous !== "guru" || row.role === "admin")) roleById.set(row.user_id, row.role);
+      }
+      if ((data ?? []).length < pageSize) break;
+    }
+    return profiles
       .map((p: Record<string, any>) => ({
         id: p.id as string,
         full_name: (p.full_name as string) ?? null,
@@ -95,12 +111,17 @@ export const setUserArchived = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
+    if (data.userId === context.userId) throw new Error("Anda tidak dapat mengarsipkan akun sendiri.");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin
+    const { data: targetRoles, error: roleError } = await supabaseAdmin.from("user_roles").select("role").eq("user_id", data.userId);
+    if (roleError) throw roleError;
+    if (targetRoles?.some((row) => row.role === "admin")) throw new Error("Akun admin tidak dapat diarsipkan.");
+    const { data: updated, error } = await supabaseAdmin
       .from("profiles")
       .update({ archived_at: data.archived ? new Date().toISOString() : null })
-      .eq("id", data.userId);
+      .eq("id", data.userId).select("id").maybeSingle();
     if (error) throw error;
+    if (!updated) throw new Error("Pengguna tidak ditemukan.");
     return { ok: true };
   });
 
@@ -116,6 +137,9 @@ export const deleteUserAccount = createServerFn({ method: "POST" })
       throw new Error("Anda tidak dapat menghapus akun sendiri.");
     }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: targetRoles, error: roleError } = await supabaseAdmin.from("user_roles").select("role").eq("user_id", data.userId);
+    if (roleError) throw roleError;
+    if (targetRoles?.some((row) => row.role === "admin")) throw new Error("Akun admin tidak dapat dihapus.");
     // Hard delete: remove the auth user first, then clean up app-side rows that
     // are not linked to auth.users by a cascading foreign key.
     const { error } = await supabaseAdmin.auth.admin.deleteUser(data.userId);

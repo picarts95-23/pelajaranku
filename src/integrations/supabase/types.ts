@@ -1814,6 +1814,16 @@ export type Database = {
         Args: { _other: string; _uid: string }
         Returns: boolean
       }
+      student_class_leaderboard: {
+        Args: never
+        Returns: {
+          coins: number
+          full_name: string
+          id: string
+          level: number
+          xp: number
+        }[]
+      }
     }
     Enums: {
       app_role: "guru" | "siswa" | "admin"

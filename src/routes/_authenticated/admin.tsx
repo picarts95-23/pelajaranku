@@ -109,6 +109,7 @@ function AdminPage() {
     mutationFn: (vars: { userId: string; archived: boolean }) => archiveFn({ data: vars }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-users"] });
+      qc.invalidateQueries({ queryKey: ["all-students"] });
       toast.success("Status arsip diperbarui");
     },
     onError: (e: any) => toast.error(e?.message ?? "Gagal"),
@@ -149,8 +150,8 @@ function AdminPage() {
     const term = q.trim().toLowerCase();
     return users.filter((u) => {
       if (tab === "archived" && !u.archived_at) return false;
-      if (tab === "guru" && u.role !== "guru") return false;
-      if (tab === "siswa" && u.role !== "siswa") return false;
+      if (tab === "guru" && (u.role !== "guru" || u.archived_at)) return false;
+      if (tab === "siswa" && (u.role !== "siswa" || u.archived_at)) return false;
       if (tab === "all" && u.archived_at) return false;
       if (!term) return true;
       return (
@@ -163,8 +164,8 @@ function AdminPage() {
 
   const counts = useMemo(() => ({
     all: users.filter((u) => !u.archived_at).length,
-    guru: users.filter((u) => u.role === "guru").length,
-    siswa: users.filter((u) => u.role === "siswa").length,
+    guru: users.filter((u) => u.role === "guru" && !u.archived_at).length,
+    siswa: users.filter((u) => u.role === "siswa" && !u.archived_at).length,
     archived: users.filter((u) => u.archived_at).length,
   }), [users]);
 
@@ -200,7 +201,7 @@ function AdminPage() {
           </div>
           <div className="flex items-center gap-2">
             <LangToggle />
-            <Button variant="outline" size="sm" onClick={() => signOut().then(() => navigate({ to: "/auth" }))}>
+            <Button variant="outline" size="sm" onClick={() => signOut().then(() => navigate({ to: "/auth", replace: true }))}>
               <LogOut className="size-4" /> Keluar
             </Button>
           </div>
@@ -254,12 +255,13 @@ function AdminPage() {
               ["siswa", `Siswi (${counts.siswa})`],
               ["archived", `Arsip (${counts.archived})`],
             ] as const).map(([key, label]) => (
-              <button key={key} onClick={() => setTab(key)}
+              <Button key={key} variant={tab === key ? "default" : "secondary"} onClick={() => setTab(key)}
+                aria-pressed={tab === key}
                 className={`rounded-full px-4 py-1.5 text-sm font-display font-semibold transition ${
                   tab === key ? "bg-gradient-magic text-primary-foreground shadow-soft" : "bg-muted text-muted-foreground"
                 }`}>
                 {label}
-              </button>
+              </Button>
             ))}
             <div className="relative ml-auto min-w-[200px] flex-1 sm:flex-none">
               <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -275,9 +277,9 @@ function AdminPage() {
               </div>
             )}
             {usersQuery.isError && (
-              <div className="py-10 text-center text-sm text-destructive">Gagal memuat daftar pengguna.</div>
+              <div role="alert" className="py-10 text-center text-sm text-destructive"><p>Gagal memuat daftar pengguna.</p><Button variant="outline" className="mt-3" onClick={() => void usersQuery.refetch()}>Coba lagi</Button></div>
             )}
-            {!usersQuery.isLoading && filtered.length === 0 && (
+            {!usersQuery.isLoading && !usersQuery.isError && filtered.length === 0 && (
               <div className="flex flex-col items-center gap-2 py-10 text-muted-foreground">
                 <Users className="size-8" /> Tidak ada pengguna.
               </div>
@@ -300,18 +302,18 @@ function AdminPage() {
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
-                  <Button variant="secondary" size="sm"
+                  <Button variant="secondary" size="sm" disabled={passwordMut.isPending || deleteMut.isPending || archiveMut.isPending}
                     onClick={() => { setPwUser(u); setNewPw(""); setShowPw(true); }}>
                     <KeyRound className="size-4" /> Password
                   </Button>
                   <Button variant="outline" size="sm"
-                    disabled={archiveMut.isPending || u.role === "admin"}
+                    disabled={archiveMut.isPending || deleteMut.isPending || passwordMut.isPending || u.role === "admin"}
                     onClick={() => archiveMut.mutate({ userId: u.id, archived: !u.archived_at })}>
                     {u.archived_at ? <ArchiveRestore className="size-4" /> : <Archive className="size-4" />}
                     {u.archived_at ? "Pulihkan" : "Arsipkan"}
                   </Button>
                   <Button variant="destructive" size="sm"
-                    disabled={u.role === "admin"}
+                    disabled={deleteMut.isPending || archiveMut.isPending || passwordMut.isPending || u.role === "admin"}
                     onClick={() => setPendingDelete(u)}>
                     <Trash2 className="size-4" /> Hapus
                   </Button>

@@ -87,7 +87,7 @@ export function DashboardShell({
 
   const handleLogout = async () => {
     await signOut();
-    navigate({ to: "/" });
+    navigate({ to: "/auth", replace: true });
   };
 
   const avatarSrc = resolveAvatar(profile as any, role as "guru" | "siswa" | null);

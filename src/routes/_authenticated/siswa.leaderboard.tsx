@@ -30,15 +30,12 @@ function SiswaLeaderboardPage() {
   useEffect(() => { if (!loading && role && role !== "siswa") navigate({ to: role === "admin" ? "/admin" : "/dashboard/guru" }); }, [role, loading, navigate]);
 
   const { data: top = [] } = useQuery({
-    queryKey: ["siswa-leaderboard", user?.id], enabled: !!user,
+    queryKey: ["siswa-leaderboard", user?.id], enabled: !!user && !loading && role === "siswa",
     queryFn: async () => {
-      const { data: myCls } = await supabase.from("class_enrollments").select("class_id").eq("student_id", user!.id);
-      const classIds = (myCls ?? []).map((e) => e.class_id);
-      if (classIds.length === 0) return [];
-      const { data: peers } = await supabase.from("class_enrollments").select("student_id").in("class_id", classIds);
-      const ids = Array.from(new Set((peers ?? []).map((e) => e.student_id)));
-      const { data: profs } = await supabase.from("profiles").select("*").in("id", ids).order("xp", { ascending: false }).limit(30);
-      return profs ?? [];
+      if (!user) return [];
+      const { data, error } = await supabase.rpc("student_class_leaderboard");
+      if (error) throw error;
+      return data ?? [];
     },
   });
 
