@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { syncMyRole } from "@/lib/admin.functions";
+import { useQueryClient } from "@tanstack/react-query";
 
 export type AppRole = "guru" | "siswa" | "admin";
 
@@ -38,6 +39,7 @@ const Ctx = createContext<AuthCtx>({
 export const useAuth = () => useContext(Ctx);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const queryClient = useQueryClient();
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<ProfileRow | null>(null);
   const [role, setRole] = useState<AppRole | null>(null);
@@ -101,7 +103,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
     setProfile(null);
     setRole(null);
   };

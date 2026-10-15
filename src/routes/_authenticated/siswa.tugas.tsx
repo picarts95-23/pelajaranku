@@ -48,26 +48,36 @@ function SiswaTugasPage() {
   useEffect(() => { if (!loading && role && role !== "siswa") navigate({ to: role === "admin" ? "/admin" : "/dashboard/guru" }); }, [role, loading, navigate]);
 
   // Regular tasks / missions (everything except quiz-format assignments).
-  const { data: assignments = [] } = useQuery({
-    queryKey: ["siswa-quests", user?.id], enabled: !!user,
+  const assignmentsQuery = useQuery({
+    queryKey: ["siswa-quests", user?.id], enabled: !!user && !loading && role === "siswa",
     queryFn: async () => {
-      const { data } = await supabase.from("assignments").select("*, classes(name), submissions(*)").neq("answer_format", "quiz").order("due_at", { ascending: true, nullsFirst: false });
-      return (data ?? []).map((a: any) => ({ ...a, mySubmission: a.submissions?.find((s: any) => s.student_id === user!.id) }));
+      if (!user) return [];
+      const { data, error } = await supabase.from("assignments").select("*, classes(name), submissions(*)").neq("answer_format", "quiz").order("due_at", { ascending: true, nullsFirst: false });
+      if (error) throw error;
+      return (data ?? []).map((a) => ({ ...a, mySubmission: a.submissions?.find((s) => s.student_id === user.id) }));
     },
   });
 
   // Mixed-question quizzes.
-  const { data: quizzes = [] } = useQuery({
-    queryKey: ["siswa-quizzes", user?.id], enabled: !!user,
+  const quizzesQuery = useQuery({
+    queryKey: ["siswa-quizzes", user?.id], enabled: !!user && !loading && role === "siswa",
     queryFn: async () => {
-      const { data } = await supabase.from("assignments").select("*, classes(name), submissions(*)").eq("answer_format", "quiz").order("created_at", { ascending: false });
-      return (data ?? []).map((a: any) => ({ ...a, mySubmission: a.submissions?.find((s: any) => s.student_id === user!.id) }));
+      if (!user) return [];
+      const { data, error } = await supabase.from("assignments").select("*, classes(name), submissions(*)").eq("answer_format", "quiz").order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []).map((a) => ({ ...a, mySubmission: a.submissions?.find((s) => s.student_id === user.id) }));
     },
   });
+
+  const assignments = assignmentsQuery.data ?? [];
+  const quizzes = quizzesQuery.data ?? [];
 
   // Mark assignments as seen so the "new task" badge clears.
   const markSeen = useMarkSeen(user?.id, "assignments");
   useEffect(() => { if (assignments.length || quizzes.length) markSeen(); }, [assignments.length, quizzes.length, markSeen]);
+
+  if (!loading && !role) return <div className="grid min-h-screen place-items-center bg-background"><div className="text-center"><p>{lang === "id" ? "Peran akun belum dapat dimuat." : "Account role could not be loaded."}</p><Button asChild className="mt-4"><Link to="/loading">{lang === "id" ? "Coba lagi" : "Try again"}</Link></Button></div></div>;
+  if (loading || role !== "siswa") return <div role="status" className="grid min-h-screen place-items-center bg-background text-muted-foreground">{lang === "id" ? "Memuat akun…" : "Loading account…"}</div>;
 
   return (
     <DashboardShell accent="siswa">
@@ -95,7 +105,7 @@ function SiswaTugasPage() {
         </TabsList>
 
         <TabsContent value="tugas">
-          {assignments.length === 0 ? (
+          {assignmentsQuery.isError ? <div role="alert" className="py-8 text-center text-destructive"><p>{lang === "id" ? "Tugas gagal dimuat." : "Could not load tasks."}</p><Button variant="outline" className="mt-3" onClick={() => void assignmentsQuery.refetch()}>{lang === "id" ? "Coba lagi" : "Try again"}</Button></div> : assignmentsQuery.isPending ? <div role="status" className="py-8 text-center text-muted-foreground">{lang === "id" ? "Memuat tugas…" : "Loading tasks…"}</div> : assignments.length === 0 ? (
             <EmptyState message={lang === "id" ? "Belum ada tugas. Gabung ke kelas dulu!" : "No tasks yet. Join a class first!"} />
           ) : (
             <div className="grid gap-4 lg:grid-cols-2">
@@ -105,7 +115,7 @@ function SiswaTugasPage() {
         </TabsContent>
 
         <TabsContent value="kuis">
-          {(quizzes as any[]).length === 0 ? (
+          {quizzesQuery.isError ? <div role="alert" className="py-8 text-center text-destructive"><p>{lang === "id" ? "Kuis gagal dimuat." : "Could not load quizzes."}</p><Button variant="outline" className="mt-3" onClick={() => void quizzesQuery.refetch()}>{lang === "id" ? "Coba lagi" : "Try again"}</Button></div> : quizzesQuery.isPending ? <div role="status" className="py-8 text-center text-muted-foreground">{lang === "id" ? "Memuat kuis…" : "Loading quizzes…"}</div> : quizzes.length === 0 ? (
             <EmptyState message={lang === "id" ? "Belum ada kuis. Gabung ke kelas dulu ya!" : "No quizzes yet. Join a class first!"} />
           ) : (
             <div className="grid gap-4 lg:grid-cols-2">
@@ -139,7 +149,7 @@ function QuestCard({ a }: { a: any }) {
 
   const submitMut = useMutation({
     mutationFn: async () => {
-      if (!user) return;
+      if (!user) throw new Error(lang === "id" ? "Sesi masuk tidak ditemukan." : "Sign-in session not found.");
       let storedFileUrl: string | null = fileUrl || null;
 
       if (isVoiceFmt) {
@@ -218,6 +228,7 @@ function QuestCard({ a }: { a: any }) {
       setImageFiles([]);
       setDocFiles([]);
       qc.invalidateQueries({ queryKey: ["siswa-quests"] });
+      qc.invalidateQueries({ queryKey: ["siswa-active"] });
     },
     onError: (e: Error) => {
       const raw = e.message || "";
@@ -439,6 +450,7 @@ function QuizCard({ quiz }: { quiz: any }) {
         toast.success(lang === "id" ? `Skor kamu ${data.score}/${data.max_score} 🎉` : `Your score ${data.score}/${data.max_score} 🎉`);
       }
       qc.invalidateQueries({ queryKey: ["siswa-quizzes"] });
+      qc.invalidateQueries({ queryKey: ["siswa-active"] });
     },
     onError: (e: Error) => {
       const msg = e.message.includes("ALREADY_SUBMITTED")
@@ -483,7 +495,7 @@ function QuizCard({ quiz }: { quiz: any }) {
           ⛔ {lang === "id" ? "Tenggat sudah lewat — kuis ini tidak dikerjakan." : "Deadline passed — this quiz was not completed."}
         </div>
       ) : quiz.interactive_mode ? (
-        <InteractiveQuizDialog quiz={quiz} questions={questions} onFinished={() => qc.invalidateQueries({ queryKey: ["siswa-quizzes"] })} />
+        <InteractiveQuizDialog quiz={quiz} questions={questions} onFinished={() => { void qc.invalidateQueries({ queryKey: ["siswa-quizzes"] }); void qc.invalidateQueries({ queryKey: ["siswa-active"] }); }} />
       ) : (
         <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o) { setAnswers(questions.map(() => null)); setVoiceBlobs({}); setResult(null); } }}>
           <DialogTrigger asChild>
