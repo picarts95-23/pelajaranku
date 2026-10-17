@@ -15,3 +15,4 @@
 - Student active-work summaries exclude expired and submitted work before display slicing, and submission mutations invalidate the summary cache.
 - Sign-out cancels and clears the shared query cache before clearing the session to avoid exposing another account's cached data.
 - Both student ranking views use the authenticated shared-class leaderboard RPC because enrollment RLS intentionally hides peer enrollment rows.
+- Active-work filtering lives in a tested browser-safe helper; student descriptions never render serialized teacher group-assessment records.

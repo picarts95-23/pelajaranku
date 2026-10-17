@@ -9,5 +9,6 @@
 - [x] Refresh the student quiz card immediately after an interactive submission.
 - [x] Audit current runtime errors and signed-in teacher workflows; repair verified defects.
 - [x] Verify role redirects, affected workflows, and package security update.
-- [ ] Verify student dashboard and assignment workflows; fix confirmed errors.
-- [ ] Verify admin dashboard and user management; fix confirmed errors.
+- [x] Verify student dashboard, class ranking, task history/deadlines and sign-out; fix confirmed errors.
+- [x] Verify admin dashboard, archive/restore, destructive-action confirmation and sign-out; fix confirmed errors.
+- [ ] Verify a new student submission end-to-end — blocked: Kanaya has no active assignment or quiz; existing deadlines must not be changed for testing.

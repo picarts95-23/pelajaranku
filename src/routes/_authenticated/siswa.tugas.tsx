@@ -1001,6 +1001,8 @@ function TaskTypeGuide({ fmt, hasLink }: { fmt: string; hasLink?: boolean }) {
 
 function TaskDescription({ text, lang }: { text: string; lang: string }) {
   const [expanded, setExpanded] = useState(false);
+  if (text.startsWith("[kerja-kelompok]")) return <p className="mt-2 text-sm text-muted-foreground">{lang === "id" ? "Penilaian kerja kelompok oleh guru." : "Group work assessed by your teacher."}</p>;
+  if (text.startsWith("[tatap-muka]")) return <p className="mt-2 text-sm text-muted-foreground">{lang === "id" ? "Penilaian tatap muka oleh guru." : "Face-to-face assessment by your teacher."}</p>;
   const long = text.length > 140 || text.split("\n").length > 3;
   return (
     <div className="mt-2">
