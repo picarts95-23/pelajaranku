@@ -12,6 +12,7 @@ import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveAvatar } from "@/lib/character-roster";
 import { format } from "date-fns";
+import { isActiveStudentWork } from "@/lib/student-work";
 
 export const Route = createFileRoute("/_authenticated/dashboard/siswa")({
   head: () => ({ meta: [{ title: "Dashboard Siswa · Pelajaranku" },
@@ -45,7 +46,7 @@ function SiswaDashboard() {
       if (!user) return [];
       const { data, error } = await supabase.from("assignments").select("*, classes(name), submissions(status, student_id)").order("due_at", { ascending: true, nullsFirst: false });
       if (error) throw error;
-      return (data ?? []).filter((a) => (!a.due_at || new Date(a.due_at).getTime() > Date.now()) && !a.submissions?.some((s) => s.student_id === user.id && (s.status === "graded" || s.status === "submitted")));
+      return (data ?? []).filter((a) => isActiveStudentWork(a, user.id));
     },
   });
 
