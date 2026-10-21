@@ -16,3 +16,4 @@
 - Sign-out cancels and clears the shared query cache before clearing the session to avoid exposing another account's cached data.
 - Both student ranking views use the authenticated shared-class leaderboard RPC because enrollment RLS intentionally hides peer enrollment rows.
 - Active-work filtering lives in a tested browser-safe helper; student descriptions never render serialized teacher group-assessment records.
+- Grade recap backup is assembled by the shared browser-safe sheet-backup-data helper and included in teacher sync; exports resolve teacher_sheet_sync under caller RLS to keep destinations account-scoped.

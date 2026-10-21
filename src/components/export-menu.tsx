@@ -12,7 +12,7 @@ import {
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { useLang } from "@/lib/i18n";
-import { exportToGoogleSheet } from "@/lib/google-sheets.functions";
+import { exportToGoogleSheet, syncDatabaseToSheet } from "@/lib/google-sheets.functions";
 import {
   exportToCSV,
   exportToExcel,
@@ -33,13 +33,15 @@ type Props = {
   size?: "sm" | "default";
   /** Show the "sync to Google Sheets" option (teachers only). */
   allowGoogleSheets?: boolean;
+  backupGrades?: boolean;
 };
 
-export function ExportMenu({ filename, title, columns, rows, variant = "outline", size = "sm", allowGoogleSheets = true }: Props) {
+export function ExportMenu({ filename, title, columns, rows, variant = "outline", size = "sm", allowGoogleSheets = true, backupGrades = false }: Props) {
   const { lang } = useLang();
   const [open, setOpen] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const sheetFn = useServerFn(exportToGoogleSheet);
+  const backupFn = useServerFn(syncDatabaseToSheet);
   const getRows = () => (typeof rows === "function" ? rows() : rows);
 
   function cellText(v: unknown): string {
@@ -57,8 +59,8 @@ export function ExportMenu({ filename, title, columns, rows, variant = "outline"
         columns.map((c) => c.header),
         ...dataRows.map((r) => columns.map((c) => cellText(r[c.key]))),
       ];
-      const res = await sheetFn({ data: { title, values } });
-      toast.success(lang === "id" ? "Spreadsheet berhasil dibuat!" : "Spreadsheet created!", {
+      const res = backupGrades ? await backupFn() : await sheetFn({ data: { title, values } });
+      toast.success(lang === "id" ? "Backup diperbarui di spreadsheet guru!" : "Teacher spreadsheet updated!", {
         id: tid,
         action: { label: lang === "id" ? "Buka" : "Open", onClick: () => window.open(res.url, "_blank") },
       });
@@ -84,7 +86,7 @@ export function ExportMenu({ filename, title, columns, rows, variant = "outline"
           <>
             <DropdownMenuItem disabled={syncing} onClick={(e) => { e.preventDefault(); syncGoogleSheet(); }}>
               {syncing ? <Loader2 className="size-4 animate-spin text-emerald-600" /> : <Cloud className="size-4 text-emerald-600" />}
-              {lang === "id" ? "Google Spreadsheet (otomatis)" : "Google Sheets (auto-sync)"}
+              {lang === "id" ? "Google Spreadsheet (file guru)" : "Google Sheets (teacher file)"}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
           </>

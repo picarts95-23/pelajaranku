@@ -5,6 +5,7 @@
 // (single teacher). Never import from client code — it uses the service-role
 // admin client and connector gateway secrets.
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { buildGradeRecap } from "./sheet-backup-data";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_sheets/v4";
 
@@ -17,6 +18,7 @@ const TAB_TITLES = [
   "Siswa",
   "Presensi",
   "Nilai Kehadiran",
+  "Rekap Nilai",
   "Tugas",
   "Pengumpulan",
   "Tidak Mengerjakan",
@@ -268,6 +270,12 @@ async function buildTeacherTabs(teacherId: string): Promise<Tabs> {
   const cName = (id: unknown) => classNameById.get(id as string) || cell(id);
 
   const tabs: Tabs = {};
+
+  tabs["Rekap Nilai"] = buildGradeRecap({
+    classes: classes as Parameters<typeof buildGradeRecap>[0]["classes"],
+    enrollments, profiles, assignments: assignments as Parameters<typeof buildGradeRecap>[0]["assignments"],
+    submissions, attendance, adab: adab ?? [], mutabaah: mutabaah ?? [], materials: materials ?? [],
+  });
 
   tabs["Kelas"] = [
     ["Nama Kelas", "Kode", "Mata Pelajaran", "Tahun Ajaran", "Dibuat"],
@@ -524,16 +532,16 @@ export async function runSheetSyncForTeacher(teacherId: string): Promise<SyncRes
   const title = `Data Pelajaranku · ${teacherName}${email ? ` (${email})` : ""}`;
 
   // Resolve (or create) this teacher's persistent spreadsheet.
-  const { data: state } = await supabaseAdmin
+  const { data: state, error: stateError } = await supabaseAdmin
     .from("teacher_sheet_sync").select("spreadsheet_id, spreadsheet_url").eq("teacher_id", teacherId).maybeSingle();
+  if (stateError) throw stateError;
   let spreadsheetId = (state as { spreadsheet_id?: string } | null)?.spreadsheet_id ?? null;
   let spreadsheetUrl = (state as { spreadsheet_url?: string } | null)?.spreadsheet_url ?? null;
 
   if (spreadsheetId) {
     const tabs = await getExistingTabs(spreadsheetId, headers);
     if (tabs === null) {
-      spreadsheetId = null; // deleted — recreate
-      spreadsheetUrl = null;
+      throw new Error("Spreadsheet backup yang tersimpan tidak ditemukan. Periksa akses Google; file baru tidak dibuat.");
     } else {
       await addMissingTabs(spreadsheetId, tabs, headers);
     }
