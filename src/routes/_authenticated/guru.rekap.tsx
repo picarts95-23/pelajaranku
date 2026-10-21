@@ -210,7 +210,7 @@ function GuruRekapPage() {
           ? "Kehadiran 10% · Adab 20% · Tugas Harian 20% · UTS 20% · UAS 30%"
           : "Attendance 10% · Adab 20% · Daily 20% · Midterm 20% · Final 30%"}
         actions={view === "rekap" && subject && rows.length > 0 ? (
-          <ExportMenu filename={`rekap-${subject}`} title={`${t("recapTitle")} · ${subject}`} columns={exportColumns} rows={exportRows} />
+          <ExportMenu backupGrades filename={`rekap-${subject}`} title={`${t("recapTitle")} · ${subject}`} columns={exportColumns} rows={exportRows} />
         ) : undefined}
       />
 

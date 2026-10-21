@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireStoredSpreadsheet } from "./sheet-backup-data";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_sheets/v4";
 
@@ -23,14 +24,13 @@ function gatewayHeaders() {
 }
 
 /**
- * Creates a brand-new Google Spreadsheet in the connected Google account and
- * writes the supplied table into it. Returns the shareable spreadsheet URL.
+ * Writes an export tab in the teacher's existing backup spreadsheet.
  * Only teachers (guru) may trigger an export.
  */
 export const exportToGoogleSheet = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: SheetPayload) => {
-    if (!input || typeof input.title !== "string" || !Array.isArray(input.values)) {
+     if (!input || typeof input.title !== "string" || !Array.isArray(input.values) || !input.values.every(Array.isArray)) {
       throw new Error("Data ekspor tidak valid.");
     }
     return {
@@ -45,35 +45,31 @@ export const exportToGoogleSheet = createServerFn({ method: "POST" })
 
     const headers = gatewayHeaders();
 
-    // 1. Create the spreadsheet.
-    const createRes = await fetch(`${GATEWAY_URL}/spreadsheets`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({
-        properties: { title: data.title },
-        sheets: [{ properties: { title: "Data" } }],
-      }),
-    });
-    if (!createRes.ok) {
-      const body = await createRes.text();
-      throw new Error(`Gagal membuat spreadsheet (${createRes.status}): ${body.slice(0, 300)}`);
-    }
-    const created = (await createRes.json()) as { spreadsheetId: string; spreadsheetUrl: string };
-
-    // 2. Write the table values.
-    if (data.values.length > 0) {
-      const range = "Data!A1";
-      const writeRes = await fetch(
-        `${GATEWAY_URL}/spreadsheets/${created.spreadsheetId}/values/${range}?valueInputOption=USER_ENTERED`,
-        { method: "PUT", headers, body: JSON.stringify({ values: data.values }) },
-      );
-      if (!writeRes.ok) {
-        const body = await writeRes.text();
-        throw new Error(`Gagal menulis data (${writeRes.status}): ${body.slice(0, 300)}`);
+    const { data: state, error } = await supabase.from("teacher_sheet_sync")
+      .select("spreadsheet_id, spreadsheet_url").eq("teacher_id", userId).maybeSingle();
+    if (error) throw error;
+    const stored = requireStoredSpreadsheet(state);
+    const tab = `Ekspor · ${data.title}`.replace(/[\[\]:*?/\\]/g, " ").slice(0, 100);
+    const base = `${GATEWAY_URL}/spreadsheets/${stored.spreadsheetId}`;
+    async function request(url: string, init?: RequestInit) {
+      const res = await fetch(url, { ...init, headers });
+      if (!res.ok) {
+        const body = await res.text();
+        console.error(`Google Sheets [${res.status}]: ${body}`);
+        throw new Error(`Google Sheets (${res.status}): ${body}`);
       }
+      return res;
     }
-
-    return { url: created.spreadsheetUrl, spreadsheetId: created.spreadsheetId };
+    const meta = await (await request(`${base}?fields=sheets.properties.title`)).json() as { sheets?: { properties?: { title?: string } }[] };
+    if (!meta.sheets?.some((s) => s.properties?.title === tab)) {
+      await request(`${base}:batchUpdate`, { method: "POST", body: JSON.stringify({ requests: [{ addSheet: { properties: { title: tab } } }] }) });
+    }
+    const quoted = `'${tab.replace(/'/g, "''")}'`;
+    await request(`${base}/values:batchClear`, { method: "POST", body: JSON.stringify({ ranges: [`${quoted}!A:ZZ`] }) });
+    if (data.values.length > 0) {
+      await request(`${base}/values:batchUpdate`, { method: "POST", body: JSON.stringify({ valueInputOption: "RAW", data: [{ range: `${quoted}!A1`, values: data.values }] }) });
+    }
+    return stored;
   });
 
 /**
