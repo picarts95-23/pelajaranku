@@ -1,7 +1,7 @@
 # Roadmap
 
-- [ ] Copy grade recap into the existing teacher spreadsheet and make subsequent exports reuse that file.
-- [ ] Include grade recap in recurring teacher backup and verify readback.
+- [x] Copy grade recap into the existing teacher spreadsheet and make subsequent exports reuse that file.
+- [x] Include grade recap in recurring teacher backup and verify readback through signed-in teacher sync and Google Sheets.
 
 - [x] Add per-question points and time controls.
 - [x] Separate stimulus and question text, with question images.
