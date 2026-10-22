@@ -10,7 +10,7 @@ type Assignment = { id: string; class_id?: string | null; subject?: string | nul
 type Submission = { assignment_id: string; student_id: string; status: string; score: number | null };
 type Attendance = { class_id: string; student_id: string; status: string };
 type Adab = { class_id: string; student_id: string; subject: string; score: number };
-type Mutabaah = { class_id: string; student_id: string; session_type: string; total_score: number | null };
+type Mutabaah = { class_id: string | null; student_id: string; session_type: string; total_score: number | null };
 type RecapData = {
   classes: ClassRow[];
   enrollments: { class_id: string; student_id: string }[];
