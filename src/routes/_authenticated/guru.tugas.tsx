@@ -640,9 +640,9 @@ function AssignmentDetail({ assignment, onDelete, onEdited, onDuplicated }: { as
         <ChevronRight className="size-3" />
         <span className="rounded-full bg-guru/15 px-2 py-0.5 text-guru">📝 {assignment.title}</span>
       </div>
-      <div className="mb-3 flex items-start justify-between gap-2">
-        <div>
-          <h2 className="font-display text-xl font-bold flex items-center gap-2"><ScrollText className="size-5 text-guru" />{assignment.title}</h2>
+      <div className="mb-3 grid min-w-0 grid-cols-1 items-start gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+        <div className="min-w-0">
+          <h2 className="font-display text-xl font-bold flex items-start gap-2"><ScrollText className="mt-1 size-5 shrink-0 text-guru" /><span className="min-w-0">{assignment.title}</span></h2>
           {assignment.description && <p className="mt-1 text-sm text-muted-foreground">{assignment.description}</p>}
           <div className="mt-2 flex flex-wrap items-center gap-2">
             {fmtLabel && <span className="rounded-full bg-guru/10 px-2.5 py-0.5 text-xs font-display font-bold text-guru">{fmtLabel.emoji} {lang === "id" ? fmtLabel.labelId : fmtLabel.labelEn}</span>}
