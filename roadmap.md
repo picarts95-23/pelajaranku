@@ -1,5 +1,8 @@
 # Roadmap
 
+- [x] Repair shared mobile layouts, navigation, tabs and dialogs for iPhone and Android.
+- [x] Verify signed-in teacher pages and public pages at narrow phone widths and desktop (Chromium and WebKit, 320/390/412px and desktop).
+
 - [x] Copy grade recap into the existing teacher spreadsheet and make subsequent exports reuse that file.
 - [x] Include grade recap in recurring teacher backup and verify readback through signed-in teacher sync and Google Sheets.
 

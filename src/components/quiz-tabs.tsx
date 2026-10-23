@@ -26,7 +26,7 @@ export function QuizTabs({ active }: { active: "bank" | "tugas" }) {
   ];
 
   return (
-    <div className="mb-5 inline-flex rounded-2xl border-2 border-border bg-muted/40 p-1">
+    <div className="mb-5 grid w-full min-w-0 grid-cols-2 rounded-2xl border-2 border-border bg-muted/40 p-1 sm:inline-flex sm:w-auto">
       {tabs.map((tab) => {
         const Icon = tab.icon;
         const isActive = tab.key === active;
@@ -35,13 +35,13 @@ export function QuizTabs({ active }: { active: "bank" | "tugas" }) {
             key={tab.key}
             to={tab.to}
             className={cn(
-              "inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-display font-bold transition-colors",
+              "inline-flex min-w-0 items-center gap-2 rounded-xl px-2 py-2 text-xs font-display font-bold transition-colors sm:px-4 sm:text-sm",
               isActive
                 ? "bg-background text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >
-            <Icon className="size-4" />
+            <Icon className="size-4 shrink-0" />
             {tab.label}
           </Link>
         );

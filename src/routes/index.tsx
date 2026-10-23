@@ -51,14 +51,14 @@ function Landing() {
   return (
     <div className="min-h-screen overflow-x-hidden">
       {/* Header */}
-      <header className="relative z-20 mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="grid size-10 place-items-center rounded-2xl bg-gradient-magic shadow-magic">
+      <header className="relative z-20 mx-auto grid max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-3 py-4 sm:flex sm:justify-between sm:px-6 sm:py-5">
+        <Link to="/" className="flex min-w-0 items-center gap-1.5 sm:gap-2">
+          <div className="grid size-8 shrink-0 place-items-center rounded-2xl bg-gradient-magic shadow-magic sm:size-10">
             <Compass className="size-5 text-primary-foreground" />
           </div>
-          <span className="font-display text-xl font-bold tracking-tight"><span className="text-gradient-magic">Pelajaranku</span></span>
+          <span className="whitespace-nowrap font-display text-base font-bold sm:text-xl"><span className="text-gradient-magic">Pelajaranku</span></span>
         </Link>
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           <LangToggle />
           <Link to="/auth">
             <Button variant="outline" size="sm" className="hidden sm:inline-flex">{t("login")}</Button>

@@ -233,7 +233,7 @@
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
-  h1, h2, h3, h4, h5, .font-display { font-family: var(--font-display); letter-spacing: -0.01em; }
+  h1, h2, h3, h4, h5, .font-display { font-family: var(--font-display); letter-spacing: 0; }
   h1, h2, h3, h4, h5, h6, p, span, div, li, a { overflow-wrap: anywhere; word-break: break-word; }
   img, video, canvas, svg { max-width: 100%; height: auto; }
   button, [role="button"], a { touch-action: manipulation; }
@@ -253,6 +253,43 @@
       animation-iteration-count: 1 !important;
       transition-duration: 0.001ms !important;
     }
+  }
+}
+
+/* Keep intrinsic text/table widths inside their grid tracks rather than clipping
+   the whole page. These shared constraints apply to every dashboard and form. */
+.dashboard-main .grid > *, .app-dialog .grid > * { min-width: 0; }
+.dashboard-topbar { height: 64px; }
+.dashboard-sidebar {
+  top: 66px;
+  bottom: 0;
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+}
+.app-dialog {
+  max-height: calc(100vh - 2rem);
+  max-height: calc(100dvh - 2rem - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+@media (min-width: 1024px) {
+  .dashboard-sidebar {
+    bottom: auto;
+    height: calc(100vh - 66px);
+    height: calc(100dvh - 66px);
+  }
+}
+@media (max-width: 639px) {
+  .app-dialog { max-height: calc(100vh - 2rem) !important; max-height: calc(100dvh - 2rem - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important; }
+  .app-tabs-list { height: auto; flex-wrap: wrap; gap: 4px; }
+  .app-tabs-list > [role="tab"] { white-space: normal; }
+  input, textarea, select { font-size: 16px !important; }
+}
+/* Gradient lettering must remain readable on older Safari/Android engines. */
+@supports not (color: oklch(0.5 0.1 350)) {
+  .text-gradient-magic, .text-gradient-hero {
+    background: none;
+    color: var(--primary);
+    -webkit-text-fill-color: var(--primary);
   }
 }
 
