@@ -96,8 +96,8 @@ export function DashboardShell({
     <div className="min-h-screen">
       {/* Top bar */}
       <header className="sticky top-0 z-40 border-b-2 border-border bg-card/85 backdrop-blur-lg">
-        <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4 px-4 py-3 sm:px-6">
-          <div className="flex items-center gap-2">
+        <div className="dashboard-topbar mx-auto grid max-w-[1400px] grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-3 sm:flex sm:justify-between sm:px-6">
+          <div className="flex min-w-0 items-center gap-2">
             <Button size="icon" variant="ghost" className="lg:hidden" onClick={() => setOpen((v) => !v)} aria-label="Menu">
               {open ? <X className="size-5" /> : <Menu className="size-5" />}
             </Button>
@@ -111,17 +111,17 @@ export function DashboardShell({
             </Link>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex shrink-0 items-center gap-1 sm:gap-3">
             <LangToggle />
             <div className="hidden items-center gap-3 rounded-2xl border-2 border-border bg-card px-3 py-1.5 shadow-soft md:flex">
               <div className={cn("grid size-10 place-items-center overflow-hidden rounded-xl ring-2", accent === "guru" ? "ring-guru bg-guru/10" : "ring-siswa bg-siswa/10")}>
                 <img src={avatarSrc} alt={profile?.full_name ?? "Avatar"} width={40} height={40} className="size-full object-cover" loading="lazy" />
               </div>
-              <div className="leading-tight">
+              <div className="min-w-0 max-w-48 leading-tight">
                 <div className="text-xs text-muted-foreground">
                   {(role ?? accent) === "guru" ? t("guru") : t("siswa")}
                 </div>
-                <div className="font-display text-sm font-semibold">{profile?.full_name ?? "—"}</div>
+                <div className="truncate font-display text-sm font-semibold">{profile?.full_name ?? "—"}</div>
               </div>
             </div>
             <Button variant="outline" size="sm" onClick={handleLogout}>
@@ -134,7 +134,7 @@ export function DashboardShell({
       <div className="mx-auto flex max-w-[1400px] gap-6 px-2 sm:px-4 lg:px-6">
         {/* Sidebar */}
         <aside className={cn(
-          "fixed inset-y-16 left-0 z-30 flex w-64 flex-col border-r-2 border-border bg-card p-3 transition-transform lg:sticky lg:top-[65px] lg:h-[calc(100vh-65px)] lg:translate-x-0",
+          "dashboard-sidebar fixed left-0 z-30 flex w-64 shrink-0 flex-col border-r-2 border-border bg-card p-3 transition-transform lg:sticky lg:translate-x-0",
           open ? "translate-x-0" : "-translate-x-full",
         )}>
           <nav className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto pr-1">
@@ -171,9 +171,9 @@ export function DashboardShell({
           </nav>
         </aside>
 
-        {open && <button aria-label="close" className="fixed inset-0 z-20 bg-black/40 lg:hidden" onClick={() => setOpen(false)} />}
+        {open && <Button aria-label="Tutup menu" variant="ghost" className="fixed inset-0 z-20 h-auto w-full rounded-none bg-foreground/40 hover:bg-foreground/40 lg:hidden" onClick={() => setOpen(false)} />}
 
-        <main className="min-w-0 flex-1 py-4 sm:py-6">
+        <main className="dashboard-main min-w-0 flex-1 py-4 sm:py-6">
           {pathname !== (accent === "guru" ? "/dashboard/guru" : "/dashboard/siswa") && (
             <Button
               variant="ghost"
@@ -224,12 +224,12 @@ export function PageHeader({
   title: string; subtitle?: string; actions?: ReactNode;
 }) {
   return (
-    <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-      <div>
+    <div className="mb-6 grid min-w-0 grid-cols-1 items-end gap-3 sm:flex sm:justify-between">
+      <div className="min-w-0">
         <h1 className="font-display text-2xl font-bold sm:text-3xl">{title}</h1>
         {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
       </div>
-      {actions && <div className="flex gap-2">{actions}</div>}
+      {actions && <div className="flex min-w-0 flex-wrap gap-2 sm:shrink-0">{actions}</div>}
     </div>
   );
 }
