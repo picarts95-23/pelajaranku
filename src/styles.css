@@ -281,8 +281,27 @@
 @media (max-width: 639px) {
   .app-dialog { max-height: calc(100vh - 2rem) !important; max-height: calc(100dvh - 2rem - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important; }
   .app-tabs-list { height: auto; flex-wrap: wrap; gap: 4px; }
-  .app-tabs-list > [role="tab"] { white-space: normal; }
+  .app-tabs-list > [role="tab"] { white-space: normal; min-height: 40px; }
   input, textarea, select { font-size: 16px !important; }
+}
+/* Touch-friendly sizing & legible text on phones/tablets (Chrome, Safari, iOS, Android). */
+@media (max-width: 767px), (pointer: coarse) {
+  button, [role="button"], [role="tab"], [role="menuitem"], [role="option"], select,
+  input[type="checkbox"] + label, a.inline-flex {
+    min-height: 44px;
+  }
+  button.size-6, button.size-7, button.size-8, button[class*="size-"] { min-width: 40px; min-height: 40px; }
+  input:not([type="checkbox"]):not([type="radio"]), textarea, [role="combobox"] { min-height: 44px; }
+  input[type="checkbox"], input[type="radio"], [role="checkbox"], [role="radio"] { min-width: 22px; min-height: 22px; }
+  .dashboard-main .text-xs, .app-dialog .text-xs { font-size: 0.8125rem; line-height: 1.25rem; }
+  .dashboard-main [class*="text-[10px]"], .dashboard-main [class*="text-[11px]"],
+  .app-dialog [class*="text-[10px]"], .app-dialog [class*="text-[11px]"] { font-size: 0.75rem; line-height: 1.1rem; }
+  .dashboard-main, .app-dialog { line-height: 1.55; }
+  .dashboard-sidebar nav a { min-height: 48px; font-size: 0.95rem; }
+  table { font-size: 0.875rem; }
+  th, td { padding-top: 0.6rem; padding-bottom: 0.6rem; }
+  :root { --muted-foreground: oklch(0.42 0.06 320); }
+  .dark { --muted-foreground: oklch(0.85 0.03 25); }
 }
 /* Gradient lettering must remain readable on older Safari/Android engines. */
 @supports not (color: oklch(0.5 0.1 350)) {
