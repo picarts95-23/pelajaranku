@@ -206,6 +206,7 @@ function GuruTugasPage() {
       setOpen(false);
       setForm(emptyForm());
       setSelected(createdId);
+      await qc.invalidateQueries({ queryKey: ["assignments"], refetchType: "all" });
       if (sourceRequestId) {
         setSourceRequestId(null);
         await Promise.all([
@@ -214,7 +215,6 @@ function GuruTugasPage() {
         ]);
         await navigate({ to: "/guru/permintaan" });
       }
-      qc.invalidateQueries({ queryKey: ["assignments"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
