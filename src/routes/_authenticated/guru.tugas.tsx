@@ -30,9 +30,15 @@ import { parseAnswerFiles } from "@/lib/answer-files";
 import { ShareMenu } from "@/components/share-menu";
 import { Switch } from "@/components/ui/switch";
 import { ScoreBreakdown, type ScoreBreakdownItem } from "@/components/quiz-score-breakdown";
+import { canCreateRequestedAssignment, requestedAssignmentDefaults } from "@/lib/assignment-request";
 
 
 export const Route = createFileRoute("/_authenticated/guru/tugas")({
+  validateSearch: (search: Record<string, unknown>): { requestId?: string; assignmentId?: string; edit?: boolean } => ({
+    requestId: typeof search.requestId === "string" ? search.requestId : undefined,
+    assignmentId: typeof search.assignmentId === "string" ? search.assignmentId : undefined,
+    edit: search.edit === true || search.edit === "true" ? true : undefined,
+  }),
   head: () => ({ meta: [{ title: "Tugas Guru · Pelajaranku" },
       { name: "description", content: "Tugas Guru untuk mengelola dan memantau pembelajaran di Pelajaranku." },
       { property: "og:title", content: "Tugas Guru · Pelajaranku" },
@@ -80,6 +86,35 @@ function GuruTugasPage() {
   const [target, setTarget] = useState<"class" | "student">("class");
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const [form, setForm] = useState<TForm>(emptyForm());
+  const { requestId, assignmentId, edit } = Route.useSearch();
+  const [requestInitialized, setRequestInitialized] = useState<string | null>(null);
+  const [sourceRequestId, setSourceRequestId] = useState<string | null>(null);
+
+  const { data: sourceRequest, error: requestError } = useQuery({
+    queryKey: ["assignment-source-request", user?.id, requestId],
+    enabled: !!user && !!requestId,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("task_requests").select("*").eq("id", requestId ?? "").single();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  useEffect(() => {
+    if (!sourceRequest || sourceRequest.id === requestInitialized) return;
+    setRequestInitialized(sourceRequest.id);
+    if (sourceRequest.assignment_id) {
+      setSelected(sourceRequest.assignment_id);
+      return;
+    }
+    if (!canCreateRequestedAssignment(sourceRequest)) return;
+    setSourceRequestId(sourceRequest.id);
+    setTarget("student");
+    setForm({ ...emptyForm(), ...requestedAssignmentDefaults(sourceRequest) });
+    setOpen(true);
+  }, [sourceRequest, requestInitialized]);
+
+  useEffect(() => { if (assignmentId) setSelected(assignmentId); }, [assignmentId]);
 
   useEffect(() => {
     if (!loading && role && role !== "guru") navigate({ to: role === "admin" ? "/admin" : "/dashboard/siswa" });
@@ -125,7 +160,7 @@ function GuruTugasPage() {
       if (form.answer_format === "muroja" && !form.muroja_surah)
         throw new Error(lang === "id" ? "Pilih surah untuk muroja'ah" : "Select a surah");
 
-      const { data: inserted, error } = await supabase.from("assignments").insert({
+      const payload = {
         teacher_id: user.id,
         class_id: target === "class" ? form.class_id : null,
         assigned_student_id: target === "student" ? form.assigned_student_id : null,
@@ -144,7 +179,17 @@ function GuruTugasPage() {
         attachment_url: form.attachment.attachment_url,
         attachment_name: form.attachment.attachment_name,
         attachment_type: form.attachment.attachment_type,
-      }).select("id").single();
+      };
+      if (sourceRequestId) {
+        const { data, error } = await supabase.rpc("create_assignment_from_request", {
+          _request_id: sourceRequestId,
+          _assignment: payload,
+          _answer_key: form.answer_key.trim() || undefined,
+        });
+        if (error) throw error;
+        return data;
+      }
+      const { data: inserted, error } = await supabase.from("assignments").insert(payload).select("id").single();
       if (error) throw error;
 
       // Answer key is stored separately so students can never read it.
@@ -154,12 +199,22 @@ function GuruTugasPage() {
         });
         if (keyErr) throw keyErr;
       }
+      return inserted.id;
     },
-    onSuccess: () => {
+    onSuccess: async (createdId) => {
       toast.success(lang === "id" ? "Tugas dibuat" : "Assignment created");
       setOpen(false);
       setForm(emptyForm());
-      qc.invalidateQueries({ queryKey: ["assignments"] });
+      setSelected(createdId);
+      await qc.invalidateQueries({ queryKey: ["assignments"], refetchType: "all" });
+      if (sourceRequestId) {
+        setSourceRequestId(null);
+        await Promise.all([
+          qc.invalidateQueries({ queryKey: ["teacher-task-requests"], refetchType: "all" }),
+          qc.invalidateQueries({ queryKey: ["my-task-requests"] }),
+        ]);
+        await navigate({ to: "/guru/permintaan" });
+      }
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -223,22 +278,22 @@ function GuruTugasPage() {
             {assignments.length > 0 && (
               <ExportMenu filename="tugas" title={lang === "id" ? "Daftar Tugas" : "Assignments"} columns={exportColumns} rows={exportRows} />
             )}
-            <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o) setForm(emptyForm()); }}>
+            <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o) { setForm(emptyForm()); setSourceRequestId(null); } }}>
               <DialogTrigger asChild><Button variant="guru"><Plus className="size-4" /> {t("newAssignment")}</Button></DialogTrigger>
               <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-                <DialogHeader><DialogTitle>{t("newAssignment")}</DialogTitle></DialogHeader>
+                <DialogHeader><DialogTitle>{sourceRequestId ? (lang === "id" ? "Buat Tugas dari Permintaan" : "Create Requested Assignment") : t("newAssignment")}</DialogTitle></DialogHeader>
                 <div className="space-y-3">
                   <div>
                     <Label>{t("assignTarget")}</Label>
                     <div className="mt-1 grid grid-cols-2 gap-2">
-                      <Button type="button" variant={target === "class" ? "guru" : "outline"} className="w-full" onClick={() => setTarget("class")}>{t("targetClass")}</Button>
+                      <Button type="button" variant={target === "class" ? "guru" : "outline"} className="w-full" disabled={!!sourceRequestId && !sourceRequest?.class_id} onClick={() => setTarget("class")}>{t("targetClass")}</Button>
                       <Button type="button" variant={target === "student" ? "guru" : "outline"} className="w-full" onClick={() => setTarget("student")}>{t("targetStudent")}</Button>
                     </div>
                   </div>
                   {target === "class" ? (
                     <div>
                       <Label>{t("navClasses")}</Label>
-                      <Select value={form.class_id} onValueChange={(v) => setForm({ ...form, class_id: v })}>
+                      <Select disabled={!!sourceRequestId} value={form.class_id} onValueChange={(v) => setForm({ ...form, class_id: v })}>
                         <SelectTrigger><SelectValue placeholder={t("selectClass")} /></SelectTrigger>
                         <SelectContent>{classes.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
                       </Select>
@@ -246,7 +301,7 @@ function GuruTugasPage() {
                   ) : (
                     <div>
                       <Label>{t("navStudents")}</Label>
-                      <Select value={form.assigned_student_id} onValueChange={(v) => setForm({ ...form, assigned_student_id: v })}>
+                      <Select disabled={!!sourceRequestId} value={form.assigned_student_id} onValueChange={(v) => setForm({ ...form, assigned_student_id: v })}>
                         <SelectTrigger><SelectValue placeholder={t("selectStudent")} /></SelectTrigger>
                         <SelectContent>
                           {students.map((s: any) => (
@@ -392,7 +447,7 @@ function GuruTugasPage() {
                 </div>
                 <DialogFooter>
                   <Button variant="ghost" onClick={() => setOpen(false)}>{t("cancel")}</Button>
-                  <Button variant="guru" disabled={createMut.isPending} onClick={() => createMut.mutate()}><Send className="size-4" /> {t("saveShare")}</Button>
+                  <Button variant="guru" disabled={createMut.isPending || (!!sourceRequestId && !form.due_at)} onClick={() => createMut.mutate()}><Send className="size-4" /> {t("saveShare")}</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -400,6 +455,8 @@ function GuruTugasPage() {
         }
       />
 
+      {requestError && <p role="alert" className="mb-4 text-sm text-destructive">{lang === "id" ? "Permintaan tidak dapat dimuat. Kembali ke Permintaan Tugas dan coba lagi." : "Unable to load request. Return to Task Requests and retry."}</p>}
+      {sourceRequest && !sourceRequest.assignment_id && !canCreateRequestedAssignment(sourceRequest) && <p role="alert" className="mb-4 text-sm text-destructive">{lang === "id" ? "Permintaan ini sudah ditolak atau dibatalkan." : "This request has been declined or cancelled."}</p>}
       {assignments.length === 0 ? (
         <EmptyState message={t("empty")} />
       ) : (
@@ -461,7 +518,9 @@ function GuruTugasPage() {
           <div className="lg:col-span-2">
             {currentAssignment ? (
               <AssignmentDetail
+                key={currentAssignment.id}
                 assignment={currentAssignment}
+                initiallyEditing={!!edit && currentAssignment.id === assignmentId}
                 onDelete={() => { if (confirm(`${t("delete")}?`)) { deleteMut.mutate(currentAssignment.id); setSelected(null); } }}
                 onEdited={() => qc.invalidateQueries({ queryKey: ["assignments"] })}
                 onDuplicated={(newId) => setSelected(newId)}
@@ -476,7 +535,7 @@ function GuruTugasPage() {
   );
 }
 
-function AssignmentDetail({ assignment, onDelete, onEdited, onDuplicated }: { assignment: any; onDelete: () => void; onEdited: () => void; onDuplicated: (id: string) => void }) {
+function AssignmentDetail({ assignment, onDelete, onEdited, onDuplicated, initiallyEditing = false }: { assignment: any; onDelete: () => void; onEdited: () => void; onDuplicated: (id: string) => void; initiallyEditing?: boolean }) {
   const { t, lang } = useLang();
   const qc = useQueryClient();
   const fmtLabel = ANSWER_FORMATS.find((f) => f.value === assignment.answer_format);
@@ -486,14 +545,23 @@ function AssignmentDetail({ assignment, onDelete, onEdited, onDuplicated }: { as
   const [statusFilter, setStatusFilter] = useState<"all" | "submitted" | "graded">("all");
   const [editOpen, setEditOpen] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
+  const [initialEditOpened, setInitialEditOpened] = useState(false);
 
-  const { data: answerKey } = useQuery({
+  const { data: answerKey, isSuccess: answerKeyReady } = useQuery({
     queryKey: ["answer-key", assignment.id],
     queryFn: async () => {
-      const { data } = await supabase.from("assignment_answer_keys").select("answer_key").eq("assignment_id", assignment.id).maybeSingle();
+      const { data, error } = await supabase.from("assignment_answer_keys").select("answer_key").eq("assignment_id", assignment.id).maybeSingle();
+      if (error) throw error;
       return data?.answer_key ?? null;
     },
   });
+
+  useEffect(() => {
+    if (initiallyEditing && answerKeyReady && !initialEditOpened) {
+      setInitialEditOpened(true);
+      setEditOpen(true);
+    }
+  }, [initiallyEditing, answerKeyReady, initialEditOpened]);
 
   // Answer key of a quiz task is stored as a JSON array (one entry per question).
   const parsedKey = useMemo(() => {
@@ -674,7 +742,7 @@ function AssignmentDetail({ assignment, onDelete, onEdited, onDuplicated }: { as
               `\n${lang === "id" ? "Kerjakan di aplikasi Pelajaranku ya 🌟" : "Complete it in the Pelajaranku app 🌟"}`,
             ].filter(Boolean).join("\n")}
           />
-          <Button size="sm" variant="ghost" onClick={() => setEditOpen(true)} title={lang === "id" ? "Edit" : "Edit"}><Pencil className="size-4 text-guru" /></Button>
+          <Button size="sm" variant="ghost" disabled={!answerKeyReady} onClick={() => setEditOpen(true)} aria-label="Edit Tugas" title={lang === "id" ? "Edit" : "Edit"}><Pencil className="size-4 text-guru" /></Button>
 
           <Button size="sm" variant="ghost" onClick={() => dupMut.mutate()} disabled={dupMut.isPending} title={lang === "id" ? "Duplikat tugas serupa" : "Duplicate similar assignment"}><Copy className="size-4 text-guru" /></Button>
           <Button size="sm" variant="ghost" onClick={onDelete}><Trash2 className="size-4 text-destructive" /></Button>
@@ -1071,7 +1139,8 @@ function AssignmentEditDialog({ assignment, initialAnswerKey, onClose, onSaved }
       }).eq("id", assignment.id);
       if (error) throw error;
       // Upsert answer key (delete + insert if provided, otherwise delete)
-      await supabase.from("assignment_answer_keys").delete().eq("assignment_id", assignment.id);
+      const { error: deleteError } = await supabase.from("assignment_answer_keys").delete().eq("assignment_id", assignment.id);
+      if (deleteError) throw deleteError;
       if (answerKey.trim()) {
         const { error: kErr } = await supabase.from("assignment_answer_keys").insert({
           assignment_id: assignment.id, teacher_id: user.id, answer_key: answerKey.trim(),

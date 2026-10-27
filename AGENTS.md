@@ -18,3 +18,4 @@
 - Active-work filtering lives in a tested browser-safe helper; student descriptions never render serialized teacher group-assessment records.
 - Grade recap backup is assembled by the shared browser-safe sheet-backup-data helper and included in teacher sync; exports resolve teacher_sheet_sync under caller RLS to keep destinations account-scoped.
 - Keep phone-width grid constraints and viewport-safe dialogs in the shared shell/UI styles so new feature pages cannot grow beyond their visible screen.
+- Request conversion reuses the teacher assignment form via validated search parameters; create_assignment_from_request atomically creates and links the assignment under caller RLS to prevent duplicate tasks and partial conversions.
