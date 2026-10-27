@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Inbox, CheckCircle2, XCircle, Clock, Sparkles, MessageSquare, ExternalLink } from "lucide-react";
+import { CheckCircle2, XCircle, Clock, Sparkles, MessageSquare, ExternalLink, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
+import { canCreateRequestedAssignment } from "@/lib/assignment-request";
 
 export const Route = createFileRoute("/_authenticated/guru/permintaan")({
   head: () => ({ meta: [{ title: "Permintaan Tugas Guru · Pelajaranku" },
@@ -55,15 +56,17 @@ function GuruPermintaanPage() {
     queryKey: ["teacher-task-requests", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("task_requests")
         .select("*, classes(name)")
         .order("created_at", { ascending: false });
+      if (error) throw error;
       const rows = (data ?? []) as any[];
       const ids = Array.from(new Set(rows.map((r) => r.student_id).filter(Boolean)));
       let profMap: Record<string, { full_name: string; class_name: string | null }> = {};
       if (ids.length) {
-        const { data: profs } = await supabase.from("profiles").select("id, full_name, class_name").in("id", ids);
+        const { data: profs, error: profileError } = await supabase.from("profiles").select("id, full_name, class_name").in("id", ids);
+        if (profileError) throw profileError;
         (profs ?? []).forEach((p: any) => { profMap[p.id] = { full_name: p.full_name, class_name: p.class_name }; });
       }
       return rows.map((r) => ({ ...r, profiles: profMap[r.student_id] ?? null })) as Req[];
@@ -94,7 +97,6 @@ function GuruPermintaanPage() {
     <DashboardShell accent="guru">
       <PageHeader
         title={lang === "id" ? "Permintaan Tugas dari Siswa" : "Task Requests from Students"}
-        subtitle={lang === "id" ? "Terima, tolak, atau ubah menjadi tugas resmi lewat menu Tugas." : "Accept, decline, or convert into an official task via the Tugas menu."}
       />
 
       <Tabs defaultValue="pending">
@@ -156,8 +158,8 @@ function GuruPermintaanPage() {
             {respondFor?.status === "accepted" && (
               <p className="text-xs text-muted-foreground">
                 💡 {lang === "id"
-                  ? "Setelah menerima, buka menu Tugas untuk membuat tugas resmi berdasarkan permintaan ini."
-                  : "After accepting, open Tugas to create the official task based on this request."}
+                  ? "Permintaan yang diterima belum menjadi tugas resmi."
+                  : "An accepted request is not yet an official assignment."}
               </p>
             )}
           </div>
@@ -217,7 +219,15 @@ function RequestCard({ r, onAccept, onDecline, readonly }: { r: Req; onAccept?: 
         <div className="mt-3 flex flex-wrap gap-2">
           <Button size="sm" variant="guru" onClick={onAccept}><CheckCircle2 className="size-4" /> {lang === "id" ? "Terima" : "Accept"}</Button>
           <Button size="sm" variant="destructive" onClick={onDecline}><XCircle className="size-4" /> {lang === "id" ? "Tolak" : "Decline"}</Button>
-          <Link to="/guru/tugas"><Button size="sm" variant="outline"><ExternalLink className="size-4" /> {lang === "id" ? "Buat Tugas" : "Create Task"}</Button></Link>
+        </div>
+      )}
+      {(canCreateRequestedAssignment(r) || r.assignment_id) && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {canCreateRequestedAssignment(r) && <Button size="sm" variant="guru" asChild><Link to="/guru/tugas" search={{ requestId: r.id }}><ExternalLink className="size-4" />{lang === "id" ? "Buat Tugas" : "Create Task"}</Link></Button>}
+          {r.assignment_id && <>
+            <Button size="sm" variant="outline" asChild><Link to="/guru/tugas" search={{ assignmentId: r.assignment_id }}><ExternalLink className="size-4" />{lang === "id" ? "Lihat Tugas" : "View Task"}</Link></Button>
+            <Button size="sm" variant="guru" asChild><Link to="/guru/tugas" search={{ assignmentId: r.assignment_id, edit: true }}><Pencil className="size-4" />{lang === "id" ? "Edit Tugas" : "Edit Task"}</Link></Button>
+          </>}
         </div>
       )}
     </div>
