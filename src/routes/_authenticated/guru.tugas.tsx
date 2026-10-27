@@ -201,16 +201,18 @@ function GuruTugasPage() {
       }
       return inserted.id;
     },
-    onSuccess: (createdId) => {
+    onSuccess: async (createdId) => {
       toast.success(lang === "id" ? "Tugas dibuat" : "Assignment created");
       setOpen(false);
       setForm(emptyForm());
       setSelected(createdId);
       if (sourceRequestId) {
         setSourceRequestId(null);
-        qc.invalidateQueries({ queryKey: ["teacher-task-requests"] });
-        qc.invalidateQueries({ queryKey: ["my-task-requests"] });
-        navigate({ to: "/guru/permintaan" });
+        await Promise.all([
+          qc.invalidateQueries({ queryKey: ["teacher-task-requests"], refetchType: "all" }),
+          qc.invalidateQueries({ queryKey: ["my-task-requests"] }),
+        ]);
+        await navigate({ to: "/guru/permintaan" });
       }
       qc.invalidateQueries({ queryKey: ["assignments"] });
     },
