@@ -1727,6 +1727,10 @@ export type Database = {
         Args: { _status_id: string; _uid: string }
         Returns: boolean
       }
+      create_assignment_from_request: {
+        Args: { _answer_key?: string; _assignment: Json; _request_id: string }
+        Returns: string
+      }
       get_teacher_signup_mode: { Args: never; Returns: string }
       grade_quiz_submission: {
         Args: { _answers: Json; _assignment_id: string }
