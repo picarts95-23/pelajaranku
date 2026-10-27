@@ -1,7 +1,7 @@
 # Roadmap
 
-- [ ] Create assignments directly from student requests and edit linked assignments.
-- [ ] Verify request creation, saved assignment edits and phone-width controls.
+- [x] Create assignments directly from student requests and edit linked assignments.
+- [x] Verify request creation, saved assignment edits and phone-width controls.
 
 - [x] Repair shared mobile layouts, navigation, tabs and dialogs for iPhone and Android.
 - [x] Verify signed-in teacher pages and public pages at narrow phone widths and desktop (Chromium and WebKit, 320/390/412px and desktop).
