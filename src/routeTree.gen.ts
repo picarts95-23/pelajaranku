@@ -30,6 +30,7 @@ import { Route as AuthenticatedGuruGamifikasiRouteImport } from './routes/_authe
 import { Route as AuthenticatedGuruJurnalRouteImport } from './routes/_authenticated/guru.jurnal'
 import { Route as AuthenticatedGuruKelasRouteImport } from './routes/_authenticated/guru.kelas'
 import { Route as AuthenticatedGuruKuisRouteImport } from './routes/_authenticated/guru.kuis'
+import { Route as AuthenticatedGuruLatihanAiRouteImport } from './routes/_authenticated/guru.latihan-ai'
 import { Route as AuthenticatedGuruMapelRouteImport } from './routes/_authenticated/guru.mapel'
 import { Route as AuthenticatedGuruMutabaahRouteImport } from './routes/_authenticated/guru.mutabaah'
 import { Route as AuthenticatedGuruPengumumanRouteImport } from './routes/_authenticated/guru.pengumuman'
@@ -42,6 +43,7 @@ import { Route as AuthenticatedGuruTugasRouteImport } from './routes/_authentica
 import { Route as AuthenticatedSiswaBadgeRouteImport } from './routes/_authenticated/siswa.badge'
 import { Route as AuthenticatedSiswaEventRouteImport } from './routes/_authenticated/siswa.event'
 import { Route as AuthenticatedSiswaKelasRouteImport } from './routes/_authenticated/siswa.kelas'
+import { Route as AuthenticatedSiswaLatihanAiRouteImport } from './routes/_authenticated/siswa.latihan-ai'
 import { Route as AuthenticatedSiswaLeaderboardRouteImport } from './routes/_authenticated/siswa.leaderboard'
 import { Route as AuthenticatedSiswaMapelRouteImport } from './routes/_authenticated/siswa.mapel'
 import { Route as AuthenticatedSiswaMutabaahRouteImport } from './routes/_authenticated/siswa.mutabaah'
@@ -165,6 +167,12 @@ const AuthenticatedGuruKuisRoute = AuthenticatedGuruKuisRouteImport.update({
   path: '/guru/kuis',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedGuruLatihanAiRoute =
+  AuthenticatedGuruLatihanAiRouteImport.update({
+    id: '/guru/latihan-ai',
+    path: '/guru/latihan-ai',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedGuruMapelRoute = AuthenticatedGuruMapelRouteImport.update({
   id: '/guru/mapel',
   path: '/guru/mapel',
@@ -229,6 +237,12 @@ const AuthenticatedSiswaKelasRoute = AuthenticatedSiswaKelasRouteImport.update({
   path: '/siswa/kelas',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSiswaLatihanAiRoute =
+  AuthenticatedSiswaLatihanAiRouteImport.update({
+    id: '/siswa/latihan-ai',
+    path: '/siswa/latihan-ai',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSiswaLeaderboardRoute =
   AuthenticatedSiswaLeaderboardRouteImport.update({
     id: '/siswa/leaderboard',
@@ -332,6 +346,7 @@ export interface FileRoutesByFullPath {
   '/guru/jurnal': typeof AuthenticatedGuruJurnalRoute
   '/guru/kelas': typeof AuthenticatedGuruKelasRoute
   '/guru/kuis': typeof AuthenticatedGuruKuisRoute
+  '/guru/latihan-ai': typeof AuthenticatedGuruLatihanAiRoute
   '/guru/mapel': typeof AuthenticatedGuruMapelRoute
   '/guru/mutabaah': typeof AuthenticatedGuruMutabaahRoute
   '/guru/pengumuman': typeof AuthenticatedGuruPengumumanRoute
@@ -344,6 +359,7 @@ export interface FileRoutesByFullPath {
   '/siswa/badge': typeof AuthenticatedSiswaBadgeRoute
   '/siswa/event': typeof AuthenticatedSiswaEventRoute
   '/siswa/kelas': typeof AuthenticatedSiswaKelasRoute
+  '/siswa/latihan-ai': typeof AuthenticatedSiswaLatihanAiRoute
   '/siswa/leaderboard': typeof AuthenticatedSiswaLeaderboardRoute
   '/siswa/mapel': typeof AuthenticatedSiswaMapelRoute
   '/siswa/mutabaah': typeof AuthenticatedSiswaMutabaahRoute
@@ -380,6 +396,7 @@ export interface FileRoutesByTo {
   '/guru/jurnal': typeof AuthenticatedGuruJurnalRoute
   '/guru/kelas': typeof AuthenticatedGuruKelasRoute
   '/guru/kuis': typeof AuthenticatedGuruKuisRoute
+  '/guru/latihan-ai': typeof AuthenticatedGuruLatihanAiRoute
   '/guru/mapel': typeof AuthenticatedGuruMapelRoute
   '/guru/mutabaah': typeof AuthenticatedGuruMutabaahRoute
   '/guru/pengumuman': typeof AuthenticatedGuruPengumumanRoute
@@ -392,6 +409,7 @@ export interface FileRoutesByTo {
   '/siswa/badge': typeof AuthenticatedSiswaBadgeRoute
   '/siswa/event': typeof AuthenticatedSiswaEventRoute
   '/siswa/kelas': typeof AuthenticatedSiswaKelasRoute
+  '/siswa/latihan-ai': typeof AuthenticatedSiswaLatihanAiRoute
   '/siswa/leaderboard': typeof AuthenticatedSiswaLeaderboardRoute
   '/siswa/mapel': typeof AuthenticatedSiswaMapelRoute
   '/siswa/mutabaah': typeof AuthenticatedSiswaMutabaahRoute
@@ -430,6 +448,7 @@ export interface FileRoutesById {
   '/_authenticated/guru/jurnal': typeof AuthenticatedGuruJurnalRoute
   '/_authenticated/guru/kelas': typeof AuthenticatedGuruKelasRoute
   '/_authenticated/guru/kuis': typeof AuthenticatedGuruKuisRoute
+  '/_authenticated/guru/latihan-ai': typeof AuthenticatedGuruLatihanAiRoute
   '/_authenticated/guru/mapel': typeof AuthenticatedGuruMapelRoute
   '/_authenticated/guru/mutabaah': typeof AuthenticatedGuruMutabaahRoute
   '/_authenticated/guru/pengumuman': typeof AuthenticatedGuruPengumumanRoute
@@ -442,6 +461,7 @@ export interface FileRoutesById {
   '/_authenticated/siswa/badge': typeof AuthenticatedSiswaBadgeRoute
   '/_authenticated/siswa/event': typeof AuthenticatedSiswaEventRoute
   '/_authenticated/siswa/kelas': typeof AuthenticatedSiswaKelasRoute
+  '/_authenticated/siswa/latihan-ai': typeof AuthenticatedSiswaLatihanAiRoute
   '/_authenticated/siswa/leaderboard': typeof AuthenticatedSiswaLeaderboardRoute
   '/_authenticated/siswa/mapel': typeof AuthenticatedSiswaMapelRoute
   '/_authenticated/siswa/mutabaah': typeof AuthenticatedSiswaMutabaahRoute
@@ -480,6 +500,7 @@ export interface FileRouteTypes {
     | '/guru/jurnal'
     | '/guru/kelas'
     | '/guru/kuis'
+    | '/guru/latihan-ai'
     | '/guru/mapel'
     | '/guru/mutabaah'
     | '/guru/pengumuman'
@@ -492,6 +513,7 @@ export interface FileRouteTypes {
     | '/siswa/badge'
     | '/siswa/event'
     | '/siswa/kelas'
+    | '/siswa/latihan-ai'
     | '/siswa/leaderboard'
     | '/siswa/mapel'
     | '/siswa/mutabaah'
@@ -528,6 +550,7 @@ export interface FileRouteTypes {
     | '/guru/jurnal'
     | '/guru/kelas'
     | '/guru/kuis'
+    | '/guru/latihan-ai'
     | '/guru/mapel'
     | '/guru/mutabaah'
     | '/guru/pengumuman'
@@ -540,6 +563,7 @@ export interface FileRouteTypes {
     | '/siswa/badge'
     | '/siswa/event'
     | '/siswa/kelas'
+    | '/siswa/latihan-ai'
     | '/siswa/leaderboard'
     | '/siswa/mapel'
     | '/siswa/mutabaah'
@@ -577,6 +601,7 @@ export interface FileRouteTypes {
     | '/_authenticated/guru/jurnal'
     | '/_authenticated/guru/kelas'
     | '/_authenticated/guru/kuis'
+    | '/_authenticated/guru/latihan-ai'
     | '/_authenticated/guru/mapel'
     | '/_authenticated/guru/mutabaah'
     | '/_authenticated/guru/pengumuman'
@@ -589,6 +614,7 @@ export interface FileRouteTypes {
     | '/_authenticated/siswa/badge'
     | '/_authenticated/siswa/event'
     | '/_authenticated/siswa/kelas'
+    | '/_authenticated/siswa/latihan-ai'
     | '/_authenticated/siswa/leaderboard'
     | '/_authenticated/siswa/mapel'
     | '/_authenticated/siswa/mutabaah'
@@ -771,6 +797,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedGuruKuisRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/guru/latihan-ai': {
+      id: '/_authenticated/guru/latihan-ai'
+      path: '/guru/latihan-ai'
+      fullPath: '/guru/latihan-ai'
+      preLoaderRoute: typeof AuthenticatedGuruLatihanAiRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/guru/mapel': {
       id: '/_authenticated/guru/mapel'
       path: '/guru/mapel'
@@ -853,6 +886,13 @@ declare module '@tanstack/react-router' {
       path: '/siswa/kelas'
       fullPath: '/siswa/kelas'
       preLoaderRoute: typeof AuthenticatedSiswaKelasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/siswa/latihan-ai': {
+      id: '/_authenticated/siswa/latihan-ai'
+      path: '/siswa/latihan-ai'
+      fullPath: '/siswa/latihan-ai'
+      preLoaderRoute: typeof AuthenticatedSiswaLatihanAiRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/siswa/leaderboard': {
@@ -967,6 +1007,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedGuruJurnalRoute: typeof AuthenticatedGuruJurnalRoute
   AuthenticatedGuruKelasRoute: typeof AuthenticatedGuruKelasRoute
   AuthenticatedGuruKuisRoute: typeof AuthenticatedGuruKuisRoute
+  AuthenticatedGuruLatihanAiRoute: typeof AuthenticatedGuruLatihanAiRoute
   AuthenticatedGuruMapelRoute: typeof AuthenticatedGuruMapelRoute
   AuthenticatedGuruMutabaahRoute: typeof AuthenticatedGuruMutabaahRoute
   AuthenticatedGuruPengumumanRoute: typeof AuthenticatedGuruPengumumanRoute
@@ -979,6 +1020,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSiswaBadgeRoute: typeof AuthenticatedSiswaBadgeRoute
   AuthenticatedSiswaEventRoute: typeof AuthenticatedSiswaEventRoute
   AuthenticatedSiswaKelasRoute: typeof AuthenticatedSiswaKelasRoute
+  AuthenticatedSiswaLatihanAiRoute: typeof AuthenticatedSiswaLatihanAiRoute
   AuthenticatedSiswaLeaderboardRoute: typeof AuthenticatedSiswaLeaderboardRoute
   AuthenticatedSiswaMapelRoute: typeof AuthenticatedSiswaMapelRoute
   AuthenticatedSiswaMutabaahRoute: typeof AuthenticatedSiswaMutabaahRoute
@@ -1003,6 +1045,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedGuruJurnalRoute: AuthenticatedGuruJurnalRoute,
   AuthenticatedGuruKelasRoute: AuthenticatedGuruKelasRoute,
   AuthenticatedGuruKuisRoute: AuthenticatedGuruKuisRoute,
+  AuthenticatedGuruLatihanAiRoute: AuthenticatedGuruLatihanAiRoute,
   AuthenticatedGuruMapelRoute: AuthenticatedGuruMapelRoute,
   AuthenticatedGuruMutabaahRoute: AuthenticatedGuruMutabaahRoute,
   AuthenticatedGuruPengumumanRoute: AuthenticatedGuruPengumumanRoute,
@@ -1015,6 +1058,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSiswaBadgeRoute: AuthenticatedSiswaBadgeRoute,
   AuthenticatedSiswaEventRoute: AuthenticatedSiswaEventRoute,
   AuthenticatedSiswaKelasRoute: AuthenticatedSiswaKelasRoute,
+  AuthenticatedSiswaLatihanAiRoute: AuthenticatedSiswaLatihanAiRoute,
   AuthenticatedSiswaLeaderboardRoute: AuthenticatedSiswaLeaderboardRoute,
   AuthenticatedSiswaMapelRoute: AuthenticatedSiswaMapelRoute,
   AuthenticatedSiswaMutabaahRoute: AuthenticatedSiswaMutabaahRoute,

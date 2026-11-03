@@ -49,7 +49,7 @@ function GuruLatihanAi() {
       if (error) throw error;
       return rows.length;
     },
-    onSuccess: (n) => { toast.success(`${n} soal tersimpan di Bank Soal.`); setSaved(true); qc.invalidateQueries({ queryKey: ["question_bank"] }); qc.invalidateQueries(); },
+    onSuccess: (n) => { toast.success(`${n} soal tersimpan di Bank Soal.`); setSaved(true); qc.invalidateQueries({ queryKey: ["question_bank"] }); },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Gagal menyimpan."),
   });
 
