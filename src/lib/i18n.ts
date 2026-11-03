@@ -95,6 +95,7 @@ export const translations = {
   navMyQuests: { id: "Misi Saya", en: "My Quests", ar: "مهامي" },
   navGrades: { id: "Nilai Saya", en: "My Grades", ar: "درجاتي" },
   navBadges: { id: "Badge", en: "Badges", ar: "الشارات" },
+  navAiPractice: { id: "Latihan AI", en: "AI Practice", ar: "تدريب الذكاء" },
   navHistory: { id: "Riwayat", en: "History", ar: "السجل" },
   navProfile: { id: "Profil", en: "Profile", ar: "الملف الشخصي" },
   navTaskRequests: { id: "Permintaan Tugas", en: "Task Requests", ar: "طلبات المهام" },
