@@ -2,7 +2,7 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   LogOut, Compass, LayoutDashboard, BookOpen, Users, ScrollText, CalendarCheck,
   NotebookPen, CalendarDays, Database, Trophy, Sword, GraduationCap, Award, Menu, X, UserCircle2, History,
-  Library, BarChart3, ArrowLeft, BookOpenCheck, Megaphone, Inbox, HelpCircle,
+  Library, BarChart3, ArrowLeft, BookOpenCheck, Megaphone, Inbox, HelpCircle, Sparkles,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -33,6 +33,7 @@ const GURU_NAV: NavItem[] = [
   { to: "/guru/pengumuman", key: "navAnnouncements", icon: Megaphone },
   { to: "/guru/permintaan", key: "navTaskRequests", icon: Inbox },
   { to: "/guru/bank-soal", key: "navQuestionBank", icon: Database },
+  { to: "/guru/latihan-ai", key: "navAiPractice", icon: Sparkles },
   { to: "/guru/gamifikasi", key: "navGamification", icon: Trophy },
   { to: "/panduan", key: "navGuide", icon: HelpCircle },
 ];
@@ -42,6 +43,7 @@ const SISWA_NAV: NavItem[] = [
   { to: "/siswa/kelas", key: "myClasses", icon: BookOpen },
   { to: "/siswa/mapel", key: "navSubjects", icon: Library },
   { to: "/siswa/tugas", key: "navMyQuests", icon: Sword },
+  { to: "/siswa/latihan-ai", key: "navAiPractice", icon: Sparkles },
   { to: "/siswa/mutabaah", key: "navMutabaah", icon: BookOpenCheck },
   { to: "/siswa/event", key: "navEvents", icon: CalendarDays },
   { to: "/siswa/pengumuman", key: "navAnnouncements", icon: Megaphone },
