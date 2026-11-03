@@ -138,7 +138,7 @@ export function PracticeTutor({ questions, onRestart }: { questions: PracticeQue
           <button key={i} onClick={() => answer(i)} disabled={answered}
             className={cn("min-h-12 rounded-xl border-2 px-4 py-3 text-left transition",
               !answered && "hover:border-primary",
-              answered && i === q.correctIndex && "border-success bg-success/10",
+              answered && i === q.correctIndex && "border-quest bg-quest/10",
               answered && i === chosen && i !== q.correctIndex && "border-destructive bg-destructive/10")}>
             <span className="font-bold mr-2">{String.fromCharCode(65 + i)}.</span>{o}
           </button>
@@ -155,9 +155,9 @@ export function PracticeTutor({ questions, onRestart }: { questions: PracticeQue
       )}
 
       {answered && (
-        <div className={cn("rounded-xl p-4 space-y-2", isCorrect ? "bg-success/10" : "bg-destructive/10")}>
+        <div className={cn("rounded-xl p-4 space-y-2", isCorrect ? "bg-quest/10" : "bg-destructive/10")}>
           <p className="flex items-center gap-2 font-semibold">
-            {isCorrect ? <CheckCircle2 className="size-5 text-success" /> : <XCircle className="size-5 text-destructive" />}
+            {isCorrect ? <CheckCircle2 className="size-5 text-quest" /> : <XCircle className="size-5 text-destructive" />}
             {isCorrect ? `Benar! +${practicePoints(true, hints)} poin` : `Belum tepat. Jawaban benar: ${String.fromCharCode(65 + q.correctIndex)}`}
           </p>
           {q.explanation && <p className="text-sm whitespace-pre-wrap">{q.explanation}</p>}
@@ -185,7 +185,7 @@ export function PracticeReviewList({ questions, selected, onToggle }: {
             {q.stimulus && <p className="text-sm text-muted-foreground whitespace-pre-wrap">{q.stimulus}</p>}
             <p className="font-semibold">{i + 1}. {q.question}</p>
             <ul className="text-sm">{q.options.map((o, j) => (
-              <li key={j} className={cn(j === q.correctIndex && "font-bold text-success")}>{String.fromCharCode(65 + j)}. {o}</li>
+              <li key={j} className={cn(j === q.correctIndex && "font-bold text-quest")}>{String.fromCharCode(65 + j)}. {o}</li>
             ))}</ul>
             {q.explanation && <p className="text-xs text-muted-foreground">Pembahasan: {q.explanation}</p>}
           </div>
