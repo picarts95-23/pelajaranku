@@ -31,7 +31,7 @@ export function PracticeGenerator({ onReady }: { onReady: (qs: PracticeQuestion[
   const pickFile = async (f: File | undefined) => {
     if (!f) return;
     if (f.size > MAX_FILE_BYTES) return toast.error("Ukuran file maksimal 5 MB.");
-    if (f.type.startsWith("text/")) { setNotes((n) => (n ? n + "\n\n" : "") + (await f.text()).slice(0, 8000)); return; }
+    if (f.type.startsWith("text/")) { const txt = (await f.text()).slice(0, 8000); setNotes((n) => (n ? n + "\n\n" : "") + txt); return; }
     if (!/^image\/|^application\/pdf$/.test(f.type)) return toast.error("Gunakan foto, PDF, atau file teks.");
     const dataUrl = await new Promise<string>((res, rej) => {
       const r = new FileReader(); r.onload = () => res(String(r.result)); r.onerror = rej; r.readAsDataURL(f);
