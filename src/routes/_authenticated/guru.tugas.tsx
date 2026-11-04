@@ -1,3 +1,4 @@
+import { TpFields } from "@/components/tp-fields";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -54,6 +55,7 @@ export const Route = createFileRoute("/_authenticated/guru/tugas")({
 type TForm = {
   class_id: string; assigned_student_id: string; title: string; description: string;
   subject: string; exam_type: string; halaqoh_kind: string;
+  assessment_kind: string; objective_id: string;
   due_at: string; max_score: number; xp_reward: number; coin_reward: number;
   quiz_link: string; game_link: string;
   answer_format: AnswerFormat; options: string[]; answer_key: string;
@@ -63,6 +65,7 @@ type TForm = {
 
 const emptyForm = (): TForm => ({
   class_id: "", assigned_student_id: "", title: "", description: "", subject: "", exam_type: "harian", halaqoh_kind: "", due_at: "",
+  assessment_kind: "sumatif", objective_id: "",
   max_score: 100, xp_reward: 50, coin_reward: 10, quiz_link: "", game_link: "",
   answer_format: "descriptive", options: ["", ""], answer_key: "",
   muroja_juz: "", muroja_surah: "", muroja_ayat: "",
@@ -167,6 +170,8 @@ function GuruTugasPage() {
         title: form.title,
         subject: form.subject || null,
         exam_type: form.exam_type,
+        assessment_kind: form.assessment_kind,
+        objective_id: form.objective_id || null,
         halaqoh_kind: isHalaqohSubject(form.subject) && form.halaqoh_kind ? form.halaqoh_kind : null,
         description: form.description || null, due_at: form.due_at ? new Date(form.due_at).toISOString() : null,
         max_score: form.max_score, xp_reward: form.xp_reward, coin_reward: form.coin_reward,
@@ -324,6 +329,7 @@ function GuruTugasPage() {
                     </Select>
                     <p className="mt-1 text-xs text-muted-foreground">{lang === "id" ? "Menentukan bobot pada rekap nilai (Harian 20%, UTS 20%, UAS 30%)." : "Sets the weight in the grade recap."}</p>
                   </div>
+                  <TpFields subject={form.subject} classId={form.class_id} kind={form.assessment_kind} objectiveId={form.objective_id} onKind={(v) => setForm({ ...form, assessment_kind: v })} onObjective={(v) => setForm({ ...form, objective_id: v })} />
                   {isHalaqohSubject(form.subject) && (
                     <div className="rounded-xl border-2 border-guru/30 bg-guru/5 p-3">
                       <Label>{lang === "id" ? "Jenis Halaqoh (otomatis ke Mutaba'ah)" : "Halaqoh Kind (auto to Mutaba'ah)"}</Label>
@@ -651,6 +657,8 @@ function AssignmentDetail({ assignment, onDelete, onEdited, onDuplicated, initia
         description: src.description ?? null,
         subject: src.subject ?? null,
         exam_type: src.exam_type ?? "harian",
+        assessment_kind: src.assessment_kind ?? "sumatif",
+        objective_id: src.objective_id ?? null,
         halaqoh_kind: src.halaqoh_kind ?? null,
         due_at: null,
         max_score: src.max_score ?? 100,
@@ -1108,6 +1116,8 @@ function AssignmentEditDialog({ assignment, initialAnswerKey, onClose, onSaved }
   const [gameLink, setGameLink] = useState<string>(assignment.game_link ?? "");
   const [answerKey, setAnswerKey] = useState<string>(initialAnswerKey);
   const [examType, setExamType] = useState<string>(assignment.exam_type ?? "harian");
+  const [assessmentKind, setAssessmentKind] = useState<string>(assignment.assessment_kind ?? "sumatif");
+  const [objectiveId, setObjectiveId] = useState<string>(assignment.objective_id ?? "");
   const [interactiveMode, setInteractiveMode] = useState<boolean>(assignment.interactive_mode ?? false);
   const [questionTimeLimit, setQuestionTimeLimit] = useState<number>(assignment.question_time_limit ?? 30);
   const [attachment, setAttachment] = useState<AttachmentValue>({
@@ -1125,6 +1135,8 @@ function AssignmentEditDialog({ assignment, initialAnswerKey, onClose, onSaved }
         description: description.trim() || null,
         subject: subject || null,
         exam_type: examType,
+        assessment_kind: assessmentKind,
+        objective_id: objectiveId || null,
         due_at: dueAt ? new Date(dueAt).toISOString() : null,
         max_score: maxScore,
         xp_reward: xpReward,
@@ -1170,6 +1182,7 @@ function AssignmentEditDialog({ assignment, initialAnswerKey, onClose, onSaved }
               </SelectContent>
             </Select>
           </div>
+          <TpFields subject={subject} classId={assignment.class_id} kind={assessmentKind} objectiveId={objectiveId} onKind={setAssessmentKind} onObjective={setObjectiveId} />
           <div><Label>{t("description")}</Label>
             <Textarea value={description} onChange={(e) => setDescription(e.target.value)} /></div>
           {assignment.answer_format === "quiz" && <div className="rounded-lg border-2 border-border bg-muted/30 p-3"><div className="flex items-center justify-between gap-3"><div><Label htmlFor="edit-interactive-quiz">{lang === "id" ? "Mode Interaktif" : "Interactive Mode"}</Label><p className="mt-0.5 text-xs text-muted-foreground">{lang === "id" ? "Tampilkan satu soal per layar." : "Show one question per screen."}</p></div><Switch id="edit-interactive-quiz" checked={interactiveMode} onCheckedChange={setInteractiveMode} /></div>{interactiveMode && <div className="mt-3"><Label htmlFor="edit-question-time-limit">{lang === "id" ? "Waktu per soal (detik)" : "Time per question (seconds)"}</Label><Input id="edit-question-time-limit" type="number" min={10} max={300} value={questionTimeLimit} onChange={(e) => setQuestionTimeLimit(Math.max(10, Math.min(300, Number(e.target.value) || 30)))} /></div>}</div>}
