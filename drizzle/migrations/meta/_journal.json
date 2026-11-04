@@ -15,6 +15,13 @@
       "when": 1793109409326,
       "tag": "0001_create_assignment_from_request",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793803881601,
+      "tag": "0002_learning_objectives_tp_recap",
+      "breakpoints": true
     }
   ]
 }

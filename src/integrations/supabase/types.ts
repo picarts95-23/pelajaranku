@@ -266,6 +266,7 @@ export type Database = {
       assignments: {
         Row: {
           answer_format: string
+          assessment_kind: string
           assigned_student_id: string | null
           attachment_name: string | null
           attachment_type: string | null
@@ -284,6 +285,7 @@ export type Database = {
           muroja_ayat: string | null
           muroja_juz: string | null
           muroja_surah: string | null
+          objective_id: string | null
           options: Json | null
           question_time_limit: number | null
           questions: Json | null
@@ -296,6 +298,7 @@ export type Database = {
         }
         Insert: {
           answer_format?: string
+          assessment_kind?: string
           assigned_student_id?: string | null
           attachment_name?: string | null
           attachment_type?: string | null
@@ -314,6 +317,7 @@ export type Database = {
           muroja_ayat?: string | null
           muroja_juz?: string | null
           muroja_surah?: string | null
+          objective_id?: string | null
           options?: Json | null
           question_time_limit?: number | null
           questions?: Json | null
@@ -326,6 +330,7 @@ export type Database = {
         }
         Update: {
           answer_format?: string
+          assessment_kind?: string
           assigned_student_id?: string | null
           attachment_name?: string | null
           attachment_type?: string | null
@@ -344,6 +349,7 @@ export type Database = {
           muroja_ayat?: string | null
           muroja_juz?: string | null
           muroja_surah?: string | null
+          objective_id?: string | null
           options?: Json | null
           question_time_limit?: number | null
           questions?: Json | null
@@ -367,6 +373,13 @@ export type Database = {
             columns: ["class_id"]
             isOneToOne: false
             referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assignments_objective_id_fkey"
+            columns: ["objective_id"]
+            isOneToOne: false
+            referencedRelation: "learning_objectives"
             referencedColumns: ["id"]
           },
         ]
@@ -670,6 +683,30 @@ export type Database = {
         }
         Relationships: []
       }
+      grade_weights: {
+        Row: {
+          absensi: number
+          adab: number
+          sumatif: number
+          teacher_id: string
+          updated_at: string
+        }
+        Insert: {
+          absensi?: number
+          adab?: number
+          sumatif?: number
+          teacher_id: string
+          updated_at?: string
+        }
+        Update: {
+          absensi?: number
+          adab?: number
+          sumatif?: number
+          teacher_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       journals: {
         Row: {
           class_id: string
@@ -720,6 +757,50 @@ export type Database = {
             columns: ["student_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      learning_objectives: {
+        Row: {
+          class_id: string | null
+          code: string
+          created_at: string
+          description: string
+          id: string
+          sort_order: number
+          subject: string
+          teacher_id: string
+          updated_at: string
+        }
+        Insert: {
+          class_id?: string | null
+          code: string
+          created_at?: string
+          description: string
+          id?: string
+          sort_order?: number
+          subject: string
+          teacher_id: string
+          updated_at?: string
+        }
+        Update: {
+          class_id?: string | null
+          code?: string
+          created_at?: string
+          description?: string
+          id?: string
+          sort_order?: number
+          subject?: string
+          teacher_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_objectives_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
             referencedColumns: ["id"]
           },
         ]
