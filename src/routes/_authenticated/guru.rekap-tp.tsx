@@ -112,7 +112,7 @@ function RekapTpPage() {
   });
 
   return (
-    <DashboardShell>
+    <DashboardShell accent="guru">
       <PageHeader title="Rekap Sumatif per TP" description="Sumatif direkap per Tujuan Pembelajaran; formatif menjadi umpan balik. Bobot nilai akhir diatur sekolah." />
       <div className="grid gap-3 sm:grid-cols-2">
         <div><Label>Kelas</Label>

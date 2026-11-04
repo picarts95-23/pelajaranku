@@ -3,6 +3,7 @@ import {
   LogOut, Compass, LayoutDashboard, BookOpen, Users, ScrollText, CalendarCheck,
   NotebookPen, CalendarDays, Database, Trophy, Sword, GraduationCap, Award, Menu, X, UserCircle2, History,
   Library, BarChart3, ArrowLeft, BookOpenCheck, Megaphone, Inbox, HelpCircle, Sparkles,
+  Target,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
