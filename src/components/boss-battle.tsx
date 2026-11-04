@@ -57,7 +57,7 @@ export function BossArena({ boss, bossHp, heroHp, heroName, fx }: { boss: Boss; 
 
 export function BattleOutcome({ victory, boss, exp, expNote }: { victory: boolean; boss: Boss; exp: number; expNote?: string }) {
   return (
-    <div className="relative overflow-hidden rounded-2xl border-2 border-quest/50 bg-gradient-quest/0 p-5 text-center">
+    <div className="relative overflow-hidden rounded-2xl border-2 border-quest/50 bg-card p-5 text-center">
       {victory && (
         <div className="pointer-events-none absolute inset-0" aria-hidden>
           {Array.from({ length: 18 }).map((_, i) => (
