@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { BossArena, BattleOutcome, type BattleFx } from "@/components/boss-battle";
+import { BOSS_MAX_HP, HERO_MAX_HP, heroDamage, hitDamage, pickBoss, practiceExp } from "@/lib/boss-battle";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Sparkles, Lightbulb, CheckCircle2, XCircle, ArrowRight, RotateCcw, Upload, BookOpen, Loader2 } from "lucide-react";
@@ -93,17 +95,26 @@ export function PracticeTutor({ questions, onRestart }: { questions: PracticeQue
   const [chosen, setChosen] = useState<number | null>(null);
   const [showSteps, setShowSteps] = useState(false);
   const [results, setResults] = useState<Result[]>([]);
+  const [battle, setBattle] = useState(true);
+  const [fx, setFx] = useState<BattleFx>(null);
+  const boss = useMemo(() => pickBoss(questions.map((q) => q.question).join("|")), [questions]);
+  const n = questions.length;
+  const bossHp = Math.max(0, BOSS_MAX_HP - results.reduce((s, r) => s + (r.correct ? hitDamage(n, r.hints) : 0), 0));
+  const heroHp = Math.max(1, HERO_MAX_HP - results.filter((r) => !r.correct).length * heroDamage(n));
   const done = results.length === questions.length && chosen === null && idx >= questions.length;
 
   if (done || idx >= questions.length) {
     const total = results.reduce((s, r) => s + practicePoints(r.correct, r.hints), 0);
     const score = Math.round(total / questions.length);
+    const correctCount = results.filter((r) => r.correct).length;
+    const victory = bossHp <= 0.5;
     const weak = [...new Set(questions.filter((_, i) => !results[i]?.correct).map((q) => q.concept).filter(Boolean))];
     return (
       <div className="rounded-2xl border bg-card p-6 shadow-sm space-y-4 text-center">
+        {battle && <BattleOutcome victory={victory} boss={boss} exp={practiceExp(correctCount, victory)} expNote="EXP latihan mandiri ini hanya untuk sesi ini dan tidak menambah EXP profil." />}
         <p className="text-sm text-muted-foreground">Skor latihan</p>
         <p className="font-display text-5xl font-bold text-primary">{score}</p>
-        <p>{results.filter((r) => r.correct).length} dari {questions.length} benar</p>
+        <p>{correctCount} dari {questions.length} benar</p>
         {weak.length > 0 && (
           <div className="text-left rounded-xl bg-muted p-4"><p className="font-semibold mb-1">Konsep yang perlu diulang:</p>
             <ul className="list-disc ml-5 text-sm">{weak.map((w) => <li key={w}>{w}</li>)}</ul></div>
@@ -119,17 +130,24 @@ export function PracticeTutor({ questions, onRestart }: { questions: PracticeQue
 
   const answer = (i: number) => {
     if (answered) return;
+    const correct = i === q.correctIndex;
     setChosen(i);
-    setShowSteps(i !== q.correctIndex);
-    setResults((r) => [...r, { chosen: i, correct: i === q.correctIndex, hints }]);
+    setShowSteps(!correct);
+    setResults((r) => [...r, { chosen: i, correct, hints }]);
+    setFx({ kind: correct ? "hit" : "miss", key: Date.now(), amount: correct ? hitDamage(n, hints) : heroDamage(n) });
   };
   const next = () => { setIdx((i) => i + 1); setChosen(null); setHints(0); setShowSteps(false); };
 
   return (
     <div className="rounded-2xl border bg-card p-5 shadow-sm space-y-4">
-      <div className="flex items-center justify-between text-sm text-muted-foreground">
+      <div className="flex items-center justify-between gap-2 text-sm text-muted-foreground">
         <span>Soal {idx + 1} / {questions.length}</span>{q.concept && <span className="truncate ml-2">{q.concept}</span>}
       </div>
+      <label className="flex items-center gap-2 text-sm font-semibold">
+        <Checkbox checked={battle} onCheckedChange={(v) => setBattle(v === true)} /> ⚔️ Mode Boss Battle
+      </label>
+      {battle && <BossArena boss={boss} bossHp={bossHp} heroHp={heroHp} heroName="Kamu" fx={fx} />}
+      {battle && hints > 0 && !answered && <p className="text-xs text-muted-foreground">Petunjuk membuat seranganmu lebih lemah.</p>}
       <Progress value={(idx / questions.length) * 100} />
       {q.stimulus && <div className="rounded-xl bg-muted p-4 text-sm whitespace-pre-wrap">{q.stimulus}</div>}
       <p className="font-semibold text-lg whitespace-pre-wrap">{q.question}</p>
