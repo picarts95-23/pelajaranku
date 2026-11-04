@@ -254,7 +254,7 @@ function ResultBattle({ boss, score, maxScore, exp, lang }: { boss: ReturnType<t
   return (
     <div className="space-y-3 text-left">
       <BossArena boss={boss} bossHp={hp} heroHp={HERO_MAX_HP} heroName={lang === "id" ? "Kamu" : "You"} fx={fx} />
-      <BattleOutcome victory={victory} boss={boss} exp={victory ? exp : 0} expNote={victory ? (lang === "id" ? "EXP kuis ditambahkan ke profilmu." : "Quiz EXP is added to your profile.") : (lang === "id" ? "Raih minimal 70% untuk mengalahkan bos." : "Score at least 70% to defeat the boss.")} />
+      <BattleOutcome victory={victory} boss={boss} exp={exp} expNote={lang === "id" ? (victory ? "EXP kuis ditambahkan ke profilmu." : "EXP tetap didapat. Raih minimal 70% untuk mengalahkan bos.") : (victory ? "Quiz EXP is added to your profile." : "EXP still earned. Score at least 70% to defeat the boss.")} />
     </div>
   );
 }
