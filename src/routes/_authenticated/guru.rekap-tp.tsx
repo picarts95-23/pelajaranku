@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Copy, Plus, Save, Sparkles, Target, Trash2 } from "lucide-react";
+import { Copy, Plus, Save, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -113,7 +113,7 @@ function RekapTpPage() {
 
   return (
     <DashboardShell>
-      <PageHeader title="Rekap Sumatif per TP" subtitle="Sumatif direkap per Tujuan Pembelajaran; formatif menjadi umpan balik. Bobot nilai akhir diatur sekolah." />
+      <PageHeader title="Rekap Sumatif per TP" description="Sumatif direkap per Tujuan Pembelajaran; formatif menjadi umpan balik. Bobot nilai akhir diatur sekolah." />
       <div className="grid gap-3 sm:grid-cols-2">
         <div><Label>Kelas</Label>
           <Select value={classId} onValueChange={(v) => { setClassId(v); setSubject(""); }}>
@@ -142,7 +142,7 @@ function RekapTpPage() {
         </div>
       </section>
 
-      {!ready ? <div className="mt-4"><EmptyState icon={Target} title="Pilih kelas dan mata pelajaran" description="TP dan rekap nilai akan tampil di sini." /></div> : (<>
+      {!ready ? <div className="mt-4"><EmptyState message="Pilih kelas dan mata pelajaran untuk melihat TP dan rekap nilai." /></div> : (<>
         <section className="mt-4 rounded-xl border-2 border-border bg-card p-4">
           <h2 className="font-display text-lg font-bold">Tujuan Pembelajaran (TP)</h2>
           <div className="mt-3 space-y-2">
