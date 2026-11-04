@@ -113,7 +113,7 @@ function RekapTpPage() {
 
   return (
     <DashboardShell accent="guru">
-      <PageHeader title="Rekap Sumatif per TP" description="Sumatif direkap per Tujuan Pembelajaran; formatif menjadi umpan balik. Bobot nilai akhir diatur sekolah." />
+      <PageHeader title="Rekap Sumatif per TP" subtitle="Sumatif direkap per Tujuan Pembelajaran; formatif menjadi umpan balik. Bobot nilai akhir diatur sekolah." />
       <div className="grid gap-3 sm:grid-cols-2">
         <div><Label>Kelas</Label>
           <Select value={classId} onValueChange={(v) => { setClassId(v); setSubject(""); }}>
