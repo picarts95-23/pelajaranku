@@ -26,6 +26,7 @@ const GURU_NAV: NavItem[] = [
   { to: "/guru/rpp", key: "navRPP", icon: NotebookPen },
   { to: "/guru/tugas", key: "navAssignments", icon: ScrollText },
   { to: "/guru/rekap", key: "navRecap", icon: BarChart3 },
+  { to: "/guru/rekap-tp", key: "navRecapTp", icon: Target },
   { to: "/guru/presensi", key: "navAttendance", icon: CalendarCheck },
   { to: "/guru/jurnal", key: "navJournal", icon: NotebookPen },
   { to: "/guru/mutabaah", key: "navMutabaah", icon: BookOpenCheck },
