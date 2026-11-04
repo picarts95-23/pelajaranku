@@ -14,6 +14,9 @@ import { useLang } from "@/lib/i18n";
 import { assertMediaSize } from "@/lib/media-limits";
 import { supabase } from "@/integrations/supabase/client";
 import { MediaViewer } from "@/components/media-input";
+import { BossArena, BattleOutcome } from "@/components/boss-battle";
+import { bossHpAfterQuiz, pickBoss, HERO_MAX_HP } from "@/lib/boss-battle";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ScoreBreakdown, questionPoints, questionSeconds, type ScoreBreakdownItem } from "@/components/quiz-score-breakdown";
 
 type QResult = { auto_correct: number; total: number; manual_pending: number; score: number; max_score: number; status: string; breakdown?: ScoreBreakdownItem[] };
@@ -33,6 +36,8 @@ export function InteractiveQuizDialog({ quiz, questions, onFinished }: { quiz: a
   const [secondsLeft, setSecondsLeft] = useState(defaultLimit);
   const [result, setResult] = useState<QResult | null>(null);
   const submittingRef = useRef(false);
+  const [battle, setBattle] = useState(true);
+  const boss = useMemo(() => pickBoss(String(quiz.id)), [quiz.id]);
   const storageKey = user ? `pelajaranku-quiz-${user.id}-${quiz.id}` : null;
   const limit = questionSeconds(questions[current], defaultLimit);
   const totalPoints = questions.reduce((sum, question) => sum + questionPoints(question), 0);
@@ -185,6 +190,7 @@ export function InteractiveQuizDialog({ quiz, questions, onFinished }: { quiz: a
                 <p>• {lang === "id" ? "Saat waktu habis, soal berikutnya terbuka otomatis." : "When time runs out, the next question opens automatically."}</p>
                 <p>• {lang === "id" ? "Jawaban tersimpan sementara di perangkat ini." : "Answers are saved temporarily on this device."}</p>
               </div>
+              <label className="flex items-center justify-center gap-2 text-sm font-semibold"><Checkbox checked={battle} onCheckedChange={(v) => setBattle(v === true)} /> ⚔️ {lang === "id" ? `Mode Boss Battle — kalahkan ${boss.name} ${boss.emoji}` : `Boss Battle mode — defeat ${boss.name} ${boss.emoji}`}</label>
               <Button variant="siswa" size="lg" className="w-full" onClick={() => beginQuestion(0)} disabled={!questions.length}>{lang === "id" ? "Mulai Sekarang" : "Start Now"}<ArrowRight className="size-4" /></Button>
             </div>
           )}
@@ -192,6 +198,7 @@ export function InteractiveQuizDialog({ quiz, questions, onFinished }: { quiz: a
           {stage === "playing" && currentQuestion && (
             <div className="mx-auto max-w-xl">
               <div className="mb-4 flex items-center justify-between text-xs font-bold text-muted-foreground"><span>{lang === "id" ? `Soal ${current + 1} dari ${questions.length}` : `Question ${current + 1} of ${questions.length}`}</span><span>{answeredCount}/{questions.length} {lang === "id" ? "terjawab" : "answered"}</span></div>
+              {battle && <div className="mb-4"><BossArena boss={boss} bossHp={100} heroHp={HERO_MAX_HP} heroName={lang === "id" ? `Energi serangan ${answeredCount}/${questions.length}` : `Attack energy ${answeredCount}/${questions.length}`} fx={null} /><p className="mt-1 text-center text-xs text-muted-foreground">{lang === "id" ? "Setiap jawaban mengisi energi. Serangan dilepas saat kuis dikirim!" : "Each answer charges energy. The attack lands when you submit!"}</p></div>}
               <Progress value={timerPercent} className={`mb-5 h-1.5 ${secondsLeft <= 10 ? "[&>div]:bg-destructive" : ""}`} />
                <div className="mb-3 flex flex-wrap gap-2 text-xs font-semibold text-muted-foreground"><span>{questionPoints(currentQuestion)} {lang === "id" ? "poin" : "pts"}</span><span>· {currentQuestion.indicator || (lang === "id" ? "Umum" : "General")}</span></div>
                {currentQuestion.stimulus && <div className="mb-4 rounded-lg border-l-4 border-primary bg-primary/5 p-3"><p className="mb-1 text-xs font-bold text-primary">{lang === "id" ? "Stimulus / Bacaan" : "Stimulus / Passage"}</p><p className="whitespace-pre-wrap text-sm leading-relaxed">{currentQuestion.stimulus}</p></div>}
@@ -210,7 +217,7 @@ export function InteractiveQuizDialog({ quiz, questions, onFinished }: { quiz: a
           )}
 
           {stage === "result" && result && (
-             <div className="mx-auto max-w-md space-y-4 py-8 text-center"><div className="text-6xl">{result.manual_pending > 0 ? "📝" : "🏆"}</div><h3 className="font-display text-2xl font-bold">{lang === "id" ? "Kuis selesai" : "Quiz complete"}</h3><div className="font-display text-4xl font-bold text-primary">{result.score}<span className="text-xl text-muted-foreground">/{result.max_score}</span></div><p className="text-sm text-muted-foreground">{result.manual_pending > 0 ? (lang === "id" ? "Nilai sementara; sebagian jawaban menunggu penilaian guru." : "Provisional score; some answers await teacher review.") : (lang === "id" ? `${result.auto_correct} dari ${result.total} jawaban benar` : `${result.auto_correct} of ${result.total} correct`)}</p><ScoreBreakdown items={result.breakdown ?? []} lang={lang} /></div>
+             <div className="mx-auto max-w-md space-y-4 py-8 text-center">{battle && result.manual_pending === 0 && <ResultBattle boss={boss} score={result.score} maxScore={result.max_score} exp={Number(quiz.xp_reward) || 0} lang={lang} />}{battle && result.manual_pending > 0 && <p className="rounded-lg bg-muted p-3 text-sm">{lang === "id" ? `${boss.name} menunggu: hasil pertarungan muncul setelah guru menilai.` : `${boss.name} awaits: the battle result appears after teacher grading.`}</p>}<div className="text-6xl">{result.manual_pending > 0 ? "📝" : "🏆"}</div><h3 className="font-display text-2xl font-bold">{lang === "id" ? "Kuis selesai" : "Quiz complete"}</h3><div className="font-display text-4xl font-bold text-primary">{result.score}<span className="text-xl text-muted-foreground">/{result.max_score}</span></div><p className="text-sm text-muted-foreground">{result.manual_pending > 0 ? (lang === "id" ? "Nilai sementara; sebagian jawaban menunggu penilaian guru." : "Provisional score; some answers await teacher review.") : (lang === "id" ? `${result.auto_correct} dari ${result.total} jawaban benar` : `${result.auto_correct} of ${result.total} correct`)}</p><ScoreBreakdown items={result.breakdown ?? []} lang={lang} /></div>
           )}
         </div>
 
@@ -234,4 +241,20 @@ function QuestionAnswer({ question, value, onChange, lang, onVoice, onImage }: {
   if (type === "voice") return <div className="mt-5"><VoiceRecorder onChange={({ blob }) => { onVoice(blob); onChange(blob ? "pending-upload" : null); }} /></div>;
   if (type === "image") return <div className="mt-5 rounded-xl border-2 border-dashed border-border p-4"><Input type="file" accept="image/*" onChange={(event) => { const file = event.target.files?.[0] ?? null; onImage(file); onChange(file ? "pending-upload" : null); }} /><p className="mt-2 text-xs text-muted-foreground">{lang === "id" ? "Ambil foto atau pilih gambar yang jelas." : "Take a photo or choose a clear image."}</p></div>;
   return null;
+}
+function ResultBattle({ boss, score, maxScore, exp, lang }: { boss: ReturnType<typeof pickBoss>; score: number; maxScore: number; exp: number; lang: string }) {
+  const finalHp = bossHpAfterQuiz(score, maxScore);
+  const [hp, setHp] = useState(100);
+  const [fx, setFx] = useState<{ kind: "hit"; key: number; amount: number } | null>(null);
+  useEffect(() => {
+    const t = window.setTimeout(() => { setHp(finalHp); setFx({ kind: "hit", key: Date.now(), amount: 100 - finalHp }); }, 400);
+    return () => window.clearTimeout(t);
+  }, [finalHp]);
+  const victory = finalHp === 0;
+  return (
+    <div className="space-y-3 text-left">
+      <BossArena boss={boss} bossHp={hp} heroHp={HERO_MAX_HP} heroName={lang === "id" ? "Kamu" : "You"} fx={fx} />
+      <BattleOutcome victory={victory} boss={boss} exp={victory ? exp : 0} expNote={victory ? (lang === "id" ? "EXP kuis ditambahkan ke profilmu." : "Quiz EXP is added to your profile.") : (lang === "id" ? "Raih minimal 70% untuk mengalahkan bos." : "Score at least 70% to defeat the boss.")} />
+    </div>
+  );
 }
