@@ -1,4 +1,5 @@
 import { TpFields } from "@/components/tp-fields";
+import { validateTpWeights } from "@/lib/tp-recap";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -162,6 +163,8 @@ function GuruTugasPage() {
         throw new Error(lang === "id" ? "Minimal 2 pilihan jawaban" : "At least 2 options");
       if (form.answer_format === "muroja" && !form.muroja_surah)
         throw new Error(lang === "id" ? "Pilih surah untuk muroja'ah" : "Select a surah");
+      const tpErr = validateTpWeights(form.objective_weights);
+      if (tpErr) throw new Error(tpErr);
 
       const payload = {
         teacher_id: user.id,
@@ -1131,6 +1134,7 @@ function AssignmentEditDialog({ assignment, initialAnswerKey, onClose, onSaved }
 
   const saveMut = useMutation({
     mutationFn: async () => {
+      const tpErr = validateTpWeights(objWeights); if (tpErr) throw new Error(tpErr);
       if (!user) throw new Error("no user");
       if (!title.trim()) throw new Error(t("required"));
       const { error } = await supabase.from("assignments").update({

@@ -28,3 +28,20 @@ test("formatif never enters final grade; sumatif averaged per TP", () => {
   expect(rows[0].formatif.lastFeedback).toBe("Ulangi");
   expect(rows[0].description).toContain("perlu bimbingan dalam menghitung luas");
 });
+
+import { tpShares, validateTpWeights } from "./tp-recap.ts";
+test("multi-TP UTS splits proportionally into each TP", () => {
+  expect(tpShares({ objective_id: "t1", objective_weights: { t1: 40, t2: 60 } })).toEqual({ t1: 0.4, t2: 0.6 });
+  expect(validateTpWeights({ t1: 40, t2: 50 })).not.toBe(null);
+  const rows = computeTpRecap({
+    students: [{ id: "s", full_name: "A" }],
+    objectives: [{ id: "t1", code: "1", description: "X" }, { id: "t2", code: "2", description: "Y" }],
+    assignments: [
+      { id: "h", objective_id: "t1", assessment_kind: "sumatif", max_score: 100, submissions: [{ student_id: "s", score: 100, status: "graded" }] },
+      { id: "u", objective_id: "t1", objective_weights: { t1: 25, t2: 75 }, assessment_kind: "sumatif", max_score: 100, submissions: [{ student_id: "s", score: 60, status: "graded" }] },
+    ],
+    attendance: [], adab: [], weights: { sumatif: 100, adab: 0, absensi: 0 },
+  });
+  expect(rows[0].perTp.t1).toBe(92); // (100*1 + 60*0.25)/1.25
+  expect(rows[0].perTp.t2).toBe(60);
+});
