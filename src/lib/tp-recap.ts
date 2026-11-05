@@ -4,7 +4,7 @@
 export type Weights = { sumatif: number; adab: number; absensi: number };
 export type Objective = { id: string; code: string; description: string };
 export type TpAssignment = {
-  id: string; objective_id: string | null; assessment_kind: string; max_score: number;
+  id: string; objective_id: string | null; objective_weights?: Record<string, number> | null; assessment_kind: string; max_score: number;
   submissions: { student_id: string; score: number | null; status: string; feedback?: string | null }[];
 };
 
@@ -12,6 +12,22 @@ export const ATTENDANCE_SCORE: Record<string, number> = { hadir: 100, izin: 60, 
 
 const avg = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null);
 const round = (n: number) => Math.round(n * 10) / 10;
+
+/** Proportional share of an assessment per TP (shares sum to 1). Multi-TP (e.g. UTS/UAS) uses objective_weights. */
+export function tpShares(a: Pick<TpAssignment, "objective_id" | "objective_weights">): Record<string, number> {
+  const w = Object.entries(a.objective_weights ?? {}).filter(([, v]) => Number(v) > 0);
+  const total = w.reduce((t, [, v]) => t + Number(v), 0);
+  if (total > 0) return Object.fromEntries(w.map(([k, v]) => [k, Number(v) / total]));
+  return a.objective_id ? { [a.objective_id]: 1 } : {};
+}
+
+export function validateTpWeights(w: Record<string, number>): string | null {
+  const vals = Object.values(w);
+  if (vals.length < 2) return null;
+  if (vals.some((v) => !Number.isFinite(v) || v <= 0)) return "Porsi tiap TP harus lebih dari 0.";
+  if (Math.round(vals.reduce((a, b) => a + b, 0)) !== 100) return "Total porsi TP harus 100%.";
+  return null;
+}
 
 export function validateWeights(w: Weights): string | null {
   for (const v of [w.sumatif, w.adab, w.absensi]) if (!Number.isFinite(v) || v < 0 || v > 100) return "Bobot harus 0–100.";
@@ -73,7 +89,12 @@ export function computeTpRecap(input: {
     const perTp: Record<string, number | null> = {};
     const tpScores: { description: string; score: number }[] = [];
     input.objectives.forEach((o) => {
-      const v = avg(input.assignments.filter((a) => a.assessment_kind === "sumatif" && a.objective_id === o.id).flatMap(pct));
+      let num = 0, den = 0;
+      input.assignments.filter((a) => a.assessment_kind === "sumatif").forEach((a) => {
+        const share = tpShares(a)[o.id];
+        if (share) pct(a).forEach((p) => { num += p * share; den += share; });
+      });
+      const v = den ? num / den : null;
       perTp[o.id] = v === null ? null : round(v);
       if (v !== null) tpScores.push({ description: o.description, score: v });
     });

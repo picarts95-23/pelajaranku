@@ -58,7 +58,7 @@ function RekapTpPage() {
       return ((await supabase.from("profiles").select("id, full_name").in("id", ids).order("full_name")).data ?? []);
     } });
   const { data: assignments = [] } = useQuery({ queryKey: ["tp-assignments", classId, subject], enabled: ready,
-    queryFn: async () => (await supabase.from("assignments").select("id, objective_id, assessment_kind, max_score, submissions(student_id, score, status, feedback)").eq("class_id", classId).eq("subject", subject)).data ?? [] });
+    queryFn: async () => (await supabase.from("assignments").select("id, objective_id, objective_weights, assessment_kind, max_score, submissions(student_id, score, status, feedback)").eq("class_id", classId).eq("subject", subject)).data ?? [] });
   const { data: attendance = [] } = useQuery({ queryKey: ["rekap-attendance", classId], enabled: !!classId,
     queryFn: async () => (await supabase.from("attendance").select("student_id, status").eq("class_id", classId)).data ?? [] });
   const { data: adab = [] } = useQuery({ queryKey: ["rekap-adab", classId, subject], enabled: ready,

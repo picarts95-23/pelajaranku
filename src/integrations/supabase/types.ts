@@ -286,6 +286,7 @@ export type Database = {
           muroja_juz: string | null
           muroja_surah: string | null
           objective_id: string | null
+          objective_weights: Json
           options: Json | null
           question_time_limit: number | null
           questions: Json | null
@@ -318,6 +319,7 @@ export type Database = {
           muroja_juz?: string | null
           muroja_surah?: string | null
           objective_id?: string | null
+          objective_weights?: Json
           options?: Json | null
           question_time_limit?: number | null
           questions?: Json | null
@@ -350,6 +352,7 @@ export type Database = {
           muroja_juz?: string | null
           muroja_surah?: string | null
           objective_id?: string | null
+          objective_weights?: Json
           options?: Json | null
           question_time_limit?: number | null
           questions?: Json | null
