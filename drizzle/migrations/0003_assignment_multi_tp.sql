@@ -1,0 +1,2 @@
+ALTER TABLE public.assignments ADD COLUMN IF NOT EXISTS objective_weights jsonb NOT NULL DEFAULT '{}'::jsonb;
+COMMENT ON COLUMN public.assignments.objective_weights IS 'Map of learning_objectives.id -> proportion (percent). Empty means use objective_id at 100%.';
