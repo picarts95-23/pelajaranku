@@ -22,3 +22,5 @@
 - [x] Verify admin dashboard, archive/restore, destructive-action confirmation and sign-out; fix confirmed errors.
 - [ ] Verify a new student submission end-to-end — blocked: Kanaya has no active assignment or quiz; existing deadlines must not be changed for testing.
 - [x] Latihan AI ala Astra: generator soal (siswa & guru), tutor interaktif dengan petunjuk & pembahasan, simpan ke bank soal.
+
+- [ ] Resize database to Micro (ci_micro) and verify health
