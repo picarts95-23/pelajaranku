@@ -2,7 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Copy, Plus, Save, Sparkles, Trash2 } from "lucide-react";
+import { Copy, Pencil, Plus, Save, Sparkles, Trash2 } from "lucide-react";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { TpFields } from "@/components/tp-fields";
 import { toast } from "sonner";
 import { DashboardShell, PageHeader, EmptyState } from "@/components/dashboard-shell";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -12,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
-import { computeTpRecap, validateWeights, type Weights } from "@/lib/tp-recap";
+import { computeTpRecap, tpShares, validateTpWeights, validateWeights, type Weights } from "@/lib/tp-recap";
 import { draftObjectives } from "@/lib/tp-ai.functions";
 
 export const Route = createFileRoute("/_authenticated/guru/rekap-tp")({
@@ -58,7 +60,7 @@ function RekapTpPage() {
       return ((await supabase.from("profiles").select("id, full_name").in("id", ids).order("full_name")).data ?? []);
     } });
   const { data: assignments = [] } = useQuery({ queryKey: ["tp-assignments", classId, subject], enabled: ready,
-    queryFn: async () => (await supabase.from("assignments").select("id, objective_id, objective_weights, assessment_kind, max_score, submissions(student_id, score, status, feedback)").eq("class_id", classId).eq("subject", subject)).data ?? [] });
+    queryFn: async () => (await supabase.from("assignments").select("id, title, description, exam_type, created_at, objective_id, objective_weights, assessment_kind, max_score, submissions(student_id, score, status, feedback)").eq("class_id", classId).eq("subject", subject)).data ?? [] });
   const { data: attendance = [] } = useQuery({ queryKey: ["rekap-attendance", classId], enabled: !!classId,
     queryFn: async () => (await supabase.from("attendance").select("student_id, status").eq("class_id", classId)).data ?? [] });
   const { data: adab = [] } = useQuery({ queryKey: ["rekap-adab", classId, subject], enabled: ready,
@@ -174,6 +176,8 @@ function RekapTpPage() {
           </div>
         </section>
 
+        <TaggedAssessments subject={subject} classId={classId} objectives={objectives} assignments={assignments as any[]} onSaved={() => qc.invalidateQueries({ queryKey: ["tp-assignments"] })} />
+
         <section className="mt-4 rounded-xl border-2 border-border bg-card p-4">
           <h2 className="font-display text-lg font-bold">Rekap Nilai & Deskripsi Rapor</h2>
           <p className="text-sm text-muted-foreground">Hubungkan tugas ke TP dan pilih jenis asesmen di form Tugas. Hanya tugas sumatif yang sudah dinilai masuk rekap.</p>
@@ -219,5 +223,58 @@ function TpRow({ o, onSave, onDelete }: { o: { id: string; code: string; descrip
       <Button size="sm" variant="outline" disabled={!dirty || !desc.trim()} onClick={() => onSave({ id: o.id, code, description: desc })}><Save className="size-4" /></Button>
       <Button size="icon" variant="ghost" aria-label="Hapus TP" onClick={onDelete}><Trash2 className="size-4 text-destructive" /></Button>
     </div>
+  );
+}
+
+type TaggedA = { id: string; title: string; description: string | null; exam_type: string | null; assessment_kind: string; objective_id: string | null; objective_weights: Record<string, number> | null };
+
+/** Lists every task and manual (tatap muka) grade in this class+subject with its TP tags, and lets the teacher re-tag them. */
+function TaggedAssessments({ subject, classId, objectives, assignments, onSaved }: {
+  subject: string; classId: string; objectives: { id: string; code: string }[]; assignments: TaggedA[]; onSaved: () => void;
+}) {
+  const [edit, setEdit] = useState<TaggedA | null>(null);
+  const [kind, setKind] = useState("sumatif");
+  const [oid, setOid] = useState("");
+  const [w, setW] = useState<Record<string, number>>({});
+  const code = (id: string) => objectives.find((o) => o.id === id)?.code ?? "TP?";
+  const open = (a: TaggedA) => { setEdit(a); setKind(a.assessment_kind); setOid(a.objective_id ?? ""); setW(a.objective_weights ?? {}); };
+  const save = useMutation({
+    mutationFn: async () => {
+      const err = validateTpWeights(w); if (err) throw new Error(err);
+      const { error } = await supabase.from("assignments").update({ assessment_kind: kind, objective_id: oid || null, objective_weights: Object.keys(w).length > 1 ? w : {} }).eq("id", edit!.id);
+      if (error) throw error;
+    },
+    onSuccess: () => { toast.success("Tagging TP diperbarui"); setEdit(null); onSaved(); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+  return (
+    <section className="mt-4 rounded-xl border-2 border-border bg-card p-4">
+      <h2 className="font-display text-lg font-bold">Penilaian & Tagging TP</h2>
+      <p className="text-sm text-muted-foreground">Semua tugas dan nilai manual (harian/UTS/UAS) di mapel ini. Tekan Edit untuk mengubah jenis asesmen, TP, dan porsinya.</p>
+      {!assignments.length ? <p className="mt-3 text-sm text-muted-foreground">Belum ada penilaian.</p> : (
+        <ul className="mt-3 grid gap-2">
+          {assignments.map((a) => {
+            const shares = tpShares(a);
+            const ids = Object.keys(shares);
+            const manual = (a.description ?? "").startsWith("[tatap-muka]");
+            return (
+              <li key={a.id} className="flex flex-wrap items-center gap-2 rounded-lg border border-border p-2">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-semibold">{a.title}</p>
+                  <p className="text-xs text-muted-foreground">{manual ? "Nilai manual" : "Tugas"}{a.exam_type ? ` · ${a.exam_type.toUpperCase()}` : ""} · {a.assessment_kind === "formatif" ? "Formatif" : "Sumatif"} · {ids.length ? ids.map((id) => ids.length > 1 ? `${code(id)} ${Math.round(shares[id] * 100)}%` : code(id)).join(", ") : "Belum ada TP"}</p>
+                </div>
+                <Button size="sm" variant="outline" onClick={() => open(a)}><Pencil className="size-4" /> Edit</Button>
+              </li>
+            );
+          })}
+        </ul>)}
+      <Dialog open={!!edit} onOpenChange={(o) => !o && setEdit(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Edit TP · {edit?.title}</DialogTitle></DialogHeader>
+          <TpFields subject={subject} classId={classId} kind={kind} objectiveId={oid} weights={w} onKind={setKind} onChange={(id, nw) => { setOid(id); setW(nw); }} />
+          <DialogFooter><Button disabled={save.isPending} onClick={() => save.mutate()}><Save className="size-4" /> Simpan</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </section>
   );
 }
