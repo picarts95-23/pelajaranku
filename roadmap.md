@@ -24,3 +24,4 @@
 - [x] Latihan AI ala Astra: generator soal (siswa & guru), tutor interaktif dengan petunjuk & pembahasan, simpan ke bank soal.
 
 - [ ] Resize database to Micro (ci_micro) and verify health
+- [ ] Generate AI practice quizzes with Gemini via own GOOGLE_API_KEY (no Lovable credits)

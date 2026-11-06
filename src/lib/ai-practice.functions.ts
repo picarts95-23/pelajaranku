@@ -65,6 +65,43 @@ Kembalikan JSON.`;
       }
     }
 
+    const geminiKey = process.env.GOOGLE_API_KEY;
+    if (geminiKey) {
+      try {
+        const parts: any[] = [{ text: prompt }];
+        if (data.file) {
+          const [, b64 = ""] = data.file.dataUrl.split(",");
+          parts.push({ inline_data: { mime_type: data.file.mime, data: b64 } });
+        }
+        const r = await fetch(
+          "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "x-goog-api-key": geminiKey },
+            body: JSON.stringify({
+              systemInstruction: { parts: [{ text: "Kamu adalah tutor dan penyusun soal yang teliti untuk sekolah di Indonesia. Pastikan setiap kunci jawaban benar secara faktual." }] },
+              contents: [{ role: "user", parts }],
+              generationConfig: { responseMimeType: "application/json", responseJsonSchema: SCHEMA },
+            }),
+          },
+        );
+        if (r.status === 429) return { questions: [], error: "Kuota Gemini sedang penuh. Tunggu sebentar lalu coba lagi." };
+        if (r.status === 400 || r.status === 401 || r.status === 403) {
+          console.error("gemini", r.status, await r.text());
+          return { questions: [], error: "API key Gemini ditolak. Periksa kembali key-nya." };
+        }
+        if (!r.ok) throw new Error(`gemini ${r.status}: ${await r.text()}`);
+        const j: any = await r.json();
+        const text = (j.candidates?.[0]?.content?.parts ?? []).map((p: any) => p.text ?? "").join("");
+        const questions = normalizePracticeQuestions(JSON.parse(text || "{}"));
+        if (!questions.length) return { questions: [], error: "AI belum menghasilkan soal yang valid. Coba lagi." };
+        return { questions: questions.slice(0, data.count) };
+      } catch (e) {
+        console.error("generatePractice gemini", e);
+        return { questions: [], error: "Gagal membuat soal. Coba lagi sebentar lagi." };
+      }
+    }
+
     try {
       const res = await generateResponse({
         model: "openai/gpt-6-astra",
