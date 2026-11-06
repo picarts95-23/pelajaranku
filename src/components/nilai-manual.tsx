@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
+import { TpFields } from "@/components/tp-fields";
+import { validateTpWeights } from "@/lib/tp-recap";
 
 /** Marker stored in assignments.description so face-to-face (offline) grade
  *  sessions can be told apart from regular app assignments. */
@@ -33,6 +35,9 @@ export function NilaiManual({ classId, subject, students }: { classId: string; s
   const [maxScore, setMaxScore] = useState(100);
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [scores, setScores] = useState<Record<string, string>>({});
+  const [kind, setKind] = useState("sumatif");
+  const [objectiveId, setObjectiveId] = useState("");
+  const [objWeights, setObjWeights] = useState<Record<string, number>>({});
 
   const { data: sessions = [] } = useQuery({
     queryKey: ["manual-sessions", classId, subject],
@@ -40,7 +45,7 @@ export function NilaiManual({ classId, subject, students }: { classId: string; s
     queryFn: async () => {
       const { data } = await supabase
         .from("assignments")
-        .select("id, title, description, exam_type, max_score, due_at, submissions(id, student_id, score)")
+        .select("id, title, description, exam_type, max_score, due_at, assessment_kind, objective_id, objective_weights, submissions(id, student_id, score)")
         .eq("class_id", classId)
         .eq("subject", subject)
         .eq("teacher_id", user!.id)
@@ -58,6 +63,9 @@ export function NilaiManual({ classId, subject, students }: { classId: string; s
     setExamType(active.exam_type);
     setMaxScore(active.max_score);
     setDate((active.due_at ?? new Date().toISOString()).slice(0, 10));
+    setKind(active.assessment_kind ?? "sumatif");
+    setObjectiveId(active.objective_id ?? "");
+    setObjWeights((active.objective_weights as Record<string, number>) ?? {});
     const map: Record<string, string> = {};
     (active.submissions ?? []).forEach((s: any) => { if (s.score != null) map[s.student_id] = String(s.score); });
     setScores(map);
@@ -70,6 +78,9 @@ export function NilaiManual({ classId, subject, students }: { classId: string; s
     setMaxScore(100);
     setDate(new Date().toISOString().slice(0, 10));
     setScores({});
+    setKind("sumatif");
+    setObjectiveId("");
+    setObjWeights({});
   }
 
   const save = useMutation({
@@ -84,11 +95,14 @@ export function NilaiManual({ classId, subject, students }: { classId: string; s
         .filter((e) => Number.isFinite(e.score));
       if (entries.length === 0) throw new Error(lang === "id" ? "Isi minimal satu nilai siswa." : "Enter at least one score.");
 
+      const tpErr = validateTpWeights(objWeights);
+      if (tpErr) throw new Error(tpErr);
+      const tp = { assessment_kind: kind, objective_id: objectiveId || null, objective_weights: Object.keys(objWeights).length > 1 ? objWeights : {} };
       let assignmentId = active?.id as string | undefined;
       const dueAt = new Date(`${date}T23:59:59`).toISOString();
       if (assignmentId) {
         const { error } = await supabase.from("assignments")
-          .update({ title: clean, exam_type: examType, max_score: maxScore, due_at: dueAt })
+          .update({ title: clean, exam_type: examType, max_score: maxScore, due_at: dueAt, ...tp })
           .eq("id", assignmentId);
         if (error) throw error;
       } else {
@@ -96,7 +110,7 @@ export function NilaiManual({ classId, subject, students }: { classId: string; s
           teacher_id: user.id, class_id: classId, subject, title: clean,
           description: `${OFFLINE_MARK} ${lang === "id" ? "Penilaian tatap muka" : "Face-to-face assessment"}`,
           exam_type: examType, max_score: maxScore, due_at: dueAt,
-          xp_reward: 0, coin_reward: 0, answer_format: "descriptive",
+          xp_reward: 0, coin_reward: 0, answer_format: "descriptive", ...tp,
         }).select("id").single();
         if (error) throw error;
         assignmentId = data.id;
@@ -127,6 +141,7 @@ export function NilaiManual({ classId, subject, students }: { classId: string; s
       qc.invalidateQueries({ queryKey: ["manual-sessions"] });
       qc.invalidateQueries({ queryKey: ["rekap-assignments"] });
       qc.invalidateQueries({ queryKey: ["laporan-assignments"] });
+      qc.invalidateQueries({ queryKey: ["tp-assignments"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -257,6 +272,9 @@ export function NilaiManual({ classId, subject, students }: { classId: string; s
               </table>
             </div>
           )}
+
+          <TpFields subject={subject} classId={classId} kind={kind} objectiveId={objectiveId} weights={objWeights}
+            onKind={setKind} onChange={(id, w) => { setObjectiveId(id); setObjWeights(w); }} />
 
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="guru" size="sm" disabled={save.isPending} onClick={() => save.mutate()}>
