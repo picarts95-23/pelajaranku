@@ -26,7 +26,7 @@ Aturan: setiap TP diawali kata kerja operasional terukur (mis. menjelaskan, meng
       let text = "";
       const geminiKey = process.env.GOOGLE_API_KEY;
       if (geminiKey) {
-        const r = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent", {
+        const r = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent", {
           method: "POST",
           headers: { "Content-Type": "application/json", "x-goog-api-key": geminiKey },
           body: JSON.stringify({

@@ -66,7 +66,7 @@ export const askAssistant = createServerFn({ method: "POST" })
     if (!isGuru) throw new Error("FORBIDDEN");
 
     const openaiKey = process.env.OPENAI_API_KEY;
-    const geminiKey = process.env.GEMINI_API_KEY;
+    const geminiKey = (process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY);
     const lovableKey = process.env.LOVABLE_API_KEY;
 
     let reply = "";
@@ -80,7 +80,7 @@ export const askAssistant = createServerFn({ method: "POST" })
       }
     } else {
       if (geminiKey) {
-        reply = await chatGeminiNative(geminiKey, "gemini-2.0-flash", data.messages);
+        reply = await chatGeminiNative(geminiKey, "gemini-3.5-flash", data.messages);
       } else if (lovableKey) {
         reply = await chatOpenAiCompatible("https://ai.gateway.lovable.dev/v1", lovableKey, "google/gemini-3-flash-preview", data.messages);
       } else {
