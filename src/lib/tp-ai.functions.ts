@@ -23,13 +23,35 @@ Kelas/Fase: ${data.grade || "-"}
 Materi/Capaian Pembelajaran: ${data.topic || "-"}
 Aturan: setiap TP diawali kata kerja operasional terukur (mis. menjelaskan, menganalisis, menghitung), satu kalimat ringkas tanpa kata "Peserta didik mampu" dan tanpa titik di akhir. "code" berformat TP1, TP2, dst. Kembalikan JSON.`;
     try {
-      const res = await generateResponse({
-        model: "openai/gpt-6-astra",
-        instructions: "Kamu ahli kurikulum sekolah Indonesia.",
-        input: [{ type: "message", role: "user", content: [{ type: "input_text", text: prompt }] }],
-        text: { format: { type: "json_schema", name: "tp_draft", strict: true, schema: SCHEMA as any } },
-      });
-      const text = ((res as any).output ?? []).filter((o: any) => o.type === "message").flatMap((o: any) => o.content ?? []).filter((c: any) => c.type === "output_text").map((c: any) => c.text).join("");
+      let text = "";
+      const geminiKey = process.env.GOOGLE_API_KEY;
+      if (geminiKey) {
+        const r = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-goog-api-key": geminiKey },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: "Kamu ahli kurikulum sekolah Indonesia." }] },
+            contents: [{ role: "user", parts: [{ text: prompt }] }],
+            generationConfig: { responseMimeType: "application/json", responseJsonSchema: SCHEMA },
+          }),
+        });
+        if (r.status === 429) return { objectives: [], error: "Kuota Gemini sedang penuh. Coba lagi sebentar." };
+        if (r.status === 400 || r.status === 401 || r.status === 403) {
+          console.error("draftObjectives gemini", r.status, await r.text());
+          return { objectives: [], error: "API key Gemini ditolak. Periksa kembali key-nya." };
+        }
+        if (!r.ok) throw new Error(`gemini ${r.status}: ${await r.text()}`);
+        const j: any = await r.json();
+        text = (j.candidates?.[0]?.content?.parts ?? []).map((p: any) => p.text ?? "").join("");
+      } else {
+        const res = await generateResponse({
+          model: "openai/gpt-6-astra",
+          instructions: "Kamu ahli kurikulum sekolah Indonesia.",
+          input: [{ type: "message", role: "user", content: [{ type: "input_text", text: prompt }] }],
+          text: { format: { type: "json_schema", name: "tp_draft", strict: true, schema: SCHEMA as any } },
+        });
+        text = ((res as any).output ?? []).filter((o: any) => o.type === "message").flatMap((o: any) => o.content ?? []).filter((c: any) => c.type === "output_text").map((c: any) => c.text).join("");
+      }
       const list = (JSON.parse(text || "{}").objectives ?? [])
         .map((o: any) => ({ code: String(o.code ?? "").trim().slice(0, 20), description: String(o.description ?? "").trim().slice(0, 500) }))
         .filter((o: any) => o.description);
