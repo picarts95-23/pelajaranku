@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
+import { TpFields } from "@/components/tp-fields";
+import { validateTpWeights } from "@/lib/tp-recap";
 
 /** Marker stored in assignments.description for face-to-face GROUP work
  *  sessions, followed by the JSON group structure. */
@@ -54,6 +56,9 @@ export function NilaiKelompok({ classId, subject, students }: { classId: string;
   const [maxScore, setMaxScore] = useState(100);
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [groups, setGroups] = useState<Group[]>([newGroup(1)]);
+  const [kind, setKind] = useState("sumatif");
+  const [objectiveId, setObjectiveId] = useState("");
+  const [objWeights, setObjWeights] = useState<Record<string, number>>({});
 
   const { data: sessions = [] } = useQuery({
     queryKey: ["group-sessions", classId, subject],
@@ -61,7 +66,7 @@ export function NilaiKelompok({ classId, subject, students }: { classId: string;
     queryFn: async () => {
       const { data } = await supabase
         .from("assignments")
-        .select("id, title, description, exam_type, max_score, due_at, submissions(id, student_id, score)")
+        .select("id, title, description, exam_type, max_score, due_at, assessment_kind, objective_id, objective_weights, submissions(id, student_id, score)")
         .eq("class_id", classId)
         .eq("subject", subject)
         .eq("teacher_id", user!.id)
@@ -79,6 +84,9 @@ export function NilaiKelompok({ classId, subject, students }: { classId: string;
     setExamType(active.exam_type);
     setMaxScore(active.max_score);
     setDate((active.due_at ?? new Date().toISOString()).slice(0, 10));
+    setKind(active.assessment_kind ?? "sumatif");
+    setObjectiveId(active.objective_id ?? "");
+    setObjWeights((active.objective_weights as Record<string, number>) ?? {});
     let parsed: Group[] | null = null;
     try {
       const raw = String(active.description ?? "").slice(GROUP_MARK.length).trim();
@@ -95,6 +103,9 @@ export function NilaiKelompok({ classId, subject, students }: { classId: string;
     setMaxScore(100);
     setDate(new Date().toISOString().slice(0, 10));
     setGroups([newGroup(1)]);
+    setKind("sumatif");
+    setObjectiveId("");
+    setObjWeights({});
   }
 
   const nameOf = (id: string) => students.find((s) => s.id === id)?.full_name ?? "—";
@@ -143,19 +154,22 @@ export function NilaiKelompok({ classId, subject, students }: { classId: string;
         }
       }
 
+      const tpErr = validateTpWeights(objWeights);
+      if (tpErr) throw new Error(tpErr);
+      const tp = { assessment_kind: kind, objective_id: objectiveId || null, objective_weights: Object.keys(objWeights).length > 1 ? objWeights : {} };
       const description = `${GROUP_MARK} ${JSON.stringify({ groups: filled })}`;
       const dueAt = new Date(`${date}T23:59:59`).toISOString();
       let assignmentId = active?.id as string | undefined;
       if (assignmentId) {
         const { error } = await supabase.from("assignments")
-          .update({ title: clean, description, exam_type: examType, max_score: maxScore, due_at: dueAt })
+          .update({ title: clean, description, exam_type: examType, max_score: maxScore, due_at: dueAt, ...tp })
           .eq("id", assignmentId);
         if (error) throw error;
       } else {
         const { data, error } = await supabase.from("assignments").insert({
           teacher_id: user.id, class_id: classId, subject, title: clean, description,
           exam_type: examType, max_score: maxScore, due_at: dueAt,
-          xp_reward: 0, coin_reward: 0, answer_format: "descriptive",
+          xp_reward: 0, coin_reward: 0, answer_format: "descriptive", ...tp,
         }).select("id").single();
         if (error) throw error;
         assignmentId = data.id;
@@ -385,6 +399,9 @@ export function NilaiKelompok({ classId, subject, students }: { classId: string;
               </Button>
             </div>
           )}
+
+          <TpFields subject={subject} classId={classId} kind={kind} objectiveId={objectiveId} weights={objWeights}
+            onKind={setKind} onChange={(id, w) => { setObjectiveId(id); setObjWeights(w); }} />
 
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="guru" size="sm" disabled={save.isPending} onClick={() => save.mutate()}>
