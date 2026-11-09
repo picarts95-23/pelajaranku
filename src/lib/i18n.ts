@@ -237,7 +237,7 @@ export const translations = {
   // Subjects, materials, recap, AI
   navSubjects: { id: "Mata Pelajaran", en: "Subjects", ar: "المواد" },
   navMaterials: { id: "Bagikan Materi", en: "Share Materials", ar: "مشاركة المواد" },
-  navRecap: { id: "Rekap Nilai", en: "Grade Recap", ar: "ملخص الدرجات" },
+  navRecap: { id: "Rekap Nilai & TP", en: "Grades & Objectives", ar: "الدرجات والأهداف" },
   navRecapTp: { id: "Rekap per TP", en: "Recap per Objective", ar: "ملخص حسب الهدف" },
   mySubjects: { id: "Mapel Saya", en: "My Subjects", ar: "موادي" },
   manageSubjects: { id: "Kelola mata pelajaran yang kamu ampu", en: "Manage the subjects you teach", ar: "إدارة المواد التي تدرّسها" },

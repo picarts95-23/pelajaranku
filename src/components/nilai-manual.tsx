@@ -187,7 +187,7 @@ export function NilaiManual({ classId, subject, students }: { classId: string; s
           {/* Pintasan jenis penilaian — memudahkan guru langsung membuat UTS/UAS. */}
           <div className="flex flex-wrap gap-2">
             {EXAM_TYPES.map((x) => {
-              const label = x === "harian" ? (lang === "id" ? "Harian (20%)" : "Daily (20%)") : x === "uts" ? "UTS (20%)" : "UAS (30%)";
+              const label = x === "harian" ? (lang === "id" ? "Harian" : "Daily") : x === "uts" ? "UTS" : "UAS";
               const count = (sessions as any[]).filter((s) => s.exam_type === x).length;
               return (
                 <button
@@ -226,7 +226,7 @@ export function NilaiManual({ classId, subject, students }: { classId: string; s
               <Select value={examType} onValueChange={setExamType}>
                 <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {EXAM_TYPES.map((x) => <SelectItem key={x} value={x}>{x === "harian" ? (lang === "id" ? "Harian (20%)" : "Daily (20%)") : x === "uts" ? "UTS (20%)" : "UAS (30%)"}</SelectItem>)}
+                  {EXAM_TYPES.map((x) => <SelectItem key={x} value={x}>{x === "harian" ? (lang === "id" ? "Harian" : "Daily") : x === "uts" ? "UTS" : "UAS"}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
