@@ -23,9 +23,9 @@
 - [ ] Verify a new student submission end-to-end — blocked: Kanaya has no active assignment or quiz; existing deadlines must not be changed for testing.
 - [x] Latihan AI ala Astra: generator soal (siswa & guru), tutor interaktif dengan petunjuk & pembahasan, simpan ke bank soal.
 
-- [ ] Resize database to Micro (ci_micro) and verify health
+- [ ] Resize database to Micro (ci_micro) and verify health — blocked: hosted database is paused because workspace Cloud credits are exhausted.
 - [x] TP draft AI also on Gemini
 - [x] Generate AI practice quizzes with Gemini via own GOOGLE_API_KEY (no Lovable credits)
-- [ ] Unify Rekap Nilai and Rekap TP around per-student TP grades with compact controls.
-- [ ] Persist class-linked AI practice scores and feedback as additional grades.
-- [ ] Automatically add completed AI practice feedback to the student journal and verify the flow.
+- [x] Unify Rekap Nilai and Rekap TP around per-student TP grades with compact controls.
+- [ ] Apply pending AI practice schema, then verify additional-grade persistence — blocked: workspace Cloud credits must be added to resume the hosted database.
+- [ ] Verify automatic AI practice student-journal entries end to end — blocked by the same paused hosted database.
