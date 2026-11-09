@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { BossArena, BattleOutcome, type BattleFx } from "@/components/boss-battle";
 import { BOSS_MAX_HP, HERO_MAX_HP, heroDamage, hitDamage, pickBoss, practiceExp } from "@/lib/boss-battle";
 import { useServerFn } from "@tanstack/react-start";
@@ -104,7 +104,6 @@ export function PracticeTutor({ questions, onRestart, meta, classId, persist = f
   const saveAttempt = useServerFn(savePracticeAttempt);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [saveMessage, setSaveMessage] = useState("");
-  const saveStarted = useRef(false);
   const [clientId] = useState(() => globalThis.crypto?.randomUUID?.() ?? "00000000-4000-4000-8000-000000000000");
   const [idx, setIdx] = useState(0);
   const [hints, setHints] = useState(0);
@@ -119,21 +118,23 @@ export function PracticeTutor({ questions, onRestart, meta, classId, persist = f
   const heroHp = Math.max(1, HERO_MAX_HP - results.filter((r) => !r.correct).length * heroDamage(n));
   const done = results.length === questions.length && chosen === null && idx >= questions.length;
 
-  useEffect(() => {
-    if (!done || !persist || !meta || !classId || saveStarted.current) return;
-    saveStarted.current = true;
+  const persistResult = useCallback(async () => {
+    if (!meta || !classId || saveState === "saving" || saveState === "saved") return;
     setSaveState("saving");
-    saveAttempt({ data: { clientId, classId, ...meta, questions, results } })
-      .then(() => {
-        setSaveState("saved");
-        setSaveMessage("Nilai tambahan dan umpan balik tersimpan. Catatan latihan juga masuk ke Jurnal siswa.");
-        onSaved?.();
-      })
-      .catch((e) => {
-        setSaveState("error");
-        setSaveMessage(e instanceof Error ? e.message : "Hasil belum tersimpan. Muat ulang halaman lalu coba lagi.");
-      });
-  }, [done, persist, meta, classId, clientId, questions, results, saveAttempt, onSaved]);
+    try {
+      await saveAttempt({ data: { clientId, classId, ...meta, questions, results } });
+      setSaveState("saved");
+      setSaveMessage("Nilai tambahan dan umpan balik tersimpan. Catatan latihan juga masuk ke Jurnal siswa.");
+      onSaved?.();
+    } catch (e) {
+      setSaveState("error");
+      setSaveMessage(e instanceof Error ? e.message : "Hasil belum tersimpan.");
+    }
+  }, [meta, classId, saveState, saveAttempt, clientId, questions, results, onSaved]);
+
+  useEffect(() => {
+    if (done && persist && saveState === "idle") void persistResult();
+  }, [done, persist, saveState, persistResult]);
 
   if (done || idx >= questions.length) {
     const total = results.reduce((s, r) => s + practicePoints(r.correct, r.hints), 0);
@@ -149,6 +150,7 @@ export function PracticeTutor({ questions, onRestart, meta, classId, persist = f
         <p>{correctCount} dari {questions.length} benar</p>
         {persist && <div className={cn("rounded-xl p-3 text-sm", saveState === "saved" ? "bg-quest/10 text-quest" : saveState === "error" ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground")}>
           {saveState === "saving" || saveState === "idle" ? "Menyimpan nilai tambahan dan jurnal..." : saveMessage}
+          {saveState === "error" && <div className="mt-2"><Button size="sm" variant="outline" onClick={() => void persistResult()}>Coba simpan lagi</Button></div>}
         </div>}
         {weak.length > 0 && (
           <div className="text-left rounded-xl bg-muted p-4"><p className="font-semibold mb-1">Konsep yang perlu diulang:</p>
