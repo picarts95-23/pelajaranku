@@ -3,7 +3,6 @@ import {
   LogOut, Compass, LayoutDashboard, BookOpen, Users, ScrollText, CalendarCheck,
   NotebookPen, CalendarDays, Database, Trophy, Sword, GraduationCap, Award, Menu, X, UserCircle2, History,
   Library, BarChart3, ArrowLeft, BookOpenCheck, Megaphone, Inbox, HelpCircle, Sparkles,
-  Target,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -27,7 +26,6 @@ const GURU_NAV: NavItem[] = [
   { to: "/guru/rpp", key: "navRPP", icon: NotebookPen },
   { to: "/guru/tugas", key: "navAssignments", icon: ScrollText },
   { to: "/guru/rekap", key: "navRecap", icon: BarChart3 },
-  { to: "/guru/rekap-tp", key: "navRecapTp", icon: Target },
   { to: "/guru/presensi", key: "navAttendance", icon: CalendarCheck },
   { to: "/guru/jurnal", key: "navJournal", icon: NotebookPen },
   { to: "/guru/mutabaah", key: "navMutabaah", icon: BookOpenCheck },
