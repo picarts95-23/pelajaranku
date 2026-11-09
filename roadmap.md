@@ -26,3 +26,6 @@
 - [ ] Resize database to Micro (ci_micro) and verify health
 - [x] TP draft AI also on Gemini
 - [x] Generate AI practice quizzes with Gemini via own GOOGLE_API_KEY (no Lovable credits)
+- [ ] Unify Rekap Nilai and Rekap TP around per-student TP grades with compact controls.
+- [ ] Persist class-linked AI practice scores and feedback as additional grades.
+- [ ] Automatically add completed AI practice feedback to the student journal and verify the flow.

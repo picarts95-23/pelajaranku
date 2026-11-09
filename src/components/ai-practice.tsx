@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { BossArena, BattleOutcome, type BattleFx } from "@/components/boss-battle";
 import { BOSS_MAX_HP, HERO_MAX_HP, heroDamage, hitDamage, pickBoss, practiceExp } from "@/lib/boss-battle";
 import { useServerFn } from "@tanstack/react-start";
@@ -12,6 +12,7 @@ import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { generatePractice } from "@/lib/ai-practice.functions";
+import { savePracticeAttempt } from "@/lib/practice-result.functions";
 import {
   MAX_FILE_BYTES, MAX_PRACTICE_COUNT, practicePoints,
   type PracticeFile, type PracticeLevel, type PracticeQuestion,
@@ -20,7 +21,7 @@ import { cn } from "@/lib/utils";
 
 export type PracticeMeta = { subject: string; topic: string; level: PracticeLevel };
 
-export function PracticeGenerator({ onReady }: { onReady: (qs: PracticeQuestion[], meta: PracticeMeta) => void }) {
+export function PracticeGenerator({ onReady, subjectOptions = [] }: { onReady: (qs: PracticeQuestion[], meta: PracticeMeta) => void; subjectOptions?: string[] }) {
   const gen = useServerFn(generatePractice);
   const [subject, setSubject] = useState("");
   const [topic, setTopic] = useState("");
@@ -56,7 +57,10 @@ export function PracticeGenerator({ onReady }: { onReady: (qs: PracticeQuestion[
   return (
     <div className="rounded-2xl border bg-card p-5 shadow-sm space-y-4">
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-1.5"><Label>Mata pelajaran</Label><Input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="cth. Matematika" /></div>
+        <div className="space-y-1.5"><Label>Mata pelajaran</Label>{subjectOptions.length ? (
+          <Select value={subject} onValueChange={setSubject}><SelectTrigger><SelectValue placeholder="Pilih mata pelajaran" /></SelectTrigger>
+            <SelectContent>{subjectOptions.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select>
+        ) : <Input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="cth. Matematika" />}</div>
         <div className="space-y-1.5"><Label>Topik materi</Label><Input value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="cth. Pecahan senilai" /></div>
         <div className="space-y-1.5"><Label>Jumlah soal</Label>
           <Input type="number" min={1} max={MAX_PRACTICE_COUNT} value={count} onChange={(e) => setCount(Math.min(MAX_PRACTICE_COUNT, Math.max(1, Number(e.target.value) || 1)))} /></div>
@@ -89,7 +93,19 @@ export function PracticeGenerator({ onReady }: { onReady: (qs: PracticeQuestion[
 
 type Result = { chosen: number; correct: boolean; hints: number };
 
-export function PracticeTutor({ questions, onRestart }: { questions: PracticeQuestion[]; onRestart: () => void }) {
+export function PracticeTutor({ questions, onRestart, meta, classId, persist = false, onSaved }: {
+  questions: PracticeQuestion[];
+  onRestart: () => void;
+  meta?: PracticeMeta;
+  classId?: string;
+  persist?: boolean;
+  onSaved?: () => void;
+}) {
+  const saveAttempt = useServerFn(savePracticeAttempt);
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [saveMessage, setSaveMessage] = useState("");
+  const saveStarted = useRef(false);
+  const [clientId] = useState(() => globalThis.crypto?.randomUUID?.() ?? "00000000-4000-4000-8000-000000000000");
   const [idx, setIdx] = useState(0);
   const [hints, setHints] = useState(0);
   const [chosen, setChosen] = useState<number | null>(null);
@@ -103,6 +119,22 @@ export function PracticeTutor({ questions, onRestart }: { questions: PracticeQue
   const heroHp = Math.max(1, HERO_MAX_HP - results.filter((r) => !r.correct).length * heroDamage(n));
   const done = results.length === questions.length && chosen === null && idx >= questions.length;
 
+  useEffect(() => {
+    if (!done || !persist || !meta || !classId || saveStarted.current) return;
+    saveStarted.current = true;
+    setSaveState("saving");
+    saveAttempt({ data: { clientId, classId, ...meta, questions, results } })
+      .then(() => {
+        setSaveState("saved");
+        setSaveMessage("Nilai tambahan dan umpan balik tersimpan. Catatan latihan juga masuk ke Jurnal siswa.");
+        onSaved?.();
+      })
+      .catch((e) => {
+        setSaveState("error");
+        setSaveMessage(e instanceof Error ? e.message : "Hasil belum tersimpan. Muat ulang halaman lalu coba lagi.");
+      });
+  }, [done, persist, meta, classId, clientId, questions, results, saveAttempt, onSaved]);
+
   if (done || idx >= questions.length) {
     const total = results.reduce((s, r) => s + practicePoints(r.correct, r.hints), 0);
     const score = Math.round(total / questions.length);
@@ -115,6 +147,9 @@ export function PracticeTutor({ questions, onRestart }: { questions: PracticeQue
         <p className="text-sm text-muted-foreground">Skor latihan</p>
         <p className="font-display text-5xl font-bold text-primary">{score}</p>
         <p>{correctCount} dari {questions.length} benar</p>
+        {persist && <div className={cn("rounded-xl p-3 text-sm", saveState === "saved" ? "bg-quest/10 text-quest" : saveState === "error" ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground")}>
+          {saveState === "saving" || saveState === "idle" ? "Menyimpan nilai tambahan dan jurnal..." : saveMessage}
+        </div>}
         {weak.length > 0 && (
           <div className="text-left rounded-xl bg-muted p-4"><p className="font-semibold mb-1">Konsep yang perlu diulang:</p>
             <ul className="list-disc ml-5 text-sm">{weak.map((w) => <li key={w}>{w}</li>)}</ul></div>
