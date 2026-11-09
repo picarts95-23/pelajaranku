@@ -205,6 +205,7 @@ export function NilaiKelompok({ classId, subject, students }: { classId: string;
       qc.invalidateQueries({ queryKey: ["group-sessions"] });
       qc.invalidateQueries({ queryKey: ["rekap-assignments"] });
       qc.invalidateQueries({ queryKey: ["laporan-assignments"] });
+      qc.invalidateQueries({ queryKey: ["tp-assignments"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -221,6 +222,7 @@ export function NilaiKelompok({ classId, subject, students }: { classId: string;
       qc.invalidateQueries({ queryKey: ["group-sessions"] });
       qc.invalidateQueries({ queryKey: ["rekap-assignments"] });
       qc.invalidateQueries({ queryKey: ["laporan-assignments"] });
+      qc.invalidateQueries({ queryKey: ["tp-assignments"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
