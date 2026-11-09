@@ -258,7 +258,7 @@ export function NilaiKelompok({ classId, subject, students }: { classId: string;
                 <SelectContent>
                   {EXAM_TYPES.map((x) => (
                     <SelectItem key={x} value={x}>
-                      {x === "harian" ? (lang === "id" ? "Harian (20%)" : "Daily (20%)") : x === "uts" ? "UTS (20%)" : "UAS (30%)"}
+                      {x === "harian" ? (lang === "id" ? "Harian" : "Daily") : x === "uts" ? "UTS" : "UAS"}
                     </SelectItem>
                   ))}
                 </SelectContent>
