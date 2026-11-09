@@ -39,7 +39,9 @@ export const savePracticeAttempt = createServerFn({ method: "POST" })
       feedback: result.feedback,
       answers: result.answers,
     };
-    const db = context.supabase as any;
+    // Only the validated server flow may create attempts and trigger the teacher journal.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const db = supabaseAdmin as any;
     const { data: saved, error } = await db.from("practice_attempts").insert(row).select("id").single();
     if (error) {
       if (error.code === "23505") {
