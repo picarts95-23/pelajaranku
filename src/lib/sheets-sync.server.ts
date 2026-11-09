@@ -19,6 +19,7 @@ const TAB_TITLES = [
   "Presensi",
   "Nilai Kehadiran",
   "Rekap Nilai",
+  "Latihan AI",
   "Tugas",
   "Pengumpulan",
   "Tidak Mengerjakan",
@@ -195,7 +196,7 @@ async function buildTeacherTabs(teacherId: string): Promise<Tabs> {
   // Assignments owned by this teacher.
   const { data: assignmentsRaw } = await supabaseAdmin
     .from("assignments")
-    .select("id, class_id, title, subject, exam_type, halaqoh_kind, max_score, due_at, created_at")
+    .select("id, class_id, title, subject, exam_type, halaqoh_kind, max_score, due_at, created_at, objective_id, objective_weights, assessment_kind")
     .eq("teacher_id", teacherId)
     .order("created_at", { ascending: true });
   const assignments = (assignmentsRaw ?? []) as Record<string, unknown>[];
@@ -210,6 +211,13 @@ async function buildTeacherTabs(teacherId: string): Promise<Tabs> {
   // Adab, materials, mutaba'ah owned by teacher.
   const { data: adab } = await supabaseAdmin
     .from("adab_scores").select("student_id, class_id, subject, score, updated_at").eq("teacher_id", teacherId);
+  const { data: gradeWeights } = await supabaseAdmin
+    .from("grade_weights").select("sumatif, adab, absensi").eq("teacher_id", teacherId).maybeSingle();
+  const { data: objectives } = await supabaseAdmin
+    .from("learning_objectives").select("id, class_id, subject, code, description, sort_order").eq("teacher_id", teacherId).order("sort_order", { ascending: true });
+  const practiceAttempts = classIds.length
+    ? (((await (supabaseAdmin as any).from("practice_attempts").select("class_id, student_id, subject, topic, score, correct_count, question_count, feedback, weak_concepts, created_at").in("class_id", classIds).order("created_at", { ascending: false })).data) ?? [])
+    : [];
   const { data: materials } = await supabaseAdmin
     .from("materials").select("class_id, subject, title, description, content, link, media_type, created_at").eq("teacher_id", teacherId).order("created_at", { ascending: true });
   const { data: mutabaah } = await supabaseAdmin
@@ -220,7 +228,7 @@ async function buildTeacherTabs(teacherId: string): Promise<Tabs> {
   // Teaching journals & weekly lesson plans (RPP).
   const { data: journals } = await supabaseAdmin
     .from("journals")
-    .select("date, class_id, subject, topic, notes, created_at")
+    .select("date, class_id, student_id, subject, topic, notes, created_at")
     .eq("teacher_id", teacherId).order("date", { ascending: true });
   const { data: lessonPlans } = await supabaseAdmin
     .from("lesson_plans")
@@ -274,8 +282,14 @@ async function buildTeacherTabs(teacherId: string): Promise<Tabs> {
   tabs["Rekap Nilai"] = buildGradeRecap({
     classes: classes as Parameters<typeof buildGradeRecap>[0]["classes"],
     enrollments, profiles, assignments: assignments as Parameters<typeof buildGradeRecap>[0]["assignments"],
-    submissions, attendance, adab: adab ?? [], mutabaah: mutabaah ?? [], materials: materials ?? [],
+    submissions, attendance, adab: adab ?? [], materials: materials ?? [],
+    objectives: objectives ?? [], weights: gradeWeights ?? undefined, practiceAttempts,
   });
+
+  tabs["Latihan AI"] = [
+    ["Tanggal", "Kelas", "Nama Siswa", "Mata Pelajaran", "Topik", "Nilai Tambahan", "Jawaban Benar", "Umpan Balik", "Konsep yang Perlu Diulang"],
+    ...practiceAttempts.map((a: any) => [cell(a.created_at), cName(a.class_id), studentNameById.get(a.student_id) ?? a.student_id, cell(a.subject), cell(a.topic), cell(a.score), `${a.correct_count}/${a.question_count}`, cell(a.feedback), Array.isArray(a.weak_concepts) ? a.weak_concepts.join(", ") : ""]),
+  ];
 
   tabs["Kelas"] = [
     ["Nama Kelas", "Kode", "Mata Pelajaran", "Tahun Ajaran", "Dibuat"],
@@ -451,8 +465,8 @@ async function buildTeacherTabs(teacherId: string): Promise<Tabs> {
 
 
   tabs["Jurnal"] = [
-    ["Tanggal", "Kelas", "Mata Pelajaran", "Topik/Kegiatan", "Catatan", "Dibuat"],
-    ...((journals ?? []) as any[]).map((j) => [cell(j.date), cName(j.class_id), cell(j.subject), cell(j.topic), cell(j.notes), cell(j.created_at)]),
+    ["Tanggal", "Kelas", "Nama Siswa", "Mata Pelajaran", "Topik/Kegiatan", "Catatan", "Dibuat"],
+    ...((journals ?? []) as any[]).map((j) => [cell(j.date), cName(j.class_id), j.student_id ? studentNameById.get(j.student_id) ?? j.student_id : "Semua siswa", cell(j.subject), cell(j.topic), cell(j.notes), cell(j.created_at)]),
   ];
 
   tabs["RPP Pekanan"] = [
