@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
-import { cleanObjectiveScores, type DevelopmentAttempt, type ProgressRecord } from "@/lib/student-progress";
+import { buildDevelopmentSummary, cleanObjectiveScores, type DevelopmentAttempt, type ProgressRecord } from "@/lib/student-progress";
 import type { Objective, TpRow } from "@/lib/tp-recap";
 
 export function StudentProgressEditor({ classId, subject, row, objectives, record, attempts, open, onOpenChange, onSaved }: {
