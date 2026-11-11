@@ -24,3 +24,18 @@ test("recap uses TP grades and keeps AI practice as an additional grade outside 
   expect(table[1][8]).toBe("Ulangi konsep");
   expect(table[1][9]).toBe("90");
 });
+
+test("backup uses manual per-student TP grades and saved report descriptions", () => {
+  const table = buildGradeRecap({
+    classes: [{ id: "c", name: "7B", subjects: ["IPA"] }],
+    enrollments: [{ class_id: "c", student_id: "s" }], profiles: [{ id: "s", full_name: "Siswa" }],
+    attendance: [], adab: [], materials: [], weights: { sumatif: 100, adab: 0, absensi: 0 },
+    objectives: [{ id: "t1", class_id: "c", subject: "IPA", code: "TP1", description: "Memahami energi" }],
+    assignments: [{ id: "a", class_id: "c", subject: "IPA", objective_id: "t1", max_score: 100 }],
+    submissions: [{ assignment_id: "a", student_id: "s", score: 70, status: "graded" }],
+    progressRecords: [{ class_id: "c", subject: "IPA", student_id: "s", objective_scores: { t1: 95 }, report_description: "Perkembangan sangat baik." }],
+  });
+  expect(table[1][3]).toBe("TP1: 95");
+  expect(table[1][9]).toBe("95");
+  expect(table[1][11]).toBe("Perkembangan sangat baik.");
+});

@@ -31,6 +31,7 @@
 - [x] Unify Rekap Nilai and Rekap TP around per-student TP grades with compact controls.
 - [x] Apply AI practice schema for additional grades and automatic journal triggers.
 - [ ] Verify a newly completed AI practice saves its additional grade and automatic student-journal entry end to end.
-- [ ] Rekap catatan perkembangan siswa dari Latihan AI dan nilai lain di Dokumen Pembelajaran.
-- [ ] Edit manual rekap nilai per siswa dan TP dari Dokumen Pembelajaran/Rekap.
-- [ ] Sediakan catatan deskripsi rapor dari akumulasi penilaian dan TP di Dokumen Pembelajaran.
+- [x] Rekap catatan perkembangan siswa dari Latihan AI dan nilai lain di Dokumen Pembelajaran.
+- [x] Edit manual rekap nilai per siswa dan TP dari Dokumen Pembelajaran/Rekap.
+- [x] Sediakan catatan deskripsi rapor dari akumulasi penilaian dan TP di Dokumen Pembelajaran.
+- [ ] Verify teacher UI save/readback for progress records — blocked: automatic session is admin; do not select another user's teacher account without confirmation.
