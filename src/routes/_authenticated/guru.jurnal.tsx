@@ -20,14 +20,15 @@ import { ProgramPanel } from "@/components/program-docs";
 import { hasProgramPrefill, takeProgramPrefill } from "@/lib/program-templates";
 import { AiPasteDialog } from "@/components/ai-paste-dialog";
 import { PROMPT_JURNAL, parseJournalEntries, type ImportJournalEntry } from "@/lib/doc-import";
+import { StudentProgressDocs } from "@/components/student-progress-docs";
 
 export const Route = createFileRoute("/_authenticated/guru/jurnal")({
   head: () => ({
     meta: [
       { title: "Dokumen Pembelajaran Guru · Pelajaranku" },
-      { name: "description", content: "Kelola Program Tahunan, Program Semester, dan Jurnal Guru dalam satu tempat." },
+      { name: "description", content: "Kelola dokumen pembelajaran, jurnal, catatan perkembangan siswa, dan deskripsi rapor dalam satu tempat." },
       { property: "og:title", content: "Dokumen Pembelajaran · Pelajaranku" },
-      { property: "og:description", content: "Program Tahunan, Program Semester, dan Jurnal Guru yang bisa diedit kapan saja." },
+      { property: "og:description", content: "Dokumen pembelajaran, jurnal, perkembangan siswa, dan deskripsi rapor yang bisa diedit kapan saja." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
 
@@ -87,18 +88,20 @@ function GuruDokumenPage() {
       <PageHeader
         title={lang === "id" ? "Dokumen Pembelajaran" : "Learning Documents"}
         subtitle={lang === "id"
-          ? "Program Tahunan, Program Semester, dan Jurnal Guru — semua bisa diedit kembali."
-          : "Annual program, semester program, and teaching journal — all editable anytime."}
+          ? "Program, jurnal, catatan perkembangan siswa, dan deskripsi rapor — semua bisa diedit kembali."
+          : "Programs, journals, student progress notes, and report descriptions — all editable anytime."}
       />
       <Tabs defaultValue={defaultTab}>
         <TabsList className="flex w-full flex-wrap">
           <TabsTrigger value="prota">{lang === "id" ? "Program Tahunan" : "Annual"}</TabsTrigger>
           <TabsTrigger value="prosem">{lang === "id" ? "Program Semester" : "Semester"}</TabsTrigger>
           <TabsTrigger value="jurnal">{lang === "id" ? "Jurnal Guru" : "Journal"}</TabsTrigger>
+          <TabsTrigger value="perkembangan">{lang === "id" ? "Perkembangan & Rapor" : "Progress & Reports"}</TabsTrigger>
         </TabsList>
         <TabsContent value="prota" className="mt-4"><ProgramPanel kind="annual" /></TabsContent>
         <TabsContent value="prosem" className="mt-4"><ProgramPanel kind="semester" /></TabsContent>
         <TabsContent value="jurnal" className="mt-4"><JournalSection /></TabsContent>
+        <TabsContent value="perkembangan" className="mt-4"><StudentProgressDocs /></TabsContent>
       </Tabs>
     </DashboardShell>
   );

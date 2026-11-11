@@ -6,7 +6,7 @@ describe("backup Google Sheets lengkap", () => {
     expect(BACKUP_TAB_TITLES).toEqual(expect.arrayContaining([
       "Kelas", "Siswa", "Presensi", "Rekap Nilai", "Latihan AI", "Tugas",
       "Soal Tugas", "Pengumpulan", "Revisi Nilai", "Tujuan Pembelajaran",
-      "Mutaba'ah", "Materi", "Pembacaan Materi", "Jurnal", "Pengumuman",
+      "Perkembangan & Rapor", "Mutaba'ah", "Materi", "Pembacaan Materi", "Jurnal", "Pengumuman",
       "Komentar Pengumuman", "Reaksi Pengumuman", "Bank Soal", "Transaksi XP",
       "Aktivitas Kelas", "Status Siswa", "Reaksi Teman", "Kalender Google",
     ]));

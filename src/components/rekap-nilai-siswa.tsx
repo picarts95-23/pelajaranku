@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { computeTpRecap, type Weights } from "@/lib/tp-recap";
+import { applyStudentProgress, type ProgressRecord } from "@/lib/student-progress";
 
 function predicate(score: number | null, lang: string) {
   if (score === null) return { label: "—", tone: "text-muted-foreground", bar: "bg-muted" };
@@ -28,9 +29,9 @@ export function RekapNilaiSiswa({ compact = false }: { compact?: boolean }) {
     queryFn: async () => {
       const { data: en } = await supabase.from("class_enrollments").select("class_id").eq("student_id", user!.id);
       const classIds = Array.from(new Set((en ?? []).map((e) => e.class_id)));
-      if (!classIds.length) return { classes: [], assignments: [], attendance: [], adab: [], objectives: [], weights: [], attempts: [] };
+      if (!classIds.length) return { classes: [], assignments: [], attendance: [], adab: [], objectives: [], weights: [], attempts: [], progressRecords: [] };
       const classList = `(${classIds.join(",")})`;
-      const [classes, assignments, attendance, adab, objectives, weights, attempts] = await Promise.all([
+      const [classes, assignments, attendance, adab, objectives, weights, attempts, progressRecords] = await Promise.all([
         supabase.from("classes").select("id, name, teacher_id, subjects, subject").in("id", classIds),
         supabase.from("assignments").select("id, class_id, subject, objective_id, objective_weights, assessment_kind, max_score, submissions(student_id, score, status, feedback)").in("class_id", classIds),
         supabase.from("attendance").select("class_id, student_id, status").eq("student_id", user!.id),
@@ -38,8 +39,9 @@ export function RekapNilaiSiswa({ compact = false }: { compact?: boolean }) {
         supabase.from("learning_objectives").select("id, class_id, subject, code, description, sort_order").or(`class_id.is.null,class_id.in.${classList}`).order("sort_order"),
         supabase.from("grade_weights").select("teacher_id, sumatif, adab, absensi"),
         (supabase as any).from("practice_attempts").select("class_id, subject, score, feedback, created_at").eq("student_id", user!.id).order("created_at", { ascending: false }),
+        supabase.from("student_progress_records").select("class_id, subject, student_id, objective_scores, report_description").eq("student_id", user!.id),
       ]);
-      return { classes: classes.data ?? [], assignments: assignments.data ?? [], attendance: attendance.data ?? [], adab: adab.data ?? [], objectives: objectives.data ?? [], weights: weights.data ?? [], attempts: attempts.data ?? [] };
+      return { classes: classes.data ?? [], assignments: assignments.data ?? [], attendance: attendance.data ?? [], adab: adab.data ?? [], objectives: objectives.data ?? [], weights: weights.data ?? [], attempts: attempts.data ?? [], progressRecords: progressRecords.data ?? [] };
     },
   });
 
@@ -56,12 +58,14 @@ export function RekapNilaiSiswa({ compact = false }: { compact?: boolean }) {
         const objectives = (data.objectives as any[]).filter((o) => o.subject === subject && (o.class_id === null || o.class_id === cls.id));
         const saved = (data.weights as any[]).find((w) => w.teacher_id === cls.teacher_id);
         const weights: Weights = { sumatif: saved?.sumatif ?? 60, adab: saved?.adab ?? 20, absensi: saved?.absensi ?? 20 };
-        const recap = computeTpRecap({
+        const baseRecap = computeTpRecap({
           students: [{ id: user.id, full_name: "" }], objectives,
           assignments: clsAssignments.filter((a) => a.subject === subject),
           attendance: (data.attendance as any[]).filter((a) => a.class_id === cls.id),
           adab: (data.adab as any[]).filter((a) => a.class_id === cls.id && a.subject === subject), weights,
         })[0];
+        const progressRecord = (data.progressRecords as ProgressRecord[]).find((record: any) => record.class_id === cls.id && record.subject === subject);
+        const recap = applyStudentProgress(baseRecap, objectives, progressRecord, weights);
         const attempts = (data.attempts as any[]).filter((a) => a.class_id === cls.id && a.subject === subject);
         out.push({
           key: `${cls.id}-${subject}`, className: cls.name, subject,

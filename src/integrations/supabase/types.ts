@@ -1397,6 +1397,67 @@ export type Database = {
         }
         Relationships: []
       }
+      student_progress_records: {
+        Row: {
+          class_id: string
+          created_at: string
+          development_notes: string | null
+          id: string
+          objective_scores: Json
+          report_description: string | null
+          student_id: string
+          subject: string
+          teacher_id: string
+          updated_at: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          development_notes?: string | null
+          id?: string
+          objective_scores?: Json
+          report_description?: string | null
+          student_id: string
+          subject: string
+          teacher_id: string
+          updated_at?: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          development_notes?: string | null
+          id?: string
+          objective_scores?: Json
+          report_description?: string | null
+          student_id?: string
+          subject?: string
+          teacher_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_progress_records_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_progress_records_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_progress_records_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       submission_grade_revisions: {
         Row: {
           created_at: string
