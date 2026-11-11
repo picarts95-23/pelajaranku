@@ -86,7 +86,7 @@ export function StudentProgressDocs() {
   });
   const weights: Weights = { sumatif: savedWeights?.sumatif ?? 60, adab: savedWeights?.adab ?? 20, absensi: savedWeights?.absensi ?? 20 };
   const rows = useMemo(() => !classId || !subject ? [] : computeTpRecap({
-    students, objectives, assignments: assignments.filter((item) => item.subject === subject), attendance, adab, weights,
+    students, objectives, assignments: assignments.filter((item) => item.subject === subject) as any, attendance, adab, weights,
   }).map((row) => applyStudentProgress(row, objectives, records.find((record) => record.student_id === row.student_id), weights)), [classId, subject, students, objectives, assignments, attendance, adab, records, savedWeights]);
   const attemptsFor = (studentId: string) => attempts.filter((attempt) => attempt.student_id === studentId);
   const aiAverage = (studentId: string) => {
