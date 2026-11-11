@@ -24,7 +24,7 @@ export function SheetBackupCard() {
     const tid = toast.loading(lang === "id" ? "Menyalin database ke Spreadsheet…" : "Backing up database to Sheets…");
     try {
       const res = await syncFn();
-      toast.success(lang === "id" ? "Backup berhasil!" : "Backup complete!", {
+      toast.success(lang === "id" ? `Backup ${res.tables} tab berhasil!` : `${res.tables}-tab backup complete!`, {
         id: tid,
         action: { label: lang === "id" ? "Buka" : "Open", onClick: () => window.open(res.url, "_blank") },
       });
@@ -52,8 +52,8 @@ export function SheetBackupCard() {
             </h2>
             <p className="mt-0.5 max-w-xl text-sm text-muted-foreground">
               {lang === "id"
-                ? "Salinan otomatis data Anda (kelas, siswa, presensi + nilai kehadiran, tugas, nilai, Mutaba'ah, materi) ke spreadsheet pribadi Anda — setiap guru punya file sendiri sesuai email, diperbarui otomatis setiap hari."
-                : "Automatic copy of your data (classes, students, attendance + scores, tasks, grades, Mutaba'ah, materials) into your own spreadsheet — each teacher has a separate file tied to their email, refreshed daily."}
+                ? "Seluruh data fitur Anda dicadangkan ke 40 tab dalam spreadsheet pribadi yang sudah ada: kelas, siswa, nilai dan TP, soal, jawaban, presensi, Mutaba'ah, administrasi, interaksi, hingga status kalender. Token dan kredensial tidak disalin. Backup diperbarui otomatis setiap hari."
+                : "All feature data is backed up into 40 tabs in your existing private spreadsheet. Access tokens and credentials are never copied. Backup refreshes daily."}
             </p>
             <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
               {status?.lastSyncedAt ? (

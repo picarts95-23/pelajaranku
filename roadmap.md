@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Lengkapi backup seluruh fitur guru ke spreadsheet yang sudah ada, termasuk rincian soal, TP, pengaturan nilai, reaksi, dan riwayat koreksi; verifikasi isi tab melalui Google Sheets.
+
 - [x] Create assignments directly from student requests and edit linked assignments.
 - [x] Verify request creation, saved assignment edits and phone-width controls.
 
