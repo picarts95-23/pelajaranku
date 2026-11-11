@@ -3,6 +3,7 @@
 // deliberately excluded. Media is represented by its stored URL/metadata.
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { buildGradeRecap } from "./sheet-backup-data";
+import { fetchAllRows } from "./fetch-all-rows";
 import { BACKUP_TAB_TITLES, buildSheetValueBatch, type BackupTabs } from "./sheet-backup-tabs";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_sheets/v4";
@@ -22,10 +23,8 @@ function cell(v: unknown): string {
   return String(v);
 }
 
-async function rows(query: PromiseLike<{ data: any[] | null; error: any }>, label: string): Promise<any[]> {
-  const { data, error } = await query;
-  if (error) throw new Error(`Gagal membaca ${label}: ${error.message}`);
-  return data ?? [];
+async function rows(query: any, label: string): Promise<any[]> {
+  return fetchAllRows((from, to) => query.range(from, to), label);
 }
 
 async function one(query: PromiseLike<{ data: any; error: any }>, label: string): Promise<any | null> {
