@@ -60,7 +60,7 @@ export function ExportMenu({ filename, title, columns, rows, variant = "outline"
         ...dataRows.map((r) => columns.map((c) => cellText(r[c.key]))),
       ];
       const res = backupGrades ? await backupFn() : await sheetFn({ data: { title, values } });
-      toast.success(lang === "id" ? (backupGrades ? `Backup ${res.tables} tab diperbarui!` : "Backup diperbarui di spreadsheet guru!") : "Teacher spreadsheet updated!", {
+      toast.success(lang === "id" ? (backupGrades ? "Backup seluruh data berhasil diperbarui!" : "Backup diperbarui di spreadsheet guru!") : "Teacher spreadsheet updated!", {
         id: tid,
         action: { label: lang === "id" ? "Buka" : "Open", onClick: () => window.open(res.url, "_blank") },
       });
