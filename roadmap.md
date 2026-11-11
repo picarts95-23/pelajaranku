@@ -1,6 +1,6 @@
 # Roadmap
 
-- [ ] Lengkapi backup seluruh fitur guru ke spreadsheet yang sudah ada, termasuk rincian soal, TP, pengaturan nilai, reaksi, dan riwayat koreksi; verifikasi isi tab melalui Google Sheets.
+- [x] Lengkapi backup seluruh fitur guru ke spreadsheet yang sudah ada dalam 40 tab; baca semua halaman data (termasuk 1.220 presensi) dan verifikasi isi melalui Google Sheets.
 
 - [x] Create assignments directly from student requests and edit linked assignments.
 - [x] Verify request creation, saved assignment edits and phone-width controls.
@@ -29,5 +29,5 @@
 - [x] TP draft AI also on Gemini
 - [x] Generate AI practice quizzes with Gemini via own GOOGLE_API_KEY (no Lovable credits)
 - [x] Unify Rekap Nilai and Rekap TP around per-student TP grades with compact controls.
-- [ ] Apply pending AI practice schema, then verify additional-grade persistence — blocked: workspace Cloud credits must be added to resume the hosted database.
-- [ ] Verify automatic AI practice student-journal entries end to end — blocked by the same paused hosted database.
+- [x] Apply AI practice schema for additional grades and automatic journal triggers.
+- [ ] Verify a newly completed AI practice saves its additional grade and automatic student-journal entry end to end.
