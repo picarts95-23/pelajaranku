@@ -18,6 +18,7 @@ export const BACKUP_TAB_TITLES = [
   "Tidak Mengerjakan",
   "Nilai Adab",
   "Tujuan Pembelajaran",
+  "Perkembangan & Rapor",
   "Mutaba'ah",
   "Materi",
   "Pembacaan Materi",
