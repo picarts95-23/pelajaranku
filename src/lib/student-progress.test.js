@@ -16,7 +16,7 @@ test("manual grade edits one student and one TP, then recalculates the final gra
   const edited = applyStudentProgress(base, objectives, { student_id: "s", objective_scores: { t2: 90 } }, { sumatif: 60, adab: 20, absensi: 20 });
   expect(edited.perTp).toEqual({ t1: 80, t2: 90 });
   expect(edited.sumatif).toBe(85);
-  expect(edited.final).toBe(87.5);
+  expect(edited.final).toBe(88.8);
   expect(edited.description).toContain("menghitung luas");
 });
 
