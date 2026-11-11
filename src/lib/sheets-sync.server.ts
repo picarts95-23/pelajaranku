@@ -3,6 +3,7 @@
 // deliberately excluded. Media is represented by its stored URL/metadata.
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { buildGradeRecap } from "./sheet-backup-data";
+import { fetchAllRows } from "./fetch-all-rows";
 import { BACKUP_TAB_TITLES, buildSheetValueBatch, type BackupTabs } from "./sheet-backup-tabs";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_sheets/v4";
