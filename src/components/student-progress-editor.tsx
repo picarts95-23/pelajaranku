@@ -25,7 +25,7 @@ export function StudentProgressEditor({ classId, subject, row, objectives, recor
 }) {
   const { user } = useAuth();
   const [scores, setScores] = useState<Record<string, number | "">>(() => Object.fromEntries(objectives.map((objective) => [objective.id, record?.objective_scores?.[objective.id] ?? ""])));
-  const [notes, setNotes] = useState(record?.development_notes ?? "");
+  const [notes, setNotes] = useState(record?.development_notes ?? buildDevelopmentSummary(row, attempts));
   const [description, setDescription] = useState(record?.report_description ?? row.description);
   const save = useMutation({
     mutationFn: async () => {
