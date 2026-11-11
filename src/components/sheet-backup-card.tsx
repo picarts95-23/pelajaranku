@@ -24,7 +24,7 @@ export function SheetBackupCard() {
     const tid = toast.loading(lang === "id" ? "Menyalin database ke Spreadsheet…" : "Backing up database to Sheets…");
     try {
       const res = await syncFn();
-      toast.success(lang === "id" ? "Backup berhasil!" : "Backup complete!", {
+      toast.success(lang === "id" ? `Backup ${res.tables} tab berhasil!` : `${res.tables}-tab backup complete!`, {
         id: tid,
         action: { label: lang === "id" ? "Buka" : "Open", onClick: () => window.open(res.url, "_blank") },
       });
