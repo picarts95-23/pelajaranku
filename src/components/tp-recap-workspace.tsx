@@ -12,7 +12,7 @@ import { ExportMenu } from "@/components/export-menu";
 import { TpFields } from "@/components/tp-fields";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
-import { computeTpRecap, tpShares, validateTpWeights, validateWeights, type Weights } from "@/lib/tp-recap";
+import { adabRowsFromDraft, computeTpRecap, tpShares, validateTpWeights, validateWeights, type Weights } from "@/lib/tp-recap";
 import { draftObjectives } from "@/lib/tp-ai.functions";
 
 type Student = { id: string; full_name: string };
@@ -33,7 +33,7 @@ export function TpRecapWorkspace({ classId, subject, className, students }: {
   const qc = useQueryClient();
   const draftFn = useServerFn(draftObjectives);
   const [weights, setWeights] = useState<Weights>({ sumatif: 60, adab: 20, absensi: 20 });
-  const [adabDraft, setAdabDraft] = useState<Record<string, number>>({});
+  const [adabDraft, setAdabDraft] = useState<Record<string, number | "">>({});
   const [openStudent, setOpenStudent] = useState<string | null>(null);
   const [newTp, setNewTp] = useState({ code: "", description: "" });
   const [ai, setAi] = useState({ grade: "", topic: "", count: 5 });
@@ -84,7 +84,7 @@ export function TpRecapWorkspace({ classId, subject, className, students }: {
     setAdabDraft(next);
   }, [adab]);
 
-  const adabForRecap = useMemo(() => students.map((s) => ({ student_id: s.id, score: Math.max(0, Math.min(100, adabDraft[s.id] ?? 0)) })), [students, adabDraft]);
+  const adabForRecap = useMemo(() => adabRowsFromDraft(students, adabDraft), [students, adabDraft]);
   const weightError = validateWeights(weights);
   const rows = useMemo(() => weightError ? [] : computeTpRecap({ students, objectives, assignments: assignments as any, attendance, adab: adabForRecap, weights }), [students, objectives, assignments, attendance, adabForRecap, weights, weightError]);
   const attemptsFor = (studentId: string) => attempts.filter((a) => a.student_id === studentId);
@@ -105,7 +105,9 @@ export function TpRecapWorkspace({ classId, subject, className, students }: {
   });
   const saveAdab = useMutation({
     mutationFn: async () => {
-      const rowsToSave = students.map((s) => ({ teacher_id: user!.id, student_id: s.id, class_id: classId, subject, score: Math.max(0, Math.min(100, adabDraft[s.id] ?? 0)) }));
+      if (!user) throw new Error("Silakan masuk kembali.");
+      const rowsToSave = adabForRecap.map((row) => ({ ...row, teacher_id: user.id, class_id: classId, subject }));
+      if (!rowsToSave.length) return;
       const { error } = await supabase.from("adab_scores").upsert(rowsToSave, { onConflict: "teacher_id,student_id,class_id,subject" });
       if (error) throw error;
     },
@@ -197,7 +199,7 @@ export function TpRecapWorkspace({ classId, subject, className, students }: {
         {weightError ? <p className="mt-3 text-sm text-destructive">{weightError}</p> : <div className="mt-4 overflow-x-auto"><table className="w-full min-w-[760px] text-sm"><thead><tr className="border-b text-left"><th className="p-2">Siswa</th>{objectives.map((o) => <th key={o.id} className="p-2 text-center" title={o.description}>{o.code}</th>)}<th className="p-2 text-center">Sumatif</th><th className="p-2 text-center">Adab</th><th className="p-2 text-center">Absensi</th><th className="p-2 text-center">Latihan AI<br /><span className="text-xs font-normal">tambahan</span></th><th className="p-2 text-center">Akhir</th></tr></thead><tbody>{rows.map((r) => {
           const studentAttempts = attemptsFor(r.student_id);
           const open = openStudent === r.student_id;
-          return <Fragment key={r.student_id}><tr className="border-b"><td className="p-2"><button className="flex items-center gap-1 text-left font-semibold" onClick={() => setOpenStudent(open ? null : r.student_id)}><ChevronDown className={`size-4 transition ${open ? "rotate-180" : "-rotate-90"}`} />{r.name}</button></td>{objectives.map((o) => <td key={o.id} className="p-2 text-center">{r.perTp[o.id] ?? "—"}</td>)}<td className="p-2 text-center">{r.sumatif ?? "—"}</td><td className="p-1"><Input aria-label={`Adab ${r.name}`} type="number" min={0} max={100} value={adabDraft[r.student_id] ?? 0} onChange={(e) => setAdabDraft((d) => ({ ...d, [r.student_id]: Number(e.target.value) }))} className="mx-auto h-9 w-16 text-center" /></td><td className="p-2 text-center">{r.absensi ?? "—"}</td><td className="p-2 text-center"><span className="font-display font-bold text-primary">{aiAverage(r.student_id) ?? "—"}</span>{studentAttempts.length > 0 && <span className="block text-xs text-muted-foreground">{studentAttempts.length} latihan</span>}</td><td className="p-2 text-center font-bold">{r.final ?? "—"} <span className="text-xs text-muted-foreground">({r.predikat})</span></td></tr>{open && <tr className="border-b bg-muted/30"><td colSpan={objectives.length + 6} className="p-3"><div className="space-y-3"><div className="flex items-start gap-2"><p className="flex-1 text-sm"><b>Deskripsi rapor:</b> {r.description}</p><Button size="sm" variant="ghost" aria-label={`Salin deskripsi ${r.name}`} onClick={() => { navigator.clipboard.writeText(r.description); toast.success("Deskripsi disalin"); }}><Copy className="size-4" /></Button></div><p className="text-xs text-muted-foreground"><b>Formatif:</b> {r.formatif.count ? `${r.formatif.count} penilaian · rata-rata ${r.formatif.avg}${r.formatif.lastFeedback ? ` · ${r.formatif.lastFeedback}` : ""}` : "Belum ada umpan balik formatif."}</p>{studentAttempts.length > 0 && <div className="space-y-2"><p className="flex items-center gap-2 text-sm font-semibold"><BookOpenCheck className="size-4 text-primary" />Nilai tambahan & umpan balik Latihan AI</p>{studentAttempts.map((a) => <div key={a.id} className="rounded-xl border border-border bg-card p-3"><div className="flex flex-wrap justify-between gap-2 text-sm"><span className="font-semibold">{a.topic}</span><span className="font-bold text-primary">{a.score}/100 · {a.correct_count}/{a.question_count} benar</span></div><p className="mt-1 text-xs text-muted-foreground">{new Date(a.created_at).toLocaleDateString("id-ID")}</p><p className="mt-2 text-sm">{a.feedback}</p></div>)}</div>}</div></td></tr>}</Fragment>;
+          return <Fragment key={r.student_id}><tr className="border-b"><td className="p-2"><button className="flex items-center gap-1 text-left font-semibold" onClick={() => setOpenStudent(open ? null : r.student_id)}><ChevronDown className={`size-4 transition ${open ? "rotate-180" : "-rotate-90"}`} />{r.name}</button></td>{objectives.map((o) => <td key={o.id} className="p-2 text-center">{r.perTp[o.id] ?? "—"}</td>)}<td className="p-2 text-center">{r.sumatif ?? "—"}</td><td className="p-1"><Input aria-label={`Adab ${r.name}`} type="number" min={0} max={100} value={adabDraft[r.student_id] ?? ""} placeholder="—" onChange={(e) => setAdabDraft((d) => ({ ...d, [r.student_id]: e.target.value === "" ? "" : Number(e.target.value) }))} className="mx-auto h-9 w-16 text-center" /></td><td className="p-2 text-center">{r.absensi ?? "—"}</td><td className="p-2 text-center"><span className="font-display font-bold text-primary">{aiAverage(r.student_id) ?? "—"}</span>{studentAttempts.length > 0 && <span className="block text-xs text-muted-foreground">{studentAttempts.length} latihan</span>}</td><td className="p-2 text-center font-bold">{r.final ?? "—"} <span className="text-xs text-muted-foreground">({r.predikat})</span></td></tr>{open && <tr className="border-b bg-muted/30"><td colSpan={objectives.length + 6} className="p-3"><div className="space-y-3"><div className="flex items-start gap-2"><p className="flex-1 text-sm"><b>Deskripsi rapor:</b> {r.description}</p><Button size="sm" variant="ghost" aria-label={`Salin deskripsi ${r.name}`} onClick={() => { navigator.clipboard.writeText(r.description); toast.success("Deskripsi disalin"); }}><Copy className="size-4" /></Button></div><p className="text-xs text-muted-foreground"><b>Formatif:</b> {r.formatif.count ? `${r.formatif.count} penilaian · rata-rata ${r.formatif.avg}${r.formatif.lastFeedback ? ` · ${r.formatif.lastFeedback}` : ""}` : "Belum ada umpan balik formatif."}</p>{studentAttempts.length > 0 && <div className="space-y-2"><p className="flex items-center gap-2 text-sm font-semibold"><BookOpenCheck className="size-4 text-primary" />Nilai tambahan & umpan balik Latihan AI</p>{studentAttempts.map((a) => <div key={a.id} className="rounded-xl border border-border bg-card p-3"><div className="flex flex-wrap justify-between gap-2 text-sm"><span className="font-semibold">{a.topic}</span><span className="font-bold text-primary">{a.score}/100 · {a.correct_count}/{a.question_count} benar</span></div><p className="mt-1 text-xs text-muted-foreground">{new Date(a.created_at).toLocaleDateString("id-ID")}</p><p className="mt-2 text-sm">{a.feedback}</p></div>)}</div>}</div></td></tr>}</Fragment>;
         })}</tbody></table></div>}
       </section>
     </div>

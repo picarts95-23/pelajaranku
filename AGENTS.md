@@ -17,6 +17,7 @@
 - Both student ranking views use the authenticated shared-class leaderboard RPC because enrollment RLS intentionally hides peer enrollment rows.
 - Active-work filtering lives in a tested browser-safe helper; student descriptions never render serialized teacher group-assessment records.
 - Grade recap backup is assembled by the shared browser-safe sheet-backup-data helper and included in teacher sync; exports resolve teacher_sheet_sync under caller RLS to keep destinations account-scoped.
+- Teacher Adab recap and save payloads use the shared adabRowsFromDraft helper to distinguish unentered scores from explicit zero.
 - Keep phone-width grid constraints and viewport-safe dialogs in the shared shell/UI styles so new feature pages cannot grow beyond their visible screen.
 - Request conversion reuses the teacher assignment form via validated search parameters; create_assignment_from_request atomically creates and links the assignment under caller RLS to prevent duplicate tasks and partial conversions.
 - AI practice generation runs only in the authenticated generatePractice server function via Gemini (own GOOGLE_API_KEY, falls back to AI Gateway when unset) with a strict JSON schema; scoring/validation helpers stay in browser-safe src/lib/ai-practice.ts with tests.
