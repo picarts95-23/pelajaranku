@@ -1,4 +1,5 @@
 import { computeTpRecap, type Objective, type Weights } from "./tp-recap";
+import { applyStudentProgress, type ProgressRecord } from "./student-progress";
 
 export function requireStoredSpreadsheet(state: { spreadsheet_id?: string | null; spreadsheet_url?: string | null } | null) {
   if (!state?.spreadsheet_id) throw new Error("Belum ada spreadsheet backup guru. Jalankan backup dari akun guru terlebih dahulu.");
@@ -24,6 +25,7 @@ type RecapData = {
   objectives?: (Objective & { class_id: string | null; subject: string })[];
   weights?: Weights;
   practiceAttempts?: PracticeAttempt[];
+  progressRecords?: (ProgressRecord & { class_id: string; subject: string })[];
 };
 
 /** Spreadsheet recap mirrors the teacher UI: per-TP summative grades plus AI practice as an additional grade. */
@@ -49,7 +51,9 @@ export function buildGradeRecap(data: RecapData): string[][] {
         attendance: data.attendance.filter((a) => a.class_id === cls.id),
         adab: data.adab.filter((a) => a.class_id === cls.id && a.subject === subject), weights,
       });
-      const rows = recap.map((r) => {
+      const rows = recap.map((baseRow) => {
+        const record = (data.progressRecords ?? []).find((item) => item.class_id === cls.id && item.subject === subject && item.student_id === baseRow.student_id);
+        const r = applyStudentProgress(baseRow, objectives, record, weights);
         const attempts = (data.practiceAttempts ?? []).filter((a) => a.class_id === cls.id && a.subject === subject && a.student_id === r.student_id).sort((a, b) => b.created_at.localeCompare(a.created_at));
         const ai = attempts.length ? String(Math.round(attempts.reduce((sum, a) => sum + a.score, 0) / attempts.length)) : "";
         const tp = objectives.map((o) => `${o.code}: ${r.perTp[o.id] ?? "—"}`).join(" | ");
