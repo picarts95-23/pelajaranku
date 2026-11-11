@@ -994,6 +994,68 @@ export type Database = {
         }
         Relationships: []
       }
+      practice_attempts: {
+        Row: {
+          answers: Json
+          class_id: string
+          client_id: string
+          correct_count: number
+          created_at: string
+          feedback: string
+          hints_used: number
+          id: string
+          level: string
+          question_count: number
+          score: number
+          student_id: string
+          subject: string
+          topic: string
+          weak_concepts: string[]
+        }
+        Insert: {
+          answers?: Json
+          class_id: string
+          client_id: string
+          correct_count: number
+          created_at?: string
+          feedback: string
+          hints_used?: number
+          id?: string
+          level: string
+          question_count: number
+          score: number
+          student_id: string
+          subject: string
+          topic: string
+          weak_concepts?: string[]
+        }
+        Update: {
+          answers?: Json
+          class_id?: string
+          client_id?: string
+          correct_count?: number
+          created_at?: string
+          feedback?: string
+          hints_used?: number
+          id?: string
+          level?: string
+          question_count?: number
+          score?: number
+          student_id?: string
+          subject?: string
+          topic?: string
+          weak_concepts?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "practice_attempts_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profile_private: {
         Row: {
           birthdate: string | null
