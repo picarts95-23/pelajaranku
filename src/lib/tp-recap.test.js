@@ -1,5 +1,34 @@
 import { test, expect } from "bun:test";
-import { computeTpRecap, finalScore, validateWeights } from "./tp-recap.ts";
+import { adabRowsFromDraft, computeTpRecap, finalScore, validateWeights } from "./tp-recap.ts";
+
+const adabFixture = {
+  students: [{ id: "s", full_name: "Ali" }],
+  objectives: [{ id: "t", code: "TP1", description: "Memahami materi" }],
+  assignments: [{ id: "a", objective_id: "t", assessment_kind: "sumatif", max_score: 100, submissions: [{ student_id: "s", score: 90, status: "graded" }] }],
+  attendance: [{ student_id: "s", status: "hadir" }],
+  weights: { sumatif: 60, adab: 20, absensi: 20 },
+};
+
+test("missing or blank teacher Adab is omitted from recap and save rows", () => {
+  for (const draft of [{}, { s: "" }]) {
+    const adab = adabRowsFromDraft(adabFixture.students, draft);
+    expect(adab).toEqual([]);
+    const teacher = computeTpRecap({ ...adabFixture, adab })[0];
+    expect(teacher.adab).toBe(null);
+    expect(teacher.final).toBe(92.5);
+    expect(teacher.predikat).toBe("A");
+    expect(teacher).toEqual(computeTpRecap({ ...adabFixture, adab: [] })[0]);
+  }
+});
+
+test("explicit Adab zero remains a scored component", () => {
+  const adab = adabRowsFromDraft(adabFixture.students, { s: 0 });
+  expect(adab).toEqual([{ student_id: "s", score: 0 }]);
+  const row = computeTpRecap({ ...adabFixture, adab })[0];
+  expect(row.adab).toBe(0);
+  expect(row.final).toBe(74);
+  expect(row.predikat).toBe("C");
+});
 
 test("weights must total 100, no fixed 70/20/10", () => {
   expect(validateWeights({ sumatif: 50, adab: 25, absensi: 25 })).toBe(null);

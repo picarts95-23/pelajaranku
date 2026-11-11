@@ -12,7 +12,7 @@ import { ExportMenu } from "@/components/export-menu";
 import { TpFields } from "@/components/tp-fields";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
-import { computeTpRecap, tpShares, validateTpWeights, validateWeights, type Weights } from "@/lib/tp-recap";
+import { adabRowsFromDraft, computeTpRecap, tpShares, validateTpWeights, validateWeights, type Weights } from "@/lib/tp-recap";
 import { draftObjectives } from "@/lib/tp-ai.functions";
 
 type Student = { id: string; full_name: string };
@@ -33,7 +33,7 @@ export function TpRecapWorkspace({ classId, subject, className, students }: {
   const qc = useQueryClient();
   const draftFn = useServerFn(draftObjectives);
   const [weights, setWeights] = useState<Weights>({ sumatif: 60, adab: 20, absensi: 20 });
-  const [adabDraft, setAdabDraft] = useState<Record<string, number>>({});
+  const [adabDraft, setAdabDraft] = useState<Record<string, number | "">>({});
   const [openStudent, setOpenStudent] = useState<string | null>(null);
   const [newTp, setNewTp] = useState({ code: "", description: "" });
   const [ai, setAi] = useState({ grade: "", topic: "", count: 5 });
@@ -84,7 +84,7 @@ export function TpRecapWorkspace({ classId, subject, className, students }: {
     setAdabDraft(next);
   }, [adab]);
 
-  const adabForRecap = useMemo(() => students.map((s) => ({ student_id: s.id, score: Math.max(0, Math.min(100, adabDraft[s.id] ?? 0)) })), [students, adabDraft]);
+  const adabForRecap = useMemo(() => adabRowsFromDraft(students, adabDraft), [students, adabDraft]);
   const weightError = validateWeights(weights);
   const rows = useMemo(() => weightError ? [] : computeTpRecap({ students, objectives, assignments: assignments as any, attendance, adab: adabForRecap, weights }), [students, objectives, assignments, attendance, adabForRecap, weights, weightError]);
   const attemptsFor = (studentId: string) => attempts.filter((a) => a.student_id === studentId);
@@ -105,7 +105,9 @@ export function TpRecapWorkspace({ classId, subject, className, students }: {
   });
   const saveAdab = useMutation({
     mutationFn: async () => {
-      const rowsToSave = students.map((s) => ({ teacher_id: user!.id, student_id: s.id, class_id: classId, subject, score: Math.max(0, Math.min(100, adabDraft[s.id] ?? 0)) }));
+      if (!user) throw new Error("Silakan masuk kembali.");
+      const rowsToSave = adabForRecap.map((row) => ({ ...row, teacher_id: user.id, class_id: classId, subject }));
+      if (!rowsToSave.length) return;
       const { error } = await supabase.from("adab_scores").upsert(rowsToSave, { onConflict: "teacher_id,student_id,class_id,subject" });
       if (error) throw error;
     },

@@ -2,6 +2,15 @@
 // Formative assessments are feedback only and never enter the final grade.
 
 export type Weights = { sumatif: number; adab: number; absensi: number };
+
+/** Only entered Adab scores become recap/save rows; an explicit zero is valid. */
+export function adabRowsFromDraft(students: { id: string }[], draft: Record<string, number | "">) {
+  return students.flatMap((student) => {
+    const score = draft[student.id];
+    if (typeof score !== "number" || !Number.isFinite(score)) return [];
+    return [{ student_id: student.id, score: Math.max(0, Math.min(100, score)) }];
+  });
+}
 export type Objective = { id: string; code: string; description: string };
 export type TpAssignment = {
   id: string; objective_id: string | null; objective_weights?: Record<string, number> | null; assessment_kind: string; max_score: number;
