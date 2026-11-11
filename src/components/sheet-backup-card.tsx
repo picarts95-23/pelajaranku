@@ -52,8 +52,8 @@ export function SheetBackupCard() {
             </h2>
             <p className="mt-0.5 max-w-xl text-sm text-muted-foreground">
               {lang === "id"
-                ? "Salinan otomatis data Anda (kelas, siswa, presensi + nilai kehadiran, tugas, nilai, Mutaba'ah, materi) ke spreadsheet pribadi Anda — setiap guru punya file sendiri sesuai email, diperbarui otomatis setiap hari."
-                : "Automatic copy of your data (classes, students, attendance + scores, tasks, grades, Mutaba'ah, materials) into your own spreadsheet — each teacher has a separate file tied to their email, refreshed daily."}
+                ? "Seluruh data fitur Anda dicadangkan ke 40 tab dalam spreadsheet pribadi yang sudah ada: kelas, siswa, nilai dan TP, soal, jawaban, presensi, Mutaba'ah, administrasi, interaksi, hingga status kalender. Token dan kredensial tidak disalin. Backup diperbarui otomatis setiap hari."
+                : "All feature data is backed up into 40 tabs in your existing private spreadsheet. Access tokens and credentials are never copied. Backup refreshes daily."}
             </p>
             <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
               {status?.lastSyncedAt ? (
