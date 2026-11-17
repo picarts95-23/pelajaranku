@@ -19,12 +19,23 @@ const SCHEMA = {
       items: {
         type: "object",
         additionalProperties: false,
-        required: ["stimulus", "question", "options", "correctIndex", "hints", "explanation", "steps", "concept"],
+        required: ["type", "stimulus", "question", "options", "correctIndex", "correctIndices", "statements", "hints", "explanation", "steps", "concept"],
         properties: {
+          type: { type: "string", enum: ["multiple_choice", "complex_multiple_choice", "statement_table"] },
           stimulus: { type: "string" },
           question: { type: "string" },
           options: { type: "array", items: { type: "string" } },
           correctIndex: { type: "integer" },
+          correctIndices: { type: "array", items: { type: "integer" } },
+          statements: {
+            type: "array",
+            items: {
+              type: "object",
+              additionalProperties: false,
+              required: ["text", "answer"],
+              properties: { text: { type: "string" }, answer: { type: "boolean" } },
+            },
+          },
           hints: { type: "array", items: { type: "string" } },
           explanation: { type: "string" },
           steps: { type: "array", items: { type: "string" } },
@@ -35,27 +46,37 @@ const SCHEMA = {
   },
 } as const;
 
-export const generatePractice = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator(parsePracticeInput)
-  .handler(async ({ data }): Promise<{ questions: PracticeQuestion[]; error?: string }> => {
-    const prompt = `Buat ${data.count} soal latihan pilihan ganda (4 opsi) dalam Bahasa Indonesia.
+function buildPrompt(data: ReturnType<typeof parsePracticeInput>) {
+  return `Buat ${data.count} soal Latihan Literasi interaktif dalam Bahasa Indonesia.
 Mata pelajaran: ${data.subject}
 Topik: ${data.topic}
 Tingkat kesulitan: ${LEVEL_TEXT[data.level]}
 ${data.notes ? `Catatan/rangkuman materi dari pengguna (jadikan rujukan utama):\n"""${data.notes}"""` : ""}
 ${data.file ? "Gunakan juga lampiran materi sebagai rujukan." : ""}
 
-Aturan setiap soal:
-- "stimulus": teks/konteks pendukung bila perlu, kosongkan "" bila tidak ada.
-- "question": pertanyaan yang jelas.
-- "options": tepat 4 opsi tanpa awalan huruf, hanya satu benar; "correctIndex" 0-3, acak posisinya.
+Variasikan tiga bentuk soal berikut. Jika jumlah soal minimal 3, WAJIB ada ketiga bentuk dan susun bergantian: multiple_choice, complex_multiple_choice, statement_table, lalu ulangi urutan tersebut. Jika 2 soal, gunakan dua bentuk berbeda.
+
+Aturan umum setiap soal:
+- "stimulus": bacaan, data, atau konteks pendukung yang cukup untuk menjawab; kosongkan "" hanya bila benar-benar tidak diperlukan.
+- "question": instruksi/pertanyaan yang jelas dan terpisah dari stimulus.
 - "hints": 3 petunjuk bertahap dari samar ke spesifik, JANGAN menyebut jawaban.
-- "explanation": penjelasan konsep singkat mengapa jawaban benar dan kesalahan umum.
+- "explanation": pembahasan konsep dan alasan kunci jawaban, termasuk kesalahan umum.
 - "steps": 2-5 langkah penyelesaian.
 - "concept": nama konsep/indikator yang diuji (singkat).
-Kembalikan JSON.`;
 
+Aturan berdasarkan "type":
+1. multiple_choice (Pilihan Ganda): "options" tepat 4 opsi tanpa awalan huruf, hanya satu benar; "correctIndex" 0-3 dengan posisi kunci bervariasi; "correctIndices" []; "statements" [].
+2. complex_multiple_choice (Pilihan Ganda Kompleks): "options" 4-5 opsi tanpa awalan huruf dan minimal 2 jawaban benar; "correctIndices" berisi semua indeks jawaban benar, diurutkan naik; "correctIndex" -1; "statements" []. Instruksikan siswa memilih semua jawaban yang tepat.
+3. statement_table (Tabel Pernyataan): "statements" berisi 3-5 pernyataan yang masing-masing dapat dinilai independen, dalam bentuk {"text":"pernyataan", "answer":true/false}; answer true berarti Benar dan false berarti Salah. Variasikan kunci Benar/Salah. "options" [], "correctIndex" -1, "correctIndices" []. Instruksikan siswa menentukan Benar atau Salah untuk setiap pernyataan.
+
+Pastikan semua kunci benar secara faktual dan tidak ambigu. Kembalikan JSON sesuai skema.`;
+}
+
+export const generatePractice = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(parsePracticeInput)
+  .handler(async ({ data }): Promise<{ questions: PracticeQuestion[]; error?: string }> => {
+    const prompt = buildPrompt(data);
     const content: any[] = [{ type: "input_text", text: prompt }];
     if (data.file) {
       if (data.file.mime.startsWith("image/")) {
@@ -79,7 +100,7 @@ Kembalikan JSON.`;
             method: "POST",
             headers: { "Content-Type": "application/json", "x-goog-api-key": geminiKey },
             body: JSON.stringify({
-              systemInstruction: { parts: [{ text: "Kamu adalah tutor dan penyusun soal yang teliti untuk sekolah di Indonesia. Pastikan setiap kunci jawaban benar secara faktual." }] },
+              systemInstruction: { parts: [{ text: "Kamu adalah tutor dan penyusun soal Latihan Literasi yang teliti untuk sekolah di Indonesia. Pastikan setiap kunci jawaban benar secara faktual." }] },
               contents: [{ role: "user", parts }],
               generationConfig: { responseMimeType: "application/json", responseJsonSchema: SCHEMA },
             }),
@@ -105,7 +126,7 @@ Kembalikan JSON.`;
     try {
       const res = await generateResponse({
         model: "openai/gpt-6-astra",
-        instructions: "Kamu adalah tutor dan penyusun soal yang teliti untuk sekolah di Indonesia. Pastikan setiap kunci jawaban benar secara faktual.",
+        instructions: "Kamu adalah tutor dan penyusun soal Latihan Literasi yang teliti untuk sekolah di Indonesia. Pastikan setiap kunci jawaban benar secara faktual.",
         input: [{ type: "message", role: "user", content }],
         text: { format: { type: "json_schema", name: "practice_set", strict: true, schema: SCHEMA as any } },
       });

@@ -10,7 +10,7 @@ import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 
 const TITLE = "Latihan AI Siswa · Pelajaranku";
-const DESC = "Buat sesi latihan adaptif dengan tutor AI: petunjuk bertahap, umpan balik instan, dan pembahasan langkah demi langkah.";
+const DESC = "Buat Latihan Soal Literasi interaktif: pilihan ganda, pilihan ganda kompleks, dan tabel pernyataan Benar/Salah dengan petunjuk serta pembahasan AI.";
 
 export const Route = createFileRoute("/_authenticated/siswa/latihan-ai")({
   head: () => ({ meta: [{ title: TITLE }, { name: "description", content: DESC },
@@ -44,7 +44,7 @@ function SiswaLatihanAi() {
 
   return (
     <DashboardShell accent="siswa">
-      <PageHeader title="Latihan AI" subtitle="Pilih kelas dan materi. Nilai tambahan serta umpan balik akan tersimpan di rekap dan Jurnal siswa." />
+      <PageHeader title="Latihan AI" subtitle="Pilih kelas dan materi untuk Latihan Soal Literasi interaktif. Nilai tambahan serta umpan balik tersimpan di rekap dan Jurnal siswa." />
       {classes.length > 0 && <div className="mb-4 max-w-sm">
         <Label>Kelas untuk penyimpanan hasil</Label>
         <Select value={activeClassId} onValueChange={(v) => { setClassId(v); setQuestions(null); setMeta(null); }}>

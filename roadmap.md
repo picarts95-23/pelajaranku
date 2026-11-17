@@ -30,8 +30,10 @@
 - [x] Generate AI practice quizzes with Gemini via own GOOGLE_API_KEY (no Lovable credits)
 - [x] Unify Rekap Nilai and Rekap TP around per-student TP grades with compact controls.
 - [x] Apply AI practice schema for additional grades and automatic journal triggers.
-- [ ] Verify a newly completed AI practice saves its additional grade and automatic student-journal entry end to end.
+- [ ] Verify a newly completed AI practice saves its additional grade and automatic student-journal entry end to end — blocked: needs an enrolled student test account; the owner session has teacher menus.
 - [x] Rekap catatan perkembangan siswa dari Latihan AI dan nilai lain di Dokumen Pembelajaran.
 - [x] Edit manual rekap nilai per siswa dan TP dari Dokumen Pembelajaran/Rekap.
 - [x] Sediakan catatan deskripsi rapor dari akumulasi penilaian dan TP di Dokumen Pembelajaran.
 - [ ] Verify teacher UI save/readback for progress records — blocked: automatic session is admin; do not select another user's teacher account without confirmation.
+- [x] Add mixed interactive Literacy question forms to AI Practice: single choice, complex multiple choice, and true/false statement tables.
+- [x] Verify Gemini generation and completion of all three forms on desktop and 390px mobile; validate scoring and saved answer payloads with automated tests.
