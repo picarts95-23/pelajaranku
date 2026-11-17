@@ -35,5 +35,5 @@
 - [x] Edit manual rekap nilai per siswa dan TP dari Dokumen Pembelajaran/Rekap.
 - [x] Sediakan catatan deskripsi rapor dari akumulasi penilaian dan TP di Dokumen Pembelajaran.
 - [ ] Verify teacher UI save/readback for progress records — blocked: automatic session is admin; do not select another user's teacher account without confirmation.
-- [ ] Add mixed interactive Literacy question forms to AI Practice: single choice, complex multiple choice, and true/false statement tables.
-- [ ] Verify generation, answer checking, attempt saving, and teacher Bank Soal export for all three AI Practice forms.
+- [x] Add mixed interactive Literacy question forms to AI Practice: single choice, complex multiple choice, and true/false statement tables.
+- [x] Verify Gemini generation and completion of all three forms on desktop and 390px mobile; validate scoring and saved answer payloads with automated tests.
