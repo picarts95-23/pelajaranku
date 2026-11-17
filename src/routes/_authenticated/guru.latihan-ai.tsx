@@ -12,6 +12,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { LEVEL_TO_DIFFICULTY, type PracticeQuestion } from "@/lib/ai-practice";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
+
+type QuestionBankInsert = Database["public"]["Tables"]["question_bank"]["Insert"];
 
 const TITLE = "Latihan AI Guru · Pelajaranku";
 const DESC = "Buat Latihan Soal Literasi interaktif dengan pilihan ganda, pilihan ganda kompleks, dan tabel pernyataan Benar/Salah, lalu simpan ke Bank Soal.";
@@ -37,7 +40,7 @@ function GuruLatihanAi() {
   const save = useMutation({
     mutationFn: async () => {
       if (!user || !questions || !meta) throw new Error("Belum ada soal.");
-      const rows = questions.filter((_, i) => selected.has(i)).flatMap((q) => {
+      const rows: QuestionBankInsert[] = questions.filter((_, i) => selected.has(i)).flatMap((q): QuestionBankInsert[] => {
         const base = {
           teacher_id: user.id, subject: meta.subject, topic: meta.topic, grade_level: grade || null,
           stimulus: q.stimulus || null, difficulty: LEVEL_TO_DIFFICULTY[meta.level],

@@ -78,15 +78,15 @@ export function normalizePracticeQuestions(raw: unknown): PracticeQuestion[] {
           answer: typeof s?.answer === "boolean" ? s.answer : null,
         }))
         : [];
-      if (statements.length < 2 || statements.some((s) => !s.text || typeof s.answer !== "boolean")) continue;
+      if (statements.length < 2 || statements.some((s: { text: string; answer: boolean | null }) => !s.text || typeof s.answer !== "boolean")) continue;
       out.push({ ...common, options: [], correctIndex: -1, correctIndices: [], statements: statements as PracticeStatement[] });
       continue;
     }
 
     if (options.length < 2) continue;
     if (type === "complex_multiple_choice") {
-      const correctIndices = Array.isArray(r?.correctIndices)
-        ? [...new Set(r.correctIndices.map(Number).filter((i: number) => Number.isInteger(i) && i >= 0 && i < options.length))].sort((a, b) => a - b)
+      const correctIndices: number[] = Array.isArray(r?.correctIndices)
+        ? [...new Set<number>((r.correctIndices as unknown[]).map(Number).filter((i: number) => Number.isInteger(i) && i >= 0 && i < options.length))].sort((a: number, b: number) => a - b)
         : [];
       if (correctIndices.length < 2) continue;
       out.push({ ...common, options, correctIndex: -1, correctIndices, statements: [] });
