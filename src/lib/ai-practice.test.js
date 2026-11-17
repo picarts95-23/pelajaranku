@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test";
-import { parsePracticeInput, normalizePracticeQuestions, practicePoints } from "./ai-practice.ts";
+import { parsePracticeInput, normalizePracticeQuestions, practicePoints, isPracticeAnswerComplete, isPracticeAnswerCorrect } from "./ai-practice.ts";
 
 test("question count is capped at 20 and defaults level to menengah", () => {
   const r = parsePracticeInput({ subject: "IPA", topic: "Fotosintesis", count: 99, level: "x" });

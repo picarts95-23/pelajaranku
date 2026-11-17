@@ -44,7 +44,7 @@ function SiswaLatihanAi() {
 
   return (
     <DashboardShell accent="siswa">
-      <PageHeader title="Latihan AI" subtitle="Pilih kelas dan materi. Nilai tambahan serta umpan balik akan tersimpan di rekap dan Jurnal siswa." />
+      <PageHeader title="Latihan AI" subtitle="Pilih kelas dan materi untuk Latihan Soal Literasi interaktif. Nilai tambahan serta umpan balik tersimpan di rekap dan Jurnal siswa." />
       {classes.length > 0 && <div className="mb-4 max-w-sm">
         <Label>Kelas untuk penyimpanan hasil</Label>
         <Select value={activeClassId} onValueChange={(v) => { setClassId(v); setQuestions(null); setMeta(null); }}>

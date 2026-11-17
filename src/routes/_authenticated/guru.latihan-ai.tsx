@@ -63,7 +63,7 @@ function GuruLatihanAi() {
       if (error) throw error;
       return rows.length;
     },
-    onSuccess: (n) => { toast.success(`${n} soal tersimpan di Bank Soal.`); setSaved(true); qc.invalidateQueries({ queryKey: ["question_bank"] }); },
+    onSuccess: (n) => { toast.success(`${n} butir soal tersimpan di Bank Soal.`); setSaved(true); qc.invalidateQueries({ queryKey: ["question_bank"] }); },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Gagal menyimpan."),
   });
 
@@ -72,7 +72,7 @@ function GuruLatihanAi() {
 
   return (
     <DashboardShell accent="guru">
-      <PageHeader title="Latihan AI" subtitle="Buat paket soal personal untuk kelas, remedial, atau pengayaan siswa." />
+      <PageHeader title="Latihan AI" subtitle="Buat paket Literasi interaktif untuk kelas, remedial, atau pengayaan siswa dengan tiga bentuk soal." />
       {!questions && <PracticeGenerator onReady={(qs, m) => { setQuestions(qs); setMeta(m); setSelected(new Set(qs.map((_, i) => i))); }} />}
       {questions && preview && <PracticeTutor questions={questions} onRestart={() => setPreview(false)} />}
       {questions && !preview && (
