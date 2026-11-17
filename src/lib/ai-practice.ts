@@ -117,11 +117,11 @@ export function isPracticeAnswerCorrect(question: PracticeQuestion, answer: unkn
   if (!isPracticeAnswerComplete(question, answer)) return false;
   if (question.type === "multiple_choice") return answer === question.correctIndex;
   if (question.type === "complex_multiple_choice") {
-    const chosen = [...answer].sort((a, b) => a - b);
+    const chosen = [...(answer as number[])].sort((a, b) => a - b);
     return chosen.length === question.correctIndices.length
       && chosen.every((value, index) => value === question.correctIndices[index]);
   }
-  return answer.every((value, index) => value === question.statements[index].answer);
+  return (answer as boolean[]).every((value, index) => value === question.statements[index].answer);
 }
 
 export function practiceCorrectAnswer(question: PracticeQuestion): string {

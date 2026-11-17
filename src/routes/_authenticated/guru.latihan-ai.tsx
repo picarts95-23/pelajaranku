@@ -14,7 +14,7 @@ import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 
 const TITLE = "Latihan AI Guru · Pelajaranku";
-const DESC = "Buat paket soal latihan dengan AI untuk kelas, remedial, atau pengayaan, lalu simpan ke Bank Soal.";
+const DESC = "Buat Latihan Soal Literasi interaktif dengan pilihan ganda, pilihan ganda kompleks, dan tabel pernyataan Benar/Salah, lalu simpan ke Bank Soal.";
 
 export const Route = createFileRoute("/_authenticated/guru/latihan-ai")({
   head: () => ({ meta: [{ title: TITLE }, { name: "description", content: DESC },
@@ -37,13 +37,27 @@ function GuruLatihanAi() {
   const save = useMutation({
     mutationFn: async () => {
       if (!user || !questions || !meta) throw new Error("Belum ada soal.");
-      const rows = questions.filter((_, i) => selected.has(i)).map((q) => ({
-        teacher_id: user.id, subject: meta.subject, topic: meta.topic, grade_level: grade || null,
-        question: q.question, stimulus: q.stimulus || null, type: "multiple_choice" as const,
-        options: q.options, answer: q.options[q.correctIndex], difficulty: LEVEL_TO_DIFFICULTY[meta.level],
-        indicator: [purpose !== "latihan" ? purpose[0].toUpperCase() + purpose.slice(1) : "", q.concept].filter(Boolean).join(" · ") || null,
-        exam_category: "harian",
-      }));
+      const rows = questions.filter((_, i) => selected.has(i)).flatMap((q) => {
+        const base = {
+          teacher_id: user.id, subject: meta.subject, topic: meta.topic, grade_level: grade || null,
+          stimulus: q.stimulus || null, difficulty: LEVEL_TO_DIFFICULTY[meta.level],
+          indicator: [purpose !== "latihan" ? purpose[0].toUpperCase() + purpose.slice(1) : "", q.concept].filter(Boolean).join(" · ") || null,
+          exam_category: "harian",
+        };
+        if (q.type === "statement_table") return q.statements.map((statement, statementIndex) => ({
+          ...base,
+          question: `${q.question} — Pernyataan ${statementIndex + 1}: ${statement.text}`,
+          type: "true_false" as const, options: null, answer: statement.answer ? "Benar" : "Salah",
+        }));
+        if (q.type === "complex_multiple_choice") return [{
+          ...base, question: q.question, type: "complex_multiple_choice" as const,
+          options: q.options, answer: q.correctIndices.map((index) => q.options[index]).join(", "),
+        }];
+        return [{
+          ...base, question: q.question, type: "multiple_choice" as const,
+          options: q.options, answer: q.options[q.correctIndex],
+        }];
+      });
       if (!rows.length) throw new Error("Pilih minimal 1 soal.");
       const { error } = await supabase.from("question_bank").insert(rows);
       if (error) throw error;
