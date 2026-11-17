@@ -246,7 +246,7 @@ export function PracticeTutor({ questions, onRestart, meta, classId, persist = f
       </div>}
 
       {q.type === "statement_table" && <div className="space-y-3">
-        <p className="text-sm text-muted-foreground">Tentukan Benar atau Salah untuk setiap pernyataan, lalu periksa jawaban.</p>
+        <p className="text-sm text-muted-foreground">Tentukan Benar atau Salah untuk setiap pernyataan, lalu periksa jawaban. Soal dihitung benar jika seluruh baris tepat.</p>
         <div className="overflow-hidden rounded-xl border">
           <div className="bg-muted px-4 py-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">Tabel Pernyataan</div>
           {q.statements.map((statement, statementIndex) => <div key={statementIndex} className="space-y-3 border-t p-4 first:border-t-0">
