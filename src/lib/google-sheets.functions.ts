@@ -2,26 +2,11 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { requireStoredSpreadsheet } from "./sheet-backup-data";
 
-const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_sheets/v4";
-
 type SheetPayload = {
   title: string;
   /** First row = header, following rows = data. Every cell is already a string. */
   values: string[][];
 };
-
-function gatewayHeaders() {
-  const lovableKey = process.env.LOVABLE_API_KEY;
-  const connKey = process.env.GOOGLE_SHEETS_API_KEY;
-  if (!lovableKey || !connKey) {
-    throw new Error("Google Sheets belum terhubung. Hubungkan akun Google terlebih dahulu.");
-  }
-  return {
-    Authorization: `Bearer ${lovableKey}`,
-    "X-Connection-Api-Key": connKey,
-    "Content-Type": "application/json",
-  };
-}
 
 /**
  * Writes an export tab in the teacher's existing backup spreadsheet.
@@ -43,14 +28,16 @@ export const exportToGoogleSheet = createServerFn({ method: "POST" })
     const { data: isGuru } = await supabase.rpc("has_role", { _user_id: userId, _role: "guru" });
     if (!isGuru) throw new Error("Hanya guru yang dapat mengekspor ke Google Spreadsheet.");
 
-    const headers = gatewayHeaders();
+    // Server-only module: imported lazily so it never reaches the client bundle.
+    const { SHEETS_API, getSheetsHeaders } = await import("./google-sheets-auth.server");
+    const headers = await getSheetsHeaders();
 
     const { data: state, error } = await supabase.from("teacher_sheet_sync")
       .select("spreadsheet_id, spreadsheet_url").eq("teacher_id", userId).maybeSingle();
     if (error) throw error;
     const stored = requireStoredSpreadsheet(state);
     const tab = `Ekspor · ${data.title}`.replace(/[\[\]:*?/\\]/g, " ").slice(0, 100);
-    const base = `${GATEWAY_URL}/spreadsheets/${stored.spreadsheetId}`;
+    const base = `${SHEETS_API}/spreadsheets/${stored.spreadsheetId}`;
     async function request(url: string, init?: RequestInit) {
       const res = await fetch(url, { ...init, headers });
       if (!res.ok) {

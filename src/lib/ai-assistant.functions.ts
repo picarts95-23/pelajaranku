@@ -24,9 +24,9 @@ rubrik penilaian, materi ajar, serta umpan balik untuk siswa.
 Jawab ringkas, terstruktur (gunakan poin/markdown bila perlu), dan dalam Bahasa Indonesia
 kecuali guru memintanya dalam bahasa lain. Bila relevan, kaitkan dengan nilai-nilai Islami yang baik.`;
 
-/** OpenAI-compatible chat (OpenAI direct, or Lovable AI gateway). */
-async function chatOpenAiCompatible(baseUrl: string, key: string, model: string, messages: ChatMessage[]) {
-  const res = await fetch(`${baseUrl}/chat/completions`, {
+/** OpenAI chat completions (direct API). */
+async function chatOpenAi(key: string, model: string, messages: ChatMessage[]) {
+  const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
     body: JSON.stringify({ model, messages: [{ role: "system", content: SYSTEM_PROMPT }, ...messages] }),
@@ -67,25 +67,14 @@ export const askAssistant = createServerFn({ method: "POST" })
 
     const openaiKey = process.env.OPENAI_API_KEY;
     const geminiKey = (process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY);
-    const lovableKey = process.env.LOVABLE_API_KEY;
 
     let reply = "";
     if (data.provider === "openai") {
-      if (openaiKey) {
-        reply = await chatOpenAiCompatible("https://api.openai.com/v1", openaiKey, "gpt-4o-mini", data.messages);
-      } else if (lovableKey) {
-        reply = await chatOpenAiCompatible("https://ai.gateway.lovable.dev/v1", lovableKey, "openai/gpt-5-mini", data.messages);
-      } else {
-        throw new Error("AI_UNAVAILABLE");
-      }
+      if (!openaiKey) throw new Error("AI_UNAVAILABLE");
+      reply = await chatOpenAi(openaiKey, "gpt-4o-mini", data.messages);
     } else {
-      if (geminiKey) {
-        reply = await chatGeminiNative(geminiKey, "gemini-3.5-flash", data.messages);
-      } else if (lovableKey) {
-        reply = await chatOpenAiCompatible("https://ai.gateway.lovable.dev/v1", lovableKey, "google/gemini-3-flash-preview", data.messages);
-      } else {
-        throw new Error("AI_UNAVAILABLE");
-      }
+      if (!geminiKey) throw new Error("AI_UNAVAILABLE");
+      reply = await chatGeminiNative(geminiKey, "gemini-3.5-flash", data.messages);
     }
     return { reply };
   });

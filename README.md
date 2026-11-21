@@ -22,7 +22,8 @@ Fitur yang akan saya implementasikan untuk pertama :
 
   c.   Buat sistem auntentifikasi dengan 2 role yaitu guru dan siswa dan buatkan akun dammynya.
 
-This project was built with [Lovable](https://lovable.dev).
+This project was built with [Lovable](https://lovable.dev) and can run fully independently:
+see [docs/mandiri-tanpa-lovable.md](docs/mandiri-tanpa-lovable.md).
 
 **Live app**: https://pelajaranku.lovable.app
 

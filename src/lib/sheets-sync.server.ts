@@ -6,16 +6,9 @@ import { buildGradeRecap } from "./sheet-backup-data";
 import { fetchAllRows } from "./fetch-all-rows";
 import { BACKUP_TAB_TITLES, buildSheetValueBatch, type BackupTabs } from "./sheet-backup-tabs";
 
-const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_sheets/v4";
+import { SHEETS_API as GATEWAY_URL, getSheetsHeaders, shareWithOwner } from "./google-sheets-auth.server";
 type AttStatus = "hadir" | "izin" | "sakit" | "alpa";
 const DEFAULT_WEIGHTS: Record<AttStatus, number> = { hadir: 100, izin: 50, sakit: 50, alpa: 0 };
-
-function gatewayHeaders() {
-  const lovableKey = process.env.LOVABLE_API_KEY;
-  const connKey = process.env.GOOGLE_SHEETS_API_KEY;
-  if (!lovableKey || !connKey) throw new Error("Google Spreadsheet belum terhubung. Hubungkan akun Google terlebih dahulu.");
-  return { Authorization: `Bearer ${lovableKey}`, "X-Connection-Api-Key": connKey, "Content-Type": "application/json" };
-}
 
 function cell(v: unknown): string {
   if (v === null || v === undefined) return "";
@@ -48,7 +41,9 @@ async function createSpreadsheet(title: string, headers: Record<string, string>)
     method: "POST",
     body: JSON.stringify({ properties: { title }, sheets: BACKUP_TAB_TITLES.map((title) => ({ properties: { title } })) }),
   });
-  return (await res.json()) as { spreadsheetId: string; spreadsheetUrl: string };
+  const created = (await res.json()) as { spreadsheetId: string; spreadsheetUrl: string };
+  await shareWithOwner(created.spreadsheetId, headers);
+  return created;
 }
 
 async function getExistingTabs(spreadsheetId: string, headers: Record<string, string>): Promise<string[] | null> {
@@ -276,7 +271,7 @@ function clamp(v: unknown, fallback: number): number {
 export type SyncResult = { url: string; spreadsheetId: string; tables: number; syncedAt: string };
 
 export async function runSheetSyncForTeacher(teacherId: string): Promise<SyncResult> {
-  const headers = gatewayHeaders();
+  const headers = await getSheetsHeaders();
   const [{ data: profile }, email] = await Promise.all([
     supabaseAdmin.from("profiles").select("full_name").eq("id", teacherId).maybeSingle(),
     getTeacherEmail(teacherId),

@@ -35,7 +35,7 @@ export function ShareMenu({ message, subject, url, label }: ShareMenuProps) {
   const targets = [
     { key: "wa", label: "WhatsApp", icon: MessageCircle, href: `https://wa.me/?text=${enc}`, cls: "text-emerald-600" },
     { key: "tg", label: "Telegram", icon: Send, href: `https://t.me/share/url?url=${encodeURIComponent(url ?? "")}&text=${enc}`, cls: "text-sky-600" },
-    { key: "fb", label: "Facebook", icon: Facebook, href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url ?? "https://pelajaranku.lovable.app")}&quote=${enc}`, cls: "text-blue-600" },
+    { key: "fb", label: "Facebook", icon: Facebook, href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url ?? (typeof window !== "undefined" ? window.location.origin : ""))}&quote=${enc}`, cls: "text-blue-600" },
     { key: "mail", label: "Email", icon: Mail, href: `mailto:?subject=${encodeURIComponent(title)}&body=${enc}`, cls: "text-amber-600" },
   ];
 

@@ -68,7 +68,7 @@ ADMIN_EMAIL=admin@sekolahanda.sch.id
 TEACHER_ACCESS_CODE=guru-2026-rahasia
 
 # --- Opsional (biarkan kosong jika tidak dipakai) ---
-LOVABLE_API_KEY=
+GOOGLE_API_KEY=
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 `;
