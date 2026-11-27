@@ -26,7 +26,9 @@ export const Route = createFileRoute("/_authenticated/guru/kelas")({
 });
 
 function genCode() {
-  return Math.random().toString(36).slice(2, 8).toUpperCase();
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const bytes = crypto.getRandomValues(new Uint8Array(10));
+  return Array.from(bytes, (b) => alphabet[b % alphabet.length]).join("");
 }
 
 interface ClassRow {

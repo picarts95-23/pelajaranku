@@ -13,7 +13,10 @@ export const syncMyRole = createServerFn({ method: "POST" })
     const myEmail = ((context.claims as Record<string, unknown>)?.email as string | undefined)
       ?.trim()
       .toLowerCase();
-    if (!adminEmail || !myEmail || adminEmail !== myEmail) {
+    // Only a confirmed email may claim the admin address.
+    const { data: userData } = await context.supabase.auth.getUser();
+    const confirmed = !!userData?.user?.email_confirmed_at;
+    if (!adminEmail || !myEmail || adminEmail !== myEmail || !confirmed) {
       return { role: null as "admin" | null };
     }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

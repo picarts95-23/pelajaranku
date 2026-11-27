@@ -43,6 +43,13 @@
       "when": 1794375563660,
       "tag": "0005_student_progress_records",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795821535153,
+      "tag": "0006_security_teacher_only_writes_and_sync_token",
+      "breakpoints": true
     }
   ]
 }

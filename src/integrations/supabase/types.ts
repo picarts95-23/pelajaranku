@@ -710,6 +710,24 @@ export type Database = {
         }
         Relationships: []
       }
+      internal_sync_tokens: {
+        Row: {
+          created_at: string
+          name: string
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          name: string
+          token: string
+        }
+        Update: {
+          created_at?: string
+          name?: string
+          token?: string
+        }
+        Relationships: []
+      }
       journals: {
         Row: {
           class_id: string
@@ -2035,6 +2053,7 @@ export type Database = {
           xp: number
         }[]
       }
+      verify_sheet_sync_token: { Args: { _token: string }; Returns: boolean }
     }
     Enums: {
       app_role: "guru" | "siswa" | "admin"

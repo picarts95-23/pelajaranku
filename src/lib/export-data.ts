@@ -33,7 +33,9 @@ function escapeHtml(s: string): string {
 /** CSV — opens cleanly in Google Sheets and Excel. */
 export function exportToCSV(filename: string, columns: ExportColumn[], rows: ExportRow[]) {
   const csvCell = (v: unknown) => {
-    const s = cell(v);
+    let s = cell(v);
+    // Neutralise spreadsheet formulas (CSV/formula injection).
+    if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
   const head = columns.map((c) => csvCell(c.header)).join(",");

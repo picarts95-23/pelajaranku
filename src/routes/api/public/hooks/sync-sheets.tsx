@@ -1,17 +1,23 @@
 // Scheduled (and externally-callable) endpoint that copies the whole app
 // database into the single persistent Google Spreadsheet backup.
 // Lives under /api/public/* so pg_cron can reach it without an auth session;
-// we still require the project anon key in the `apikey` header to stop random
-// callers from triggering syncs.
+// callers must present the private sync token stored in the database vault.
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/api/public/hooks/sync-sheets")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const apikey = request.headers.get("apikey") || request.headers.get("x-api-key");
-        const expected = process.env.SUPABASE_PUBLISHABLE_KEY;
-        if (!expected || apikey !== expected) {
+        // Requires the private backup token kept in the database vault (not the
+        // public publishable key), verified by a service-role-only function.
+        const token = request.headers.get("x-sync-token") || "";
+        let ok = false;
+        if (token.length >= 32 && token.length <= 200) {
+          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+          const { data } = await supabaseAdmin.rpc("verify_sheet_sync_token", { _token: token });
+          ok = data === true;
+        }
+        if (!ok) {
           return new Response(JSON.stringify({ error: "Unauthorized" }), {
             status: 401,
             headers: { "Content-Type": "application/json" },

@@ -15,6 +15,8 @@ export const signAnswerFile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { bucket: string; path: string }) => {
     if (!input?.path || typeof input.path !== "string") throw new Error("INVALID_PATH");
+    if (input.path.length > 500 || !/^[A-Za-z0-9._\-\/]+$/.test(input.path) || input.path.includes(".."))
+      throw new Error("INVALID_PATH");
     if (!ANSWER_BUCKETS.has(input.bucket)) throw new Error("INVALID_BUCKET");
     return input;
   })
@@ -49,6 +51,18 @@ export const signAnswerFile = createServerFn({ method: "POST" })
       owned = !!viaContent && viaContent.length > 0;
     }
     if (!owned) throw new Error("FORBIDDEN");
+    // The file must sit in the folder of a student who submitted to one of
+    // this teacher's assignments (uploads are stored under <student_id>/...).
+    const [ownerFolder, fileName = ""] = data.path.split("/");
+    const assignmentId = fileName.slice(0, 36);
+    const { data: ownerSub } = await supabase
+      .from("submissions")
+      .select("id, assignment:assignments!inner(teacher_id)")
+      .eq("student_id", ownerFolder)
+      .eq("assignment_id", assignmentId)
+      .eq("assignment.teacher_id", userId)
+      .limit(1);
+    if (!ownerSub || ownerSub.length === 0) throw new Error("FORBIDDEN");
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: signed, error } = await supabaseAdmin.storage
