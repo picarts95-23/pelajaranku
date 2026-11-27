@@ -485,6 +485,84 @@ CREATE TABLE IF NOT EXISTS public.xp_transactions (
   created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
+-- ---- Tabel tambahan (ada di database berjalan, belum ada di cuplikan lama) ----
+ALTER TABLE public.assignments ADD COLUMN IF NOT EXISTS objective_id uuid;
+ALTER TABLE public.assignments ADD COLUMN IF NOT EXISTS assessment_kind text NOT NULL DEFAULT 'sumatif'::text;
+ALTER TABLE public.assignments ADD COLUMN IF NOT EXISTS objective_weights jsonb NOT NULL DEFAULT '{}'::jsonb;
+
+CREATE TABLE IF NOT EXISTS public.learning_objectives (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  teacher_id uuid NOT NULL,
+  class_id uuid,
+  subject text NOT NULL,
+  code text NOT NULL,
+  description text NOT NULL,
+  sort_order integer NOT NULL DEFAULT 0,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT learning_objectives_pkey PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS public.grade_weights (
+  teacher_id uuid NOT NULL,
+  sumatif integer NOT NULL DEFAULT 60,
+  adab integer NOT NULL DEFAULT 20,
+  absensi integer NOT NULL DEFAULT 20,
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT grade_weights_pkey PRIMARY KEY (teacher_id),
+  CONSTRAINT grade_weights_absensi_check CHECK (((absensi >= 0) AND (absensi <= 100))),
+  CONSTRAINT grade_weights_adab_check CHECK (((adab >= 0) AND (adab <= 100))),
+  CONSTRAINT grade_weights_sumatif_check CHECK (((sumatif >= 0) AND (sumatif <= 100)))
+);
+
+CREATE TABLE IF NOT EXISTS public.practice_attempts (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  client_id uuid NOT NULL,
+  student_id uuid NOT NULL,
+  class_id uuid NOT NULL,
+  subject text NOT NULL,
+  topic text NOT NULL,
+  level text NOT NULL,
+  score integer NOT NULL,
+  correct_count integer NOT NULL,
+  question_count integer NOT NULL,
+  hints_used integer NOT NULL DEFAULT 0,
+  weak_concepts text[] NOT NULL DEFAULT '{}'::text[],
+  feedback text NOT NULL,
+  answers jsonb NOT NULL DEFAULT '[]'::jsonb,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT practice_attempts_pkey PRIMARY KEY (id),
+  CONSTRAINT practice_attempts_correct_count_check CHECK ((correct_count >= 0)),
+  CONSTRAINT practice_attempts_hints_used_check CHECK ((hints_used >= 0)),
+  CONSTRAINT practice_attempts_level_check CHECK ((level = ANY (ARRAY['dasar'::text, 'menengah'::text, 'mahir'::text]))),
+  CONSTRAINT practice_attempts_question_count_check CHECK (((question_count >= 1) AND (question_count <= 20))),
+  CONSTRAINT practice_attempts_score_check CHECK (((score >= 0) AND (score <= 100))),
+  CONSTRAINT practice_attempts_student_id_client_id_key UNIQUE (student_id, client_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.student_progress_records (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  teacher_id uuid NOT NULL,
+  student_id uuid NOT NULL,
+  class_id uuid NOT NULL,
+  subject text NOT NULL,
+  objective_scores jsonb NOT NULL DEFAULT '{}'::jsonb,
+  development_notes text,
+  report_description text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT student_progress_records_pkey PRIMARY KEY (id),
+  CONSTRAINT student_progress_records_teacher_id_student_id_class_id_sub_key UNIQUE (teacher_id, student_id, class_id, subject)
+);
+
+-- Token internal untuk sinkronisasi Spreadsheet terjadwal (hanya service_role).
+CREATE TABLE IF NOT EXISTS public.internal_sync_tokens (
+  name text NOT NULL,
+  token text NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT internal_sync_tokens_pkey PRIMARY KEY (name)
+);
+
 -- ============ CONSTRAINTS ============
 DO $$ BEGIN EXECUTE 'ALTER TABLE public.adab_scores ADD CONSTRAINT adab_scores_pkey PRIMARY KEY (id)'; EXCEPTION WHEN duplicate_table THEN NULL; WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 DO $$ BEGIN EXECUTE 'ALTER TABLE public.announcement_comments ADD CONSTRAINT announcement_comments_pkey PRIMARY KEY (id)'; EXCEPTION WHEN duplicate_table THEN NULL; WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
@@ -620,6 +698,15 @@ DO $$ BEGIN EXECUTE 'ALTER TABLE public.user_badges ADD CONSTRAINT user_badges_b
 DO $$ BEGIN EXECUTE 'ALTER TABLE public.user_badges ADD CONSTRAINT user_badges_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE'; EXCEPTION WHEN duplicate_table THEN NULL; WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 DO $$ BEGIN EXECUTE 'ALTER TABLE public.user_roles ADD CONSTRAINT user_roles_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE'; EXCEPTION WHEN duplicate_table THEN NULL; WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 DO $$ BEGIN EXECUTE 'ALTER TABLE public.xp_transactions ADD CONSTRAINT xp_transactions_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE'; EXCEPTION WHEN duplicate_table THEN NULL; WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
+
+-- ---- Constraint tambahan ----
+DO $$ BEGIN EXECUTE 'ALTER TABLE public.assignments ADD CONSTRAINT assignments_assessment_kind_check CHECK ((assessment_kind = ANY (ARRAY[''formatif''::text, ''sumatif''::text])))'; EXCEPTION WHEN duplicate_table THEN NULL; WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
+DO $$ BEGIN EXECUTE 'ALTER TABLE public.assignments ADD CONSTRAINT assignments_objective_id_fkey FOREIGN KEY (objective_id) REFERENCES public.learning_objectives(id) ON DELETE SET NULL'; EXCEPTION WHEN duplicate_table THEN NULL; WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
+DO $$ BEGIN EXECUTE 'ALTER TABLE public.learning_objectives ADD CONSTRAINT learning_objectives_class_id_fkey FOREIGN KEY (class_id) REFERENCES public.classes(id) ON DELETE CASCADE'; EXCEPTION WHEN duplicate_table THEN NULL; WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
+DO $$ BEGIN EXECUTE 'ALTER TABLE public.practice_attempts ADD CONSTRAINT practice_attempts_class_id_fkey FOREIGN KEY (class_id) REFERENCES public.classes(id) ON DELETE CASCADE'; EXCEPTION WHEN duplicate_table THEN NULL; WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
+DO $$ BEGIN EXECUTE 'ALTER TABLE public.student_progress_records ADD CONSTRAINT student_progress_records_class_id_fkey FOREIGN KEY (class_id) REFERENCES public.classes(id) ON DELETE CASCADE'; EXCEPTION WHEN duplicate_table THEN NULL; WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
+DO $$ BEGIN EXECUTE 'ALTER TABLE public.student_progress_records ADD CONSTRAINT student_progress_records_student_id_fkey FOREIGN KEY (student_id) REFERENCES public.profiles(id) ON DELETE CASCADE'; EXCEPTION WHEN duplicate_table THEN NULL; WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
+DO $$ BEGIN EXECUTE 'ALTER TABLE public.student_progress_records ADD CONSTRAINT student_progress_records_teacher_id_fkey FOREIGN KEY (teacher_id) REFERENCES public.profiles(id) ON DELETE CASCADE'; EXCEPTION WHEN duplicate_table THEN NULL; WHEN duplicate_object THEN NULL; WHEN invalid_table_definition THEN NULL; END $$;
 
 -- ============ INDEXES ============
 CREATE INDEX IF NOT EXISTS class_activities_class_id_created_at_idx ON public.class_activities USING btree (class_id, created_at DESC);
@@ -1166,6 +1253,78 @@ END;
 $function$
 ;
 
+-- ---- Fungsi tambahan ----
+CREATE OR REPLACE FUNCTION public.create_assignment_from_request(_request_id uuid, _assignment jsonb, _answer_key text DEFAULT NULL::text)
+ RETURNS uuid
+ LANGUAGE plpgsql
+ SET search_path TO 'public'
+AS $function$
+DECLARE r public.task_requests%ROWTYPE; a public.assignments%ROWTYPE; new_id uuid;
+BEGIN
+  IF auth.uid() IS NULL OR NOT public.has_role(auth.uid(), 'guru') THEN RAISE EXCEPTION 'Hanya guru yang dapat membuat tugas'; END IF;
+  SELECT * INTO r FROM public.task_requests WHERE id = _request_id FOR UPDATE;
+  IF NOT FOUND THEN RAISE EXCEPTION 'Permintaan tidak ditemukan'; END IF;
+  IF NOT (r.teacher_id = auth.uid() OR (r.class_id IS NOT NULL AND public.is_class_owner(r.class_id, auth.uid()))) THEN RAISE EXCEPTION 'Permintaan bukan untuk Anda'; END IF;
+  IF r.assignment_id IS NOT NULL THEN RETURN r.assignment_id; END IF;
+  IF r.status NOT IN ('pending', 'accepted', 'converted') THEN RAISE EXCEPTION 'Permintaan tidak dapat dijadikan tugas'; END IF;
+  a := jsonb_populate_record(NULL::public.assignments, _assignment);
+  IF nullif(trim(a.title), '') IS NULL THEN RAISE EXCEPTION 'Judul tugas wajib diisi'; END IF;
+  IF a.due_at IS NULL THEN RAISE EXCEPTION 'Tenggat tugas wajib diisi'; END IF;
+  IF a.assigned_student_id IS NOT NULL THEN
+    IF a.assigned_student_id <> r.student_id THEN RAISE EXCEPTION 'Siswa harus sesuai permintaan'; END IF;
+  ELSIF a.class_id IS NULL OR a.class_id IS DISTINCT FROM r.class_id OR NOT public.is_class_owner(a.class_id, auth.uid()) THEN
+    RAISE EXCEPTION 'Kelas harus sesuai permintaan';
+  END IF;
+  INSERT INTO public.assignments (teacher_id, class_id, assigned_student_id, title, description, subject, exam_type, halaqoh_kind, due_at, max_score, xp_reward, coin_reward, quiz_link, game_link, answer_format, options, muroja_juz, muroja_surah, muroja_ayat, attachment_url, attachment_name, attachment_type)
+  VALUES (auth.uid(), CASE WHEN a.assigned_student_id IS NULL THEN a.class_id ELSE NULL END, a.assigned_student_id, trim(a.title), a.description, a.subject, coalesce(a.exam_type, 'harian'), a.halaqoh_kind, a.due_at, coalesce(a.max_score,100), coalesce(a.xp_reward,50), coalesce(a.coin_reward,10), a.quiz_link, a.game_link, coalesce(a.answer_format,'descriptive'), a.options, a.muroja_juz, a.muroja_surah, a.muroja_ayat, a.attachment_url, a.attachment_name, a.attachment_type) RETURNING id INTO new_id;
+  IF nullif(trim(_answer_key), '') IS NOT NULL THEN
+    INSERT INTO public.assignment_answer_keys (assignment_id, teacher_id, answer_key) VALUES (new_id, auth.uid(), trim(_answer_key));
+  END IF;
+  UPDATE public.task_requests SET status = 'converted', assignment_id = new_id, responded_at = now() WHERE id = r.id;
+  RETURN new_id;
+END;
+$function$
+;
+
+CREATE OR REPLACE FUNCTION public.record_ai_practice_journal()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+  v_teacher_id uuid;
+BEGIN
+  SELECT teacher_id INTO v_teacher_id FROM public.classes WHERE id = NEW.class_id;
+  IF v_teacher_id IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  INSERT INTO public.journals (class_id, teacher_id, student_id, subject, date, topic, notes)
+  VALUES (
+    NEW.class_id,
+    v_teacher_id,
+    NEW.student_id,
+    NEW.subject,
+    (NEW.created_at AT TIME ZONE 'Asia/Jakarta')::date,
+    'Latihan AI · ' || NEW.topic,
+    NEW.feedback || E'\n\nNilai tambahan Latihan AI: ' || NEW.score || '/100 (' || NEW.correct_count || '/' || NEW.question_count || ' benar).'
+  );
+  RETURN NEW;
+END;
+$function$
+;
+
+CREATE OR REPLACE FUNCTION public.verify_sheet_sync_token(_token text)
+ RETURNS boolean
+ LANGUAGE sql
+ STABLE SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+  SELECT EXISTS (SELECT 1 FROM public.internal_sync_tokens WHERE name = 'sheet_sync' AND token = _token);
+$function$
+;
+
 -- ============ TRIGGERS ============
 DROP TRIGGER IF EXISTS update_adab_scores_updated_at ON public.adab_scores;
 CREATE TRIGGER update_adab_scores_updated_at BEFORE UPDATE ON public.adab_scores FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -1229,6 +1388,14 @@ DROP TRIGGER IF EXISTS trg_task_requests_updated_at ON public.task_requests;
 CREATE TRIGGER trg_task_requests_updated_at BEFORE UPDATE ON public.task_requests FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 DROP TRIGGER IF EXISTS update_teacher_sheet_sync_updated_at ON public.teacher_sheet_sync;
 CREATE TRIGGER update_teacher_sheet_sync_updated_at BEFORE UPDATE ON public.teacher_sheet_sync FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ---- Trigger tambahan ----
+DROP TRIGGER IF EXISTS trg_lo_updated ON public.learning_objectives;
+CREATE TRIGGER trg_lo_updated BEFORE UPDATE ON public.learning_objectives FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+DROP TRIGGER IF EXISTS trg_student_progress_records_updated ON public.student_progress_records;
+CREATE TRIGGER trg_student_progress_records_updated BEFORE UPDATE ON public.student_progress_records FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+DROP TRIGGER IF EXISTS trg_ai_practice_journal ON public.practice_attempts;
+CREATE TRIGGER trg_ai_practice_journal AFTER INSERT ON public.practice_attempts FOR EACH ROW EXECUTE FUNCTION record_ai_practice_journal();
 
 -- ============ GRANTS ============
 GRANT DELETE, INSERT, SELECT, UPDATE ON public.adab_scores TO anon;
@@ -1391,6 +1558,25 @@ GRANT EXECUTE ON FUNCTION public.protect_submission_grading() TO service_role;
 GRANT EXECUTE ON FUNCTION public.search_students(_term text) TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.shares_class_with(_uid uuid, _other uuid) TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.update_updated_at_column() TO service_role;
+
+-- ---- GRANT tambahan ----
+GRANT DELETE, INSERT, SELECT, UPDATE ON public.grade_weights TO anon;
+GRANT DELETE, INSERT, SELECT, UPDATE ON public.grade_weights TO authenticated;
+GRANT DELETE, INSERT, SELECT, UPDATE ON public.grade_weights TO service_role;
+GRANT DELETE, INSERT, SELECT, UPDATE ON public.learning_objectives TO anon;
+GRANT DELETE, INSERT, SELECT, UPDATE ON public.learning_objectives TO authenticated;
+GRANT DELETE, INSERT, SELECT, UPDATE ON public.learning_objectives TO service_role;
+GRANT DELETE, INSERT, SELECT, UPDATE ON public.practice_attempts TO anon;
+GRANT DELETE, INSERT, SELECT, UPDATE ON public.practice_attempts TO authenticated;
+GRANT DELETE, INSERT, SELECT, UPDATE ON public.practice_attempts TO service_role;
+GRANT DELETE, INSERT, SELECT, UPDATE ON public.student_progress_records TO anon;
+GRANT DELETE, INSERT, SELECT, UPDATE ON public.student_progress_records TO authenticated;
+GRANT DELETE, INSERT, SELECT, UPDATE ON public.student_progress_records TO service_role;
+GRANT DELETE, INSERT, SELECT, UPDATE ON public.internal_sync_tokens TO service_role;
+REVOKE ALL ON FUNCTION public.create_assignment_from_request(_request_id uuid, _assignment jsonb, _answer_key text) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.create_assignment_from_request(_request_id uuid, _assignment jsonb, _answer_key text) TO authenticated, service_role;
+REVOKE ALL ON FUNCTION public.verify_sheet_sync_token(_token text) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.verify_sheet_sync_token(_token text) TO service_role;
 
 -- ============ RLS ============
 ALTER TABLE public.adab_scores ENABLE ROW LEVEL SECURITY;
@@ -1647,6 +1833,32 @@ DROP POLICY IF EXISTS "Users can read their own roles" ON public.user_roles;
 CREATE POLICY "Users can read their own roles" ON public.user_roles AS PERMISSIVE FOR SELECT TO authenticated USING ((auth.uid() = user_id));
 DROP POLICY IF EXISTS "User views own xp tx" ON public.xp_transactions;
 CREATE POLICY "User views own xp tx" ON public.xp_transactions AS PERMISSIVE FOR SELECT TO authenticated USING ((user_id = auth.uid()));
+
+-- ---- RLS tambahan ----
+ALTER TABLE public.grade_weights ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.internal_sync_tokens ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.learning_objectives ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.practice_attempts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.student_progress_records ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Students read teacher grade weights" ON public.grade_weights;
+CREATE POLICY "Students read teacher grade weights" ON public.grade_weights AS PERMISSIVE FOR SELECT TO authenticated USING ((EXISTS ( SELECT 1
+   FROM (public.classes c
+     JOIN public.class_enrollments e ON ((e.class_id = c.id)))
+  WHERE ((c.teacher_id = grade_weights.teacher_id) AND (e.student_id = auth.uid())))));
+DROP POLICY IF EXISTS "Teachers manage own weights" ON public.grade_weights;
+CREATE POLICY "Teachers manage own weights" ON public.grade_weights AS PERMISSIVE FOR ALL TO authenticated USING ((teacher_id = auth.uid())) WITH CHECK ((teacher_id = auth.uid()));
+DROP POLICY IF EXISTS "Class members read TP" ON public.learning_objectives;
+CREATE POLICY "Class members read TP" ON public.learning_objectives AS PERMISSIVE FOR SELECT TO authenticated USING (((class_id IS NOT NULL) AND public.is_class_member(class_id, auth.uid())));
+DROP POLICY IF EXISTS "Teachers manage own TP" ON public.learning_objectives;
+CREATE POLICY "Teachers manage own TP" ON public.learning_objectives AS PERMISSIVE FOR ALL TO authenticated USING ((teacher_id = auth.uid())) WITH CHECK (((teacher_id = auth.uid()) AND public.has_role(auth.uid(), 'guru'::public.app_role)));
+DROP POLICY IF EXISTS "Students read own AI practice" ON public.practice_attempts;
+CREATE POLICY "Students read own AI practice" ON public.practice_attempts AS PERMISSIVE FOR SELECT TO authenticated USING ((student_id = auth.uid()));
+DROP POLICY IF EXISTS "Teachers read class AI practice" ON public.practice_attempts;
+CREATE POLICY "Teachers read class AI practice" ON public.practice_attempts AS PERMISSIVE FOR SELECT TO authenticated USING (public.is_class_owner(class_id, auth.uid()));
+DROP POLICY IF EXISTS "Students read own progress records" ON public.student_progress_records;
+CREATE POLICY "Students read own progress records" ON public.student_progress_records AS PERMISSIVE FOR SELECT TO authenticated USING (((student_id = auth.uid()) AND public.is_class_member(class_id, auth.uid())));
+DROP POLICY IF EXISTS "Teachers manage own student progress records" ON public.student_progress_records;
+CREATE POLICY "Teachers manage own student progress records" ON public.student_progress_records AS PERMISSIVE FOR ALL TO authenticated USING (((teacher_id = auth.uid()) AND public.is_class_owner(class_id, auth.uid()))) WITH CHECK (((teacher_id = auth.uid()) AND public.is_class_owner(class_id, auth.uid())));
 
 -- ============ TRIGGER PEMBUATAN PROFIL OTOMATIS (auth.users) ============
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;

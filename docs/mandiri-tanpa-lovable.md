@@ -14,6 +14,14 @@ pembungkus konfigurasi Vite/TanStack/Nitro) serta kode khusus preview Lovable
 (`previewAuthStorage.ts`, `register-sw.ts`, `lovable-error-reporting.ts`) yang otomatis
 tidak aktif di luar Lovable.
 
+## 0. Skema database
+
+`supabase/schema/pelajaranku-schema.sql` (sumber `03-schema.sql`) sudah dicocokkan dengan database
+Lovable yang berjalan: 45 tabel, 157 constraint, 69 index, 97 aturan RLS, 34 trigger, dan 12 aturan
+Storage identik. File ini aman dijalankan berulang (diuji dua kali berturut-turut di Postgres kosong).
+Cara pakai: tempel seluruh isinya di Supabase → SQL Editor → Run, lalu buat 3 bucket Storage private
+(`answer-images`, `voice-answers`, `lesson-media`).
+
 ## 1. Environment variables
 
 Salin `.env.example` ke `.env` (lokal) atau isi di panel hosting (Cloudflare/Vercel/Netlify).
